@@ -2,11 +2,13 @@
 import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import { Camera, X } from "lucide-vue-next"; // import icon
+import axios from "axios";
 
 const rating = ref(0);
 const hoverRating = ref(0);
 const comment = ref("");
 const images = ref([]);
+const memberId = 1;
 
 const setRating = (star) => {
   rating.value = star;
@@ -26,11 +28,33 @@ const removeImage = (index) => {
   images.value.splice(index, 1);
 };
 
-const submitFeedback = () => {
-  console.log("Rating:", rating.value);
-  console.log("Comment:", comment.value);
-  console.log("Images:", images.value);
-  alert("Feedback submitted!");
+const submitFeedback = async () => {
+  try {
+    const formData = new FormData();
+    formData.append("rating", rating.value);
+    formData.append("comment", comment.value);
+    formData.append("memberId", memberId);
+
+    // Thêm từng ảnh vào formData
+    images.value.forEach((img) => {
+      formData.append("images", img.file);
+    });
+
+    const response = await axios.post("http://localhost:8080/api/feedbacks", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    alert("Feedback submitted successfully!");
+    console.log("Response:", response.data);
+
+    // Reset form
+    rating.value = 0;
+    comment.value = "";
+    images.value = [];
+  } catch (error) {
+    console.error("Error submitting feedback:", error);
+    alert("Failed to submit feedback!");
+  }
 };
 </script>
 
