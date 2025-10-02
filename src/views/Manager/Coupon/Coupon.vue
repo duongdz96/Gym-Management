@@ -1,6 +1,15 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref,onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
+import axios from 'axios'
+
+onMounted(async () => {
+    try {
+        const res = await axios.get(`http://localhost:8080/api/product`)
+        console.log(res)
+    } finally {
+    }
+})
 
 type Coupon = {
     id: number,
@@ -13,108 +22,7 @@ type Coupon = {
     scope: string,
 }
 
-const coupons = ref<Coupon[]>([
-     {
-    id: 1,
-    code: "WELCOME10",
-    discountType: 1,      // percentage
-    discountValue: 10,
-    startDate: "2025-09-01",
-    endDate: "2025-10-01",
-    status: 1,            // active
-    scope: "gold"
-  },
-  {
-    id: 2,
-    code: "FREESHIP50K",
-    discountType: 2,      // fixed
-    discountValue: 50000,
-    startDate: "2025-09-15",
-    endDate: "2025-12-31",
-    status: 2,            // inactive
-    scope: "bronze"
-  },
-  {
-    id: 3,
-    code: "SPRING20",
-    discountType: 1,
-    discountValue: 20,
-    startDate: "2025-03-01",
-    endDate: "2025-04-30",
-    status: 1,            // expired
-    scope: "silver"
-  },
-  {
-    id: 4,
-    code: "SUMMER15",
-    discountType: 1,
-    discountValue: 15,
-    startDate: "2025-06-01",
-    endDate: "2025-08-31",
-    status: 2,            // expired
-    scope: "silver"
-  },
-  {
-    id: 5,
-    code: "AUTUMN5",
-    discountType: 2,
-    discountValue: 5000,
-    startDate: "2025-09-20",
-    endDate: "2025-11-01",
-    status: 1,            // active
-    scope: "gold"
-  },
-  {
-    id: 6,
-    code: "WINTER25",
-    discountType: 1,
-    discountValue: 25,
-    startDate: "2025-12-01",
-    endDate: "2026-01-15",
-    status: 1,            // active
-    scope: "silver"
-  },
-  {
-    id: 7,
-    code: "FLASH50",
-    discountType: 2,
-    discountValue: 50000,
-    startDate: "2025-09-29",
-    endDate: "2025-10-05",
-    status: 1,            // active
-    scope: "bronze"
-  },
-  {
-    id: 8,
-    code: "STUDENT10",
-    discountType: 1,
-    discountValue: 10,
-    startDate: "2025-01-01",
-    endDate: "2025-12-31",
-    status: 1,            // active
-    scope: "silver"
-  },
-  {
-    id: 9,
-    code: "VIP30",
-    discountType: 1,
-    discountValue: 30,
-    startDate: "2025-07-01",
-    endDate: "2025-07-31",
-    status: 2,            // expired
-    scope: "gold"
-  },
-  {
-    id: 10,
-    code: "NEWYEAR100",
-    discountType: 2,
-    discountValue: 100000,
-    startDate: "2025-12-25",
-    endDate: "2026-01-10",
-    status: 1,            // active
-    scope: "silver"
-  }
-])
+const coupons = ref<Coupon[]>([])
 
 const search = ref('')
 const couponType = ref('')
