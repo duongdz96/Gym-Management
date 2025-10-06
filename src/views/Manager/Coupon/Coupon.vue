@@ -22,7 +22,49 @@ type Coupon = {
     scope: string,
 }
 
-const coupons = ref<Coupon[]>([])
+const coupons = ref<Coupon[]>([
+//   {
+//     id: 1,
+//     code: "WELCOME10",
+//     discountType: "percentage",
+//     discountValue: 10,
+//     startDate: "2025-01-01",
+//     endDate: "2025-12-31",
+//     status: 1,  // number type here
+//     scope: "all_memberships"
+//   },
+//   {
+//     id: 2,
+//     code: "SUMMER50",
+//     discountType: "fixed",
+//     discountValue: 50,
+//     startDate: "2025-06-01",
+//     endDate: "2025-08-31",
+//     status: 1,
+//     scope: "personal_training"
+//   },
+//   {
+//     id: 3,
+//     code: "FREEMONTH",
+//     discountType: "fixed",
+//     discountValue: 100,
+//     startDate: "2025-03-01",
+//     endDate: "2025-11-30",
+//     status: 2,
+//     scope: "membership_renewal"
+//   },
+//   {
+//     id: 4,
+//     code: "FRIEND5",
+//     discountType: "percentage",
+//     discountValue: 5,
+//     startDate: "2025-05-01",
+//     endDate: "2025-12-31",
+//     status: 1,
+//     scope: "referral_program"
+//   }
+])
+
 
 const search = ref('')
 const couponType = ref('')

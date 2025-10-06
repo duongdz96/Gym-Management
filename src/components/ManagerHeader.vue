@@ -15,9 +15,16 @@ import { RouterLink } from "vue-router";
             <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
                 <div class="relative group">
                     <RouterLink :to="{ name: 'coupon'}"
-                        class="flex items-center justify-between w-40 text-white uppercase tracking-wider border-b-2 border-transparent hover:border-red-500 transition-colors duration-300">
+                        class="text-white uppercase tracking-wider hover:text-red-600">
                         <span>Coupon</span>
-                        <!-- Icon -->
+                    </RouterLink>
+                </div>
+            </nav>
+            <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+                <div class="relative group">
+                    <RouterLink :to="{ name: 'product'}"
+                        class="text-white uppercase tracking-wider hover:text-red-600">
+                        <span>Product</span>
                     </RouterLink>
                 </div>
             </nav>
