@@ -72,7 +72,7 @@ const submitFeedback = async () => {
         <p class="text-gray-500 text-sm">
           Active until: <span class="font-medium">30/12/2025</span>
         </p>
-        <RouterLink to="/membership"
+        <RouterLink to="/customer/membership"
           class="mt-3 inline-block text-red-600 text-sm font-semibold hover:underline">
           View details →
         </RouterLink>
@@ -82,7 +82,7 @@ const submitFeedback = async () => {
       <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
         <h2 class="font-semibold text-gray-700 mb-2">My Classes</h2>
         <p class="text-gray-500 text-sm">You have 2 classes today.</p>
-        <RouterLink to="/classes"
+        <RouterLink to="/customer/class"
           class="mt-3 inline-block text-red-600 text-sm font-semibold hover:underline">
           View schedule →
         </RouterLink>
@@ -92,7 +92,7 @@ const submitFeedback = async () => {
       <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
         <h2 class="font-semibold text-gray-700 mb-2">Training Plan</h2>
         <p class="text-gray-500 text-sm">Plan with PT updated last week.</p>
-        <RouterLink to="/plan"
+        <RouterLink to="/customer/plan"
           class="mt-3 inline-block text-red-600 text-sm font-semibold hover:underline">
           View plan →
         </RouterLink>
@@ -102,7 +102,7 @@ const submitFeedback = async () => {
       <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
         <h2 class="font-semibold text-gray-700 mb-2">Coupons</h2>
         <p class="text-gray-500 text-sm">You have 3 active coupons.</p>
-        <RouterLink to="/coupons"
+        <RouterLink to="/customer/coupon"
           class="mt-3 inline-block text-red-600 text-sm font-semibold hover:underline">
           View coupons →
         </RouterLink>
@@ -115,7 +115,7 @@ const submitFeedback = async () => {
           <li>Your class "Yoga Morning" starts at 8:00</li>
           <li>New coupon available!</li>
         </ul>
-        <RouterLink to="/notifications"
+        <RouterLink to="/customer/notification"
           class="mt-3 inline-block text-red-600 text-sm font-semibold hover:underline">
           View all →
         </RouterLink>
@@ -125,7 +125,7 @@ const submitFeedback = async () => {
       <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
         <h2 class="font-semibold text-gray-700 mb-2">History</h2>
         <p class="text-gray-500 text-sm">You checked in 15 times this month.</p>
-        <RouterLink to="/history"
+        <RouterLink to="/customer/history"
           class="mt-3 inline-block text-red-600 text-sm font-semibold hover:underline">
           View history →
         </RouterLink>
