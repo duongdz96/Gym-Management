@@ -8,9 +8,19 @@ import Coupon from "@/views/Manager/Coupon/Coupon.vue";
 import AddCoupon from "@/views/Manager/Coupon/AddCoupon.vue";
 import Product from "@/views/Manager/Product/Product.vue";
 import AddProduct from "@/views/Manager/Product/AddProduct.vue";
+import Staff from "@/views/Manager/Staff/Staff.vue";
+import Customer from "@/views/Manager/Customer/Customer.vue";
+import Attendance from "@/views/Manager/Attendance/Attendance.vue";
 
 import CustomerLayout from "@/layout/CustomerLayout.vue";
 import CustomerHome from "@/views/Customer/CustomerHome.vue";
+import CustomerPlan from "@/views/Customer/CustomerPlan.vue";
+import CustomerClass from "@/views/Customer/CustomerClass.vue";
+import CustomerDashboard from "@/views/Customer/CustomerDashboard.vue";
+import CustomerCoupon from "@/views/Customer/CustomerCoupon.vue";
+import CustomerMembership from "@/views/Customer/CustomerMembership.vue";
+import CustomerProfile from "@/views/Customer/CustomerProfile.vue";
+import CustomerSetting from "@/views/Customer/CustomerSetting.vue";
 
 import ReceptionLayout from "@/layout/ReceptionLayout.vue";
 import SalesSelect from "@/views/Reception/Sale/SalesSelect.vue";
@@ -40,36 +50,51 @@ const routes = [
         ]
     },
     {
-        path: "/admin",
+        path: "/manager",
         component: ManagerLayout,
         children: [
             {
-                path: '/admin/coupon',
+                path: '/manager/staff',
+                name: 'staff',
+                component: Staff
+            },
+            {
+                path: '/manager/customer',
+                name: 'customer',
+                component: Customer
+            },
+            {
+                path: '/manager/attendance',
+                name: 'attendance',
+                component: Attendance
+            },
+            {
+                path: '/manager/coupon',
                 name: 'coupon',
                 component: Coupon
             },
             {
-                path: '/admin/coupon/add',
+                path: '/manager/coupon/add',
                 name: 'coupon.add',
                 component: AddCoupon
             },
             {
-                path: '/admin/product',
+                path: '/manager/product',
                 name: 'product',
                 component: Product
             },
             {
-                path: '/admin/product/add',
+                path: '/manager/product/add',
                 name: 'product.add',
                 component: AddProduct
             },
             {
-                path: '/admin/product/importproduct',
+                path: '/manager/product/importproduct',
                 name: 'product.importproduct',
                 component: ImportProduct
             },
             {
-                path: '/admin/product/importcheckout',
+                path: '/manager/product/importcheckout',
                 name: 'product.importcheckout',
                 component: ImportCheckout
             },
@@ -84,6 +109,41 @@ const routes = [
                 name: 'customer.home',
                 component: CustomerHome
             },
+            {
+                path: '/customer/dashboard',
+                name: 'customer.dashboard',
+                component: CustomerDashboard
+            },
+            {
+                path: '/customer/membership',
+                name: 'customer.membership',
+                component: CustomerMembership
+            },
+            {
+                path: '/customer/class',
+                name: 'customer.class',
+                component: CustomerClass
+            },
+            {
+                path: '/customer/coupon',
+                name: 'customer.coupon',
+                component: CustomerCoupon
+            },
+            {
+                path: '/customer/plan',
+                name: 'customer.plan',
+                component: CustomerPlan
+            },
+            {
+                path: '/customer/profile',
+                name: 'customer.profile',
+                component: CustomerProfile
+            },
+            {
+                path: '/customer/setting',
+                name: 'customer.setting',
+                component: CustomerSetting
+            }
         ]
     },
     {
