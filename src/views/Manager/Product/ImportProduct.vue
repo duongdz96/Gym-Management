@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
+import api from "@/services/api";
 
 type Provider = {
   id: number;
@@ -18,44 +19,61 @@ type Product = {
   quantity?: number;
 };
 
-const providers = ref<Provider[]>([
-  { id: 1, name: "Alex", brand: "Dove", phone: "0123456789" },
-  { id: 2, name: "Alexx", brand: "Unilever", phone: "0987654321" },
-  { id: 3, name: "Alexxx", brand: "Panasonic", phone: "011223344" },
-]);
+type ImportedProduct = {
+  product: { id: number };
+  quantity: number;
+};
 
+type ImportBill = {
+  date: string;
+  price: number;
+  provider: Provider;
+  manager: { id: number };
+  importedProducts: ImportedProduct[];
+};
+
+const providers = ref<Provider[]>([]);
+const products = ref<Product[]>([]);
 const selectedProvider = ref<Provider | null>(null);
+const selectedItems = ref<Product[]>([]);
 
-const products = ref<Product[]>([
-  { id: 1, name: "Dove Shampoo", type: "Shampoo", price: 100, brand: "Dove", quantity: 10 },
-  { id: 2, name: "Panasonic Treadmill", type: "Equipment", price: 8000, brand: "Panasonic", quantity: 5 },
-  { id: 3, name: "Unilever Shampoo", type: "Shampoo", price: 100, brand: "Unilever", quantity: 10 },
-]);
+onMounted(async () => {
+  try {
+    const resProviders = await api.get("/provider");
+    providers.value = resProviders.data;
+    console.log("Providers fetched:", providers.value);
+
+    const resProducts = await api.get("/product");
+    products.value = resProducts.data;
+    console.log("Products fetched:", products.value);
+  } catch (err) {
+    console.error("Error fetching data:", err);
+  }
+});
 
 const filteredProducts = computed(() => products.value);
 
-const selectedItems = ref<{ product: Product; quantity: number }[]>([]);
-
 function selectProvider(provider: Provider) {
   selectedProvider.value = provider;
+  selectedItems.value = [];
 }
 
 function toggleSelectProduct(product: Product) {
-  if (selectedProvider.value && selectedProvider.value.brand !== product.brand) {
-    selectedItems.value = [];
-    selectedProvider.value = providers.value.find(p => p.brand === product.brand) || null;
-    console.log(selectedItems);
-    console.log(selectedProvider);
+  if (!selectedProvider.value) {
+    alert("Please select a provider first!");
+    return;
   }
-  else {
-    console.log(selectedItems);
-    console.log(selectedProvider);
-    const existing = selectedItems.value.find(i => i.product.id === product.id);
-    if (existing) {
-      selectedItems.value = selectedItems.value.filter(i => i.product.id !== product.id);
-    } else {
-      selectedItems.value.push({ product, quantity: 1 });
-    }
+
+  if (selectedProvider.value.brand !== product.brand) {
+    alert("This product belongs to another provider!");
+    return;
+  }
+
+  const existing = selectedItems.value.find((i) => i.id === product.id);
+  if (existing) {
+    selectedItems.value = selectedItems.value.filter((i) => i.id !== product.id);
+  } else {
+    selectedItems.value.push(product);
   }
 }
 
@@ -68,14 +86,20 @@ function continueImport() {
   const importData = {
     provider: selectedProvider.value,
     date: new Date().toISOString(),
-    importedProducts: selectedItems.value.map((i) => ({
-      product: { id: i.product.id },
-      quantity: i.quantity,
+    importedProducts: selectedItems.value.map((p) => ({
+      product: { 
+        id: p.id ,
+        name: p.name,
+        type: p.type,
+        price: p.price,
+        brand: p.brand,
+      },
+      quantity: 0,
     })),
   };
 
   sessionStorage.setItem("currentImportBill", JSON.stringify(importData));
-  console.log("Preview import:", importData);
+  console.log("Preview import bill draft:", importData);
 }
 </script>
 
@@ -83,39 +107,24 @@ function continueImport() {
   <div class="p-4 space-y-4">
     <div class="flex justify-between items-center">
       <h1 class="text-2xl font-semibold">Import Resources</h1>
-      <div class="flex gap-2">
-        <RouterLink
-          :to="{ name: 'product.importcheckout' }"
-          class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          :class="{ 'opacity-50 pointer-events-none': selectedItems.length === 0 }"
-        >
-          Continue
-        </RouterLink>
-      </div>
+      <RouterLink
+        :to="{ name: 'product.importcheckout' }"
+        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        :class="{ 'opacity-50 pointer-events-none': selectedItems.length === 0 }"
+        @click="continueImport"
+      >
+        Continue
+      </RouterLink>
     </div>
 
-    <!-- Provider + Product tables -->
     <div class="flex space-x-4">
       <!-- Provider Table -->
       <div class="w-2/5 bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div class="p-4 border-b border-gray-200 flex justify-between items-center">
           <h2 class="text-lg font-semibold">Providers</h2>
-          <button
-            class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
+          <button class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
             + Add Provider
           </button>
-        </div>
-
-        <div class="p-4 flex gap-2 items-center">
-          <input
-            type="text"
-            placeholder="Search provider..."
-            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-          />
-          <select class="px-2 py-2 border border-gray-300 rounded-lg text-sm">
-            <option>Filter by brand</option>
-          </select>
         </div>
 
         <table class="min-w-full divide-y divide-gray-200">
@@ -165,17 +174,6 @@ function continueImport() {
           </h2>
         </div>
 
-        <div class="p-4 flex gap-2 items-center">
-          <input
-            type="text"
-            placeholder="Search product..."
-            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-          />
-          <select class="px-2 py-2 border border-gray-300 rounded-lg text-sm">
-            <option>Filter by type</option>
-          </select>
-        </div>
-
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -205,17 +203,16 @@ function continueImport() {
                   @click="toggleSelectProduct(p)"
                   :class="[ 
                     'px-3 py-1 rounded',
-                    selectedItems.some((x) => x.product.id === p.id)
+                    selectedItems.some((x) => x.id === p.id)
                       ? 'bg-red-600 text-white hover:bg-red-700'
                       : 'bg-green-600 text-white hover:bg-green-700'
                   ]"
                 >
-                  {{ selectedItems.some((x) => x.product.id === p.id) ? 'Remove' : 'Import' }}
+                  {{ selectedItems.some((x) => x.id === p.id) ? 'Remove' : 'Import' }}
                 </button>
               </td>
             </tr>
           </tbody>
-
           <tbody v-else>
             <tr>
               <td colspan="7" class="text-center py-6 text-gray-500 italic">
@@ -229,10 +226,9 @@ function continueImport() {
         <div v-if="selectedItems.length" class="p-4 border-t border-gray-200">
           <h3 class="font-semibold mb-2">Selected Products:</h3>
           <ul class="list-disc ml-6 text-sm text-gray-700">
-            <li v-for="s in selectedItems" :key="s.product.id">
-              {{ s.product.name }} - {{ s.product.price.toLocaleString() }} đ
+            <li v-for="s in selectedItems" :key="s.id">
+              {{ s.name }} - {{ s.price.toLocaleString() }} đ
             </li>
-
           </ul>
         </div>
       </div>

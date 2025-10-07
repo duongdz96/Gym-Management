@@ -56,7 +56,7 @@ onMounted(() => {
         <!-- Banner (carousel simplified) -->
         <section id="banner" class="relative overflow-hidden rounded-xl">
             <div class="aspect-[19/8] w-full bg-black rounded-xl overflow-hidden">
-                <img class="w-full h-full object-cover" src="https://cali.vn/storage/app/media/2025/Homepage/TTC%20Presale/TTC-Presale-Desktop.webp" alt="California banner">
+                <img class="w-full h-full object-cover" src="D:\OC\CODE\Web\Springbootlearnv2\GymFrontend\Gym-Management\src\assets\TTC-Presale-Desktop_SepUpdate.webp" alt="California banner">
             </div>
             <div class="absolute inset-0 flex items-end p-6">
                 <RouterLink to="#trial" class="btn-submit-banner inline-flex items-center rounded-md bg-red-600 px-5 py-3 text-white text-sm font-semibold hover:bg-red-500">Giữ Chỗ Ưu Đãi!</RouterLink>
