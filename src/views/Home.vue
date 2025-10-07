@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref,onMounted } from 'vue'
+import axios from 'axios'
 
 const trialName = ref('')
 const trialPhone = ref('')
@@ -12,6 +13,42 @@ function handleTrialSubmit() {
     if (trialEmail.value) localStorage.setItem('custom_email', trialEmail.value)
     alert('Đã gửi đăng ký. Chúng tôi sẽ liên hệ sớm!')
 }
+
+const feedbacks = ref([])
+const currentIndex = ref(0)
+
+// gọi API lấy feedback
+onMounted(async () => {
+  try {
+    const response = await axios.get('http://localhost:8080/api/feedbacks')
+    // Giả sử feedback có id hoặc createdAt tăng dần
+    feedbacks.value = response.data
+      .sort((a, b) => b.id - a.id) // sắp xếp giảm dần theo id
+      .slice(0, 3) // lấy 3 cái đầu tiên
+  } catch (error) {
+    console.error('Lỗi khi tải feedback:', error)
+  }
+})
+
+// chuyển feedback trái/phải
+const prevFeedback = () => {
+  currentIndex.value =
+    (currentIndex.value - 1 + feedbacks.value.length) % feedbacks.value.length
+}
+
+const nextFeedback = () => {
+  currentIndex.value = (currentIndex.value + 1) % feedbacks.value.length
+}
+
+// tự động chuyển feedback sau 4 giây
+onMounted(() => {
+  setInterval(() => {
+    if (feedbacks.value.length > 1) {
+      nextFeedback()
+    }
+  }, 4000)
+})
+
 </script>
 
 <template>
@@ -23,6 +60,75 @@ function handleTrialSubmit() {
             </div>
             <div class="absolute inset-0 flex items-end p-6">
                 <RouterLink to="#trial" class="btn-submit-banner inline-flex items-center rounded-md bg-red-600 px-5 py-3 text-white text-sm font-semibold hover:bg-red-500">Giữ Chỗ Ưu Đãi!</RouterLink>
+            </div>
+        </section>
+
+        <!-- Feedback Carousel -->
+        <section id="feedbacks" class="relative bg-white py-10">
+            <div class="max-w-4xl mx-auto px-4 text-center">
+                <h2 class="text-3xl font-bold mb-6 text-gray-900">CẢM NHẬN TỪ HỘI VIÊN</h2>
+
+                <div v-if="feedbacks.length === 0" class="text-gray-500">Đang tải feedback...</div>
+
+                <div v-else class="relative overflow-hidden">
+                    <!-- Feedback hiển thị -->
+                    <transition name="fade" mode="out-in">
+                        <div
+                            :key="feedbacks[currentIndex].id"
+                            class="bg-gray-50 border rounded-xl shadow-md p-6"
+                        >
+                            <div class="text-yellow-500 text-lg mb-2">
+                                ⭐ {{ feedbacks[currentIndex].rating }}/5
+                            </div>
+                            <p class="text-gray-700 italic mb-4">
+                                "{{ feedbacks[currentIndex].comment }}"
+                            </p>
+
+                            <div class="mb-4">
+                                <p class="font-semibold text-gray-900">
+                                    {{ feedbacks[currentIndex].member.fullName }}
+                                </p>
+                            </div>
+
+                            <div
+                                v-if="feedbacks[currentIndex].attachments?.length"
+                                class="flex justify-center gap-2 mt-2"
+                            >
+                                <img
+                                    v-for="img in feedbacks[currentIndex].attachments"
+                                    :key="img.id"
+                                    :src="`http://localhost:8080/${img.filePath}`"
+                                    alt="feedback image"
+                                    class="w-24 h-24 object-cover rounded-md border"
+                                />
+                            </div>
+                        </div>
+                    </transition>
+
+                    <!-- Nút điều hướng -->
+                    <button
+                        @click="prevFeedback"
+                        class="absolute left-0 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center"
+                    >
+                        ‹
+                    </button>
+                    <button
+                        @click="nextFeedback"
+                        class="absolute right-0 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center"
+                    >
+                        ›
+                    </button>
+
+                    <!-- Dấu chấm trạng thái -->
+                    <div class="flex justify-center mt-3 space-x-2">
+                        <span
+                            v-for="(f, i) in feedbacks"
+                            :key="f.id"
+                            class="w-2 h-2 rounded-full transition-all"
+                            :class="i === currentIndex ? 'bg-red-600 w-4' : 'bg-gray-300'"
+                        ></span>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -142,3 +248,13 @@ function handleTrialSubmit() {
         </section>
     </div>
 </template>
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.6s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
