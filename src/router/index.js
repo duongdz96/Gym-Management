@@ -30,9 +30,13 @@ import ImportProduct from "@/views/Manager/Product/ImportProduct.vue";
 import ImportCheckout from "@/views/Manager/Product/ImportCheckout.vue";
 import SalesBooking from "@/views/Reception/Sale/SalesBooking.vue";
 
-
+import Test from "@/views/Test.vue";
 
 const routes = [
+    {
+        path: "/test",
+        component: Test
+    },
     {
         path: "/",
         component: MainLayout,
