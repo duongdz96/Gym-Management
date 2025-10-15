@@ -34,9 +34,13 @@ import AddClassTemplate from "@/views/Manager/Classes/AddClassTemplate.vue";
 import ClassSchedule from "@/views/Manager/Classes/ClassSchedule.vue";
 import AddClassSchedule from "@/views/Manager/Classes/AddClassSchedule.vue";
 
-
+import Test from "@/views/Test.vue";
 
 const routes = [
+    {
+        path: "/test",
+        component: Test
+    },
     {
         path: "/",
         component: MainLayout,
