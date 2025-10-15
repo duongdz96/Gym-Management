@@ -29,6 +29,10 @@ import ReceptionHome from "@/views/Reception/ReceptionHome.vue";
 import ImportProduct from "@/views/Manager/Product/ImportProduct.vue";
 import ImportCheckout from "@/views/Manager/Product/ImportCheckout.vue";
 import SalesBooking from "@/views/Reception/Sale/SalesBooking.vue";
+import ClassTemplate from "@/views/Manager/Classes/ClassTemplate.vue";
+import AddClassTemplate from "@/views/Manager/Classes/AddClassTemplate.vue";
+import ClassSchedule from "@/views/Manager/Classes/ClassSchedule.vue";
+import AddClassSchedule from "@/views/Manager/Classes/AddClassSchedule.vue";
 
 
 
@@ -97,6 +101,26 @@ const routes = [
                 path: '/manager/product/importcheckout',
                 name: 'product.importcheckout',
                 component: ImportCheckout
+            },
+            {
+                path: '/manager/classtemplate',
+                name: 'classtemplate',
+                component: ClassTemplate
+            },
+            {
+                path: '/manager/classtemplate/add',
+                name: 'classtemplate.add',
+                component: AddClassTemplate
+            },
+            {
+                path: '/manager/classschedule',
+                name: 'classschedule',
+                component: ClassSchedule
+            },
+            {
+                path: '/manager/classschedule/add',
+                name: 'classschedule.add',
+                component: AddClassSchedule
             },
         ]
     },

@@ -48,6 +48,12 @@ const isMenuOpen = ref(false);
           class="uppercase tracking-wider hover:text-red-600"
           :class="route.path === '/manager/coupon' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
         >Coupons</RouterLink>
+
+        <RouterLink
+          to="/manager/classtemplate"
+          class="uppercase tracking-wider hover:text-red-600"
+          :class="route.path === '/manager/classtemplate' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+        >Classes</RouterLink>
       </nav>
 
       <!-- Account dropdown -->
