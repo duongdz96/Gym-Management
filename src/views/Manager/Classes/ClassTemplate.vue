@@ -38,7 +38,7 @@ const filteredTemplates = computed(() => {
 
 
 const handleAdd = () => {
-  alert('Open Add Template Modal')
+  router.push({name: "classtemplate.add"});
 }
 const handleEdit = (id: number) => {
   alert(`Open Edit Template Modal for ID: ${id}`)
@@ -52,6 +52,7 @@ const handleDelete = (id: number) => {
 const handleSelect = (classtemplate : ClassTemplate) => {
   const templateJSON = JSON.stringify(classtemplate);
   sessionStorage.setItem('selectedTemplate', templateJSON);
+  console.log(classtemplate);
   router.push({name: "classschedule"});
 }
 
@@ -70,14 +71,14 @@ const handleSelect = (classtemplate : ClassTemplate) => {
         />
         <select v-model="difficultyFilter" class="px-3 py-2 border border-gray-300 rounded-lg">
           <option value="">All Difficulties</option>
-          <option value="Beginner">Beginner</option>
-          <option value="Intermediate">Intermediate</option>
-          <option value="Advanced">Advanced</option>
+          <option value="BEGINNER">Beginner</option>
+          <option value="INTERMEDIATE">Intermediate</option>
+          <option value="ADVANCED">Advanced</option>
         </select>
         <select v-model="statusFilter" class="px-3 py-2 border border-gray-300 rounded-lg">
           <option value="">All Statuses</option>
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
+          <option value="ACTIVE">ACTIVE</option>
+          <option value="INACTIVE">INACTIVE</option>
         </select>
         <button
           @click="handleAdd"
@@ -101,8 +102,8 @@ const handleSelect = (classtemplate : ClassTemplate) => {
               <span
                 class="px-2 py-1 text-xs font-medium rounded-full capitalize"
                 :class="{
-                  'bg-green-100 text-green-800': classtemplates.status === 'Active',
-                  'bg-gray-100 text-gray-800': classtemplates.status === 'Inactive',
+                  'bg-green-100 text-green-800': classtemplates.status === 'ACTIVE',
+                  'bg-gray-100 text-gray-800': classtemplates.status === 'INACTIVE',
                 }"
               >
                 {{ classtemplates.status }}
@@ -114,9 +115,9 @@ const handleSelect = (classtemplate : ClassTemplate) => {
             <span
               class="px-2 py-1 text-xs font-semibold rounded-full capitalize"
               :class="{
-                'bg-blue-100 text-blue-800': classtemplates.difficultyLevel === 'Beginner',
-                'bg-purple-100 text-purple-800': classtemplates.difficultyLevel === 'Intermediate',
-                'bg-red-100 text-red-800': classtemplates.difficultyLevel === 'Advanced',
+                'bg-blue-100 text-blue-800': classtemplates.difficultyLevel === 'BEGINNER',
+                'bg-purple-100 text-purple-800': classtemplates.difficultyLevel === 'INTERMEDIATE',
+                'bg-red-100 text-red-800': classtemplates.difficultyLevel === 'ADVANCED',
               }"
             >
               {{ classtemplates.difficultyLevel }}

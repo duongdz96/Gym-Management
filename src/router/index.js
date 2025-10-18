@@ -32,9 +32,9 @@ import SalesBooking from "@/views/Reception/Sale/SalesBooking.vue";
 import ClassTemplate from "@/views/Manager/Classes/ClassTemplate.vue";
 import AddClassTemplate from "@/views/Manager/Classes/AddClassTemplate.vue";
 import ClassSchedule from "@/views/Manager/Classes/ClassSchedule.vue";
-import AddClassSchedule from "@/views/Manager/Classes/AddClassSchedule.vue";
 
 import Test from "@/views/Test.vue";
+import SchedulePattern from "@/views/Manager/Classes/SchedulePattern.vue";
 
 const routes = [
     {
@@ -122,9 +122,9 @@ const routes = [
                 component: ClassSchedule
             },
             {
-                path: '/manager/classschedule/add',
-                name: 'classschedule.add',
-                component: AddClassSchedule
+                path: '/manager/schedulepattern',
+                name: 'schedulepattern',
+                component: SchedulePattern
             },
         ]
     },
