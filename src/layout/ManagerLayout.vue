@@ -9,7 +9,7 @@ import Footer from '@/components/Footer.vue';
             <ManagerHeader></ManagerHeader>
         </div>
 
-        <div class="">
+        <div class="min-h-screen">
             <RouterView />
         </div>
 

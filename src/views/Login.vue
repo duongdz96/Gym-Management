@@ -1,10 +1,13 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-black to-white p-8">
-    <div class="w-full max-w-5xl grid md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl">
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-black to-gray-900 p-8">
+    <div class="w-full max-w-4xl grid md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl">
       <!-- Left Panel -->
       <div class="hidden md:flex flex-col justify-center gap-6 bg-black text-white p-10">
         <div class="flex items-center gap-3">
-          <div class="w-14 h-14 rounded-lg bg-gradient-to-br from-red-600 to-red-400 flex items-center justify-center font-bold text-white text-lg shadow-lg">GY</div>
+          <div
+            class="w-14 h-14 rounded-lg bg-gradient-to-br from-red-600 to-red-400 flex items-center justify-center font-bold text-white text-lg shadow-lg">
+            GY
+          </div>
           <div>
             <div class="text-xl font-bold tracking-wide">IRON HAVEN</div>
             <div class="text-sm text-gray-400">Strength • Cardio • Community</div>
@@ -12,72 +15,118 @@
         </div>
 
         <h2 class="text-3xl font-bold">Chào mừng quay lại</h2>
-        <p class="text-gray-300 max-w-sm">Vào nhanh và bắt đầu buổi tập. Quét mã QR hoặc đăng nhập để ghi nhận giờ vào phòng.</p>
+        <p class="text-gray-300 max-w-sm">Đăng nhập để bắt đầu buổi tập của bạn. Cùng chinh phục giới hạn!</p>
 
-        <div class="space-y-3 mt-4">
-          <div class="flex items-center gap-2">
+        <ul class="space-y-3 mt-4 text-sm text-gray-300">
+          <li class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-red-600 shadow-md"></span>
-            <p class="font-semibold">Ghi nhận check-in tự động</p>
-          </div>
-          <div class="flex items-center gap-2">
+            Ghi nhận check-in tự động
+          </li>
+          <li class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-red-600 shadow-md"></span>
-            <p class="font-semibold">Lịch lớp và huấn luyện viên</p>
-          </div>
-          <div class="flex items-center gap-2">
+            Theo dõi lịch tập và tiến độ
+          </li>
+          <li class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-red-600 shadow-md"></span>
-            <p class="font-semibold">Ưu đãi thành viên</p>
-          </div>
-        </div>
+            Ưu đãi và sự kiện đặc biệt
+          </li>
+        </ul>
       </div>
 
       <!-- Right Panel -->
-      <div class="bg-white p-10 flex flex-col gap-5">
+      <div class="bg-white p-10 flex flex-col justify-center gap-6">
         <div>
-          <div class="text-2xl font-bold text-black">Đăng nhập để vào phòng</div>
-          <div class="text-sm text-gray-500">Nhập email hoặc mã thành viên để bắt đầu</div>
+          <h2 class="text-2xl font-bold text-black">Đăng nhập tài khoản</h2>
+          <p class="text-sm text-gray-500">Nhập email và mật khẩu để tiếp tục</p>
         </div>
 
-        <form class="flex flex-col gap-4">
+        <form class="flex flex-col gap-5" @submit.prevent="loginUser">
           <div>
-            <label for="identity" class="block text-sm text-gray-500 mb-1">Email hoặc Mã thành viên</label>
-            <input id="identity" type="text" placeholder="vd: long.ngoc@example.com hoặc GYM12345" required
-              class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-red-500 focus:outline-none" />
+            <label for="email" class="block text-sm text-gray-500 mb-1">Email</label>
+            <input
+              id="email"
+              type="email"
+              v-model="email"
+              placeholder="ex: your.email@example.com"
+              required
+              class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-red-500 focus:outline-none"
+            />
           </div>
 
           <div>
-            <label for="password" class="block text-sm text-gray-500 mb-1">Mật khẩu (nếu cần)</label>
-            <input id="password" type="password" placeholder="Mật khẩu"
-              class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-red-500 focus:outline-none" />
+            <label for="password" class="block text-sm text-gray-500 mb-1">Mật khẩu</label>
+            <input
+              id="password"
+              type="password"
+              v-model="password"
+              placeholder="Nhập mật khẩu"
+              required
+              class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-red-500 focus:outline-none"
+            />
           </div>
 
           <div class="flex items-center justify-between text-sm">
             <label class="flex items-center gap-2 text-gray-500">
               <input type="checkbox" class="rounded border-gray-300" /> Ghi nhớ tôi
             </label>
-            <a href="#" class="text-red-600 font-medium">Quên mật khẩu?</a>
+            <a href="#" class="text-red-600 font-medium hover:underline">Quên mật khẩu?</a>
           </div>
 
-          <div class="flex gap-3 mt-2">
-            <button type="submit" class="flex-1 py-3 rounded-lg bg-gradient-to-r from-red-600 to-red-400 text-white font-bold shadow-lg">Đăng nhập</button>
-            <button type="button" class="flex-1 py-3 rounded-lg border border-gray-200 text-black font-semibold">Quét QR</button>
-          </div>
+          <button
+            type="submit"
+            class="w-full py-3 rounded-lg bg-gradient-to-r from-red-600 to-red-400 text-white font-bold shadow-lg hover:opacity-90 transition">
+            Đăng nhập
+          </button>
 
-          <div class="flex items-center gap-3 my-2">
-            <div class="flex-1 h-px bg-gray-200"></div>
-            <span class="text-xs text-gray-400">hoặc</span>
-            <div class="flex-1 h-px bg-gray-200"></div>
-          </div>
-
-          <div class="flex gap-3 justify-center">
-            <button type="button" class="px-4 py-2 rounded-lg border border-gray-200 text-black font-semibold">Đăng nhập bằng SMS</button>
-            <button type="button" class="px-4 py-2 rounded-lg border border-gray-200 text-black font-semibold">Đăng ký mới</button>
-          </div>
-
-          <div class="text-center text-xs text-gray-400 mt-3">
-            Bằng cách tiếp tục, bạn đồng ý với <a href="#" class="text-red-600">Điều khoản dịch vụ</a> của chúng tôi.
+          <div class="text-center text-sm text-gray-500 mt-3">
+            Chưa có tài khoản?
+            <a href="#" class="text-red-600 font-semibold hover:underline">Đăng ký ngay</a>
           </div>
         </form>
       </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
+import { useAuthStore } from "@/stores/useAuthStore";
+
+const email = ref("");
+const password = ref("");
+const router = useRouter();
+const toast = useToast();
+const authStore = useAuthStore();
+
+const loginUser = async () => {
+  try {
+    await authStore.login(email.value, password.value);
+    toast.success(`Chào mừng ${authStore.user.fullName}!`);
+    const role = authStore.user.role?.toLowerCase();
+
+    switch (role) {
+      case "user":
+      case "member":
+        router.push("/customer");
+        break;
+      case "manager":
+        router.push("/manager");
+        break;
+      case "receptionist":
+        router.push("/reception");
+        break;
+      default:
+        router.push("/"); // fallback nếu không có role
+        break;
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    const msg =
+      err.response?.data?.message ||
+      "Sai thông tin đăng nhập hoặc lỗi máy chủ!";
+    toast.error(msg);
+  }
+};
+</script>
