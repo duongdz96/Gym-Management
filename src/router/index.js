@@ -38,6 +38,7 @@ import SalesCheckout from "@/views/Reception/Sale/SalesCheckout.vue";
 import SalesBooking from "@/views/Reception/Sale/SalesBooking.vue";
 
 import Test from "@/views/Test.vue";
+import SchedulePattern from "@/views/Manager/Classes/SchedulePattern.vue";
 
 const routes = [
   {
