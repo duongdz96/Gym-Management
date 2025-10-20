@@ -1,200 +1,231 @@
-<template>
-  <div class="min-h-screen bg-gray-50 p-8">
-    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-      <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        <PackageIcon class="w-6 h-6 text-blue-600" />
-        Nhập sản phẩm từ nhà cung cấp
-      </h1>
+<script setup lang="ts">
+import { ref, computed } from "vue";
 
-      <!-- Chọn Provider -->
-      <div class="mb-8">
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Chọn nhà cung cấp
-        </label>
-        <Multiselect
-          v-model="selectedProvider"
-          :options="providers"
-          label="name"
-          track-by="id"
-          placeholder="Chọn nhà cung cấp..."
-          @change="onProviderChange"
+type Product = {
+  id: number;
+  name: string;
+  type: string;
+  price: number;
+  brand?: string;
+  quantity?: number;
+  image?: string;
+};
+
+type SoldProduct = {
+  product: Product;
+  quantity: number;
+};
+
+const products = ref<Product[]>([
+  {
+    id: 1,
+    name: "Áo thun Gym Classic",
+    type: "Trang phục",
+    price: 250000,
+    brand: "MuscleFit",
+    quantity: 15,
+    image: "https://picsum.photos/seed/shirt/100/100",
+  },
+  {
+    id: 2,
+    name: "Bình nước thể thao 1L",
+    type: "Phụ kiện",
+    price: 120000,
+    brand: "HydroMax",
+    quantity: 20,
+    image: "https://picsum.photos/seed/bottle/100/100",
+  },
+  {
+    id: 3,
+    name: "Găng tay tập gym",
+    type: "Phụ kiện",
+    price: 180000,
+    brand: "GripPro",
+    quantity: 10,
+    image: "https://picsum.photos/seed/gloves/100/100",
+  },
+  {
+    id: 4,
+    name: "Túi thể thao chống nước",
+    type: "Phụ kiện",
+    price: 350000,
+    brand: "SportBag",
+    quantity: 8,
+    image: "https://picsum.photos/seed/bag/100/100",
+  },
+  {
+    id: 5,
+    name: "Protein Shake 500ml",
+    type: "Đồ uống",
+    price: 55000,
+    brand: "NutriFit",
+    quantity: 25,
+    image: "https://picsum.photos/seed/shake/100/100",
+  },
+  {
+    id: 6,
+    name: "Khăn tập cotton",
+    type: "Phụ kiện",
+    price: 90000,
+    brand: "GymSoft",
+    quantity: 30,
+    image: "https://picsum.photos/seed/towel/100/100",
+  },
+]);
+
+const search = ref("");
+const cart = ref<SoldProduct[]>([]);
+
+const searchProduct = computed(() => {
+  return products.value.filter((p) =>
+    p.name.toLowerCase().includes(search.value.toLowerCase())
+  );
+});
+
+function addToCart(product: Product) {
+  const existing = cart.value.find((i) => i.product.id === product.id);
+  if (existing) existing.quantity++;
+  else cart.value.push({ product, quantity: 1 });
+}
+
+function removeFromCart(id: number) {
+  cart.value = cart.value.filter((i) => i.product.id !== id);
+}
+
+function total() {
+  return cart.value.reduce(
+    (sum, i) => sum + i.product.price * i.quantity,
+    0
+  );
+}
+
+function checkout() {
+  console.log("Checkout bill:", {
+    listSoldProduct: cart.value,
+    total: total(),
+    date: new Date().toISOString(),
+    receptionist: { id: 3 },
+  });
+  alert("Thanh toán thành công!");
+  cart.value = [];
+}
+</script>
+
+<template>
+  <div class="p-6 grid grid-cols-3 gap-6">
+    <!-- Bảng sản phẩm -->
+    <div class="col-span-2 bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+      <div class="p-4 border-b flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Danh sách sản phẩm</h2>
+        <input
+          v-model="search"
+          placeholder="Tìm sản phẩm..."
+          class="px-3 py-1 border rounded-lg text-sm focus:ring focus:ring-blue-200"
         />
       </div>
 
-      <!-- Danh sách sản phẩm -->
-      <div v-if="filteredProducts.length" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          v-for="product in filteredProducts"
-          :key="product.id"
-          class="border rounded-xl bg-white p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between"
-        >
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900 truncate">
-              {{ product.name }}
-            </h3>
-            <p class="text-gray-600 text-sm mt-1">Loại: {{ product.type }}</p>
-            <p class="text-gray-600 text-sm">Giá: {{ formatCurrency(product.price) }}</p>
-            <p class="text-gray-500 text-xs mt-1">Thương hiệu: {{ product.brand }}</p>
-          </div>
-
-          <button
-            @click="addProduct(product)"
-            class="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-sm font-medium flex items-center justify-center gap-1 transition"
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-3 py-2 text-left">Ảnh</th>
+            <th class="px-3 py-2 text-left">Tên</th>
+            <th class="px-3 py-2 text-left">Loại</th>
+            <th class="px-3 py-2 text-right">Giá</th>
+            <th class="px-3 py-2 text-center">Tồn kho</th>
+            <th class="px-3 py-2 text-center">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="p in searchProduct"
+            :key="p.id"
+            class="hover:bg-gray-50"
           >
-            <PlusCircleIcon class="w-4 h-4" /> Thêm
-          </button>
-        </div>
-      </div>
+            <td class="px-3 py-2">
+              <img
+                :src="p.image"
+                class="w-12 h-12 object-cover rounded"
+              />
+            </td>
+            <td class="px-3 py-2">{{ p.name }}</td>
+            <td class="px-3 py-2">{{ p.type }}</td>
+            <td class="px-3 py-2 text-right">{{ p.price.toLocaleString() }} đ</td>
+            <td class="px-3 py-2 text-center">{{ p.quantity }}</td>
+            <td class="px-3 py-2 text-center">
+              <button
+                @click="addToCart(p)"
+                class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+              >
+                Thêm
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-      <!-- Không có sản phẩm -->
-      <div v-else-if="selectedProvider" class="text-gray-500 text-center py-12">
-        <PackageXIcon class="w-8 h-8 mx-auto mb-2 text-gray-400" />
-        Không có sản phẩm nào cho nhà cung cấp này.
-      </div>
-
-      <!-- Hóa đơn tổng kết -->
-      <div v-if="selectedProducts.length" class="mt-10 border-t pt-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <ReceiptIcon class="w-5 h-5 text-green-600" /> Hóa đơn tổng kết
-        </h2>
-
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="border-b text-gray-600">
-              <th class="py-2">Tên sản phẩm</th>
-              <th class="py-2 text-right">Giá</th>
-              <th class="py-2 text-center">Số lượng</th>
-              <th class="py-2 text-right">Thành tiền</th>
-              <th class="py-2 text-center">Hành động</th>
+    <!-- Giỏ hàng -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm flex flex-col">
+      <h2 class="p-4 border-b text-lg font-semibold">Giỏ hàng</h2>
+      <div class="flex-1 overflow-y-auto p-4">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-2 py-2 text-left">Sản phẩm</th>
+              <th class="px-2 py-2 text-right">Giá</th>
+              <th class="px-2 py-2 text-center">SL</th>
+              <th class="px-2 py-2 text-center">Xoá</th>
             </tr>
           </thead>
           <tbody>
             <tr
-              v-for="(item, index) in selectedProducts"
-              :key="index"
-              class="border-b hover:bg-gray-50 transition"
+              v-for="item in cart"
+              :key="item.product.id"
+              class="hover:bg-gray-50"
             >
-              <td class="py-2">{{ item.name }}</td>
-              <td class="py-2 text-right">{{ formatCurrency(item.price) }}</td>
-              <td class="py-2 text-center">
+              <td class="px-2 py-2 flex items-center gap-2">
+                <img
+                  :src="item.product.image"
+                  class="w-10 h-10 rounded object-cover"
+                />
+                <span>{{ item.product.name }}</span>
+              </td>
+              <td class="px-2 py-2 text-right">
+                {{ item.product.price.toLocaleString() }} đ
+              </td>
+              <td class="px-2 py-2 text-center">
                 <input
                   type="number"
-                  v-model.number="item.quantity"
                   min="1"
-                  class="border rounded-md w-16 text-center py-1 text-sm"
+                  v-model.number="item.quantity"
+                  class="w-14 border rounded px-1 py-0.5 text-center"
                 />
               </td>
-              <td class="py-2 text-right">
-                {{ formatCurrency(item.price * item.quantity) }}
+              <td class="px-2 py-2 text-center">
+                <button
+                  @click="removeFromCart(item.product.id)"
+                  class="text-red-600 hover:text-red-800"
+                >
+                  ✕
+                </button>
               </td>
-              <td class="py-2">
-                <div class="flex justify-center">
-                    <button
-                    @click="removeProduct(item)"
-                    class="text-red-600 hover:text-red-800 flex items-center gap-1 text-sm"
-                    >
-                    <Trash2Icon class="w-4 h-4" />
-                    <span>Xóa</span>
-                    </button>
-                </div>
-                </td>
             </tr>
           </tbody>
         </table>
+      </div>
 
-        <div class="mt-4 flex justify-end items-center text-gray-800 text-lg font-semibold">
-          Tổng cộng: <span class="ml-2 text-green-600">{{ formatCurrency(totalPrice) }}</span>
+      <div class="border-t p-4 space-y-2">
+        <div class="text-right font-semibold text-gray-700">
+          Tổng: {{ total().toLocaleString() }} đ
         </div>
-
-        <div class="mt-6 text-right">
-          <button
-            @click="submitOrder"
-            class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 ml-auto transition"
-          >
-            <CheckCircle2Icon class="w-5 h-5" /> Xác nhận nhập hàng
-          </button>
-        </div>
+        <button
+          @click="checkout"
+          class="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          :disabled="cart.length === 0"
+        >
+          Thanh toán
+        </button>
       </div>
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed, watch } from "vue"
-import Multiselect from "vue-multiselect"
-import "vue-multiselect/dist/vue-multiselect.min.css"
-import {
-  PackageIcon,
-  PlusCircleIcon,
-  Trash2Icon,
-  CheckCircle2Icon,
-  ReceiptIcon,
-  PackageXIcon,
-} from "lucide-vue-next"
-
-// --- Dữ liệu nhà cung cấp ---
-const providers = ref([
-  { id: 1, name: "Hoàng Gia Sport", brand: "Nike" },
-  { id: 2, name: "Thể Thao Việt", brand: "Adidas" },
-  { id: 3, name: "Gym Pro Supplier", brand: "Optimum Nutrition" },
-  { id: 4, name: "ABC Fitness", brand: "Under Armour" },
-  { id: 5, name: "Thực phẩm thể hình HN", brand: "Dymatize" },
-])
-
-// --- Dữ liệu sản phẩm ---
-const products = ref([
-  { id: 1, name: "T-Shirt Gym", type: "clothes", price: 250000, brand: "Nike", quantity: 83 },
-  { id: 2, name: "Protein Powder 2kg", type: "powder", price: 850000, brand: "Optimum Nutrition", quantity: 11 },
-  { id: 3, name: "Shorts Training", type: "clothes", price: 180000, brand: "Adidas", quantity: 51 },
-  { id: 4, name: "Mass Gainer 5kg", type: "powder", price: 1200000, brand: "Dymatize", quantity: 16 },
-  { id: 5, name: "Gym Gloves", type: "clothes", price: 120000, brand: "Under Armour", quantity: 28 },
-  { id: 6, name: "Lavie water bottle 1L", type: "drinks", price: 10000, brand: "Lavie", quantity: 0 },
-  { id: 7, name: "Red Bull Energy Drink 250ml", type: "drinks", price: 15000, brand: "Red Bull", quantity: 0 },
-  { id: 8, name: "Test", type: "powder", price: 200000, brand: "Adidas", quantity: 5 },
-  { id: 9, name: "abc", type: "drinks", price: 10000000, brand: "abccc", quantity: 0 },
-])
-
-// --- Trạng thái ---
-const selectedProvider = ref(null)
-const selectedProducts = ref([])
-
-const filteredProducts = computed(() => {
-  if (!selectedProvider.value) return []
-  return products.value.filter((p) => p.brand === selectedProvider.value.brand)
-})
-
-const addProduct = (product) => {
-  const exist = selectedProducts.value.find((p) => p.id === product.id)
-  if (!exist) {
-    selectedProducts.value.push({ ...product, quantity: 1 })
-  }
-}
-
-const removeProduct = (product) => {
-  selectedProducts.value = selectedProducts.value.filter((p) => p.id !== product.id)
-}
-
-const totalPrice = computed(() =>
-  selectedProducts.value.reduce((sum, p) => sum + p.price * p.quantity, 0)
-)
-
-const formatCurrency = (v) => v.toLocaleString("vi-VN") + " ₫"
-
-const onProviderChange = () => {
-  selectedProducts.value = [] // reset khi đổi provider
-}
-
-watch(selectedProvider, () => {
-  selectedProducts.value = []
-})
-
-const submitOrder = () => {
-  alert(`Bạn đã nhập ${selectedProducts.value.length} sản phẩm, tổng cộng ${formatCurrency(totalPrice.value)}.`)
-}
-</script>
-
-<style scoped>
-.multiselect {
-  --tw-ring-color: transparent !important;
-}
-</style>
