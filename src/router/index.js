@@ -1,4 +1,4 @@
-import { createRouter,createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 import MainLayout from "@/layout/MainLayout.vue";
 import Home from "@/views/Home.vue";
 import Login from "@/views/Login.vue";
@@ -33,6 +33,11 @@ import ClassTemplate from "@/views/Manager/Classes/ClassTemplate.vue";
 import AddClassTemplate from "@/views/Manager/Classes/AddClassTemplate.vue";
 import ClassSchedule from "@/views/Manager/Classes/ClassSchedule.vue";
 import AddClassSchedule from "@/views/Manager/Classes/AddClassSchedule.vue";
+
+import PTLayout from "@/layout/PTLayout.vue";
+import PTSchedule from "@/views/PT/PTSchedule.vue";
+import PTProfile from "@/views/PT/PTProfile.vue";
+import PTMembers from "@/views/PT/PTMembers.vue";
 
 import Test from "@/views/Test.vue";
 
@@ -197,6 +202,32 @@ const routes = [
                 path: '/reception/salesBooking',
                 name: 'salesBooking',
                 component: SalesBooking
+            },
+        ]
+    },
+    {
+        path: "/pt",
+        component: PTLayout,
+        children: [
+            {
+                path: '/pt/',
+                name: 'pt.home',
+                component: PTSchedule
+            },
+            {
+                path: '/pt/schedule',
+                name: 'pt.schedule',
+                component: PTSchedule
+            },
+            {
+                path: '/pt/profile',
+                name: 'pt.profile',
+                component: PTProfile
+            },
+            {
+                path: '/pt/members',
+                name: 'pt.members',
+                component: PTMembers
             },
         ]
     }
