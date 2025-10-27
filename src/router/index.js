@@ -19,6 +19,7 @@ import Attendance from "@/views/Manager/Attendance/Attendance.vue";
 import ClassTemplate from "@/views/Manager/Classes/ClassTemplate.vue";
 import AddClassTemplate from "@/views/Manager/Classes/AddClassTemplate.vue";
 import ClassSchedule from "@/views/Manager/Classes/ClassSchedule.vue";
+import Banner from "@/views/Manager/Config/Banner.vue";
 
 import CustomerLayout from "@/layout/CustomerLayout.vue";
 import CustomerHome from "@/views/Customer/CustomerHome.vue";
@@ -78,6 +79,7 @@ const routes = [
             { path: "classtemplate", name: "classtemplate", component: ClassTemplate },
             { path: "classtemplate/add", name: "classtemplate.add", component: AddClassTemplate },
             { path: "classschedule", name: "classschedule", component: ClassSchedule },
+            { path: "banner", name: "banner", component: Banner }
         ],
     },
 

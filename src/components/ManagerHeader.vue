@@ -76,6 +76,13 @@ const handleLogout = () => {
         >
           Classes
         </RouterLink>
+        <RouterLink
+          to="/manager/banner"
+          class="uppercase tracking-wider hover:text-red-600"
+          :class="route.path === '/manager/banner' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+        >
+          Banner
+        </RouterLink>
       </nav>
 
       <!-- Account dropdown -->

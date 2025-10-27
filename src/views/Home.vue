@@ -1,36 +1,24 @@
 <script setup lang="ts">
-import { ref,onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
+// ================== Trial Form ==================
 const trialName = ref('')
 const trialPhone = ref('')
 const trialEmail = ref('')
 
 function handleTrialSubmit() {
-    if (!trialName.value || !trialPhone.value) return
-    localStorage.setItem('custom_name', trialName.value)
-    localStorage.setItem('custom_phone', trialPhone.value)
-    if (trialEmail.value) localStorage.setItem('custom_email', trialEmail.value)
-    alert('Đã gửi đăng ký. Chúng tôi sẽ liên hệ sớm!')
+  if (!trialName.value || !trialPhone.value) return
+  localStorage.setItem('custom_name', trialName.value)
+  localStorage.setItem('custom_phone', trialPhone.value)
+  if (trialEmail.value) localStorage.setItem('custom_email', trialEmail.value)
+  alert('Đã gửi đăng ký. Chúng tôi sẽ liên hệ sớm!')
 }
 
+// ================== Feedback Carousel ==================
 const feedbacks = ref([])
 const currentIndex = ref(0)
 
-// gọi API lấy feedback
-onMounted(async () => {
-  try {
-    const response = await axios.get('http://localhost:8080/api/feedbacks')
-    // Giả sử feedback có id hoặc createdAt tăng dần
-    feedbacks.value = response.data
-      .sort((a, b) => b.id - a.id) // sắp xếp giảm dần theo id
-      .slice(0, 3) // lấy 3 cái đầu tiên
-  } catch (error) {
-    console.error('Lỗi khi tải feedback:', error)
-  }
-})
-
-// chuyển feedback trái/phải
 const prevFeedback = () => {
   currentIndex.value =
     (currentIndex.value - 1 + feedbacks.value.length) % feedbacks.value.length
@@ -40,26 +28,78 @@ const nextFeedback = () => {
   currentIndex.value = (currentIndex.value + 1) % feedbacks.value.length
 }
 
-// tự động chuyển feedback sau 4 giây
+onMounted(async () => {
+  try {
+    const response = await axios.get('http://localhost:8080/api/feedbacks')
+    feedbacks.value = response.data
+      .sort((a, b) => b.id - a.id)
+      .slice(0, 3)
+  } catch (error) {
+    console.error('Lỗi khi tải feedback:', error)
+  }
+})
+
 onMounted(() => {
   setInterval(() => {
-    if (feedbacks.value.length > 1) {
-      nextFeedback()
-    }
+    if (feedbacks.value.length > 1) nextFeedback()
   }, 4000)
 })
 
+// ================== Banner Carousel ==================
+const banners = ref<{ id: number; value: string; public: boolean }[]>([])
+const bannerIndex = ref(0)
+
+onMounted(async () => {
+  try {
+    const res = await axios.get('http://localhost:8080/api/config/banner/public')
+    banners.value = res.data
+  } catch (err) {
+    console.error('Lỗi tải banner:', err)
+  }
+})
+
+onMounted(() => {
+  setInterval(() => {
+    if (banners.value.length > 1) {
+      bannerIndex.value = (bannerIndex.value + 1) % banners.value.length
+    }
+  }, 4000)
+})
 </script>
 
 <template>
     <div class="">
-        <!-- Banner (carousel simplified) -->
         <section id="banner" class="relative overflow-hidden rounded-xl">
-            <div class="aspect-[19/8] w-full bg-black rounded-xl overflow-hidden">
-                <img class="w-full h-full object-cover" src="" alt="California banner">
+            <div class="aspect-[19/8] w-full bg-black rounded-xl overflow-hidden relative">
+                <img
+                v-for="(banner, index) in banners"
+                :key="banner.id"
+                :src="`http://localhost:8080${banner.value}`"
+                :alt="`Banner ${index + 1}`"
+                class="w-full h-full object-cover absolute top-0 left-0 transition-opacity duration-700"
+                :class="bannerIndex === index ? 'opacity-100 z-10' : 'opacity-0 z-0'"
+                />
             </div>
+
+            <!-- CTA button -->
             <div class="absolute inset-0 flex items-end p-6">
-                <RouterLink to="#trial" class="btn-submit-banner inline-flex items-center rounded-md bg-red-600 px-5 py-3 text-white text-sm font-semibold hover:bg-red-500">Giữ Chỗ Ưu Đãi!</RouterLink>
+                <RouterLink
+                to="#trial"
+                class="btn-submit-banner inline-flex items-center rounded-md bg-red-600 px-5 py-3 text-white text-sm font-semibold hover:bg-red-500"
+                >
+                Giữ Chỗ Ưu Đãi!
+                </RouterLink>
+            </div>
+
+            <!-- Navigation -->
+            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                <button
+                v-for="(banner, index) in banners"
+                :key="index"
+                @click="bannerIndex = index"
+                :class="bannerIndex === index ? 'bg-white' : 'bg-gray-400'"
+                class="w-3 h-3 rounded-full"
+                ></button>
             </div>
         </section>
 
