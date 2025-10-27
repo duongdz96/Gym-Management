@@ -45,6 +45,13 @@ const handleLogout = () => {
         </RouterLink>
 
         <RouterLink
+          :to="{ name: 'add-membership' }"
+          class="text-white uppercase tracking-wider hover:text-red-500 transition"
+        >
+          Add Membership
+        </RouterLink>
+
+        <RouterLink
           to="/customer-management"
           class="text-white uppercase tracking-wider hover:text-red-500 transition"
         >
@@ -59,47 +66,49 @@ const handleLogout = () => {
         </RouterLink>
 
         <!-- Account -->
-        
       </nav>
-      <div class="relative" v-if="authStore.user" 
+      <div
+        class="relative"
+        v-if="authStore.user"
         @mouseenter="isAccountMenuOpen = true"
-        @mouseleave="isAccountMenuOpen = false">
-          <button
-            class="flex items-center gap-2 text-white hover:text-red-500 transition"
-            @click="toggleAccountMenu"
-          >
-            <UserIcon class="w-5 h-5" />
-            <span class="uppercase tracking-wider">Account</span>
-          </button>
+        @mouseleave="isAccountMenuOpen = false"
+      >
+        <button
+          class="flex items-center gap-2 text-white hover:text-red-500 transition"
+          @click="toggleAccountMenu"
+        >
+          <UserIcon class="w-5 h-5" />
+          <span class="uppercase tracking-wider">Account</span>
+        </button>
 
-          <transition name="fade">
-            <div
-              v-if="isAccountMenuOpen"
-              class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50"
+        <transition name="fade">
+          <div
+            v-if="isAccountMenuOpen"
+            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50"
+          >
+            <RouterLink
+              to="/profile"
+              class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+              @click="isAccountMenuOpen = false"
             >
-              <RouterLink
-                to="/profile"
-                class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                @click="isAccountMenuOpen = false"
-              >
-                Change Profile
-              </RouterLink>
-              <RouterLink
-                to="/change-password"
-                class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                @click="isAccountMenuOpen = false"
-              >
-                Change Password
-              </RouterLink>
-              <button
-                class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-                @click="handleLogout"
-              >
-                Logout
-              </button>
-            </div>
-          </transition>
-        </div>
+              Change Profile
+            </RouterLink>
+            <RouterLink
+              to="/change-password"
+              class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+              @click="isAccountMenuOpen = false"
+            >
+              Change Password
+            </RouterLink>
+            <button
+              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+              @click="handleLogout"
+            >
+              Logout
+            </button>
+          </div>
+        </transition>
+      </div>
     </div>
   </header>
 </template>

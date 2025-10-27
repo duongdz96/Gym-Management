@@ -33,7 +33,7 @@ const closeAccountMenu = () => (isAccountOpen.value = false);
               ? 'text-red-600 border-b-2 border-red-600 pb-1'
               : 'text-white'
           "
-          >Lịch Học</RouterLink
+          >Schedule</RouterLink
         >
 
         <RouterLink
@@ -44,7 +44,7 @@ const closeAccountMenu = () => (isAccountOpen.value = false);
               ? 'text-red-600 border-b-2 border-red-600 pb-1'
               : 'text-white'
           "
-          >Thông Tin Cá Nhân</RouterLink
+          >Profile</RouterLink
         >
 
         <RouterLink
@@ -55,7 +55,7 @@ const closeAccountMenu = () => (isAccountOpen.value = false);
               ? 'text-red-600 border-b-2 border-red-600 pb-1'
               : 'text-white'
           "
-          >Hội Viên</RouterLink
+          >Members</RouterLink
         >
       </nav>
 
@@ -126,21 +126,21 @@ const closeAccountMenu = () => (isAccountOpen.value = false);
             to="/pt/schedule"
             class="uppercase tracking-wider text-white hover:text-red-600"
             @click="isMenuOpen = false"
-            >Lịch Học</RouterLink
+            >Schedule</RouterLink
           >
 
           <RouterLink
             to="/pt/profile"
             class="uppercase tracking-wider text-white hover:text-red-600"
             @click="isMenuOpen = false"
-            >Thông Tin Cá Nhân</RouterLink
+            >Profile</RouterLink
           >
 
           <RouterLink
             to="/pt/members"
             class="uppercase tracking-wider text-white hover:text-red-600"
             @click="isMenuOpen = false"
-            >Hội Viên</RouterLink
+            >Members</RouterLink
           >
         </nav>
       </div>
