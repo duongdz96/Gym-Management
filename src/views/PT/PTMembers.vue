@@ -1,6 +1,7 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 
+const searchQuery = ref("");
 const members = ref([
   {
     id: 1,
@@ -88,6 +89,15 @@ const selectedMember = ref(null);
 const isEditingWeight = ref(false);
 const tempCurrentWeight = ref(0);
 
+const filteredMembers = computed(() => {
+  if (!searchQuery.value) {
+    return members.value;
+  }
+  return members.value.filter(member =>
+    member.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
 const selectMember = (member) => {
   selectedMember.value = member;
   isEditingWeight.value = false;
@@ -112,12 +122,33 @@ const cancelEditingWeight = () => {
   isEditingWeight.value = false;
 };
 
+// Watch for changes in filtered members to update selected member
+watch(filteredMembers, (newFilteredMembers) => {
+  if (selectedMember.value) {
+    // Check if current selected member is still in filtered list
+    const stillExists = newFilteredMembers.some(member => member.id === selectedMember.value.id);
+    if (!stillExists) {
+      // If not, select the first available member
+      if (newFilteredMembers.length > 0) {
+        selectedMember.value = newFilteredMembers[0];
+        tempCurrentWeight.value = newFilteredMembers[0].currentWeight;
+      } else {
+        selectedMember.value = null;
+      }
+    }
+  } else if (newFilteredMembers.length > 0) {
+    // If no member selected but filtered list has members, select first
+    selectedMember.value = newFilteredMembers[0];
+    tempCurrentWeight.value = newFilteredMembers[0].currentWeight;
+  }
+});
+
 onMounted(() => {
   console.log("PT Members loaded");
   // Auto select first member
-  if (members.value.length > 0) {
-    selectedMember.value = members.value[0];
-    tempCurrentWeight.value = members.value[0].currentWeight;
+  if (filteredMembers.length > 0) {
+    selectedMember.value = filteredMembers[0];
+    tempCurrentWeight.value = filteredMembers[0].currentWeight;
   }
 });
 </script>
@@ -132,9 +163,27 @@ onMounted(() => {
       <!-- Bên trái: Danh sách học viên -->
       <div class="w-1/3 bg-white rounded-xl shadow p-5 overflow-y-auto">
         <h2 class="text-xl font-semibold mb-4">My Members</h2>
+
+        <!-- Search Bar -->
+        <div class="mb-4">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search members by name..."
+              class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+        </div>
+
         <div class="space-y-3">
           <div
-            v-for="member in members"
+            v-for="member in filteredMembers"
             :key="member.id"
             @click="selectMember(member)"
             :class="[
@@ -283,8 +332,17 @@ onMounted(() => {
         </div>
         <div v-else class="text-center text-gray-500">
           Select a member to view detailed information
+                    </div>
+          </div>
+        </div>
+
+        <!-- No results message -->
+        <div v-if="filteredMembers.length === 0 && searchQuery" class="text-center py-8 text-gray-500">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">No members found</h3>
+          <p class="mt-1 text-sm text-gray-500">Try adjusting your search terms.</p>
         </div>
       </div>
-    </div>
-  </div>
 </template>
