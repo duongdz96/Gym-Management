@@ -20,6 +20,9 @@ import ClassTemplate from "@/views/Manager/Classes/ClassTemplate.vue";
 import AddClassTemplate from "@/views/Manager/Classes/AddClassTemplate.vue";
 import ClassSchedule from "@/views/Manager/Classes/ClassSchedule.vue";
 import Banner from "@/views/Manager/Config/Banner.vue";
+import ManageMembership from "@/views/Manager/Membership/ManageMembership.vue";
+import ManageAddMembership from "@/views/Manager/Membership/ManageAddMembership.vue";
+import ManageAddTier from "@/views/Manager/Membership/ManageAddTier.vue";
 
 import CustomerLayout from "@/layout/CustomerLayout.vue";
 import CustomerHome from "@/views/Customer/CustomerHome.vue";
@@ -65,7 +68,7 @@ const routes = [
     {
         path: "/manager",
         component: ManagerLayout,
-        meta: { requiresAuth: true, roles: ["MANAGER"] },
+        // meta: { requiresAuth: true, roles: ["MANAGER"] },
         children: [
             { path: "staff", name: "staff", component: Staff },
             { path: "customer", name: "customer", component: Customer },
@@ -79,7 +82,10 @@ const routes = [
             { path: "classtemplate", name: "classtemplate", component: ClassTemplate },
             { path: "classtemplate/add", name: "classtemplate.add", component: AddClassTemplate },
             { path: "classschedule", name: "classschedule", component: ClassSchedule },
-            { path: "banner", name: "banner", component: Banner }
+            { path: "banner", name: "banner", component: Banner },
+            { path: "membership", name: "membership", component: ManageMembership },
+            { path: "membership/add", name: "membership.add", component: ManageAddMembership },
+            { path: "membership/add-tier", name: "membership.add-tier", component: ManageAddTier }
         ],
     },
 
