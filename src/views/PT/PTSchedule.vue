@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import api from "@/services/api";
 
 const currentDate = ref(new Date());
 const selectedDate = ref(null);
@@ -11,127 +12,12 @@ const schedule = ref([]);
 // Function to fetch schedule from backend
 async function fetchSchedule() {
   try {
-    // TODO: Replace with actual API call
-    // const response = await fetch('/api/pt/schedule');
-    // schedule.value = await response.json();
-
-    // Sample data for now
-    schedule.value = [
-      {
-        id: 1,
-        name: "Lớp Yoga buổi sáng",
-        date: "2025-10-17",
-        time: "07:00 - 08:00",
-        members: 15,
-      },
-      {
-        id: 2,
-        name: "Body Pump",
-        date: "2025-10-18",
-        time: "18:00 - 19:00",
-        members: 12,
-      },
-      {
-        id: 3,
-        name: "Personal Training",
-        date: "2025-10-19",
-        time: "10:00 - 11:00",
-        members: 1,
-      },
-      {
-        id: 10,
-        name: "Zumba",
-        date: "2025-10-19",
-        time: "11:00 - 12:00",
-        members: 25,
-      },
-      {
-        id: 11,
-        name: "Kickboxing",
-        date: "2025-10-19",
-        time: "14:00 - 15:00",
-        members: 18,
-      },
-      {
-        id: 12,
-        name: "Spinning",
-        date: "2025-10-27",
-        time: "15:30 - 16:30",
-        members: 20,
-      },
-      {
-        id: 13,
-        name: "Aerobic",
-        date: "2025-10-27",
-        time: "17:00 - 18:00",
-        members: 22,
-      },
-      {
-        id: 14,
-        name: "Morning Run",
-        date: "2025-10-27",
-        time: "05:30 - 06:30",
-        members: 8,
-      },
-      {
-        id: 15,
-        name: "Weight Lifting",
-        date: "2025-10-27",
-        time: "12:00 - 13:00",
-        members: 16,
-      },
-      {
-        id: 16,
-        name: "Tai Chi",
-        date: "2025-10-27",
-        time: "16:00 - 17:00",
-        members: 10,
-      },
-      {
-        id: 4,
-        name: "Yoga buổi tối",
-        date: "2025-10-21",
-        time: "19:00 - 20:00",
-        members: 10,
-      },
-      {
-        id: 5,
-        name: "Pilates",
-        date: "2025-10-27",
-        time: "09:00 - 10:00",
-        members: 8,
-      },
-      {
-        id: 6,
-        name: "Boxing",
-        date: "2025-10-21",
-        time: "14:00 - 15:00",
-        members: 8,
-      },
-      {
-        id: 7,
-        name: "Dance Fitness",
-        date: "2025-10-17",
-        time: "16:00 - 17:00",
-        members: 20,
-      },
-      {
-        id: 8,
-        name: "CrossFit",
-        date: "2025-10-17",
-        time: "17:30 - 18:30",
-        members: 15,
-      },
-      {
-        id: 9,
-        name: "Swimming",
-        date: "2025-10-17",
-        time: "18:30 - 19:30",
-        members: 12,
-      },
-    ];
+    const res = await api.get("/pt/schedule");
+    schedule.value = res.data;
+    console.log("PT Schedule loaded:", schedule.value);
   } catch (error) {
-    console.error("Failed to fetch schedule:", error);
+    console.error("Failed to fetch PT schedule:", error);
+    alert("Failed to load schedule. Please try again.");
   }
 }
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
+import api from '@/services/api';
 
 type Membership = {
     id: number,
@@ -11,66 +12,7 @@ type Membership = {
     description: string,
 }
 
-const memberships = ref<Membership[]>([
-  // Tiers (annual)
-  {
-    id: 1,
-    name: "Bronze",
-    type: "tier",
-    duration: 12,
-    price: 5000000,
-    description: "Basic annual membership with access to gym facilities"
-  },
-  {
-    id: 2,
-    name: "Silver",
-    type: "tier",
-    duration: 12,
-    price: 8000000,
-    description: "Silver tier with gym access and 4 personal training sessions per month"
-  },
-  {
-    id: 3,
-    name: "Gold",
-    type: "tier",
-    duration: 12,
-    price: 12000000,
-    description: "Gold tier with full access, unlimited personal training and nutrition consultation"
-  },
-  // Packages (by duration)
-  {
-    id: 4,
-    name: "1 Month",
-    type: "package",
-    duration: 1,
-    price: 500000,
-    description: "1-month gym access package"
-  },
-  {
-    id: 5,
-    name: "3 Months",
-    type: "package",
-    duration: 3,
-    price: 1350000,
-    description: "3-month gym access package with 10% discount"
-  },
-  {
-    id: 6,
-    name: "6 Months",
-    type: "package",
-    duration: 6,
-    price: 2400000,
-    description: "6-month gym access package with 20% discount"
-  },
-  {
-    id: 7,
-    name: "1 Year",
-    type: "package",
-    duration: 12,
-    price: 4000000,
-    description: "1-year gym access package with 25% discount"
-  },
-])
+const memberships = ref<Membership[]>([])
 
 const search = ref('')
 const membershipType = ref('')
@@ -81,6 +23,24 @@ const filteredMemberships = computed(() => {
         const matchesType = membershipType.value ? m.type === membershipType.value : true
         return matchesSearch && matchesType
     })
+})
+
+onMounted(async () => {
+    try {
+        // Load tiers from /membershiptier
+        const tierRes = await api.get("/membershiptier");
+        const tiers = tierRes.data.map((tier: any) => ({ ...tier, type: 'tier' }));
+
+        // Load packages from /memberships (assuming packages are stored there)
+        const packageRes = await api.get("/memberships");
+        const packages = packageRes.data.filter((item: any) => item.type === 'package');
+
+        memberships.value = [...tiers, ...packages];
+        console.log("Memberships loaded:", memberships.value);
+    } catch (error) {
+        console.error('Failed to load memberships:', error);
+        alert("Failed to load memberships. Please try again.");
+    }
 })
 </script>
 

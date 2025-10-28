@@ -1,89 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
+import api from "@/services/api";
 
 const searchQuery = ref("");
-const members = ref([
-  {
-    id: 1,
-    name: "Nguyễn Thị A",
-    email: "a@example.com",
-    membership: "Gói 3 tháng",
-    status: "Active",
-    initialWeight: 65,
-    currentWeight: 62,
-    height: 165,
-  },
-  {
-    id: 2,
-    name: "Trần Văn B",
-    email: "b@example.com",
-    membership: "Gói 6 tháng",
-    status: "Active",
-    initialWeight: 70,
-    currentWeight: 68,
-    height: 175,
-  },
-  {
-    id: 3,
-    name: "Lê Thị C",
-    email: "c@example.com",
-    membership: "Gói 1 tháng",
-    status: "Expired",
-    initialWeight: 60,
-    currentWeight: 58,
-    height: 160,
-  },
-  {
-    id: 4,
-    name: "Phạm Văn D",
-    email: "d@example.com",
-    membership: "Gói 12 tháng",
-    status: "Active",
-    initialWeight: 75,
-    currentWeight: 72,
-    height: 180,
-  },
-  {
-    id: 5,
-    name: "Hoàng Thị E",
-    email: "e@example.com",
-    membership: "Gói 6 tháng",
-    status: "Expired",
-    initialWeight: 55,
-    currentWeight: 54,
-    height: 155,
-  },
-  {
-    id: 6,
-    name: "Đỗ Văn F",
-    email: "f@example.com",
-    membership: "Gói 3 tháng",
-    status: "Active",
-    initialWeight: 80,
-    currentWeight: 77,
-    height: 170,
-  },
-  {
-    id: 7,
-    name: "Bùi Thị G",
-    email: "g@example.com",
-    membership: "Gói 1 tháng",
-    status: "Expired",
-    initialWeight: 62,
-    currentWeight: 61,
-    height: 162,
-  },
-  {
-    id: 8,
-    name: "Vũ Văn H",
-    email: "h@example.com",
-    membership: "Gói 6 tháng",
-    status: "Active",
-    initialWeight: 68,
-    currentWeight: 65,
-    height: 168,
-  },
-]);
+const members = ref([]);
 
 const selectedMember = ref(null);
 const isEditingWeight = ref(false);
@@ -110,10 +30,20 @@ const startEditingWeight = () => {
   }
 };
 
-const saveCurrentWeight = () => {
+const saveCurrentWeight = async () => {
   if (selectedMember.value && selectedMember.value.status === "Active") {
-    selectedMember.value.currentWeight = tempCurrentWeight.value;
-    isEditingWeight.value = false;
+    try {
+      const payload = {
+        currentWeight: tempCurrentWeight.value
+      };
+      await api.put(`/pt/members/${selectedMember.value.id}`, payload);
+      selectedMember.value.currentWeight = tempCurrentWeight.value;
+      isEditingWeight.value = false;
+      alert("Weight updated successfully!");
+    } catch (error) {
+      console.error("Error updating weight:", error);
+      alert("Failed to update weight. Please try again.");
+    }
   }
 };
 
@@ -143,12 +73,20 @@ watch(filteredMembers, (newFilteredMembers) => {
   }
 });
 
-onMounted(() => {
-  console.log("PT Members loaded");
+onMounted(async () => {
+  try {
+    const res = await api.get("/pt/members");
+    members.value = res.data;
+    console.log("PT Members loaded:", members.value);
+  } catch (error) {
+    console.error('Failed to load PT members:', error);
+    alert("Failed to load members. Please try again.");
+  }
+
   // Auto select first member
-  if (filteredMembers.length > 0) {
-    selectedMember.value = filteredMembers[0];
-    tempCurrentWeight.value = filteredMembers[0].currentWeight;
+  if (members.value.length > 0) {
+    selectedMember.value = members.value[0];
+    tempCurrentWeight.value = members.value[0].currentWeight;
   }
 });
 </script>

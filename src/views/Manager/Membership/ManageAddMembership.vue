@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue"
 import { useRouter } from "vue-router"
+import api from "@/services/api"
 
 const router = useRouter()
 
@@ -12,9 +13,35 @@ const form = ref({
   description: ""
 })
 
-const submit = () => {
-  console.log("Membership submitted:", form.value)
-  router.push({ name: "membership" }) // assuming there's a list route
+const submit = async () => {
+  if (!form.value.name || !form.value.duration || !form.value.price) {
+    alert("Please fill in all required fields.")
+    return
+  }
+
+  const payload = {
+    name: form.value.name,
+    type: "package",
+    duration: form.value.duration,
+    price: form.value.price,
+    description: form.value.description || null,
+  }
+
+  console.log("Submitting membership package:", payload)
+
+  try {
+    const res = await api.post("/memberships", payload)
+
+    if (res.status === 200 || res.status === 201) {
+      alert("Membership package has been added successfully!")
+
+      form.value = { name: "", duration: 1, price: 0, description: "" }
+      router.push({ name: "membership" })
+    }
+  } catch (err: any) {
+    console.error("Error adding membership package:", err)
+    alert("Failed to add membership package. Please try again.")
+  }
 }
 </script>
 
