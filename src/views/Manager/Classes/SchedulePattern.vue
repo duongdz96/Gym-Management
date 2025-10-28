@@ -7,7 +7,6 @@ const router = useRouter();
 // =================== STATE ===================
 interface SchedulePattern {
   id?: number;
-  location: string;
   daysOfWeek: string;
   timeStart: string;
   timeEnd: string;
@@ -15,18 +14,26 @@ interface SchedulePattern {
   classEndDate: string;
 }
 
+interface Room {
+  id: number;
+  name: string;
+  note?: string;
+  location?: string;
+}
+
 const patterns = ref<SchedulePattern[]>([]);
+const rooms = ref<Room[]>([]);
 const showModal = ref(false);
 const isEditing = ref(false);
+const selectedPattern = ref<SchedulePattern | null>(null);
+const selectedRoomId = ref<number | null>(null);
 const form = ref<SchedulePattern>({
-  location: "",
   daysOfWeek: "",
   timeStart: "",
   timeEnd: "",
   classStartDate: "",
   classEndDate: "",
 });
-const selectedId = ref<number | null>(null);
 
 const formatTime = (timeStr: string) => {
   if (!timeStr) return "";
@@ -43,9 +50,16 @@ const formatDate = (dateStr: string) => {
   }); // → "20/10/2025"
 };
 
-
-
 // =================== FETCH ===================
+const loadRooms = async () => {
+  try {
+    const res = await api.get("/room");
+    rooms.value = res.data;
+  } catch (err) {
+    console.error("Failed to fetch rooms:", err);
+  }
+};
+
 const loadPatterns = async () => {
   const res = await api.get("/schedule-patterns");
   patterns.value = res.data;
@@ -56,7 +70,6 @@ const openAdd = () => {
   isEditing.value = false;
   showModal.value = true;
   form.value = {
-    location: "",
     daysOfWeek: "",
     timeStart: "",
     timeEnd: "",
@@ -88,13 +101,29 @@ const deletePattern = async (id: number) => {
   }
 };
 
-const selectPattern = (pattern) => {
-  sessionStorage.setItem("selectedPattern", JSON.stringify(pattern));
+const showSelectRoomModal = (pattern) => {
+  selectedPattern.value = pattern;
+  selectedRoomId.value = null;
+};
+
+const selectPattern = () => {
+  if (!selectedRoomId.value) {
+    alert("Vui lòng chọn phòng!");
+    return;
+  }
+
+  const selectedRoom = rooms.value.find(r => r.id === selectedRoomId.value);
+  
+  sessionStorage.setItem("selectedPattern", JSON.stringify(selectedPattern.value));
+  sessionStorage.setItem("selectedRoom", JSON.stringify(selectedRoom));
   sessionStorage.setItem("openAddModal", "true");
   router.push({ name: "classschedule" });
 };
 
-onMounted(loadPatterns);
+onMounted(async () => {
+  await loadPatterns();
+  await loadRooms();
+});
 </script>
 
 <template>
@@ -114,7 +143,6 @@ onMounted(loadPatterns);
       <thead class="bg-gray-100 text-gray-700">
         <tr>
           <th class="py-2 px-4 border">#</th>
-          <th class="py-2 px-4 border">Location</th>
           <th class="py-2 px-4 border">Days</th>
           <th class="py-2 px-4 border">Start Time</th>
           <th class="py-2 px-4 border">End Time</th>
@@ -126,7 +154,6 @@ onMounted(loadPatterns);
       <tbody>
         <tr v-for="(p, index) in patterns" :key="p.id" class="text-center">
           <td class="border py-2 px-4">{{ index + 1 }}</td>
-          <td class="border py-2 px-4">{{ p.location }}</td>
           <td class="border py-2 px-4">{{ p.daysOfWeek }}</td>
           <td class="border py-2 px-4">{{ formatTime(p.timeStart) }}</td>
           <td class="border py-2 px-4">{{ formatTime(p.timeEnd) }}</td>
@@ -135,7 +162,7 @@ onMounted(loadPatterns);
           <td class="border py-2 px-4 space-x-2">
             <button
               class="bg-green-500 text-white px-3 py-1 rounded"
-              @click="selectPattern(p)"
+              @click="showSelectRoomModal(p)"
             >
               Select
             </button>
@@ -167,11 +194,6 @@ onMounted(loadPatterns);
         </h3>
 
         <div class="grid gap-3">
-          <input
-            v-model="form.location"
-            class="border rounded px-3 py-2"
-            placeholder="Location"
-          />
           <input
             v-model="form.daysOfWeek"
             class="border rounded px-3 py-2"
@@ -213,6 +235,59 @@ onMounted(loadPatterns);
             @click="savePattern"
           >
             Save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Select Room -->
+    <div
+      v-if="selectedPattern"
+      class="fixed inset-0 flex items-center justify-center bg-black/40 z-50"
+    >
+      <div class="bg-white rounded-xl p-6 w-[500px] shadow-lg">
+        <h3 class="text-xl font-semibold mb-4">Select Room for Pattern</h3>
+        
+        <div class="mb-4">
+          <label class="block mb-1 font-semibold">Pattern Information:</label>
+          <div class="bg-gray-50 p-3 rounded">
+            <p><strong>Days:</strong> {{ selectedPattern.daysOfWeek }}</p>
+            <p><strong>Time:</strong> {{ formatTime(selectedPattern.timeStart) }} - {{ formatTime(selectedPattern.timeEnd) }}</p>
+            <p><strong>Period:</strong> {{ formatDate(selectedPattern.classStartDate) }} - {{ formatDate(selectedPattern.classEndDate) }}</p>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block mb-2 font-semibold">Select Room:</label>
+          <select 
+            v-model="selectedRoomId" 
+            class="w-full border rounded px-3 py-2"
+            :class="{ 'border-red-500': !selectedRoomId }"
+          >
+            <option :value="null" disabled>Please select a room</option>
+            <option 
+              v-for="room in rooms" 
+              :key="room.id" 
+              :value="room.id"
+            >
+              {{ room.name }}
+              <span v-if="room.location"> - {{ room.location }}</span>
+            </option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-5">
+          <button
+            class="px-4 py-2 bg-gray-400 text-white rounded"
+            @click="selectedPattern = null"
+          >
+            Cancel
+          </button>
+          <button
+            class="px-4 py-2 bg-blue-600 text-white rounded"
+            @click="selectPattern"
+          >
+            Confirm
           </button>
         </div>
       </div>

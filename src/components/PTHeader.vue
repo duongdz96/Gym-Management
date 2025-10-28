@@ -1,13 +1,23 @@
 <script setup>
 import { ref } from "vue";
-import { useRoute, RouterLink } from "vue-router";
+import { useRoute, useRouter, RouterLink } from "vue-router";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useToast } from "vue-toastification";
 
 const route = useRoute();
 const isMenuOpen = ref(false);
 const isAccountOpen = ref(false);
-
+const authStore = useAuthStore();
+const router = useRouter();
+const toast = useToast();
 const openAccountMenu = () => (isAccountOpen.value = true);
 const closeAccountMenu = () => (isAccountOpen.value = false);
+
+const handleLogout = () => {
+  authStore.logout();
+  toast.success("Đăng xuất thành công!");
+  router.push("/login");
+};
 </script>
 
 <template>
@@ -85,6 +95,7 @@ const closeAccountMenu = () => (isAccountOpen.value = false);
               >Settings</RouterLink
             >
             <button
+            @click="handleLogout"
               class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
               Logout

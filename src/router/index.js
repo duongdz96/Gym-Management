@@ -79,6 +79,7 @@ const routes = [
             { path: "classtemplate", name: "classtemplate", component: ClassTemplate },
             { path: "classtemplate/add", name: "classtemplate.add", component: AddClassTemplate },
             { path: "classschedule", name: "classschedule", component: ClassSchedule },
+            { path: "schedulepattern", name: "schedulepattern", component: SchedulePattern },
             { path: "banner", name: "banner", component: Banner }
         ],
     },
@@ -114,6 +115,7 @@ const routes = [
     {
         path: "/pt",
         component: PTLayout,
+        meta: { requiresAuth: true, roles: ["STAFF"] },
         children: [
             {
                 path: '/pt/',

@@ -1,11 +1,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useToast } from "vue-toastification";
 import api from '@/services/api'
 
 type ClassTemplateInfo = {
   id: number;
   name: string;
+};
+
+type Room = {
+  id: number;
+  name: string;
+  note?: string;
+  location?: string;
 };
 
 type ClassSchedule = {
@@ -16,11 +24,11 @@ type ClassSchedule = {
   status: "OPEN" | "CLOSED" | "CANCELLED";
   classTemplate: ClassTemplateInfo;
   schedulePattern?: SchedulePattern;
+  room: Room;
 };
 
 type SchedulePattern = {
   id?: number;
-  location: string;
   daysOfWeek: string;
   timeStart: string;
   timeEnd: string;
@@ -32,10 +40,12 @@ type SchedulePattern = {
 const schedules = ref<ClassSchedule[]>([]);
 const selectedTemplate = ref<ClassTemplateInfo | null>(null);
 const schedulePattern = ref<SchedulePattern | null>(null);
+const selectedRoom = ref<Room | null>(null);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 const isAddModalOpen = ref(false);
 const isBatchModalOpen = ref(false);
+const toast = useToast();
 
 const form = ref({
   classTemplateId: null as number | null,
@@ -52,7 +62,6 @@ const batchForm = ref({
   startDate: "",
   endDate: "",
   daysOfWeek: [] as string[],
-  location: "",
 });
 
 const router = useRouter();
@@ -81,7 +90,7 @@ onMounted(async () => {
     form.value.classTemplateId = parsedTemplate.id;
     batchForm.value.classTemplateId = parsedTemplate.id;
 
-    // --- Lấy Pattern (nếu có) ---
+    // --- Lấy Pattern và Room (nếu có) ---
     const storedPatternJSON = sessionStorage.getItem("selectedPattern");
     if (storedPatternJSON) {
       try {
@@ -89,15 +98,28 @@ onMounted(async () => {
         if (pattern?.id) {
           schedulePattern.value = pattern;
           form.value.schedulePatternId = pattern.id ?? null;
-          form.value.location = pattern.location ?? "";
           batchForm.value.schedulePatternId = pattern.id ?? null;
-          batchForm.value.location = pattern.location ?? "";
           console.log("Loaded selected pattern:", pattern);
         }
       } catch (e) {
         console.error("Failed to parse selectedPattern:", e);
       } finally {
         sessionStorage.removeItem("selectedPattern");
+      }
+    }
+
+    const storedRoomJSON = sessionStorage.getItem("selectedRoom");
+    if (storedRoomJSON) {
+      try {
+        const room = JSON.parse(storedRoomJSON);
+        if (room?.id) {
+          selectedRoom.value = room;
+          console.log("Loaded selected room:", room);
+        }
+      } catch (e) {
+        console.error("Failed to parse selectedRoom:", e);
+      } finally {
+        sessionStorage.removeItem("selectedRoom");
       }
     }
 
@@ -164,27 +186,28 @@ async function AddBatchSchedules() {
     return;
   }
 
+  if (!selectedRoom.value?.id) {
+    alert("Please select a room first!");
+    return;
+  }
+
   try {
     const payload = {
       classTemplate: { id: selectedTemplate.value.id },
-      schedulePattern: { id: batchForm.value.schedulePatternId},
-      startDate: null,
-      endDate: null,
-      daysOfWeek: null,
-      location: null,
+      schedulePattern: { id: batchForm.value.schedulePatternId },
+      room: { id: selectedRoom.value.id },
     };
 
     console.log("📤 Sending batch schedules:", payload);
     await api.post("/classschedule/generate", payload);
-
-    alert("✅ Added batch class schedules successfully!");
+    toast.success("Added batch class schedules successfully!");
     isBatchModalOpen.value = false;
     await reloadSchedules();
 
     resetForm(batchForm.value);
   } catch (err) {
-    console.error("❌ Failed to add batch schedule:", err);
-    alert("Failed to add batch schedule!");
+    console.error("Failed to add batch schedule:", err);
+    toast.error("Failed to add batch schedule!");
   }
 }
 
@@ -270,7 +293,7 @@ const isDayInPattern = (shortDay) => {
             </tr>
             <tr v-for="schedule in schedules" :key="schedule.id" class="hover:bg-gray-50">
               <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ schedule.id }}</td>
-              <td class="px-6 py-4 text-sm text-gray-700">{{ schedule.location }}</td>
+              <td class="px-6 py-4 text-sm text-gray-700">{{ schedule.room.name }}</td>
               <td class="px-6 py-4 text-sm text-gray-700">{{ formatDateTime(schedule.startTime) }}</td>
               <td class="px-6 py-4 text-sm text-gray-700">{{ formatDateTime(schedule.endTime) }}</td>
               <td class="px-6 py-4 text-sm">
@@ -357,10 +380,6 @@ const isDayInPattern = (shortDay) => {
       Add Class Course for {{ selectedTemplate?.name || 'Template' }}
     </h2>
 
-    <!-- Debug display -->
-    <h2 class="text-md font-semibold text-blue-600 mb-2">
-      {{ schedulePattern ? JSON.stringify(schedulePattern) : 'No schedulePattern loaded' }}
-    </h2>
 
     <RouterLink
       :to="{ name: 'schedulepattern' }"
@@ -369,14 +388,13 @@ const isDayInPattern = (shortDay) => {
       Choose the time for the whole course
     </RouterLink>
 
-    <div
+    <!-- <div
       v-if="batchForm.schedulePatternId"
       class="mb-3 bg-gray-100 p-3 rounded border border-gray-200"
     >
-      <strong>Selected pattern:</strong>
+      <strong>Selected Pattern:</strong>
       <div>ID #{{ batchForm.schedulePatternId }}</div>
-      <div>Location: {{ batchForm.location || schedulePattern?.location || 'No location' }}</div>
-    </div>
+    </div> -->
 
     <div class="mb-3">
       <label class="block mb-1 font-semibold">Class Start Date:</label>
@@ -408,10 +426,14 @@ const isDayInPattern = (shortDay) => {
       </div>
     </div>
 
-    <!-- Location -->
+    <!-- Room -->
     <div class="mb-3">
-      <label class="block mb-1 font-semibold">Location:</label>
-      <p>{{ schedulePattern?.location || 'Please select time' }}</p>
+      <label class="block mb-1 font-semibold">Selected Room:</label>
+      <div class="bg-blue-50 p-3 rounded border border-blue-200">
+        <p v-if="selectedRoom" class="font-semibold">{{ selectedRoom.name }}</p>
+        <p v-else class="text-red-500">No room selected</p>
+        <p v-if="selectedRoom?.location" class="text-sm text-gray-600">{{ selectedRoom.location }}</p>
+      </div>
     </div>
 
     <!-- Buttons -->
