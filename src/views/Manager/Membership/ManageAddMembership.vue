@@ -21,16 +21,21 @@ const submit = async () => {
 
   const payload = {
     name: form.value.name,
-    type: "package",
-    duration: form.value.duration,
+    duration: `${form.value.duration} Months`,
     price: form.value.price,
-    description: form.value.description || null,
+    benefits: form.value.description || "",
+    membershipTier: {
+      id: 1, // TODO: Should be selected from dropdown
+      name: "Basic", // TODO: Should be selected from dropdown
+      priority: 4,
+      status: "Active"
+    }
   }
 
   console.log("Submitting membership package:", payload)
 
   try {
-    const res = await api.post("/membershiptier", payload)
+    const res = await api.post("/api/membershipplan", payload)
 
     if (res.status === 200 || res.status === 201) {
       alert("Membership package has been added successfully!")

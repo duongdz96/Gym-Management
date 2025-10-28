@@ -21,16 +21,14 @@ const submit = async () => {
 
   const payload = {
     name: form.value.name,
-    type: "tier",
-    duration: form.value.duration,
-    price: form.value.price,
-    description: form.value.description || null,
+    priority: 1, // TODO: Should be calculated based on existing tiers
+    status: "Active"
   }
 
   console.log("Submitting membership tier:", payload)
 
   try {
-    const res = await api.post("/membershiptier", payload)
+    const res = await api.post("/api/membershiptier", payload)
 
     if (res.status === 200 || res.status === 201) {
       alert("Membership tier has been added successfully!")

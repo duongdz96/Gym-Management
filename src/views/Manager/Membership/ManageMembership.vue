@@ -3,33 +3,49 @@ import { computed, ref, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import api from '@/services/api';
 
-type Membership = {
+type MembershipTier = {
     id: number,
     name: string,
-    type: 'tier' | 'package',
-    duration: number, // months
-    price: number,
-    description: string,
+    priority: number,
+    status: string,
 }
 
-const memberships = ref<Membership[]>([])
+type MembershipPlan = {
+    id: number,
+    name: string,
+    duration: string,
+    status: string,
+    benefits: string,
+    price: number,
+    membershipTier: MembershipTier,
+}
+
+const membershipPlans = ref<MembershipPlan[]>([])
+const membershipTiers = ref<MembershipTier[]>([])
 
 const search = ref('')
 const membershipType = ref('')
 
-const filteredMemberships = computed(() => {
-    return memberships.value.filter(m => {
-        const matchesSearch = (m.name || '').toLowerCase().includes(search.value.toLowerCase())
-        const matchesType = membershipType.value ? m.type === membershipType.value : true
+const filteredMembershipPlans = computed(() => {
+    return membershipPlans.value.filter(plan => {
+        const matchesSearch = (plan.name || '').toLowerCase().includes(search.value.toLowerCase())
+        const matchesType = membershipType.value ? plan.membershipTier.name.toLowerCase().includes(membershipType.value.toLowerCase()) : true
         return matchesSearch && matchesType
     })
 })
 
 onMounted(async () => {
     try {
-        const res = await api.get("/membershiptier");
-        memberships.value = res.data;
-        console.log("Memberships loaded:", memberships.value);
+        // Load membership tiers
+        const tierRes = await api.get("/api/membershiptier");
+        membershipTiers.value = tierRes.data;
+
+        // Load membership plans
+        const planRes = await api.get("/api/membershipplan");
+        membershipPlans.value = planRes.data;
+
+        console.log("Membership tiers loaded:", membershipTiers.value);
+        console.log("Membership plans loaded:", membershipPlans.value);
     } catch (error) {
         console.error('Failed to load memberships:', error);
         alert("Failed to load memberships. Please try again.");
@@ -41,14 +57,16 @@ onMounted(async () => {
     <div class="space-y-4 p-4">
         <!-- Toolbar -->
         <div class="justify-between flex">
-             <h1 class="text-xl font-semibold">Membership Packages</h1>
+             <h1 class="text-xl font-semibold">Membership Plans</h1>
              <div>
                 <input type="text" v-model="search" placeholder="Search for package name" class="px-3 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-200 mr-2">
 
                 <select v-model="membershipType" class="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 mr-2">
-                    <option value="">All types</option>
-                 <option value="tier">Tiers</option>
-                 <option value="package">Packages</option>
+                    <option value="">All tiers</option>
+                 <option value="platinum">Platinum</option>
+                 <option value="gold">Gold</option>
+                 <option value="silver">Silver</option>
+                 <option value="basic">Basic</option>
                 </select>
              </div>
              <div>
@@ -69,7 +87,7 @@ onMounted(async () => {
                             <span>Name</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Type</span>
+                            <span>Tier</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <span>Duration</span>
@@ -78,27 +96,30 @@ onMounted(async () => {
                             <span>Price</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Description</span>
+                            <span>Benefits</span>
                         </th>
                         <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Actions</span>
+                            <span>Status</span>
                         </th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white">
-                    <tr v-if="memberships.length === 0">
-                        <td colspan="7" class="px-4 py-3 text-center text-sm text-gray-500">No membership packages found</td>
+                    <tr v-if="membershipPlans.length === 0">
+                        <td colspan="7" class="px-4 py-3 text-center text-sm text-gray-500">No membership plans found</td>
                     </tr>
-                    <tr v-for="m in filteredMemberships" :key="m.id" class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ m.id }}</td>
-                        <td class="px-4 py-3 text-sm text-blue-600 hover:underline hover:cursor-pointer">{{ m.name }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600 capitalize">{{ m.type }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ m.duration }} month(s)</td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ m.price.toLocaleString() }} VND</td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ m.description }}</td>
+                    <tr v-for="plan in filteredMembershipPlans" :key="plan.id" class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ plan.id }}</td>
+                        <td class="px-4 py-3 text-sm text-blue-600 hover:underline hover:cursor-pointer">{{ plan.name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ plan.membershipTier.name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ plan.duration }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ plan.price.toLocaleString() }} VND</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ plan.benefits }}</td>
                         <td class="px-4 py-3 text-sm text-center">
-                            <button class="px-2 py-1 rounded bg-green-600 text-white mr-2 hover:cursor-pointer hover:bg-green-700">Edit</button>
-                            <button class="px-2 py-1 rounded bg-red-600 text-white hover:cursor-pointer hover:bg-red-700">Delete</button>
+                            <span :class="[
+                                'px-2 py-1 rounded-full text-xs', plan.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                            ]">
+                            {{ plan.status }}
+                            </span>
                         </td>
                     </tr>
                 </tbody>
