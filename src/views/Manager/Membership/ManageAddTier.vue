@@ -28,7 +28,7 @@ const submit = async () => {
   console.log("Submitting membership tier:", payload)
 
   try {
-    const res = await api.post("/api/membershiptier", payload)
+    const res = await api.post("/membershiptier", payload)
 
     if (res.status === 200 || res.status === 201) {
       alert("Membership tier has been added successfully!")

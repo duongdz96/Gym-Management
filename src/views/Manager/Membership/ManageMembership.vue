@@ -37,11 +37,11 @@ const filteredMembershipPlans = computed(() => {
 onMounted(async () => {
     try {
         // Load membership tiers
-        const tierRes = await api.get("/api/membershiptier");
+        const tierRes = await api.get("/membershiptier");
         membershipTiers.value = tierRes.data;
 
         // Load membership plans
-        const planRes = await api.get("/api/membershipplan");
+        const planRes = await api.get("/membershipplan");
         membershipPlans.value = planRes.data;
 
         console.log("Membership tiers loaded:", membershipTiers.value);
@@ -70,7 +70,7 @@ onMounted(async () => {
                 </select>
              </div>
              <div>
-                <RouterLink :to="{ name: 'membership.add' }" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:opacity-90 mr-2">Add Package</RouterLink>
+                <RouterLink :to="{ name: 'membership.add' }" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:opacity-90 mr-2">Add Plan</RouterLink>
                 <RouterLink :to="{ name: 'membership.add-tier' }" class="px-3 py-2 rounded-lg bg-green-600 text-white hover:opacity-90">Add Tier</RouterLink>
              </div>
         </div>
