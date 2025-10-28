@@ -27,15 +27,8 @@ const filteredMemberships = computed(() => {
 
 onMounted(async () => {
     try {
-        // Load tiers from /membershiptier
-        const tierRes = await api.get("/membershiptier");
-        const tiers = tierRes.data.map((tier: any) => ({ ...tier, type: 'tier' }));
-
-        // Load packages from /memberships (assuming packages are stored there)
-        const packageRes = await api.get("/memberships");
-        const packages = packageRes.data.filter((item: any) => item.type === 'package');
-
-        memberships.value = [...tiers, ...packages];
+        const res = await api.get("/membershiptier");
+        memberships.value = res.data;
         console.log("Memberships loaded:", memberships.value);
     } catch (error) {
         console.error('Failed to load memberships:', error);

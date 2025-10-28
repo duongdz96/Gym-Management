@@ -30,7 +30,7 @@ const submit = async () => {
   console.log("Submitting membership package:", payload)
 
   try {
-    const res = await api.post("/memberships", payload)
+    const res = await api.post("/membershiptier", payload)
 
     if (res.status === 200 || res.status === 201) {
       alert("Membership package has been added successfully!")
