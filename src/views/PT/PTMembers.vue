@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import api from "@/services/api";
+import { useAuthStore } from "@/stores/useAuthStore";
+
+const authStore = useAuthStore();
 
 const searchQuery = ref("");
 const members = ref([]);
@@ -21,23 +24,23 @@ const filteredMembers = computed(() => {
 const selectMember = (member) => {
   selectedMember.value = member;
   isEditingWeight.value = false;
-  tempCurrentWeight.value = member.currentWeight;
+  tempCurrentWeight.value = member.weight;
 };
 
 const startEditingWeight = () => {
-  if (selectedMember.value && selectedMember.value.status === "Active") {
+  if (selectedMember.value) {
     isEditingWeight.value = true;
   }
 };
 
 const saveCurrentWeight = async () => {
-  if (selectedMember.value && selectedMember.value.status === "Active") {
+  if (selectedMember.value) {
     try {
       const payload = {
-        currentWeight: tempCurrentWeight.value
+        weight: tempCurrentWeight.value
       };
-      await api.put(`/pt/members/${selectedMember.value.id}`, payload);
-      selectedMember.value.currentWeight = tempCurrentWeight.value;
+      await api.put(`/studentprofile/${selectedMember.value.id}`, payload);
+      selectedMember.value.weight = tempCurrentWeight.value;
       isEditingWeight.value = false;
       alert("Weight updated successfully!");
     } catch (error) {
@@ -61,7 +64,7 @@ watch(filteredMembers, (newFilteredMembers) => {
       // If not, select the first available member
       if (newFilteredMembers.length > 0) {
         selectedMember.value = newFilteredMembers[0];
-        tempCurrentWeight.value = newFilteredMembers[0].currentWeight;
+        tempCurrentWeight.value = newFilteredMembers[0].weight;
       } else {
         selectedMember.value = null;
       }
@@ -69,14 +72,25 @@ watch(filteredMembers, (newFilteredMembers) => {
   } else if (newFilteredMembers.length > 0) {
     // If no member selected but filtered list has members, select first
     selectedMember.value = newFilteredMembers[0];
-    tempCurrentWeight.value = newFilteredMembers[0].currentWeight;
+    tempCurrentWeight.value = newFilteredMembers[0].weight;
   }
 });
 
 onMounted(async () => {
   try {
-    const res = await api.get("/pt/members");
-    members.value = res.data;
+    const res = await api.get("/studentprofile");
+    const data = Array.isArray(res.data) ? res.data : [];
+    // Filter profiles for the current PT
+    const ptProfiles = data.filter(profile => profile.staff.id === authStore.user.id);
+    // Map to member objects
+    members.value = ptProfiles.map(profile => ({
+      id: profile.id,
+      name: profile.member.fullName,
+      email: profile.member.email,
+      height: profile.height,
+      weight: profile.weight,
+      trainingPlan: profile.trainingPlan,
+    }));
     console.log("PT Members loaded:", members.value);
   } catch (error) {
     console.error('Failed to load PT members:', error);
@@ -86,7 +100,7 @@ onMounted(async () => {
   // Auto select first member
   if (members.value.length > 0) {
     selectedMember.value = members.value[0];
-    tempCurrentWeight.value = members.value[0].currentWeight;
+    tempCurrentWeight.value = members.value[0].weight;
   }
 });
 </script>
@@ -129,22 +143,12 @@ onMounted(async () => {
               selectedMember?.id === member.id
                 ? 'bg-blue-100 border-blue-300'
                 : 'bg-gray-50 hover:bg-gray-100',
-              member.status === 'Expired' ? 'opacity-50' : '',
             ]"
           >
             <div class="font-medium text-gray-900">{{ member.name }}</div>
             <div class="text-sm text-gray-500">{{ member.email }}</div>
-            <div class="text-sm text-gray-500">{{ member.membership }}</div>
-            <span
-              :class="
-                member.status === 'Active'
-                  ? 'text-green-600 bg-green-100'
-                  : 'text-red-600 bg-red-100'
-              "
-              class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full mt-2"
-            >
-              {{ member.status }}
-            </span>
+            <div class="text-sm text-gray-500">Height: {{ member.height }} cm</div>
+            <div class="text-sm text-gray-500">Weight: {{ member.weight }} kg</div>
           </div>
         </div>
       </div>
@@ -172,23 +176,7 @@ onMounted(async () => {
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Membership Package</label
-              >
-              <p class="mt-1 text-lg text-gray-900">
-                {{ selectedMember.membership }}
-              </p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Initial Weight</label
-              >
-              <p class="mt-1 text-lg text-gray-900">
-                {{ selectedMember.initialWeight }} kg
-              </p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Current Weight</label
+                >Weight</label
               >
               <div class="mt-1 flex items-center space-x-2">
                 <input
@@ -200,10 +188,10 @@ onMounted(async () => {
                   step="0.1"
                 />
                 <span v-else class="text-lg text-gray-900"
-                  >{{ selectedMember.currentWeight }} kg</span
+                  >{{ selectedMember.weight }} kg</span
                 >
                 <button
-                  v-if="!isEditingWeight && selectedMember.status === 'Active'"
+                  v-if="!isEditingWeight"
                   @click="startEditingWeight"
                   class="text-blue-600 hover:text-blue-800 text-sm"
                 >
@@ -234,39 +222,15 @@ onMounted(async () => {
               </p>
             </div>
           </div>
-          <!-- Có thể thêm biểu đồ hoặc thông tin khác -->
-          <div class="mt-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-2">
-              Weight Progress
-            </h3>
-            <div class="bg-gray-100 rounded-lg p-4">
-              <div class="flex justify-between text-sm text-gray-600">
-                <span>Ban đầu: {{ selectedMember.initialWeight }} kg</span>
-                <span>Hiện tại: {{ selectedMember.currentWeight }} kg</span>
-              </div>
-              <div class="mt-2 bg-gray-200 rounded-full h-4">
-                <div
-                  class="bg-blue-500 h-4 rounded-full"
-                  :style="{
-                    width: `${Math.max(
-                      0,
-                      ((selectedMember.initialWeight -
-                        selectedMember.currentWeight) /
-                        selectedMember.initialWeight) *
-                        100
-                    )}%`,
-                  }"
-                ></div>
-              </div>
-              <p class="mt-2 text-sm text-gray-600">
-                Lost
-                {{
-                  selectedMember.initialWeight - selectedMember.currentWeight
-                }}
-                kg
-              </p>
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Training Plan</label
+            >
+            <p class="mt-1 text-lg text-gray-900">
+              {{ selectedMember.trainingPlan }}
+            </p>
           </div>
+
         </div>
         <div v-else class="text-center text-gray-500">
           Select a member to view detailed information

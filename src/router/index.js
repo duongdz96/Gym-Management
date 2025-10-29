@@ -36,7 +36,8 @@ import CustomerSetting from "@/views/Customer/CustomerSetting.vue";
 
 import ReceptionLayout from "@/layout/ReceptionLayout.vue";
 import ReceptionHome from "@/views/Reception/ReceptionHome.vue";
-import AddMembership from "@/views/Reception/AddMembership.vue";
+import ReceptionAddMembership from "@/views/Reception/Membership/ReceptionAddMembership.vue";
+import ReceptionMemberships from "@/views/Reception/Membership/ReceptionMemberships.vue";
 import SalesSelect from "@/views/Reception/Sale/SalesSelect.vue";
 import SalesCheckout from "@/views/Reception/Sale/SalesCheckout.vue";
 import SalesBooking from "@/views/Reception/Sale/SalesBooking.vue";
@@ -108,10 +109,11 @@ const routes = [
     {
         path: "/reception",
         component: ReceptionLayout,
-        meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
+        // meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
         children: [
             { path: "", name: "reception.home", component: ReceptionHome },
-            { path: "add-membership", name: "add-membership", component: AddMembership },
+            { path: "memberships", name: "reception.memberships", component: ReceptionMemberships },
+            { path: "add-membership", name: "add-membership", component: ReceptionAddMembership },
             { path: "salesselect", name: "salesselect", component: SalesSelect },
             { path: "salescheckout", name: "salesCheckout", component: SalesCheckout },
             { path: "salesbooking", name: "salesBooking", component: SalesBooking },

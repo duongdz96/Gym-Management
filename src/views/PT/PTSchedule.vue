@@ -1,24 +1,93 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import api from "@/services/api";
+import { useAuthStore } from "@/stores/useAuthStore";
+
+const authStore = useAuthStore();
 
 const currentDate = ref(new Date());
 const selectedDate = ref(null);
 const showModal = ref(false);
+const searchQuery = ref("");
 
 // Schedule data - will be fetched from backend
 const schedule = ref([]);
 
+// Helpers
+function toDateStr(iso) {
+  const d = new Date(iso);
+  return (
+    d.getFullYear() +
+    "-" +
+    String(d.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(d.getDate()).padStart(2, "0")
+  );
+}
+
+function formatTimeRange(startIso, endIso) {
+  const s = new Date(startIso);
+  const e = new Date(endIso);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${pad(s.getHours())}:${pad(s.getMinutes())} - ${pad(
+    e.getHours()
+  )}:${pad(e.getMinutes())}`;
+}
+
 // Function to fetch schedule from backend
-async function fetchSchedule() {
+async function fetchSchedule(query = "") {
   try {
-    const res = await api.get("/pt/schedule");
-    schedule.value = res.data;
+    let res;
+    if (query) {
+      // Search by member name
+      res = await api.get(`/appointment/member/${query}`);
+    } else {
+      // Get all appointments
+      res = await api.get("/appointment");
+    }
+    const data = Array.isArray(res.data) ? res.data : [];
+
+    // Filter appointments for the current PT
+    const ptAppointments = data.filter(appt => appt.staff.id === authStore.user.id);
+
+    // Map backend appointment shape to the calendar event shape expected by this component
+    schedule.value = ptAppointments.map((appt) => {
+      const start = appt.startTime;
+      const end = appt.endTime;
+
+      return {
+        id: appt.id,
+        // calendar uses a date string YYYY-MM-DD to group events per day
+        date: toDateStr(start),
+        // user-facing time range
+        time: formatTimeRange(start, end),
+        // show member name (fallback to package/member or staff if missing)
+        name:
+          appt.ptPackageIssued?.member?.fullName ||
+          appt.ptPackageIssued?.ptPackage?.name ||
+          appt.staff?.fullName ||
+          "Appointment",
+        // appointments are usually 1 member; keep for display
+        members: 1,
+        status: appt.status,
+        // include some useful details for modal if needed
+        member: appt.ptPackageIssued?.member || null,
+        staff: appt.staff || null,
+        remainingSessions: appt.ptPackageIssued?.remainingSessions ?? null,
+        raw: appt,
+      };
+    });
+
     console.log("PT Schedule loaded:", schedule.value);
   } catch (error) {
     console.error("Failed to fetch PT schedule:", error);
     alert("Failed to load schedule. Please try again.");
   }
+}
+
+// Function to search schedule by member name
+async function searchSchedule() {
+  await fetchSchedule(searchQuery.value);
 }
 
 // Computed properties for calendar
@@ -112,8 +181,30 @@ onMounted(async () => {
 
 <template>
   <div class="p-6 space-y-8">
-    <!-- Title -->
-    <h1 class="text-2xl font-bold text-stone-800">PT Schedule</h1>
+    <!-- Title and Search -->
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-stone-800">PT Schedule</h1>
+      <div class="flex items-center space-x-2">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search by member name"
+          class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          @click="searchSchedule"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Search
+        </button>
+        <button
+          @click="fetchSchedule"
+          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+        >
+          Reset
+        </button>
+      </div>
+    </div>
 
     <!-- Lịch dạy hôm nay -->
     <section class="bg-white rounded-xl shadow p-4">
