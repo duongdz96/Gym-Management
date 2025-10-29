@@ -69,7 +69,7 @@ const routes = [
     {
         path: "/manager",
         component: ManagerLayout,
-        // meta: { requiresAuth: true, roles: ["MANAGER"] },
+        meta: { requiresAuth: true, roles: ["MANAGER"] },
         children: [
             { path: "staff", name: "staff", component: Staff },
             { path: "customer", name: "customer", component: Customer },
@@ -109,7 +109,7 @@ const routes = [
     {
         path: "/reception",
         component: ReceptionLayout,
-        // meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
+        meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
         children: [
             { path: "", name: "reception.home", component: ReceptionHome },
             { path: "memberships", name: "reception.memberships", component: ReceptionMemberships },
@@ -122,6 +122,7 @@ const routes = [
     {
         path: "/pt",
         component: PTLayout,
+        meta: { requiresAuth: true, roles: ["PT"] },
         children: [
             {
                 path: '/pt/',
