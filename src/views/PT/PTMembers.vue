@@ -1,109 +1,52 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
+import api from "@/services/api";
+import { useAuthStore } from "@/stores/useAuthStore";
 
-const members = ref([
-  {
-    id: 1,
-    name: "Nguyễn Thị A",
-    email: "a@example.com",
-    membership: "Gói 3 tháng",
-    status: "Active",
-    initialWeight: 65,
-    currentWeight: 62,
-    height: 165,
-  },
-  {
-    id: 2,
-    name: "Trần Văn B",
-    email: "b@example.com",
-    membership: "Gói 6 tháng",
-    status: "Active",
-    initialWeight: 70,
-    currentWeight: 68,
-    height: 175,
-  },
-  {
-    id: 3,
-    name: "Lê Thị C",
-    email: "c@example.com",
-    membership: "Gói 1 tháng",
-    status: "Expired",
-    initialWeight: 60,
-    currentWeight: 58,
-    height: 160,
-  },
-  {
-    id: 4,
-    name: "Phạm Văn D",
-    email: "d@example.com",
-    membership: "Gói 12 tháng",
-    status: "Active",
-    initialWeight: 75,
-    currentWeight: 72,
-    height: 180,
-  },
-  {
-    id: 5,
-    name: "Hoàng Thị E",
-    email: "e@example.com",
-    membership: "Gói 6 tháng",
-    status: "Expired",
-    initialWeight: 55,
-    currentWeight: 54,
-    height: 155,
-  },
-  {
-    id: 6,
-    name: "Đỗ Văn F",
-    email: "f@example.com",
-    membership: "Gói 3 tháng",
-    status: "Active",
-    initialWeight: 80,
-    currentWeight: 77,
-    height: 170,
-  },
-  {
-    id: 7,
-    name: "Bùi Thị G",
-    email: "g@example.com",
-    membership: "Gói 1 tháng",
-    status: "Expired",
-    initialWeight: 62,
-    currentWeight: 61,
-    height: 162,
-  },
-  {
-    id: 8,
-    name: "Vũ Văn H",
-    email: "h@example.com",
-    membership: "Gói 6 tháng",
-    status: "Active",
-    initialWeight: 68,
-    currentWeight: 65,
-    height: 168,
-  },
-]);
+const authStore = useAuthStore();
+
+const searchQuery = ref("");
+const members = ref([]);
 
 const selectedMember = ref(null);
 const isEditingWeight = ref(false);
 const tempCurrentWeight = ref(0);
 
+const filteredMembers = computed(() => {
+  if (!searchQuery.value) {
+    return members.value;
+  }
+  return members.value.filter(member =>
+    member.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
 const selectMember = (member) => {
   selectedMember.value = member;
   isEditingWeight.value = false;
-  tempCurrentWeight.value = member.currentWeight;
+  tempCurrentWeight.value = member.weight;
 };
 
 const startEditingWeight = () => {
-  if (selectedMember.value && selectedMember.value.status === "Active") {
+  if (selectedMember.value) {
     isEditingWeight.value = true;
   }
 };
 
-const saveCurrentWeight = () => {
-  if (selectedMember.value && selectedMember.value.status === "Active") {
-    selectedMember.value.currentWeight = tempCurrentWeight.value;
-    isEditingWeight.value = false;
+const saveCurrentWeight = async () => {
+  if (selectedMember.value) {
+    try {
+      const payload = {
+        weight: tempCurrentWeight.value
+      };
+      await api.put(`/studentprofile/${selectedMember.value.id}`, payload);
+      selectedMember.value.weight = tempCurrentWeight.value;
+      isEditingWeight.value = false;
+      alert("Weight updated successfully!");
+    } catch (error) {
+      console.error("Error updating weight:", error);
+      alert("Failed to update weight. Please try again.");
+    }
   }
 };
 
@@ -112,12 +55,52 @@ const cancelEditingWeight = () => {
   isEditingWeight.value = false;
 };
 
-onMounted(() => {
-  console.log("PT Members loaded");
+// Watch for changes in filtered members to update selected member
+watch(filteredMembers, (newFilteredMembers) => {
+  if (selectedMember.value) {
+    // Check if current selected member is still in filtered list
+    const stillExists = newFilteredMembers.some(member => member.id === selectedMember.value.id);
+    if (!stillExists) {
+      // If not, select the first available member
+      if (newFilteredMembers.length > 0) {
+        selectedMember.value = newFilteredMembers[0];
+        tempCurrentWeight.value = newFilteredMembers[0].weight;
+      } else {
+        selectedMember.value = null;
+      }
+    }
+  } else if (newFilteredMembers.length > 0) {
+    // If no member selected but filtered list has members, select first
+    selectedMember.value = newFilteredMembers[0];
+    tempCurrentWeight.value = newFilteredMembers[0].weight;
+  }
+});
+
+onMounted(async () => {
+  try {
+    const res = await api.get("/studentprofile");
+    const data = Array.isArray(res.data) ? res.data : [];
+    // Filter profiles for the current PT
+    const ptProfiles = data.filter(profile => profile.staff.id === authStore.user.id);
+    // Map to member objects
+    members.value = ptProfiles.map(profile => ({
+      id: profile.id,
+      name: profile.member.fullName,
+      email: profile.member.email,
+      height: profile.height,
+      weight: profile.weight,
+      trainingPlan: profile.trainingPlan,
+    }));
+    console.log("PT Members loaded:", members.value);
+  } catch (error) {
+    console.error('Failed to load PT members:', error);
+    alert("Failed to load members. Please try again.");
+  }
+
   // Auto select first member
   if (members.value.length > 0) {
     selectedMember.value = members.value[0];
-    tempCurrentWeight.value = members.value[0].currentWeight;
+    tempCurrentWeight.value = members.value[0].weight;
   }
 });
 </script>
@@ -132,9 +115,27 @@ onMounted(() => {
       <!-- Bên trái: Danh sách học viên -->
       <div class="w-1/3 bg-white rounded-xl shadow p-5 overflow-y-auto">
         <h2 class="text-xl font-semibold mb-4">My Members</h2>
+
+        <!-- Search Bar -->
+        <div class="mb-4">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search members by name..."
+              class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+        </div>
+
         <div class="space-y-3">
           <div
-            v-for="member in members"
+            v-for="member in filteredMembers"
             :key="member.id"
             @click="selectMember(member)"
             :class="[
@@ -142,22 +143,12 @@ onMounted(() => {
               selectedMember?.id === member.id
                 ? 'bg-blue-100 border-blue-300'
                 : 'bg-gray-50 hover:bg-gray-100',
-              member.status === 'Expired' ? 'opacity-50' : '',
             ]"
           >
             <div class="font-medium text-gray-900">{{ member.name }}</div>
             <div class="text-sm text-gray-500">{{ member.email }}</div>
-            <div class="text-sm text-gray-500">{{ member.membership }}</div>
-            <span
-              :class="
-                member.status === 'Active'
-                  ? 'text-green-600 bg-green-100'
-                  : 'text-red-600 bg-red-100'
-              "
-              class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full mt-2"
-            >
-              {{ member.status }}
-            </span>
+            <div class="text-sm text-gray-500">Height: {{ member.height }} cm</div>
+            <div class="text-sm text-gray-500">Weight: {{ member.weight }} kg</div>
           </div>
         </div>
       </div>
@@ -185,23 +176,7 @@ onMounted(() => {
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Membership Package</label
-              >
-              <p class="mt-1 text-lg text-gray-900">
-                {{ selectedMember.membership }}
-              </p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Initial Weight</label
-              >
-              <p class="mt-1 text-lg text-gray-900">
-                {{ selectedMember.initialWeight }} kg
-              </p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700"
-                >Current Weight</label
+                >Weight</label
               >
               <div class="mt-1 flex items-center space-x-2">
                 <input
@@ -213,10 +188,10 @@ onMounted(() => {
                   step="0.1"
                 />
                 <span v-else class="text-lg text-gray-900"
-                  >{{ selectedMember.currentWeight }} kg</span
+                  >{{ selectedMember.weight }} kg</span
                 >
                 <button
-                  v-if="!isEditingWeight && selectedMember.status === 'Active'"
+                  v-if="!isEditingWeight"
                   @click="startEditingWeight"
                   class="text-blue-600 hover:text-blue-800 text-sm"
                 >
@@ -247,44 +222,29 @@ onMounted(() => {
               </p>
             </div>
           </div>
-          <!-- Có thể thêm biểu đồ hoặc thông tin khác -->
-          <div class="mt-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-2">
-              Weight Progress
-            </h3>
-            <div class="bg-gray-100 rounded-lg p-4">
-              <div class="flex justify-between text-sm text-gray-600">
-                <span>Ban đầu: {{ selectedMember.initialWeight }} kg</span>
-                <span>Hiện tại: {{ selectedMember.currentWeight }} kg</span>
-              </div>
-              <div class="mt-2 bg-gray-200 rounded-full h-4">
-                <div
-                  class="bg-blue-500 h-4 rounded-full"
-                  :style="{
-                    width: `${Math.max(
-                      0,
-                      ((selectedMember.initialWeight -
-                        selectedMember.currentWeight) /
-                        selectedMember.initialWeight) *
-                        100
-                    )}%`,
-                  }"
-                ></div>
-              </div>
-              <p class="mt-2 text-sm text-gray-600">
-                Lost
-                {{
-                  selectedMember.initialWeight - selectedMember.currentWeight
-                }}
-                kg
-              </p>
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Training Plan</label
+            >
+            <p class="mt-1 text-lg text-gray-900">
+              {{ selectedMember.trainingPlan }}
+            </p>
           </div>
+
         </div>
         <div v-else class="text-center text-gray-500">
           Select a member to view detailed information
+                    </div>
+          </div>
+        </div>
+
+        <!-- No results message -->
+        <div v-if="filteredMembers.length === 0 && searchQuery" class="text-center py-8 text-gray-500">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">No members found</h3>
+          <p class="mt-1 text-sm text-gray-500">Try adjusting your search terms.</p>
         </div>
       </div>
-    </div>
-  </div>
 </template>

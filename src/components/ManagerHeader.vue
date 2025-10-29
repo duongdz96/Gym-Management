@@ -70,6 +70,13 @@ const handleLogout = () => {
           Coupons
         </RouterLink>
         <RouterLink
+          to="/manager/membership"
+          class="uppercase tracking-wider hover:text-red-600"
+          :class="route.path.startsWith('/manager/membership') ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+        >
+          Memberships
+        </RouterLink>
+        <RouterLink
           to="/manager/classtemplate"
           class="uppercase tracking-wider hover:text-red-600"
           :class="route.path === '/manager/classtemplate' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
@@ -185,6 +192,11 @@ const handleLogout = () => {
         class="block hover:text-red-600"
         @click="isMenuOpen = false"
       >Coupons</RouterLink>
+      <RouterLink
+        to="/manager/membership"
+        class="block hover:text-red-600"
+        @click="isMenuOpen = false"
+      >Memberships</RouterLink>
 
       <hr class="border-gray-700 my-2" />
 

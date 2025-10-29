@@ -1,138 +1,93 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import api from "@/services/api";
+import { useAuthStore } from "@/stores/useAuthStore";
+
+const authStore = useAuthStore();
 
 const currentDate = ref(new Date());
 const selectedDate = ref(null);
 const showModal = ref(false);
+const searchQuery = ref("");
 
 // Schedule data - will be fetched from backend
 const schedule = ref([]);
 
-// Function to fetch schedule from backend
-async function fetchSchedule() {
-  try {
-    // TODO: Replace with actual API call
-    // const response = await fetch('/api/pt/schedule');
-    // schedule.value = await response.json();
+// Helpers
+function toDateStr(iso) {
+  const d = new Date(iso);
+  return (
+    d.getFullYear() +
+    "-" +
+    String(d.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(d.getDate()).padStart(2, "0")
+  );
+}
 
-    // Sample data for now
-    schedule.value = [
-      {
-        id: 1,
-        name: "Lớp Yoga buổi sáng",
-        date: "2025-10-17",
-        time: "07:00 - 08:00",
-        members: 15,
-      },
-      {
-        id: 2,
-        name: "Body Pump",
-        date: "2025-10-18",
-        time: "18:00 - 19:00",
-        members: 12,
-      },
-      {
-        id: 3,
-        name: "Personal Training",
-        date: "2025-10-19",
-        time: "10:00 - 11:00",
+function formatTimeRange(startIso, endIso) {
+  const s = new Date(startIso);
+  const e = new Date(endIso);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${pad(s.getHours())}:${pad(s.getMinutes())} - ${pad(
+    e.getHours()
+  )}:${pad(e.getMinutes())}`;
+}
+
+// Function to fetch schedule from backend
+async function fetchSchedule(query = "") {
+  try {
+    let res;
+    if (query) {
+      // Search by member name
+      res = await api.get(`/appointment/member/${query}`);
+    } else {
+      // Get all appointments
+      res = await api.get("/appointment");
+    }
+    const data = Array.isArray(res.data) ? res.data : [];
+
+    // Filter appointments for the current PT
+    const ptAppointments = data.filter(appt => appt.staff.id === authStore.user.id);
+
+    // Map backend appointment shape to the calendar event shape expected by this component
+    schedule.value = ptAppointments.map((appt) => {
+      const start = appt.startTime;
+      const end = appt.endTime;
+
+      return {
+        id: appt.id,
+        // calendar uses a date string YYYY-MM-DD to group events per day
+        date: toDateStr(start),
+        // user-facing time range
+        time: formatTimeRange(start, end),
+        // show member name (fallback to package/member or staff if missing)
+        name:
+          appt.ptPackageIssued?.member?.fullName ||
+          appt.ptPackageIssued?.ptPackage?.name ||
+          appt.staff?.fullName ||
+          "Appointment",
+        // appointments are usually 1 member; keep for display
         members: 1,
-      },
-      {
-        id: 10,
-        name: "Zumba",
-        date: "2025-10-19",
-        time: "11:00 - 12:00",
-        members: 25,
-      },
-      {
-        id: 11,
-        name: "Kickboxing",
-        date: "2025-10-19",
-        time: "14:00 - 15:00",
-        members: 18,
-      },
-      {
-        id: 12,
-        name: "Spinning",
-        date: "2025-10-27",
-        time: "15:30 - 16:30",
-        members: 20,
-      },
-      {
-        id: 13,
-        name: "Aerobic",
-        date: "2025-10-27",
-        time: "17:00 - 18:00",
-        members: 22,
-      },
-      {
-        id: 14,
-        name: "Morning Run",
-        date: "2025-10-27",
-        time: "05:30 - 06:30",
-        members: 8,
-      },
-      {
-        id: 15,
-        name: "Weight Lifting",
-        date: "2025-10-27",
-        time: "12:00 - 13:00",
-        members: 16,
-      },
-      {
-        id: 16,
-        name: "Tai Chi",
-        date: "2025-10-27",
-        time: "16:00 - 17:00",
-        members: 10,
-      },
-      {
-        id: 4,
-        name: "Yoga buổi tối",
-        date: "2025-10-21",
-        time: "19:00 - 20:00",
-        members: 10,
-      },
-      {
-        id: 5,
-        name: "Pilates",
-        date: "2025-10-27",
-        time: "09:00 - 10:00",
-        members: 8,
-      },
-      {
-        id: 6,
-        name: "Boxing",
-        date: "2025-10-21",
-        time: "14:00 - 15:00",
-        members: 8,
-      },
-      {
-        id: 7,
-        name: "Dance Fitness",
-        date: "2025-10-17",
-        time: "16:00 - 17:00",
-        members: 20,
-      },
-      {
-        id: 8,
-        name: "CrossFit",
-        date: "2025-10-17",
-        time: "17:30 - 18:30",
-        members: 15,
-      },
-      {
-        id: 9,
-        name: "Swimming",
-        date: "2025-10-17",
-        time: "18:30 - 19:30",
-        members: 12,
-      },
-    ];
+        status: appt.status,
+        // include some useful details for modal if needed
+        member: appt.ptPackageIssued?.member || null,
+        staff: appt.staff || null,
+        remainingSessions: appt.ptPackageIssued?.remainingSessions ?? null,
+        raw: appt,
+      };
+    });
+
+    console.log("PT Schedule loaded:", schedule.value);
   } catch (error) {
-    console.error("Failed to fetch schedule:", error);
+    console.error("Failed to fetch PT schedule:", error);
+    alert("Failed to load schedule. Please try again.");
   }
+}
+
+// Function to search schedule by member name
+async function searchSchedule() {
+  await fetchSchedule(searchQuery.value);
 }
 
 // Computed properties for calendar
@@ -226,8 +181,30 @@ onMounted(async () => {
 
 <template>
   <div class="p-6 space-y-8">
-    <!-- Title -->
-    <h1 class="text-2xl font-bold text-stone-800">PT Schedule</h1>
+    <!-- Title and Search -->
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-stone-800">PT Schedule</h1>
+      <div class="flex items-center space-x-2">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search by member name"
+          class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          @click="searchSchedule"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Search
+        </button>
+        <button
+          @click="fetchSchedule"
+          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+        >
+          Reset
+        </button>
+      </div>
+    </div>
 
     <!-- Lịch dạy hôm nay -->
     <section class="bg-white rounded-xl shadow p-4">

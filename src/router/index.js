@@ -20,6 +20,9 @@ import ClassTemplate from "@/views/Manager/Classes/ClassTemplate.vue";
 import AddClassTemplate from "@/views/Manager/Classes/AddClassTemplate.vue";
 import ClassSchedule from "@/views/Manager/Classes/ClassSchedule.vue";
 import Banner from "@/views/Manager/Config/Banner.vue";
+import ManageMembership from "@/views/Manager/Membership/ManageMembership.vue";
+import ManageAddMembership from "@/views/Manager/Membership/ManageAddMembership.vue";
+import ManageAddTier from "@/views/Manager/Membership/ManageAddTier.vue";
 
 import CustomerLayout from "@/layout/CustomerLayout.vue";
 import CustomerHome from "@/views/Customer/CustomerHome.vue";
@@ -33,7 +36,8 @@ import CustomerSetting from "@/views/Customer/CustomerSetting.vue";
 
 import ReceptionLayout from "@/layout/ReceptionLayout.vue";
 import ReceptionHome from "@/views/Reception/ReceptionHome.vue";
-import AddMembership from "@/views/Reception/AddMembership.vue";
+import ReceptionAddMembership from "@/views/Reception/Membership/ReceptionAddMembership.vue";
+import ReceptionMemberships from "@/views/Reception/Membership/ReceptionMemberships.vue";
 import SalesSelect from "@/views/Reception/Sale/SalesSelect.vue";
 import SalesCheckout from "@/views/Reception/Sale/SalesCheckout.vue";
 import SalesBooking from "@/views/Reception/Sale/SalesBooking.vue";
@@ -65,7 +69,7 @@ const routes = [
     {
         path: "/manager",
         component: ManagerLayout,
-        meta: { requiresAuth: true, roles: ["MANAGER"] },
+        // meta: { requiresAuth: true, roles: ["MANAGER"] },
         children: [
             { path: "staff", name: "staff", component: Staff },
             { path: "customer", name: "customer", component: Customer },
@@ -79,7 +83,10 @@ const routes = [
             { path: "classtemplate", name: "classtemplate", component: ClassTemplate },
             { path: "classtemplate/add", name: "classtemplate.add", component: AddClassTemplate },
             { path: "classschedule", name: "classschedule", component: ClassSchedule },
-            { path: "banner", name: "banner", component: Banner }
+            { path: "banner", name: "banner", component: Banner },
+            { path: "membership", name: "membership", component: ManageMembership },
+            { path: "membership/add", name: "membership.add", component: ManageAddMembership },
+            { path: "membership/add-tier", name: "membership.add-tier", component: ManageAddTier }
         ],
     },
 
@@ -102,10 +109,11 @@ const routes = [
     {
         path: "/reception",
         component: ReceptionLayout,
-        meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
+        // meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
         children: [
             { path: "", name: "reception.home", component: ReceptionHome },
-            { path: "add-membership", name: "add-membership", component: AddMembership },
+            { path: "memberships", name: "reception.memberships", component: ReceptionMemberships },
+            { path: "add-membership", name: "add-membership", component: ReceptionAddMembership },
             { path: "salesselect", name: "salesselect", component: SalesSelect },
             { path: "salescheckout", name: "salesCheckout", component: SalesCheckout },
             { path: "salesbooking", name: "salesBooking", component: SalesBooking },
