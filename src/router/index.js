@@ -25,7 +25,7 @@ import CustomerLayout from "@/layout/CustomerLayout.vue";
 import CustomerHome from "@/views/Customer/CustomerHome.vue";
 import CustomerDashboard from "@/views/Customer/CustomerDashboard.vue";
 import CustomerMembership from "@/views/Customer/CustomerMembership.vue";
-import CustomerClass from "@/views/Customer/CustomerClass.vue";
+import CustomerClass from "@/views/Customer/Classes/CustomerClass.vue";
 import CustomerCoupon from "@/views/Customer/CustomerCoupon.vue";
 import CustomerPlan from "@/views/Customer/CustomerPlan.vue";
 import CustomerProfile from "@/views/Customer/CustomerProfile.vue";
@@ -45,6 +45,7 @@ import PTMembers from "@/views/PT/PTMembers.vue";
 
 import Test from "@/views/Test.vue";
 import SchedulePattern from "@/views/Manager/Classes/SchedulePattern.vue";
+import TeacherRegister from "@/views/PT/TeacherRegister.vue";
 
 const routes = [
     {
@@ -137,6 +138,11 @@ const routes = [
                 name: 'pt.members',
                 component: PTMembers
             },
+            {
+                path: '/teacher/registerclass',
+                name: 'teacher.register',
+                component: TeacherRegister
+            }
         ]
     }
 ]
