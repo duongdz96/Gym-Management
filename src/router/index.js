@@ -28,7 +28,7 @@ import CustomerLayout from "@/layout/CustomerLayout.vue";
 import CustomerHome from "@/views/Customer/CustomerHome.vue";
 import CustomerDashboard from "@/views/Customer/CustomerDashboard.vue";
 import CustomerMembership from "@/views/Customer/CustomerMembership.vue";
-import CustomerClass from "@/views/Customer/CustomerClass.vue";
+import CustomerClass from "@/views/Customer/Classes/CustomerClass.vue";
 import CustomerCoupon from "@/views/Customer/CustomerCoupon.vue";
 import CustomerPlan from "@/views/Customer/CustomerPlan.vue";
 import CustomerProfile from "@/views/Customer/CustomerProfile.vue";
@@ -49,6 +49,7 @@ import PTMembers from "@/views/PT/PTMembers.vue";
 
 import Test from "@/views/Test.vue";
 import SchedulePattern from "@/views/Manager/Classes/SchedulePattern.vue";
+import TeacherRegister from "@/views/PT/TeacherRegister.vue";
 
 const routes = [
     {
@@ -69,7 +70,7 @@ const routes = [
     {
         path: "/manager",
         component: ManagerLayout,
-        // meta: { requiresAuth: true, roles: ["MANAGER"] },
+        meta: { requiresAuth: true, roles: ["MANAGER"] },
         children: [
             { path: "staff", name: "staff", component: Staff },
             { path: "customer", name: "customer", component: Customer },
@@ -86,7 +87,9 @@ const routes = [
             { path: "banner", name: "banner", component: Banner },
             { path: "membership", name: "membership", component: ManageMembership },
             { path: "membership/add", name: "membership.add", component: ManageAddMembership },
-            { path: "membership/add-tier", name: "membership.add-tier", component: ManageAddTier }
+            { path: "membership/add-tier", name: "membership.add-tier", component: ManageAddTier },
+            { path: "schedulepattern", name: "schedulepattern", component: SchedulePattern },
+            { path: "banner", name: "banner", component: Banner }
         ],
     },
 
@@ -109,7 +112,7 @@ const routes = [
     {
         path: "/reception",
         component: ReceptionLayout,
-        // meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
+        meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
         children: [
             { path: "", name: "reception.home", component: ReceptionHome },
             { path: "memberships", name: "reception.memberships", component: ReceptionMemberships },
@@ -122,6 +125,7 @@ const routes = [
     {
         path: "/pt",
         component: PTLayout,
+        meta: { requiresAuth: true, roles: ["STAFF"] },
         children: [
             {
                 path: '/pt/',
@@ -143,6 +147,11 @@ const routes = [
                 name: 'pt.members',
                 component: PTMembers
             },
+            {
+                path: '/teacher/registerclass',
+                name: 'teacher.register',
+                component: TeacherRegister
+            }
         ]
     }
 ]
