@@ -8,20 +8,19 @@ const router = useRouter()
 // form data
 const form = ref({
   name: "",
-  duration: 12, // fixed to 1 year for tiers
-  price: 0,
+  priority: 1,
   description: ""
 })
 
 const submit = async () => {
-  if (!form.value.name || !form.value.duration || !form.value.price) {
+  if (!form.value.name) {
     alert("Please fill in all required fields.")
     return
   }
 
   const payload = {
     name: form.value.name,
-    priority: 1, // TODO: Should be calculated based on existing tiers
+    priority: form.value.priority,
     status: "Active"
   }
 
@@ -33,7 +32,7 @@ const submit = async () => {
     if (res.status === 200 || res.status === 201) {
       alert("Membership tier has been added successfully!")
 
-      form.value = { name: "", duration: 12, price: 0, description: "" }
+      form.value = { name: "", priority: 1, description: "" }
       router.push({ name: "membership" })
     }
   } catch (err: any) {
@@ -72,31 +71,25 @@ const submit = async () => {
         />
       </div>
 
-      <!-- Duration -->
+      <!-- Priority -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (Months)</label>
-        <input
-          v-model.number="form.duration"
-          type="number"
-          min="1"
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
+        <select
+          v-model.number="form.priority"
           class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
-        />
-        <p class="text-xs text-gray-500 mt-1">Typically 12 months for annual tiers</p>
+        >
+          <option value="1">1 (Highest)</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5 (Lowest)</option>
+        </select>
       </div>
 
+      <!-- Duration -->
+
       <!-- Price -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price (VND)</label>
-        <input
-          v-model.number="form.price"
-          type="number"
-          min="0"
-          step="1000"
-          class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
-      </div>
 
       <!-- Description -->
       <div class="md:col-span-2">
