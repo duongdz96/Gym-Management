@@ -109,7 +109,6 @@ function checkout() {
   }
 
   const newBill = booking();
-  toast.success("Đã tạo hóa đơn, chuyển đến trang thanh toán...");
 
   setTimeout(() => {
     router.push({ name: "salesCheckout" });
