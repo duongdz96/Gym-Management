@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 
 // ================== Trial Form ==================
 const trialName = ref('')
 const trialPhone = ref('')
 const trialEmail = ref('')
+
+const isTrialEmailValid = computed(() => {
+  if (!trialEmail.value) return true // optional
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(trialEmail.value)
+})
 
 function handleTrialSubmit() {
   if (!trialName.value || !trialPhone.value) return
@@ -255,6 +261,7 @@ onMounted(() => {
                     <div>
                         <label class="sr-only" for="trial-email">Email</label>
                         <input v-model="trialEmail" id="trial-email" type="email" placeholder="Email" class="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm">
+                        <p v-if="trialEmail && !isTrialEmailValid" class="text-red-500 text-sm mt-1">Email không hợp lệ</p>
                     </div>
                     <button type="submit" class="inline-flex items-center rounded-md bg-red-600 px-5 py-2.5 text-white text-sm font-semibold hover:bg-red-500">ĐĂNG KÝ</button>
                 </form>

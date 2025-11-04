@@ -23,6 +23,8 @@ import Banner from "@/views/Manager/Config/Banner.vue";
 import ManageMembership from "@/views/Manager/Membership/ManageMembership.vue";
 import ManageAddMembership from "@/views/Manager/Membership/ManageAddMembership.vue";
 import ManageAddTier from "@/views/Manager/Membership/ManageAddTier.vue";
+import ManageEditMembership from "@/views/Manager/Membership/ManageEditMembership.vue";
+import ManageEditTier from "@/views/Manager/Membership/ManageEditTier.vue";
 
 import CustomerLayout from "@/layout/CustomerLayout.vue";
 import CustomerHome from "@/views/Customer/CustomerHome.vue";
@@ -88,6 +90,8 @@ const routes = [
             { path: "membership", name: "membership", component: ManageMembership },
             { path: "membership/add", name: "membership.add", component: ManageAddMembership },
             { path: "membership/add-tier", name: "membership.add-tier", component: ManageAddTier },
+            { path: "membership/edit/:id", name: "membership.edit", component: ManageEditMembership },
+            { path: "membership/edit-tier/:id", name: "membership.edit-tier", component: ManageEditTier },
             { path: "schedulepattern", name: "schedulepattern", component: SchedulePattern },
             { path: "banner", name: "banner", component: Banner }
         ],

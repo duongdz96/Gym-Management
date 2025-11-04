@@ -101,6 +101,9 @@ onMounted(async () => {
                         <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <span>Status</span>
                         </th>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <span>Actions</span>
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white">
@@ -121,9 +124,60 @@ onMounted(async () => {
                             {{ plan.status }}
                             </span>
                         </td>
+                        <td class="px-4 py-3 text-sm text-center">
+                            <RouterLink :to="{ name: 'membership.edit', params: { id: plan.id } }" class="text-blue-600 hover:text-blue-800">Edit</RouterLink>
+                        </td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Membership Tiers Table -->
+        <div class="mt-8">
+            <h2 class="text-lg font-semibold mb-4">Membership Tiers</h2>
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <span>ID</span>
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <span>Name</span>
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <span>Priority</span>
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <span>Status</span>
+                            </th>
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <span>Actions</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 bg-white">
+                        <tr v-if="membershipTiers.length === 0">
+                            <td colspan="5" class="px-4 py-3 text-center text-sm text-gray-500">No membership tiers found</td>
+                        </tr>
+                        <tr v-for="tier in membershipTiers" :key="tier.id" class="hover:bg-gray-50">
+                            <td class="px-4 py-3 text-sm text-gray-600">{{ tier.id }}</td>
+                            <td class="px-4 py-3 text-sm text-blue-600 hover:underline hover:cursor-pointer">{{ tier.name }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600">{{ tier.priority }}</td>
+                            <td class="px-4 py-3 text-sm text-center">
+                                <span :class="[
+                                    'px-2 py-1 rounded-full text-xs', tier.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                ]">
+                                {{ tier.status }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-center">
+                                <RouterLink :to="{ name: 'membership.edit-tier', params: { id: tier.id } }" class="text-blue-600 hover:text-blue-800">Edit</RouterLink>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </template>

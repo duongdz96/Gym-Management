@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/services/api";
 
@@ -37,6 +37,11 @@ const form = ref({
 
 // Calculate end date based on plan duration
 const endDate = ref("");
+
+const isEmailValid = computed(() => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(form.value.email);
+});
 
 const submit = async () => {
   try {
@@ -137,6 +142,7 @@ onMounted(async () => {
           class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
+        <p v-if="form.email && !isEmailValid" class="text-red-500 text-sm mt-1">Email không hợp lệ</p>
       </div>
 
       <!-- DOB -->
