@@ -9,6 +9,7 @@ import Forbidden from "@/views/Forbidden.vue";
 import ManagerLayout from "@/layout/ManagerLayout.vue";
 import Coupon from "@/views/Manager/Coupon/Coupon.vue";
 import AddCoupon from "@/views/Manager/Coupon/AddCoupon.vue";
+import CouponDetail from "@/views/Manager/Coupon/CouponDetail.vue";
 import Product from "@/views/Manager/Product/Product.vue";
 import AddProduct from "@/views/Manager/Product/AddProduct.vue";
 import ImportProduct from "@/views/Manager/Product/ImportProduct.vue";
@@ -76,6 +77,7 @@ const routes = [
             { path: "customer", name: "customer", component: Customer },
             { path: "attendance", name: "attendance", component: Attendance },
             { path: "coupon", name: "coupon", component: Coupon },
+            { path: "coupon/:id", name: "CouponDetail", component: CouponDetail },
             { path: "coupon/add", name: "coupon.add", component: AddCoupon },
             { path: "product", name: "product", component: Product },
             { path: "product/add", name: "product.add", component: AddProduct },
