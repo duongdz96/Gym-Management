@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router';
 import axios from 'axios'
 import api from '@/services/api';
 
+
 onMounted(async () => {
     try {
         const res = await axios.get(`http://localhost:8080/api/product`)
@@ -69,6 +70,16 @@ function downloadSampleCSV() {
     a.click()
     URL.revokeObjectURL(url)
 }
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+};
 
 function triggerFilePicker()
 {
@@ -195,10 +206,17 @@ function doImport() {
                     </tr>
                     <tr v-for="c in filteredCoupon" :key="c.id" class="hover:bg-gray-50">
                         <td class="px-4 py-3 text-sm text-gray-600">{{ c.id }}</td>
-                        <td class="px-4 py-3 text-sm text-blue-600 hover:underline hover:cursor-pointer">{{ c.code }}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <RouterLink
+                                :to="{ name: 'CouponDetail', params: { id: c.id } }"
+                                class="text-blue-600 hover:underline hover:cursor-pointer"
+                            >
+                                {{ c.code }}
+                            </RouterLink>
+                        </td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ c.discountType === 2 ? 'Fixed' : 'Percentage' }}</td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ c.discountValue }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ c.startDate }} - {{ c.endDate }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ formatDate(c.startDate) }} - {{ formatDate(c.endDate) }}</td>
                         <td class="px-4 py-2 text-sm">
                             <span :class="[
                                 'px-2 py-1 rounded-full text-xs', c.status === 1 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
