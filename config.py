@@ -88,15 +88,16 @@ MAX_SAMPLE_SIMILARITY = 0.95
 CONFIDENCE_BUFFER_SIZE = 3  # Giảm từ 5 → 3 để dễ check-in
 
 # Minimum average confidence để trigger action
-MIN_CONFIDENCE = 70  # Giảm từ 80 → 70 để dễ check-in
+MIN_CONFIDENCE = 75  # Tăng lên 75% để đảm bảo check-in chính xác
 
 # Delay trước khi check-in/out (seconds)
 # Tránh check-in nhiều lần liên tiếp
 CHECK_IN_DELAY = 1.5
 
 # Cooldown period giữa các check-ins của cùng 1 người (seconds)
-# Members: 10 giây cho testing (production: 300s = 5 phút)
-MEMBER_COOLDOWN = 10  # Giảm xuống 10s để test dễ hơn
+# Nếu check-in lại trong thời gian này → update log cũ
+# Nếu > thời gian này → tạo log mới
+MEMBER_COOLDOWN = 300  # 5 phút - thời gian hợp lý cho gym
 
 # Unknown face display cooldown (seconds)
 # Tránh spam "Unknown" message

@@ -245,10 +245,14 @@ def show_success_notification(frame, person_name, action_type, is_employee):
     if is_employee:
         message = f"Employee {action_type.upper()}"
     else:
-        message = "CHECK-IN SUCCESS"
+        # Member check-in
+        if action_type == "check-in-updated":
+            message = "CHECK-IN UPDATED"
+        else:
+            message = "CHECK-IN SUCCESS"
 
-    cv2.putText(notification_frame, message, (box_x + 100, box_y + 180),
-               cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 3)
+    cv2.putText(notification_frame, message, (box_x + 90, box_y + 180),
+               cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 3)
 
     # Person name
     cv2.putText(notification_frame, person_name, (box_x + 80, box_y + 240),
@@ -502,25 +506,41 @@ def main():
                                     action_logged = True
                                     action_type = check_type
                                 else:
-                                    # Member check-in
+                                    # Member check-in (ALWAYS allowed)
                                     member_id = int(person_id)
+
+                                    # Check if this is a new check-in or update
                                     if ts - last_log > config.MEMBER_COOLDOWN:
+                                        # NEW CHECK-IN: Last check-in was > 5 minutes ago
                                         log_id = log_access(member_id, f"{date} {timestamp}")
                                         recognizer.last_log_ids[person_id] = log_id
                                         speak("Attendance taken")
-                                        print(f"✓ Member {name} checked in")
+                                        print(f"✓ Member {name} checked in (NEW)")
                                         action_logged = True
                                         action_type = "check-in"
                                     else:
-                                        # Update existing log
+                                        # UPDATE: Last check-in was < 5 minutes ago
+                                        # Update the existing log with new timestamp
                                         log_id = recognizer.last_log_ids.get(person_id)
                                         if log_id:
                                             update_access_log(log_id, f"{date} {timestamp}")
+                                            speak("Check-in updated")
+                                            print(f"✓ Member {name} check-in updated ({int(ts - last_log)}s ago)")
+                                            action_logged = True
+                                            action_type = "check-in-updated"
+                                        else:
+                                            # No previous log found, create new one
+                                            log_id = log_access(member_id, f"{date} {timestamp}")
+                                            recognizer.last_log_ids[person_id] = log_id
+                                            speak("Attendance taken")
+                                            print(f"✓ Member {name} checked in (NEW)")
+                                            action_logged = True
+                                            action_type = "check-in"
 
                                 recognizer.last_log_times[person_id] = ts
                                 recognizer.clear_buffer(person_id)
 
-                                # Show success notification for 2-3 seconds
+                                # Show success notification for 2-3 seconds (ALWAYS show)
                                 if action_logged:
                                     # Create notification frame
                                     success_frame = show_success_notification(
