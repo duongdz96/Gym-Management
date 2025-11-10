@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { computed, ref,onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
-import axios from 'axios'
-
-onMounted(async () => {
-    try {
-        const res = await axios.get(`http://localhost:8080/api/product`)
-        console.log(res)
-    } finally {
-    }
-})
+import api from '@/services/api';
 
 type Coupon = {
     id: number,
@@ -22,49 +14,16 @@ type Coupon = {
     scope: string,
 }
 
-const coupons = ref<Coupon[]>([
-  {
-    id: 1,
-    code: "WELCOME10",
-    discountType: "percentage",
-    discountValue: 10,
-    startDate: "2025-01-01",
-    endDate: "2025-12-31",
-    status: 1,  // number type here
-    scope: "all_memberships"
-  },
-  {
-    id: 2,
-    code: "SUMMER50",
-    discountType: "fixed",
-    discountValue: 50,
-    startDate: "2025-06-01",
-    endDate: "2025-08-31",
-    status: 1,
-    scope: "personal_training"
-  },
-  {
-    id: 3,
-    code: "FREEMONTH",
-    discountType: "fixed",
-    discountValue: 100,
-    startDate: "2025-03-01",
-    endDate: "2025-11-30",
-    status: 2,
-    scope: "membership_renewal"
-  },
-  {
-    id: 4,
-    code: "FRIEND5",
-    discountType: "percentage",
-    discountValue: 5,
-    startDate: "2025-05-01",
-    endDate: "2025-12-31",
-    status: 1,
-    scope: "referral_program"
-  }
-])
+const coupons = ref<Coupon[]>([])
 
+onMounted(async () => {
+  try {
+    const res = await api.get("/coupons");
+    coupons.value = res.data
+  } catch (error) {
+    console.error('Failed to load products:', error)
+  }
+})
 
 const search = ref('')
 const couponType = ref('')
@@ -101,6 +60,16 @@ function downloadSampleCSV() {
     a.click()
     URL.revokeObjectURL(url)
 }
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+};
 
 function triggerFilePicker()
 {
@@ -143,14 +112,14 @@ function doImport() {
 
                 <select v-model="couponType" class="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 mr-2">
                     <option value="">All type</option>
-                 <option :value="1">Percentage</option>
-                 <option :value="2">Fixed</option>
+                 <option value="PERCENTAGE">Percentage</option>
+                 <option value="FIXED_AMOUNT">Fixed</option>
                 </select>
 
                 <select v-model="couponStatus" class="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
                     <option value="">All status</option>
-                 <option :value="1">Active</option>
-                 <option :value="2">Inactive</option>
+                 <option value="ACTIVE">Active</option>
+                 <option value="INACTIVE">Inactive</option>
                 </select>
              </div>
              <div>
@@ -227,15 +196,22 @@ function doImport() {
                     </tr>
                     <tr v-for="c in filteredCoupon" :key="c.id" class="hover:bg-gray-50">
                         <td class="px-4 py-3 text-sm text-gray-600">{{ c.id }}</td>
-                        <td class="px-4 py-3 text-sm text-blue-600 hover:underline hover:cursor-pointer">{{ c.code }}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <RouterLink
+                                :to="{ name: 'CouponDetail', params: { id: c.id } }"
+                                class="text-blue-600 hover:underline hover:cursor-pointer"
+                            >
+                                {{ c.code }}
+                            </RouterLink>
+                        </td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ c.discountType === 2 ? 'Fixed' : 'Percentage' }}</td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ c.discountValue }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ c.startDate }} - {{ c.endDate }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ formatDate(c.startDate) }} - {{ formatDate(c.endDate) }}</td>
                         <td class="px-4 py-2 text-sm">
                             <span :class="[
-                                'px-2 py-1 rounded-full text-xs', c.status === 1 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                'px-2 py-1 rounded-full text-xs', c.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                             ]">
-                            {{ c.status === 1 ? 'Active' : 'Inactive' }}
+                            {{ c.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ c.scope }}</td>

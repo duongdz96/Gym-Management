@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import { RouterLink, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import api from "../../../services/api";
 import Multiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
@@ -14,7 +14,7 @@ const coupon = ref("");
 const appliedCoupon = ref<any>(null);
 const paymentMethod = ref<"CARD" | "CASH" | "BANKING" | null>(null);
 const members = ref<any[]>([]);
-const selectedMember = ref<any>(null);
+const selectedMember = ref<any | null>(null);
 
 // ===================== FETCH MEMBERS =====================
 async function fetchMembers() {
@@ -41,7 +41,8 @@ const totalPrice = computed(() => {
   if (!bill.value) return 0;
   return (
     bill.value.listSoldProduct?.reduce(
-      (sum, item) => sum + (item.product?.price || 0) * (item.quantity || 0),
+      (sum: number, item: any) =>
+        sum + (item.product?.price || 0) * (item.quantity || 0),
       0
     ) || 0
   );
@@ -61,18 +62,39 @@ const finalPrice = computed(() => {
 
 // ===================== CHECK COUPON =====================
 async function checkCoupon() {
-  if (!coupon.value.trim()) {
+  const code = coupon.value?.trim();
+  if (!code) {
     toast.warning("Vui lòng nhập mã giảm giá!");
     return;
   }
 
+  if (!selectedMember.value || !selectedMember.value.id) {
+    toast.warning("Vui lòng chọn khách hàng trước khi kiểm tra mã!");
+    return;
+  }
+
   try {
-    const res = await api.get(`/coupons/code/${coupon.value.trim()}`);
+    // Gọi API mới: /api/coupons/check?code=...&memberId=...
+    const res = await api.get("/coupons/check", {
+      params: {
+        code: code,
+        memberId: selectedMember.value.id
+      }
+    });
+
     const data = res.data;
 
+    // Backend trả false khi không áp dụng được
+    if (data === false || data === "false") {
+      toast.error("Mã giảm giá không thể áp dụng cho khách hàng này!");
+      appliedCoupon.value = null;
+      return;
+    }
+
+    // Nếu backend trả object coupon -> áp dụng
     const now = new Date();
-    const end = new Date(data.endDate);
-    if (data.status !== "ACTIVE" || end < now) {
+    const end = data.endDate ? new Date(data.endDate) : null;
+    if (data.status !== "ACTIVE" || (end && end < now)) {
       toast.error("Mã giảm giá đã hết hạn hoặc không còn hiệu lực!");
       appliedCoupon.value = null;
       return;
@@ -80,12 +102,14 @@ async function checkCoupon() {
 
     appliedCoupon.value = data;
     toast.success(`Áp dụng mã ${data.code} thành công!`);
-  } catch (err) {
+  } catch (err: any) {
     console.error("Error checking coupon:", err);
-    toast.error("Mã giảm giá không hợp lệ!");
+    const msg = err?.response?.data || "Lỗi khi kiểm tra mã giảm giá!";
+    toast.error(typeof msg === "string" ? msg : "Mã giảm giá không hợp lệ!");
     appliedCoupon.value = null;
   }
 }
+
 
 // ===================== SUBMIT =====================
 async function submit() {

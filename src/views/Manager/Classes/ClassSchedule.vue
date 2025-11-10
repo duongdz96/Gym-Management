@@ -253,12 +253,12 @@ const isDayInPattern = (shortDay) => {
         </div>
 
         <div class="flex gap-2">
-          <button
+          <!-- <button
             @click="isAddModalOpen = true"
             class="mt-2 md:mt-0 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Add Class
-          </button>
+          </button> -->
           <button
             @click="isBatchModalOpen = true"
             class="mt-2 md:mt-0 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"

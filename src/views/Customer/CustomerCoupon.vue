@@ -1,6 +1,6 @@
 <template>
   <div class="p-6 space-y-6">
-    <h1 class="text-2xl font-semibold text-gray-800">Mã Giảm Giá</h1>
+    <h1 class="text-2xl font-semibold text-gray-800">Mã Giảm Giá (hãy đến trung tâm để sử dụng)</h1>
 
     <!-- Thông báo nếu không có coupon -->
     <div v-if="coupons.length === 0" class="text-gray-500 italic">
@@ -34,12 +34,6 @@
           <p>Hạn dùng: {{ coupon.expiry }}</p>
         </div>
 
-        <button
-          class="mt-4 w-full bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600 transition"
-          :disabled="coupon.isExpired"
-        >
-          Sử dụng mã
-        </button>
       </div>
     </div>
   </div>
