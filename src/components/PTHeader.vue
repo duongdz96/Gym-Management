@@ -65,7 +65,7 @@ const handleLogout = () => {
               ? 'text-red-600 border-b-2 border-red-600 pb-1'
               : 'text-white'
           "
-          >Members</RouterLink
+          >Students</RouterLink
         >
 
         <RouterLink
@@ -162,7 +162,7 @@ const handleLogout = () => {
             to="/pt/members"
             class="uppercase tracking-wider text-white hover:text-red-600"
             @click="isMenuOpen = false"
-            >Members</RouterLink
+            >Students</RouterLink
           >
         </nav>
       </div>

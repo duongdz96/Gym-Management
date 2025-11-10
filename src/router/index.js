@@ -51,6 +51,9 @@ import PTMembers from "@/views/PT/PTMembers.vue";
 import Test from "@/views/Test.vue";
 import SchedulePattern from "@/views/Manager/Classes/SchedulePattern.vue";
 import TeacherRegister from "@/views/PT/TeacherRegister.vue";
+import AddStaff from "@/views/Manager/Staff/AddStaff.vue";
+import StaffInformation from "@/views/Manager/Staff/StaffInformation.vue";
+import EditProduct from "@/views/Manager/Product/EditProduct.vue";
 
 const routes = [
     {
@@ -74,6 +77,8 @@ const routes = [
         meta: { requiresAuth: true, roles: ["MANAGER"] },
         children: [
             { path: "staff", name: "staff", component: Staff },
+            { path: "staff/add", name: "staff.add", component: AddStaff },
+            { path: "staff/:id", name: "staff.info", component: StaffInformation },
             { path: "customer", name: "customer", component: Customer },
             { path: "attendance", name: "attendance", component: Attendance },
             { path: "coupon", name: "coupon", component: Coupon },
@@ -81,6 +86,7 @@ const routes = [
             { path: "coupon/add", name: "coupon.add", component: AddCoupon },
             { path: "product", name: "product", component: Product },
             { path: "product/add", name: "product.add", component: AddProduct },
+            { path: "product/:id", name: "product.edit", component: EditProduct },
             { path: "product/importproduct", name: "product.importproduct", component: ImportProduct },
             { path: "product/importcheckout", name: "product.importcheckout", component: ImportCheckout },
             { path: "classtemplate", name: "classtemplate", component: ClassTemplate },

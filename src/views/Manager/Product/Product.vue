@@ -1,32 +1,41 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
+import axios from 'axios' // (Không dùng đến nếu đã có 'api')
 import { RouterLink } from 'vue-router'
 import api from '@/services/api'
+import { useToast } from "vue-toastification"; // (Tôi thêm vào, bạn đã dùng ở file khác)
 
+// 1. Cập nhật Type
 type Product = {
   id: number
   name: string
   type: string
   price: number
+  importPrice?: number // <-- Thêm
   brand?: string
   quantity?: number
+  status: boolean // <-- Thêm
 }
 
 const products = ref<Product[]>([])
-
 const search = ref('')
 const productType = ref('')
+const toast = useToast()
 
-onMounted(async () => {
+// 2. Tách hàm fetch
+async function fetchProducts() {
   try {
-    const res = await api.get("/product");
+    const res = await api.get("/product/admin/all"); // Sử dụng prefix /api/
     products.value = res.data
   } catch (error) {
     console.error('Failed to load products:', error)
+    toast.error("Failed to load products")
   }
-})
+}
 
+onMounted(() => {
+  fetchProducts()
+})
 
 const filteredProducts = computed(() => {
   return products.value.filter(p => {
@@ -36,27 +45,50 @@ const filteredProducts = computed(() => {
   })
 })
 
-
-const showImportModal = ref(false)
-const selectedFile = ref(null)
-const fileInputRef = ref(null)
-const selectedFileName = ref('')
-
-function closeImportModal() {
-    showImportModal.value = false
-    selectedFile.value = null
-    selectedFileName.value = ''
-    if (fileInputRef.value) fileInputRef.value.value = ''
+// --- Logic Xoá / Khôi phục ---
+const handleDelete = async (id: number) => {
+  if (!confirm("Bạn có chắc muốn xoá mềm sản phẩm này?")) return;
+  try {
+    await api.delete(`/product/${id}`); // Gọi API soft delete
+    toast.success("Product deleted successfully");
+    fetchProducts(); // Tải lại danh sách
+  } catch (error) {
+    toast.error("Failed to delete product");
+  }
 }
 
+const handleRestore = async (id: number) => {
+  try {
+    await api.post(`/product/${id}/restore`); // Gọi API restore
+    toast.success("Product restored successfully");
+    fetchProducts(); // Tải lại danh sách
+  } catch (error) {
+    toast.error("Failed to restore product");
+  }
+}
+
+
+// --- Logic Modal ---
+const showImportModal = ref(false)
+const selectedFile = ref<File | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const selectedFileName = ref('')
+const isImporting = ref(false)
+
+function closeImportModal() {
+  showImportModal.value = false
+  selectedFile.value = null
+  selectedFileName.value = ''
+  if (fileInputRef.value) fileInputRef.value.value = ''
+}
+
+// 3. Cập nhật CSV mẫu
 function downloadSampleCSV() {
   const content =
-    'name,type,price,brand,quantity\n' +
-    'Dumbbell,Equipment,150000,ABC Sports,20\n' +
-    'Yoga Mat,Accessory,80000,FitnessPro,50\n' +
-    'Protein Powder,Supplement,650000,MuscleGain,15\n' +
-    'Treadmill,Equipment,12000000,BodyTech,5\n' +
-    'Jump Rope,Accessory,50000,FitnessPro,40\n';
+    'name,type,price,importPrice,brand,quantity\n' + // <-- Thêm importPrice
+    'Dumbbell,Equipment,150000,100000,ABC Sports,20\n' +
+    'Yoga Mat,Accessory,80000,50000,FitnessPro,50\n' +
+    'Protein Powder,Supplement,650000,500000,MuscleGain,15\n';
 
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
@@ -67,58 +99,63 @@ function downloadSampleCSV() {
   URL.revokeObjectURL(url);
 }
 
-
-function triggerFilePicker()
-{
-    fileInputRef.value?.click();
+function triggerFilePicker() {
+  fileInputRef.value?.click();
 }
 
-function onFileChange(e) {
-    const input = e.target
-    const file = input.files && input.files[0] ? input.files[0] : null
-    if (!file) {
-        selectedFile.value = null
-        selectedFileName.value = ''
-        return
-    }
-    const allowed = [
-        'text/csv',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    ]
-    if (!allowed.includes(file.type) && !/\.(csv|xlsx)$/i.test(file.name)) {
-        alert('Vui lòng chọn file .csv hoặc .xlsx')
-        input.value = ''
-        return
-    }
-    selectedFile.value = file
-    selectedFileName.value = file.name
+function onFileChange(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0] || null
+  if (!file) {
+    selectedFile.value = null
+    selectedFileName.value = ''
+    return
+  }
+  const allowed = [
+    'text/csv',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ]
+  if (!allowed.includes(file.type) && !/\.(csv|xlsx)$/i.test(file.name)) {
+    toast.error('Vui lòng chọn file .csv hoặc .xlsx')
+    input.value = ''
+    return
+  }
+  selectedFile.value = file
+  selectedFileName.value = file.name
 }
 
-function doImport() {
+// 4. Sửa hàm doImport để GỬI file lên
+async function doImport() {
   if (!selectedFile.value) {
-    alert("Please select a file first.");
+    toast.error("Please select a file first.");
     return;
   }
+  isImporting.value = true;
+  
+  // Dùng FormData để gửi file
+  const formData = new FormData();
+  formData.append('file', selectedFile.value);
 
-  const file = selectedFile.value;
-  console.log("Importing file:", file.name);
+  try {
+    // Giả sử backend có endpoint này
+    await api.post('/product/import-csv', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    
+    toast.success("Products imported successfully!");
+    closeImportModal();
+    fetchProducts(); // Tải lại danh sách sau khi import
 
-  const reader = new FileReader();
-
-  reader.onload = (e) => {
-    const text = e.target?.result;
-    console.log("File content preview:");
-    console.log(text);
-  };
-
-  reader.onerror = (err) => {
-    console.error("Error reading file:", err);
-  };
-
-  reader.readAsText(file);
+  } catch (error) {
+    console.error("Error importing file:", error);
+    toast.error("Failed to import products.");
+  } finally {
+    isImporting.value = false;
+  }
 }
-
 </script>
 
 <template>
@@ -137,6 +174,9 @@ function doImport() {
           <option value="clothes">Clothes</option>
           <option value="powder">Powder</option>
           <option value="drinks">Drinks</option>
+          <option value="Equipment">Equipment</option>
+          <option value="Accessory">Accessory</option>
+          <option value="Supplement">Supplement</option>
         </select>
         <RouterLink
           :to="{ name: 'product.add' }"
@@ -151,11 +191,10 @@ function doImport() {
           Import From Provider
         </RouterLink>
         <button @click="showImportModal = true" class="px-3 py-2 rounded-lg bg-green-600 text-white hover:opacity-90 hover:cursor-pointer ml-2">Import CSV</button>
-        <!-- Modal Import Product -->
+        
         <div v-if="showImportModal" class="fixed inset-0 z-50 flex items-center justify-center">
           <div class="absolute inset-0 bg-black/50" @click="closeImportModal"></div>
           <div class="relative w-full max-w-lg mx-4 bg-white rounded-lg shadow-lg border border-gray-200">
-            <!-- Header -->
             <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
               <h3 class="text-lg font-medium text-gray-900">Import Products</h3>
               <button
@@ -166,30 +205,24 @@ function doImport() {
               </button>
             </div>
 
-            <!-- Body -->
             <div class="p-4 space-y-4">
               <div class="text-sm text-gray-700">
                 File CSV/XLSX must include columns:
                 <code class="px-1 rounded bg-gray-100">name</code>,
                 <code class="px-1 rounded bg-gray-100">type</code>,
                 <code class="px-1 rounded bg-gray-100">price</code>,
-                <code class="px-1 rounded bg-gray-100">brand</code>,
+                <code class="px-1 rounded bg-gray-100">importPrice</code>, <code class="px-1 rounded bg-gray-100">brand</code>,
                 <code class="px-1 rounded bg-gray-100">quantity</code>
               </div>
 
               <div class="flex items-center justify-between">
-                <!-- CSV Example -->
                 <button
                   class="rounded-md px-3 py-2 text-white bg-blue-600 hover:bg-blue-700 hover:cursor-pointer"
                   @click="downloadSampleCSV"
                 >
                   View CSV Example
                 </button>
-
-                <!-- File name -->
                 <span v-if="selectedFileName" class="text-sm text-gray-600 truncate">{{ selectedFileName }}</span>
-
-                <!-- File picker -->
                 <input
                   type="file"
                   class="hidden"
@@ -206,7 +239,6 @@ function doImport() {
               </div>
             </div>
 
-            <!-- Footer -->
             <div class="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-200">
               <button
                 class="px-3 py-2 rounded-md border border-gray-200 text-gray-800 hover:bg-gray-100 hover:cursor-pointer"
@@ -216,10 +248,10 @@ function doImport() {
               </button>
               <button
                 class="px-3 py-2 rounded-md bg-green-600 hover:bg-green-700 hover:cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed text-white"
-                :disabled="!selectedFile"
+                :disabled="!selectedFile || isImporting"
                 @click="doImport"
               >
-                Import
+                {{ isImporting ? 'Importing...' : 'Import' }}
               </button>
             </div>
           </div>
@@ -236,25 +268,50 @@ function doImport() {
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Brand</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Import Price</th> <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Brand</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">
           <tr v-if="products.length === 0">
-            <td colspan="7" class="px-4 py-3 text-center text-sm text-gray-500">No products found</td>
-          </tr>
+            <td colspan="9" class="px-4 py-3 text-center text-sm text-gray-500">No products found</td> </tr>
           <tr v-for="p in filteredProducts" :key="p.id" class="hover:bg-gray-50">
             <td class="px-4 py-3 text-sm text-gray-600">{{ p.id }}</td>
             <td class="px-4 py-3 text-sm text-blue-600 hover:underline hover:cursor-pointer">{{ p.name }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ p.type }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ p.price.toFixed(0) }}</td>
-            <td class="px-4 py-3 text-sm text-gray-600">{{ p.brand || '-' }}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">{{ p.importPrice?.toFixed(0) || '-' }}</td> <td class="px-4 py-3 text-sm text-gray-600">{{ p.brand || '-' }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ p.quantity ?? '-' }}</td>
-            <td class="px-4 py-3 text-sm text-center">
-              <button class="px-2 py-1 rounded bg-green-600 text-white mr-2 hover:bg-green-700 hover:cursor-pointer">Edit</button>
-              <button class="px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700 hover:cursor-pointer">Delete</button>
+            <td class="px-4 py-3 text-sm text-gray-600"> <span 
+                :class="[
+                  'px-2 py-0.5 rounded-full text-xs font-medium',
+                  p.status === false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                ]"
+              >
+                {{ p.status === false ? 'Active' : 'Deleted' }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-sm text-center"> <RouterLink
+                :to="{ name: 'product.edit', params: { id: p.id } }" class="px-2 py-1 rounded bg-green-600 text-white mr-2 hover:bg-green-700 hover:cursor-pointer"
+                v-if="!p.status"
+              >
+                Edit
+              </RouterLink>
+              <button
+                class="px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700 hover:cursor-pointer"
+                v-if="!p.status"
+                @click="handleDelete(p.id)"
+              >
+                Delete
+              </button>
+              <button
+                class="px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 hover:cursor-pointer"
+                v-if="p.status"
+                @click="handleRestore(p.id)"
+              >
+                Restore
+              </button>
             </td>
           </tr>
         </tbody>
