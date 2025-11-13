@@ -104,7 +104,7 @@ onMounted(async () => {
       } catch (e) {
         console.error("Failed to parse selectedPattern:", e);
       } finally {
-        sessionStorage.removeItem("selectedPattern");
+        // sessionStorage.removeItem("selectedPattern");
       }
     }
 
@@ -309,7 +309,12 @@ const isDayInPattern = (shortDay) => {
                 </span>
               </td>
               <td class="px-6 py-4 text-right text-sm">
-                <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                <router-link
+                  :to="{ name: 'classschedule.edit', params: { id: schedule.id } }"
+                  class="text-indigo-600 hover:text-indigo-900 mr-3"
+                >
+                  Edit
+                </router-link>
                 <a href="#" class="text-red-600 hover:text-red-900">Delete</a>
               </td>
             </tr>

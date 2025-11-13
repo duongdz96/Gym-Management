@@ -41,7 +41,7 @@ const handleAdd = () => {
   router.push({name: "classtemplate.add"});
 }
 const handleEdit = (id: number) => {
-  alert(`Open Edit Template Modal for ID: ${id}`)
+  router.push({ name: 'classtemplate.edit', params: { id: id } })
 }
 const handleDelete = (id: number) => {
   if (confirm(`Are you sure you want to delete template ID: ${id}?`)) {

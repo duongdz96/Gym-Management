@@ -96,9 +96,13 @@ async function submit() {
             required
           >
             <option value="" disabled>Select a type</option>
-            <option value="clothes">Clothes</option>
-            <option value="powder">Powder</option>
-            <option value="drinks">Drinks</option>
+            <option value="Equipment">Equipment</option>
+              <option value="Accessory">Accessory</option>
+              <option value="Supplement">Supplement</option>
+              <option value="clothes">Clothes</option>
+              <option value="powder">Powder</option>
+              <option value="drinks">Drinks</option>
+              <option value="PT">PT</option>
           </select>
         </div>
 
