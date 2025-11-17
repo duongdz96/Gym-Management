@@ -126,6 +126,7 @@ const handleCancel = () => {
               <option value="clothes">Clothes</option>
               <option value="powder">Powder</option>
               <option value="drinks">Drinks</option>
+              <option value="PT">PT</option>
             </select>
           </div>
 

@@ -10,6 +10,7 @@ import ManagerLayout from "@/layout/ManagerLayout.vue";
 import Coupon from "@/views/Manager/Coupon/Coupon.vue";
 import AddCoupon from "@/views/Manager/Coupon/AddCoupon.vue";
 import CouponDetail from "@/views/Manager/Coupon/CouponDetail.vue";
+import EditCoupon from "@/views/Manager/Coupon/EditCoupon.vue";
 import Product from "@/views/Manager/Product/Product.vue";
 import AddProduct from "@/views/Manager/Product/AddProduct.vue";
 import ImportProduct from "@/views/Manager/Product/ImportProduct.vue";
@@ -43,7 +44,7 @@ import ReceptionAddMembership from "@/views/Reception/Membership/ReceptionAddMem
 import ReceptionMemberships from "@/views/Reception/Membership/ReceptionMemberships.vue";
 import SalesSelect from "@/views/Reception/Sale/SalesSelect.vue";
 import SalesCheckout from "@/views/Reception/Sale/SalesCheckout.vue";
-import SalesBooking from "@/views/Reception/Sale/SalesBooking.vue";
+import SalesBooking from "@/views/Reception/PTRental/SalesBooking.vue";
 
 import PTLayout from "@/layout/PTLayout.vue";
 import PTSchedule from "@/views/PT/PTSchedule.vue";
@@ -56,6 +57,8 @@ import TeacherRegister from "@/views/PT/TeacherRegister.vue";
 import AddStaff from "@/views/Manager/Staff/AddStaff.vue";
 import StaffInformation from "@/views/Manager/Staff/StaffInformation.vue";
 import EditProduct from "@/views/Manager/Product/EditProduct.vue";
+import EditClassTemplate from "@/views/Manager/Classes/EditClassTemplate.vue";
+import EditClassSchedule from "@/views/Manager/Classes/EditClassSchedule.vue";
 
 const routes = [
     {
@@ -86,6 +89,7 @@ const routes = [
             { path: "coupon", name: "coupon", component: Coupon },
             { path: "coupon/:id", name: "CouponDetail", component: CouponDetail },
             { path: "coupon/add", name: "coupon.add", component: AddCoupon },
+            { path: "coupon/:id", name: "coupon.edit", component: EditCoupon },
             { path: "product", name: "product", component: Product },
             { path: "product/add", name: "product.add", component: AddProduct },
             { path: "product/:id", name: "product.edit", component: EditProduct },
@@ -93,7 +97,9 @@ const routes = [
             { path: "product/importcheckout", name: "product.importcheckout", component: ImportCheckout },
             { path: "classtemplate", name: "classtemplate", component: ClassTemplate },
             { path: "classtemplate/add", name: "classtemplate.add", component: AddClassTemplate },
+            { path: "classtemplate/edit/:id", name: "classtemplate.edit", component: EditClassTemplate },
             { path: "classschedule", name: "classschedule", component: ClassSchedule },
+            { path: "classschedule/edit/:id", name: "classschedule.edit", component: EditClassSchedule },
             { path: "banner", name: "banner", component: Banner },
             { path: "membership", name: "membership", component: ManageMembership },
             { path: "membership/add", name: "membership.add", component: ManageAddMembership },

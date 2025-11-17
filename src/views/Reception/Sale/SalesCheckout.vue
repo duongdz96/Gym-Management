@@ -131,6 +131,7 @@ async function submit() {
       email: selectedMember.value.email,
       phone: selectedMember.value.phone,
     },
+    receptionist: { id: 3, name: "Nguyễn Văn Lễ Tân" },
     coupon: appliedCoupon.value || null,
     paymentMethod: paymentMethod.value,
     paymentStatus: "PAID",

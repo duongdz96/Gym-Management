@@ -204,7 +204,7 @@ function doImport() {
                                 {{ c.code }}
                             </RouterLink>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ c.discountType === 2 ? 'Fixed' : 'Percentage' }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600">{{ c.discountType === 'FIXED_AMOUNT' ? 'Fixed Amount' : 'Percentage' }}</td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ c.discountValue }}</td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ formatDate(c.startDate) }} - {{ formatDate(c.endDate) }}</td>
                         <td class="px-4 py-2 text-sm">
@@ -216,7 +216,7 @@ function doImport() {
                         </td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ c.scope }}</td>
                         <td class="px-4 py-3 text-sm text-center">
-                            <button class="px-2 py-1 rounded bg-green-600 text-white mr-2 hover:cursor-pointer hover:bg-green-700">Edit</button>
+                            <RouterLink :to="{ name: 'coupon.edit', params: { id: c.id } }" class="px-2 py-1 rounded bg-green-600 text-white mr-2 hover:cursor-pointer hover:bg-green-700">Edit</RouterLink>
                             <button class="px-2 py-1 rounded bg-red-600 text-white hover:cursor-pointer hover:bg-red-700">Delete</button>
                         </td>
                     </tr>
