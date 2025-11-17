@@ -155,6 +155,15 @@ async function submit() {
     toast.error("Không thể lưu hóa đơn. Vui lòng thử lại!");
   }
 }
+
+// ===================== PRINT BILL =====================
+function printBill() {
+  if (!bill.value) {
+    toast.warning("Không có thông tin bill để in!");
+    return;
+  }
+  window.print();
+}
 </script>
 
 <template>
@@ -165,7 +174,14 @@ async function submit() {
     </h1>
 
     <!-- Bill Detail -->
-    <div v-if="bill" class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <div v-if="bill" class="bill-detail bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+      <!-- Print header -->
+      <div class="print-header text-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">GYM MANAGEMENT</h1>
+        <p class="text-gray-600">Hóa đơn thanh toán</p>
+        <p class="text-sm text-gray-500 mt-2">Ngày: {{ new Date().toLocaleDateString('vi-VN') }}</p>
+      </div>
+
       <!-- Products -->
       <h2 class="font-semibold mb-4 text-lg border-b pb-2 text-gray-800">
         Sản phẩm đã chọn
@@ -219,10 +235,29 @@ async function submit() {
           Tổng cộng: {{ totalPrice.toLocaleString() }} đ
         </template>
       </div>
+
+      <!-- Print-only information -->
+      <div class="print-only mt-6 pt-6 border-t border-gray-300">
+        <div v-if="selectedMember" class="mb-4">
+          <h3 class="font-semibold mb-2">Thông tin khách hàng:</h3>
+          <p>Họ tên: {{ selectedMember.fullName }}</p>
+          <p>Số điện thoại: {{ selectedMember.phone }}</p>
+          <p>Email: {{ selectedMember.email }}</p>
+          <p>Hạng thành viên: {{ selectedMember.membership || "Khách thường" }}</p>
+        </div>
+
+        <div v-if="paymentMethod" class="mb-4">
+          <p><strong>Phương thức thanh toán:</strong> {{ paymentMethod }}</p>
+        </div>
+
+        <div class="text-center text-gray-500 text-sm mt-8">
+          Cảm ơn quý khách đã sử dụng dịch vụ GYM MANAGEMENT!
+        </div>
+      </div>
     </div>
 
     <!-- Chọn khách hàng -->
-    <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-8 space-y-4">
+    <div class="customer-info bg-white rounded-2xl shadow-md border border-gray-200 p-8 space-y-4">
       <h3 class="text-2xl font-semibold text-gray-800 mb-4">Thông tin khách hàng</h3>
 
       <div class="bg-gray-50 border border-gray-300 rounded-xl p-4">
@@ -251,7 +286,7 @@ async function submit() {
     </div>
 
     <!-- Coupon Code -->
-    <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+    <div class="coupon-section bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
       <h3 class="text-lg font-semibold text-gray-800 mb-3">Mã giảm giá</h3>
       <div class="flex gap-3 items-center">
         <input
@@ -273,7 +308,7 @@ async function submit() {
     </div>
 
     <!-- Payment Method -->
-    <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+    <div class="payment-section bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
       <h3 class="mb-3 font-semibold text-gray-900 text-lg">Phương thức thanh toán</h3>
       <div class="flex gap-6">
         <button
@@ -313,7 +348,7 @@ async function submit() {
     </div>
 
     <!-- Buttons -->
-    <div class="flex justify-end gap-3">
+    <div class="buttons-section flex justify-end gap-3">
       <RouterLink
         :to="{ name: 'salesselect' }"
         class="px-5 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100"
@@ -321,8 +356,15 @@ async function submit() {
         Hủy
       </RouterLink>
       <button
+        @click="printBill"
+        class="px-5 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 print:hidden"
+        :disabled="!bill || bill.listSoldProduct.length === 0"
+      >
+        In Bill
+      </button>
+      <button
         @click="submit"
-        class="px-5 py-3 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+        class="px-5 py-3 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 print:hidden"
         :disabled="!bill || bill.listSoldProduct.length === 0"
       >
         Xác nhận thanh toán
@@ -340,5 +382,93 @@ async function submit() {
 }
 .multiselect__tags {
   padding: 10px 12px;
+}
+
+/* Print styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only the bill detail section */
+  .bill-detail,
+  .bill-detail * {
+    visibility: visible;
+  }
+
+  .bill-detail {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    background: white;
+  }
+
+  /* Hide buttons and other sections */
+  .customer-info,
+  .coupon-section,
+  .payment-section,
+  .buttons-section {
+    display: none !important;
+  }
+
+  /* Style the bill for printing */
+  .bill-detail h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+  }
+
+  .bill-detail table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+  }
+
+  .bill-detail th,
+  .bill-detail td {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  .bill-detail th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+
+  .bill-detail .text-right {
+    text-align: right;
+  }
+
+  .bill-detail .text-xl {
+    font-size: 1.25rem;
+  }
+
+  .bill-detail .font-bold {
+    font-weight: bold;
+  }
+
+  .bill-detail .text-green-600 {
+    color: #059669;
+  }
+
+  .bill-detail .text-blue-700 {
+    color: #1d4ed8;
+  }
+
+  /* Show print-only content only when printing */
+  .print-only,
+  .print-header {
+    display: none;
+  }
+
+  .bill-detail .print-only,
+  .bill-detail .print-header {
+    display: block !important;
+  }
 }
 </style>
