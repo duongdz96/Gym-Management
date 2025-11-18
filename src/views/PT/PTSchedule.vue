@@ -2,8 +2,10 @@
 import { ref, computed, onMounted } from "vue";
 import api from "@/services/api";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useToast } from "vue-toastification";
 
 const authStore = useAuthStore();
+const toast = useToast();
 
 const currentDate = ref(new Date());
 const selectedDate = ref(null);
@@ -84,51 +86,7 @@ async function fetchSchedule(query = "") {
   } catch (error) {
     console.error("Failed to fetch PT schedule:", error);
     schedule.value = [];
-    alert("Failed to load schedule. Please try again.");
-  }
-
-  // Add sample classes for UI testing if no real data
-  if (schedule.value.length === 0) {
-    const today = new Date();
-    const todayStr = toDateStr(today);
-    schedule.value.push(
-      {
-        id: 'sample1',
-        date: todayStr,
-        time: '10:00 - 11:00',
-        name: 'Sample Yoga Class',
-        members: 1,
-        status: 'scheduled',
-        member: null,
-        staff: null,
-        remainingSessions: null,
-        raw: null,
-      },
-      {
-        id: 'sample2',
-        date: todayStr,
-        time: '14:00 - 15:00',
-        name: 'Sample Cardio Class',
-        members: 1,
-        status: 'scheduled',
-        member: null,
-        staff: null,
-        remainingSessions: null,
-        raw: null,
-      },
-      {
-        id: 'sample3',
-        date: todayStr,
-        time: '16:00 - 17:00',
-        name: 'Sample Strength Training',
-        members: 1,
-        status: 'started',
-        member: null,
-        staff: null,
-        remainingSessions: null,
-        raw: null,
-      }
-    );
+    toast.error("Failed to load schedule. Please try again.");
   }
 }
 

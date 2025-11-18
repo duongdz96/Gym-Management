@@ -2,8 +2,10 @@
 import { ref, computed, onMounted, watch } from "vue";
 import api from "@/services/api";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useToast } from "vue-toastification";
 
 const authStore = useAuthStore();
+const toast = useToast();
 
 const searchQuery = ref("");
 const members = ref([]);
@@ -11,6 +13,7 @@ const members = ref([]);
 const selectedMember = ref(null);
 const isEditingWeight = ref(false);
 const tempCurrentWeight = ref(0);
+const upcomingSessions = ref([]);
 
 const filteredMembers = computed(() => {
   if (!searchQuery.value) {
@@ -25,6 +28,7 @@ const selectMember = (member) => {
   selectedMember.value = member;
   isEditingWeight.value = false;
   tempCurrentWeight.value = member.weight;
+  fetchUpcomingSessions(member.memberId);
 };
 
 const startEditingWeight = () => {
@@ -42,10 +46,10 @@ const saveCurrentWeight = async () => {
       await api.put(`/studentprofile/${selectedMember.value.id}`, payload);
       selectedMember.value.weight = tempCurrentWeight.value;
       isEditingWeight.value = false;
-      alert("Weight updated successfully!");
+      toast.success("Weight updated successfully!");
     } catch (error) {
       console.error("Error updating weight:", error);
-      alert("Failed to update weight. Please try again.");
+      toast.error("Failed to update weight. Please try again.");
     }
   }
 };
@@ -53,6 +57,34 @@ const saveCurrentWeight = async () => {
 const cancelEditingWeight = () => {
   tempCurrentWeight.value = selectedMember.value.currentWeight;
   isEditingWeight.value = false;
+};
+
+function formatTimeRange(startIso, endIso) {
+  const s = new Date(startIso);
+  const e = new Date(endIso);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${pad(s.getHours())}:${pad(s.getMinutes())} - ${pad(
+    e.getHours()
+  )}:${pad(e.getMinutes())}`;
+}
+
+const fetchUpcomingSessions = async (memberId) => {
+  try {
+    const res = await api.get("/appointment");
+    const data = Array.isArray(res.data) ? res.data : [];
+    // Filter appointments for the member
+    const memberAppts = data.filter(appt => appt.ptPackageIssued?.member?.id === memberId);
+    // Filter future appointments
+    const now = new Date();
+    const futureAppts = memberAppts.filter(appt => new Date(appt.startTime) > now);
+    // Sort by startTime
+    futureAppts.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+    // Take first 3
+    upcomingSessions.value = futureAppts.slice(0, 3);
+  } catch (error) {
+    console.error("Error fetching upcoming sessions:", error);
+    upcomingSessions.value = [];
+  }
 };
 
 // Watch for changes in filtered members to update selected member
@@ -65,14 +97,17 @@ watch(filteredMembers, (newFilteredMembers) => {
       if (newFilteredMembers.length > 0) {
         selectedMember.value = newFilteredMembers[0];
         tempCurrentWeight.value = newFilteredMembers[0].weight;
+        fetchUpcomingSessions(newFilteredMembers[0].memberId);
       } else {
         selectedMember.value = null;
+        upcomingSessions.value = [];
       }
     }
   } else if (newFilteredMembers.length > 0) {
     // If no member selected but filtered list has members, select first
     selectedMember.value = newFilteredMembers[0];
     tempCurrentWeight.value = newFilteredMembers[0].weight;
+    fetchUpcomingSessions(newFilteredMembers[0].memberId);
   }
 });
 
@@ -85,6 +120,7 @@ onMounted(async () => {
     // Map to member objects
     members.value = ptProfiles.map(profile => ({
       id: profile.id,
+      memberId: profile.member.id,
       name: profile.member.fullName,
       email: profile.member.email,
       height: profile.height,
@@ -94,13 +130,14 @@ onMounted(async () => {
     console.log("PT Members loaded:", members.value);
   } catch (error) {
     console.error('Failed to load PT members:', error);
-    alert("Failed to load members. Please try again.");
+    toast.error("Failed to load members. Please try again.");
   }
 
   // Auto select first member
   if (members.value.length > 0) {
     selectedMember.value = members.value[0];
     tempCurrentWeight.value = members.value[0].weight;
+    fetchUpcomingSessions(members.value[0].memberId);
   }
 });
 </script>
@@ -229,6 +266,19 @@ onMounted(async () => {
             <p class="mt-1 text-lg text-gray-900">
               {{ selectedMember.trainingPlan }}
             </p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Upcoming Sessions</label
+            >
+            <div v-if="upcomingSessions.length === 0" class="mt-1 text-gray-500">No upcoming sessions</div>
+            <div v-else class="mt-1 space-y-2">
+              <div v-for="session in upcomingSessions" :key="session.id" class="border rounded p-2 bg-gray-50">
+                <p class="text-sm font-medium">{{ new Date(session.startTime).toLocaleDateString() }}</p>
+                <p class="text-sm text-gray-600">{{ formatTimeRange(session.startTime, session.endTime) }}</p>
+                <p class="text-sm text-gray-600">{{ session.ptPackageIssued?.ptPackage?.name || 'Session' }}</p>
+              </div>
+            </div>
           </div>
 
         </div>

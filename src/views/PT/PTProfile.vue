@@ -2,8 +2,10 @@
 import { ref, onMounted } from "vue";
 import api from "@/services/api";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useToast } from "vue-toastification";
 
 const authStore = useAuthStore();
+const toast = useToast();
 
 const profile = ref(null);
 
@@ -28,7 +30,7 @@ onMounted(async () => {
     console.log("PT Profile loaded:", profile.value);
   } catch (error) {
     console.error("Failed to load PT profile:", error);
-    alert("Failed to load profile. Please try again.");
+    toast.error("Failed to load profile. Please try again.");
   }
 });
 </script>
