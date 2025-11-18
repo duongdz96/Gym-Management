@@ -7,6 +7,8 @@ import Login from "@/views/Login.vue";
 import Forbidden from "@/views/Forbidden.vue";
 
 import ManagerLayout from "@/layout/ManagerLayout.vue";
+import ManagerHome from "@/views/Manager/ManagerHome.vue";
+import ManagerStatistics from "@/views/Manager/ManagerStatistics.vue";
 import Coupon from "@/views/Manager/Coupon/Coupon.vue";
 import AddCoupon from "@/views/Manager/Coupon/AddCoupon.vue";
 import CouponDetail from "@/views/Manager/Coupon/CouponDetail.vue";
@@ -17,6 +19,7 @@ import ImportProduct from "@/views/Manager/Product/ImportProduct.vue";
 import ImportCheckout from "@/views/Manager/Product/ImportCheckout.vue";
 import Staff from "@/views/Manager/Staff/Staff.vue";
 import Customer from "@/views/Manager/Customer/Customer.vue";
+import CustomerCheckinHistory from "@/views/Manager/Customer/CustomerCheckinHistory.vue";
 import Attendance from "@/views/Manager/Attendance/Attendance.vue";
 import ClassTemplate from "@/views/Manager/Classes/ClassTemplate.vue";
 import AddClassTemplate from "@/views/Manager/Classes/AddClassTemplate.vue";
@@ -45,17 +48,22 @@ import ReceptionMemberships from "@/views/Reception/Membership/ReceptionMembersh
 import SalesSelect from "@/views/Reception/Sale/SalesSelect.vue";
 import SalesCheckout from "@/views/Reception/Sale/SalesCheckout.vue";
 import SalesBooking from "@/views/Reception/PTRental/SalesBooking.vue";
+import AddPTForUser from "@/views/Reception/PTRental/AddPTForUser.vue";
+import ReceptionCustomerCheckinHistory from "@/views/Reception/Customer/ReceptionCustomerCheckinHistory.vue";
 
 import PTLayout from "@/layout/PTLayout.vue";
+import PTHome from "@/views/PT/PTHome.vue";
 import PTSchedule from "@/views/PT/PTSchedule.vue";
 import PTProfile from "@/views/PT/PTProfile.vue";
 import PTMembers from "@/views/PT/PTMembers.vue";
+import PTHistory from "@/views/PT/PTHistory.vue";
 
 import Test from "@/views/Test.vue";
 import SchedulePattern from "@/views/Manager/Classes/SchedulePattern.vue";
 import TeacherRegister from "@/views/PT/TeacherRegister.vue";
 import AddStaff from "@/views/Manager/Staff/AddStaff.vue";
 import StaffInformation from "@/views/Manager/Staff/StaffInformation.vue";
+import StaffAttendanceHistory from "@/views/Manager/Staff/StaffAttendanceHistory.vue";
 import EditProduct from "@/views/Manager/Product/EditProduct.vue";
 import EditClassTemplate from "@/views/Manager/Classes/EditClassTemplate.vue";
 import EditClassSchedule from "@/views/Manager/Classes/EditClassSchedule.vue";
@@ -81,10 +89,14 @@ const routes = [
         component: ManagerLayout,
         meta: { requiresAuth: true, roles: ["MANAGER"] },
         children: [
+            { path: "", name: "manager.home", component: ManagerHome },
+            { path: "statistics", name: "manager.statistics", component: ManagerStatistics },
             { path: "staff", name: "staff", component: Staff },
             { path: "staff/add", name: "staff.add", component: AddStaff },
             { path: "staff/:id", name: "staff.info", component: StaffInformation },
+            { path: "staff/attendance-history", name: "staff.attendance-history", component: StaffAttendanceHistory },
             { path: "customer", name: "customer", component: Customer },
+            { path: "customer/checkin-history", name: "customer.checkin-history", component: CustomerCheckinHistory },
             { path: "attendance", name: "attendance", component: Attendance },
             { path: "coupon", name: "coupon", component: Coupon },
             { path: "coupon/:id", name: "CouponDetail", component: CouponDetail },
@@ -138,6 +150,8 @@ const routes = [
             { path: "salesselect", name: "salesselect", component: SalesSelect },
             { path: "salescheckout", name: "salesCheckout", component: SalesCheckout },
             { path: "salesbooking", name: "salesBooking", component: SalesBooking },
+            { path: "add-pt-for-user", name: "addPTForUser", component: AddPTForUser },
+            { path: "customer/checkin-history", name: "reception.customer.checkin-history", component: ReceptionCustomerCheckinHistory },
         ],
     },
     {
@@ -148,7 +162,7 @@ const routes = [
             {
                 path: '/pt/',
                 name: 'pt.home',
-                component: PTSchedule
+                component: PTHome
             },
             {
                 path: '/pt/schedule',
@@ -164,6 +178,11 @@ const routes = [
                 path: '/pt/members',
                 name: 'pt.members',
                 component: PTMembers
+            },
+            {
+                path: '/pt/history',
+                name: 'pt.history',
+                component: PTHistory
             },
             {
                 path: '/teacher/registerclass',

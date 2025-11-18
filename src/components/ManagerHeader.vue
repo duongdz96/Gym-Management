@@ -24,7 +24,7 @@ const handleLogout = () => {
     <div class="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
       <!-- Logo -->
       <div class="flex items-center gap-3">
-        <RouterLink to="/manager" class="inline-flex items-center gap-2">
+        <RouterLink to="/manager" class="inline-flex items-center gap-2" :class="route.path === '/manager' ? 'text-red-600' : 'text-white'">
           <span class="h-8 w-8 rounded-full bg-red-600 inline-block"></span>
           <span class="font-bold text-white tracking-wider uppercase">
             Gym Management
@@ -89,6 +89,13 @@ const handleLogout = () => {
           :class="route.path === '/manager/banner' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
         >
           Banner
+        </RouterLink>
+        <RouterLink
+          to="/manager/statistics"
+          class="uppercase tracking-wider hover:text-red-600"
+          :class="route.path === '/manager/statistics' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+        >
+          Statistics
         </RouterLink>
       </nav>
 
@@ -197,6 +204,11 @@ const handleLogout = () => {
         class="block hover:text-red-600"
         @click="isMenuOpen = false"
       >Memberships</RouterLink>
+      <RouterLink
+        to="/manager/statistics"
+        class="block hover:text-red-600"
+        @click="isMenuOpen = false"
+      >Statistics</RouterLink>
 
       <hr class="border-gray-700 my-2" />
 

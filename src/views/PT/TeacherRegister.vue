@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import api from '@/services/api'; 
+import api from '@/services/api';
 import axios from 'axios';
+import { useToast } from "vue-toastification";
 
 // =================================================================
 // 1. TYPESCRIPT DEFINITIONS
@@ -31,7 +32,8 @@ const classes = ref<ClassTemplateWithRegistrationStatus[]>([]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 
-const currentStaffId = 2; 
+const currentStaffId = 2;
+const toast = useToast(); 
 
 
 // =================================================================
@@ -96,9 +98,9 @@ const handleRegistrationToggle = async (targetClass: ClassTemplateWithRegistrati
 
     if (axios.isAxiosError(err) && err.response) {
       const errorMessage = err.response.data.message || "An error occurred on the server.";
-      alert(errorMessage);
+      toast.error(errorMessage);
     } else {
-      alert("Operation failed. Please check your network connection and try again.");
+      toast.error("Operation failed. Please check your network connection and try again.");
     }
   }
 };

@@ -66,9 +66,15 @@ const formatDate = (dateString: string) => {
         </select>
         <RouterLink
           :to= "{name: 'staff.add'}"
-          class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:opacity-90"
+          class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:opacity-90 mr-2"
         >
           Add
+        </RouterLink>
+        <RouterLink
+          :to= "{name: 'staff.attendance-history'}"
+          class="px-3 py-2 bg-green-600 text-white rounded-lg hover:opacity-90"
+        >
+          Attendance History
         </RouterLink>
       </div>
     </div>

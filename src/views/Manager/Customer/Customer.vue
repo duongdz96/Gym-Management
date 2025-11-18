@@ -56,10 +56,16 @@ const filteredMembers = computed(() => {
           <option value="vip">VIP</option>
         </select>
         <button
-          class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:opacity-90"
+          class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:opacity-90 mr-2"
         >
           Add
         </button>
+        <RouterLink
+          :to="{ name: 'customer.checkin-history' }"
+          class="px-3 py-2 bg-green-600 text-white rounded-lg hover:opacity-90"
+        >
+          Checkin History
+        </RouterLink>
       </div>
     </div>
 
