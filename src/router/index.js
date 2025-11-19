@@ -5,6 +5,7 @@ import MainLayout from "@/layout/MainLayout.vue";
 import Home from "@/views/Home.vue";
 import Login from "@/views/Login.vue";
 import Forbidden from "@/views/Forbidden.vue";
+import ChangePassword from "@/views/ChangePassword.vue";
 
 import ManagerLayout from "@/layout/ManagerLayout.vue";
 import Coupon from "@/views/Manager/Coupon/Coupon.vue";
@@ -71,6 +72,7 @@ const routes = [
             { path: "login", name: "login", component: Login },
             { path: "forbidden", name: "forbidden", component: Forbidden },
             { path: "test", component: Test },
+            { path: "change-password", component: ChangePassword}
         ],
     },
 

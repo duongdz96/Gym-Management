@@ -78,6 +78,7 @@ const handleLogout = () => {
               <RouterLink
                 to="/change-password"
                 class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                @click="isMenuOpen = false"
               >
                 Đổi mật khẩu
               </RouterLink>
