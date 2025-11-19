@@ -9,6 +9,7 @@ import com.example.gympool.repository.*;
 import com.example.gympool.security.JwtTokenProvider;
 import com.example.gympool.service.AuthService;
 import com.example.gympool.service.RefreshTokenService;
+import com.example.gympool.dto.ChangePasswordRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,26 @@ public class AuthServiceImpl implements AuthService {
     private final ReceptionistRepository receptionistRepository;
     private final RefreshTokenService refreshTokenService;
     private final ManagerRepository managerRepository;
+
+    @Override
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+
+        // Kiểm tra mật khẩu cũ
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new RuntimeException("Mật khẩu cũ không đúng");
+        }
+
+        // Kiểm tra confirm password
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Xác nhận mật khẩu không khớp");
+        }
+
+        // Encode và lưu mật khẩu mới
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
 
     @Override
     public LoginResponse login(LoginRequest request) {
