@@ -85,7 +85,9 @@ const handleLogout = () => {
         </RouterLink>
 
         <!-- Account dropdown -->
-        <div
+        
+      </nav>
+      <div
           class="relative"
           @mouseenter="openAccountMenu"
           @mouseleave="closeAccountMenu"
@@ -123,7 +125,6 @@ const handleLogout = () => {
             </div>
           </transition>
         </div>
-      </nav>
     </div>
   </header>
 </template>
