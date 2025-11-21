@@ -53,11 +53,15 @@ public class CouponServiceImpl implements CouponService {
         Optional<IssuedCoupon> issued = issuedCouponRepository
                 .findByCouponIdAndMemberIdAndStatus(coupon.getId(), memberId, "AVAILABLE");
 
-        if (issued.isPresent()) {
-            return Optional.of(coupon);
-        } else {
-            return Optional.empty();
+        if(issued.isPresent()) {
+            IssuedCoupon issuedCoupon = issued.get();
+
+            if(issuedCoupon.getRemainingUses() != null && issuedCoupon.getRemainingUses() > 0) {
+                return Optional.of(coupon);
+            }
         }
+
+            return Optional.empty();
     }
 
 

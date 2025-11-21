@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.Date;
 import java.util.List;
+import com.example.gympool.dto.CouponDTO;
 
 @Entity
 @Table(name = "bill")
@@ -50,4 +51,11 @@ public class Bill {
     @ManyToOne
     @JoinColumn(name = "issuedcoupon_id")
     private IssuedCoupon issuedCoupon;
+
+    @Transient
+    private
+    CouponDTO coupon;
+
+    @Transient
+    private double totalPrice;
 }
