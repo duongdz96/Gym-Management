@@ -24,12 +24,12 @@ public class IssuedCouponController {
         return ResponseEntity.ok(issuedCouponService.getAllIssuedCoupons());
     }
 
-    @GetMapping("/member/{memberId}")
-    public ResponseEntity<List<IssuedCoupon>> getIssuedCouponsByMember(@PathVariable Long memberId) {
-        Member member = new Member();
-        member.setId(memberId);
-        return ResponseEntity.ok(issuedCouponService.getIssuedCouponsByMember(member));
+    @GetMapping("/find")
+    public ResponseEntity<List<IssuedCoupon>> getIssuedCoupons(@RequestParam Long memberId) {
+        List<IssuedCoupon> list = issuedCouponService.getIssuedCouponsByMember(memberId);
+        return ResponseEntity.ok(list);
     }
+
 
     @GetMapping("/coupon/{couponId}")
     public ResponseEntity<List<IssuedCoupon>> getIssuedCouponsByCoupon(@PathVariable Long couponId) {
