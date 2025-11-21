@@ -4,12 +4,15 @@ import { useRouter } from "vue-router";
 import api from "../../../services/api";
 import Multiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const router = useRouter();
 const toast = useToast();
+const authStore = useAuthStore();
 
 // ===================== DATA =====================
 const bill = ref<any>(null);
+const user = authStore.user;
 const coupon = ref("");
 const appliedCoupon = ref<any>(null);
 const paymentMethod = ref<"CARD" | "CASH" | "BANKING" | null>(null);
@@ -131,14 +134,15 @@ async function submit() {
       email: selectedMember.value.email,
       phone: selectedMember.value.phone,
     },
-    receptionist: { id: 3, name: "Nguyễn Văn Lễ Tân" },
+    receptionist: { id: user.id, name: user.fullName },
     coupon: appliedCoupon.value || null,
     paymentMethod: paymentMethod.value,
-    paymentStatus: "PAID",
+    paymentStatus: paymentMethod.value === "CASH" ? "PAID" : "PENDING",
     totalPrice: finalPrice.value,
   };
 
   try {
+    // console.log(payload);
     const res = await api.post("/bills", payload);
     if (res.status === 200 || res.status === 201) {
       toast.success("Thanh toán thành công!");
