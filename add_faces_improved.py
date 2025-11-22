@@ -173,59 +173,66 @@ def collect_face_embeddings(person_id, person_name, person_type='member'):
         cv2.putText(display_frame, "Position your face in the center", (50, 100),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
-        # PERFORMANCE: Preview with lightweight detector (every frame for smooth display)
+        # ACCURACY FOCUS: Always use high-quality detector (RetinaFace)
+        # Luôn dùng detector chính xác nhất, chấp nhận lag để đảm bảo quality
+        face_objs = None
         try:
-            # Use OpenCV for fast preview
-            preview_faces = DeepFace.extract_faces(
+            # Use RetinaFace for BOTH preview and capture - maximum accuracy
+            face_objs = DeepFace.extract_faces(
                 frame,
-                detector_backend='opencv',  # Fast detector for preview
+                detector_backend=config.FACE_DETECTOR,  # RetinaFace - most accurate
                 enforce_detection=False,
-                align=False  # Don't align for preview (faster)
+                align=config.ALIGN_FACE
             )
 
-            if len(preview_faces) > 0:
-                # Draw preview rectangle (yellow = preview mode)
-                face_area = preview_faces[0]['facial_area']
-                px, py, pw, ph = face_area['x'], face_area['y'], face_area['w'], face_area['h']
-                cv2.rectangle(display_frame, (px, py), (px+pw, py+ph), (0, 255, 255), 2)
-                last_face_bbox = (px, py, pw, ph)
+            if len(face_objs) > 0:
+                # Get first face
+                face_obj = face_objs[0]
+                facial_area = face_obj['facial_area']
+                x, y, w, h = facial_area['x'], facial_area['y'], facial_area['w'], facial_area['h']
 
-                if len(preview_faces) > 1:
-                    cv2.putText(display_frame, "Multiple faces! Show only yours", (50, 150),
+                # Draw detection rectangle with status indicator
+                if (current_time - last_capture_time) > capture_cooldown:
+                    # Ready to capture - green
+                    cv2.rectangle(display_frame, (x, y), (x+w, y+h), (0, 255, 0), 3)
+                    cv2.putText(display_frame, "READY - Hold still", (x, y - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                else:
+                    # Cooldown period - orange
+                    cv2.rectangle(display_frame, (x, y), (x+w, y+h), (0, 165, 255), 2)
+                    cooldown_left = capture_cooldown - (current_time - last_capture_time)
+                    cv2.putText(display_frame, f"Wait {cooldown_left:.1f}s", (x, y - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 165, 255), 2)
+
+                last_face_bbox = (x, y, w, h)
+
+                # Check for multiple faces
+                if len(face_objs) > 1:
+                    cv2.putText(display_frame, "Multiple faces detected! Show only yours", (50, 150),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
             else:
-                cv2.putText(display_frame, "No face detected", (50, 150),
+                # No face detected
+                cv2.putText(display_frame, "No face detected - Position your face", (50, 150),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
                 last_face_bbox = None
 
         except Exception as e:
-            pass  # Ignore preview errors
+            error_msg = str(e)
+            if "Face could not be detected" not in error_msg:
+                cv2.putText(display_frame, f"Detection error: {error_msg[:40]}", (50, 150),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            last_face_bbox = None
 
-        # CAPTURE: Only process every N frames with high-quality detector
-        if frame_count % config.FRAME_SKIP == 0 and (current_time - last_capture_time) > capture_cooldown:
-            # Only try to capture if preview detected a single face
-            if last_face_bbox is not None and len(preview_faces) == 1:
+        # CAPTURE: When cooldown passed and single face detected
+        if (current_time - last_capture_time) > capture_cooldown:
+            if face_objs is not None and len(face_objs) == 1:
                 try:
-                    # Now use RetinaFace for high-quality capture
-                    face_objs = DeepFace.extract_faces(
-                        frame,
-                        detector_backend=config.FACE_DETECTOR,  # RetinaFace for accuracy
-                        enforce_detection=False,
-                        align=config.ALIGN_FACE
-                    )
-
-                    if len(face_objs) == 0:
-                        continue
-
-                    # Get face
+                    # Use the already detected face - no need to detect again!
                     face_obj = face_objs[0]
                     facial_area = face_obj['facial_area']
                     x, y, w, h = facial_area['x'], facial_area['y'], facial_area['w'], facial_area['h']
 
-                    # Draw high-quality detection rectangle (green)
-                    cv2.rectangle(display_frame, (x, y), (x+w, y+h), (0, 255, 0), 3)
-
-                    # Get face image
+                    # Get face image (already extracted and aligned by RetinaFace)
                     face_img = face_obj['face']
                     # DeepFace returns normalized float, convert to uint8
                     if face_img.dtype == np.float32 or face_img.dtype == np.float64:
@@ -235,6 +242,8 @@ def collect_face_embeddings(person_id, person_name, person_type='member'):
                     is_good, reason = is_good_quality_face(face_img)
 
                     if not is_good:
+                        # Show quality issue on current frame
+                        cv2.rectangle(display_frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
                         cv2.putText(display_frame, f"Quality: {reason}", (x, y - 10),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                         cv2.imshow("Collecting Faces", display_frame)

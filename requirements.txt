@@ -2,23 +2,23 @@
 # Cho Desktop App với GPU support (GTX 1650)
 
 # Core dependencies
-numpy>=1.24.0
-opencv-python>=4.8.0
-scipy>=1.10.0
+numpy
+opencv-python
+scipy
 
 # Deep Learning - GPU support
 # TensorFlow với CUDA support cho NVIDIA GPU
 tensorflow[and-cuda]>=2.15.0
 
 # Face Recognition
-deepface>=0.0.79
+deepface
 
 # Database
 # sqlite3 built-in Python, không cần cài
 
 # Optional - Cho better performance
-pillow>=10.0.0
-pandas>=2.0.0
+pillow
+pandas
 
 # Utilities
-tqdm>=4.65.0  # Progress bars
+tqdm  # Progress bars
