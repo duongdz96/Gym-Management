@@ -8,10 +8,7 @@
     </div>
 
     <!-- Danh sách coupon -->
-    <div
-      v-else
-      class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-    >
+    <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
         v-for="coupon in coupons"
         :key="coupon.id"
@@ -21,17 +18,22 @@
           <h2 class="text-lg font-bold text-indigo-600">{{ coupon.code }}</h2>
           <span
             class="text-sm px-2 py-1 rounded-full"
-            :class="coupon.isExpired ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'"
+            :class="{
+              'bg-red-100 text-red-600': coupon.isExpired,
+              'bg-yellow-100 text-yellow-600': coupon.isAlmostExpired,
+              'bg-green-100 text-green-600': !coupon.isExpired && !coupon.isAlmostExpired
+            }"
           >
-            {{ coupon.isExpired ? 'Hết hạn' : 'Còn hạn' }}
+            {{ coupon.label }}
           </span>
         </div>
 
         <p class="text-gray-700 mb-2">{{ coupon.description }}</p>
 
         <div class="text-sm text-gray-500 space-y-1">
-          <p>Giảm giá: <span class="font-medium text-gray-800">{{ coupon.discount }}%</span></p>
+          <p>Giảm giá: <span class="font-medium text-gray-800">{{ coupon.discount }}{{ coupon.discountType === 'PERCENTAGE' ? '%' : '₫' }}</span></p>
           <p>Hạn dùng: {{ coupon.expiry }}</p>
+          <p>Số lượt còn lại: {{ coupon.remainingUses }}</p>
         </div>
 
       </div>
@@ -40,35 +42,53 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/useAuthStore';
+import api from '@/services/api';
 
-// Fake data coupon
-const coupons = ref([
-  {
-    id: 1,
-    code: 'WELCOME10',
-    description: 'Giảm 10% cho đơn hàng đầu tiên.',
-    discount: 10,
-    expiry: '2025-12-31',
-    isExpired: false,
-  },
-  {
-    id: 2,
-    code: 'HEALTH20',
-    description: 'Giảm 20% cho gói khám sức khỏe tổng quát.',
-    discount: 20,
-    expiry: '2025-08-01',
-    isExpired: true,
-  },
-  {
-    id: 3,
-    code: 'FITNESS15',
-    description: 'Giảm 15% cho dịch vụ tập luyện thể chất.',
-    discount: 15,
-    expiry: '2025-11-15',
-    isExpired: false,
-  },
-])
+const useAuth = useAuthStore();
+const coupons = ref([]);
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('vi-VN');
+}
+
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+onMounted(async () => {
+  const memberId = useAuth.user.id;
+
+  try {
+    const res = await api.get(`/issued-coupons/find?memberId=${memberId}`);
+
+    coupons.value = res.data
+      // Lọc bỏ coupon đã hết hạn
+      .filter(item => new Date(item.coupon.endDate) >= new Date())
+      .map(item => {
+        const endDate = new Date(item.coupon.endDate);
+        const now = new Date();
+        const timeLeft = endDate - now;
+
+        const isAlmostExpired = timeLeft <= ONE_WEEK_MS;
+        return {
+          id: item.coupon.id,
+          code: item.coupon.code,
+          description: item.coupon.scope ? `Mã giảm cho ${item.coupon.scope}` : '',
+          discount: item.coupon.discountValue,
+          discountType: item.coupon.discountType, 
+          expiry: formatDate(item.coupon.endDate),
+          isExpired: false,
+          isAlmostExpired: isAlmostExpired,
+          label: isAlmostExpired ? 'Sắp hết hạn' : 'Còn hạn',
+          remainingUses: item.remainingUses || 0
+        };
+      });
+  } catch (error) {
+    console.error('Lỗi khi lấy coupon:', error);
+  }
+});
 </script>
 
 <style scoped>

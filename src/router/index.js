@@ -5,11 +5,13 @@ import MainLayout from "@/layout/MainLayout.vue";
 import Home from "@/views/Home.vue";
 import Login from "@/views/Login.vue";
 import Forbidden from "@/views/Forbidden.vue";
+import ChangePassword from "@/views/ChangePassword.vue";
 
 import ManagerLayout from "@/layout/ManagerLayout.vue";
 import Coupon from "@/views/Manager/Coupon/Coupon.vue";
 import AddCoupon from "@/views/Manager/Coupon/AddCoupon.vue";
 import CouponDetail from "@/views/Manager/Coupon/CouponDetail.vue";
+import EditCoupon from "@/views/Manager/Coupon/EditCoupon.vue";
 import Product from "@/views/Manager/Product/Product.vue";
 import AddProduct from "@/views/Manager/Product/AddProduct.vue";
 import ImportProduct from "@/views/Manager/Product/ImportProduct.vue";
@@ -71,6 +73,7 @@ const routes = [
             { path: "login", name: "login", component: Login },
             { path: "forbidden", name: "forbidden", component: Forbidden },
             { path: "test", component: Test },
+            { path: "change-password", component: ChangePassword}
         ],
     },
 
@@ -87,6 +90,7 @@ const routes = [
             { path: "coupon", name: "coupon", component: Coupon },
             { path: "coupon/:id", name: "CouponDetail", component: CouponDetail },
             { path: "coupon/add", name: "coupon.add", component: AddCoupon },
+            { path: "coupon/:id", name: "coupon.edit", component: EditCoupon },
             { path: "product", name: "product", component: Product },
             { path: "product/add", name: "product.add", component: AddProduct },
             { path: "product/:id", name: "product.edit", component: EditProduct },

@@ -95,7 +95,9 @@ const handleLogout = () => {
         </RouterLink>
 
         <!-- Account dropdown -->
-        <div
+        
+      </nav>
+      <div
           class="relative"
           @mouseenter="openAccountMenu"
           @mouseleave="closeAccountMenu"
@@ -119,10 +121,10 @@ const handleLogout = () => {
                 Profile
               </RouterLink>
               <RouterLink
-                to="/customer/setting"
+                to="/change-password"
                 class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
               >
-                Settings
+                Change Password
               </RouterLink>
               <button
                 class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
@@ -133,7 +135,6 @@ const handleLogout = () => {
             </div>
           </transition>
         </div>
-      </nav>
     </div>
   </header>
 </template>

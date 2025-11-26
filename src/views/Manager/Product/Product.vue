@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import axios from 'axios' // (Không dùng đến nếu đã có 'api')
 import { RouterLink } from 'vue-router'
 import api from '@/services/api'
 import { useToast } from "vue-toastification"; // (Tôi thêm vào, bạn đã dùng ở file khác)
@@ -292,7 +291,8 @@ async function doImport() {
                 {{ p.status === false ? 'Active' : 'Deleted' }}
               </span>
             </td>
-            <td class="px-4 py-3 text-sm text-center"> <RouterLink
+            <td class="px-4 py-3 text-sm text-center"> 
+              <RouterLink
                 :to="{ name: 'product.edit', params: { id: p.id } }" class="px-2 py-1 rounded bg-green-600 text-white mr-2 hover:bg-green-700 hover:cursor-pointer"
                 v-if="!p.status"
               >

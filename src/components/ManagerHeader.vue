@@ -116,10 +116,10 @@ const handleLogout = () => {
               Profile
             </RouterLink>
             <RouterLink
-              to="/manager/setting"
+              to="/change-password"
               class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
-              Settings
+              Change Password
             </RouterLink>
             <button
               @click="handleLogout"
