@@ -10,6 +10,7 @@ import com.example.gympool.repository.MemberRepository;
 import com.example.gympool.service.CouponService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,11 +53,15 @@ public class CouponServiceImpl implements CouponService {
         Optional<IssuedCoupon> issued = issuedCouponRepository
                 .findByCouponIdAndMemberIdAndStatus(coupon.getId(), memberId, "AVAILABLE");
 
-        if (issued.isPresent()) {
-            return Optional.of(coupon);
-        } else {
-            return Optional.empty();
+        if(issued.isPresent()) {
+            IssuedCoupon issuedCoupon = issued.get();
+
+            if(issuedCoupon.getRemainingUses() != null && issuedCoupon.getRemainingUses() > 0) {
+                return Optional.of(coupon);
+            }
         }
+
+            return Optional.empty();
     }
 
 
@@ -80,9 +85,14 @@ public class CouponServiceImpl implements CouponService {
         }
     }
 
-    @Override
+    @Transactional
     public Coupon updateCoupon(Long id, Coupon updatedCoupon) {
+
         return couponRepository.findById(id).map(coupon -> {
+
+            boolean scopeChanged = !coupon.getScope().equals(updatedCoupon.getScope());
+
+            // Cập nhật các field
             coupon.setCode(updatedCoupon.getCode());
             coupon.setDiscountType(updatedCoupon.getDiscountType());
             coupon.setDiscountValue(updatedCoupon.getDiscountValue());
@@ -90,9 +100,41 @@ public class CouponServiceImpl implements CouponService {
             coupon.setEndDate(updatedCoupon.getEndDate());
             coupon.setStatus(updatedCoupon.getStatus());
             coupon.setScope(updatedCoupon.getScope());
-            return couponRepository.save(coupon);
-        }).orElseThrow(() -> new RuntimeException("Không tìm thấy coupon với id " + id));
+
+            Coupon saved = couponRepository.save(coupon);
+
+            // =========================
+            //  Nếu scope thay đổi
+            // =========================
+            if (scopeChanged) {
+
+                // 1. Xóa toàn bộ IssuedCoupon trước đó
+                issuedCouponRepository.deleteByCoupon(saved);
+
+                // 2. Tìm các CustomerMembership phù hợp scope mới
+                List<CustomerMembership> matchedMemberships =
+                        customerMembershipRepository.findByMembershipPlan_MembershipTier_Name(
+                                updatedCoupon.getScope()
+                        );
+
+                // 3. Tạo lại IssuedCoupon mới
+                for (CustomerMembership cm : matchedMemberships) {
+                    IssuedCoupon issued = new IssuedCoupon();
+                    issued.setCoupon(saved);
+                    issued.setMember(cm.getMember());
+                    issued.setRemainingUses(3);  // hoặc dynamic
+                    issued.setStatus("AVAILABLE");
+                    issuedCouponRepository.save(issued);
+                }
+            }
+
+            return saved;
+
+        }).orElseThrow(() ->
+                new RuntimeException("Không tìm thấy coupon với id " + id)
+        );
     }
+
 
     @Override
     public void deleteCoupon(Long id) {

@@ -38,8 +38,8 @@ public class IssuedCouponServiceImpl implements IssuedCouponService {
     }
 
     @Override
-    public List<IssuedCoupon> getIssuedCouponsByMember(Member member) {
-        return issuedCouponRepository.findByMember(member);
+    public List<IssuedCoupon> getIssuedCouponsByMember(Long memberId) {
+        return issuedCouponRepository.findByMember_Id(memberId);
     }
 
     @Override
