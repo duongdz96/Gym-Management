@@ -56,6 +56,7 @@ import StaffInformation from "@/views/Manager/Staff/StaffInformation.vue";
 import EditProduct from "@/views/Manager/Product/EditProduct.vue";
 import EditClassTemplate from "@/views/Manager/Classes/EditClassTemplate.vue";
 import EditClassSchedule from "@/views/Manager/Classes/EditClassSchedule.vue";
+import CustomerBillHistory from "@/views/Customer/History/CustomerBillHistory.vue";
 
 const routes = [
     {
@@ -118,6 +119,7 @@ const routes = [
             { path: "plan", name: "customer.plan", component: CustomerPlan },
             { path: "profile", name: "customer.profile", component: CustomerProfile },
             { path: "setting", name: "customer.setting", component: CustomerSetting },
+            { path: "billhistory", name: "customer.billhistory", component: CustomerBillHistory },
         ],
     },
 

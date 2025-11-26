@@ -22,11 +22,14 @@ interface Room {
 }
 
 const patterns = ref<SchedulePattern[]>([]);
-const rooms = ref<Room[]>([]);
+const availableRooms = ref<Room[]>([]); // <--- NEW: Danh sách phòng rảnh
+const isLoadingRooms = ref(false);      // <--- NEW: Trạng thái loading
+
 const showModal = ref(false);
 const isEditing = ref(false);
 const selectedPattern = ref<SchedulePattern | null>(null);
 const selectedRoomId = ref<number | null>(null);
+
 const form = ref<SchedulePattern>({
   daysOfWeek: "",
   timeStart: "",
@@ -37,7 +40,7 @@ const form = ref<SchedulePattern>({
 
 const formatTime = (timeStr: string) => {
   if (!timeStr) return "";
-  return timeStr.slice(0, 5); // cắt "09:00:00" -> "09:00"
+  return timeStr.slice(0, 5); 
 };
 
 const formatDate = (dateStr: string) => {
@@ -47,22 +50,37 @@ const formatDate = (dateStr: string) => {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }); // → "20/10/2025"
+  }); 
 };
 
 // =================== FETCH ===================
-const loadRooms = async () => {
+// Hàm này có thể bỏ nếu bạn chỉ dùng rooms trong modal chọn phòng
+// const loadRooms = async () => { ... } 
+
+const loadPatterns = async () => {
   try {
-    const res = await api.get("/room");
-    rooms.value = res.data;
+    const res = await api.get("/schedule-patterns");
+    patterns.value = res.data;
   } catch (err) {
-    console.error("Failed to fetch rooms:", err);
+    console.error(err);
   }
 };
 
-const loadPatterns = async () => {
-  const res = await api.get("/schedule-patterns");
-  patterns.value = res.data;
+const showSelectRoomModal = async (pattern: SchedulePattern) => {
+  selectedPattern.value = pattern;
+  selectedRoomId.value = null;
+  availableRooms.value = []; // Reset danh sách cũ
+  isLoadingRooms.value = true; // Bật loading
+
+  try {
+    const res = await api.post("/room/available-for-pattern", pattern);
+    availableRooms.value = res.data;
+  } catch (err) {
+    console.error("Lỗi khi tìm phòng trống:", err);
+    alert("Không thể tải danh sách phòng trống.");
+  } finally {
+    isLoadingRooms.value = false; // Tắt loading
+  }
 };
 
 // =================== CRUD ===================
@@ -85,25 +103,29 @@ const openEdit = (p: SchedulePattern) => {
 };
 
 const savePattern = async () => {
-  if (isEditing.value && form.value.id) {
-    await api.put(`/schedule-patterns/${form.value.id}`, form.value);
-  } else {
-    await api.post("/schedule-patterns", form.value);
+  try {
+    if (isEditing.value && form.value.id) {
+      await api.put(`/schedule-patterns/${form.value.id}`, form.value);
+    } else {
+      await api.post("/schedule-patterns", form.value);
+    }
+    showModal.value = false;
+    await loadPatterns();
+  } catch (e) {
+    console.error(e);
+    alert("Lỗi khi lưu pattern");
   }
-  showModal.value = false;
-  await loadPatterns();
 };
 
 const deletePattern = async (id: number) => {
   if (confirm("Bạn có chắc muốn xoá pattern này không?")) {
-    await api.delete(`/schedule-patterns/${id}`);
-    await loadPatterns();
+    try {
+      await api.delete(`/schedule-patterns/${id}`);
+      await loadPatterns();
+    } catch (e) {
+      console.error(e);
+    }
   }
-};
-
-const showSelectRoomModal = (pattern) => {
-  selectedPattern.value = pattern;
-  selectedRoomId.value = null;
 };
 
 const selectPattern = () => {
@@ -112,7 +134,7 @@ const selectPattern = () => {
     return;
   }
 
-  const selectedRoom = rooms.value.find(r => r.id === selectedRoomId.value);
+  const selectedRoom = availableRooms.value.find(r => r.id === selectedRoomId.value);
   
   sessionStorage.setItem("selectedPattern", JSON.stringify(selectedPattern.value));
   sessionStorage.setItem("selectedRoom", JSON.stringify(selectedRoom));
@@ -122,7 +144,6 @@ const selectPattern = () => {
 
 onMounted(async () => {
   await loadPatterns();
-  await loadRooms();
 });
 </script>
 
@@ -138,7 +159,6 @@ onMounted(async () => {
       </button>
     </div>
 
-    <!-- Table -->
     <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow">
       <thead class="bg-gray-100 text-gray-700">
         <tr>
@@ -167,7 +187,7 @@ onMounted(async () => {
               Select
             </button>
             <button
-              class="bg-yellow-500 text-white px-3 py-1 rounded"
+              class="bg-blue-500 text-white px-3 py-1 rounded"
               @click="openEdit(p)"
             >
               Edit
@@ -183,7 +203,6 @@ onMounted(async () => {
       </tbody>
     </table>
 
-    <!-- Modal Add/Edit -->
     <div
       v-if="showModal"
       class="fixed inset-0 flex items-center justify-center bg-black/40"
@@ -240,7 +259,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Modal Select Room -->
     <div
       v-if="selectedPattern"
       class="fixed inset-0 flex items-center justify-center bg-black/40 z-50"
@@ -258,15 +276,24 @@ onMounted(async () => {
         </div>
 
         <div class="mb-4">
-          <label class="block mb-2 font-semibold">Select Room:</label>
+          <label class="block mb-2 font-semibold">Select Available Room:</label>
+          
+          <div v-if="isLoadingRooms" class="text-gray-500 italic py-2">
+             Searching for empty rooms...
+          </div>
+
           <select 
+            v-else
             v-model="selectedRoomId" 
             class="w-full border rounded px-3 py-2"
             :class="{ 'border-red-500': !selectedRoomId }"
+            :disabled="availableRooms.length === 0"
           >
-            <option :value="null" disabled>Please select a room</option>
+            <option :value="null" disabled>
+               {{ availableRooms.length > 0 ? 'Please select a room' : 'No rooms available' }}
+            </option>
             <option 
-              v-for="room in rooms" 
+              v-for="room in availableRooms" 
               :key="room.id" 
               :value="room.id"
             >
@@ -274,6 +301,10 @@ onMounted(async () => {
               <span v-if="room.location"> - {{ room.location }}</span>
             </option>
           </select>
+
+          <p v-if="!isLoadingRooms && availableRooms.length === 0" class="text-red-500 text-sm mt-2">
+            ⚠️ All rooms are occupied at this time/date range.
+          </p>
         </div>
 
         <div class="flex justify-end gap-3 mt-5">
@@ -286,6 +317,8 @@ onMounted(async () => {
           <button
             class="px-4 py-2 bg-blue-600 text-white rounded"
             @click="selectPattern"
+            :disabled="isLoadingRooms || !selectedRoomId"
+            :class="{'opacity-50 cursor-not-allowed': isLoadingRooms || !selectedRoomId}"
           >
             Confirm
           </button>

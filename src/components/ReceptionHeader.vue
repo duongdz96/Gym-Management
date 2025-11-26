@@ -41,14 +41,14 @@ const handleLogout = () => {
           :to="{ name: 'salesselect' }"
           class="text-white uppercase tracking-wider hover:text-red-500 transition"
         >
-          Sales
+          Products Sales
         </RouterLink>
 
         <RouterLink
           :to="{ name: 'salesBooking' }"
           class="text-white uppercase tracking-wider hover:text-red-500 transition"
         >
-          PT Rental
+          Services Sales
         </RouterLink>
 
         <RouterLink

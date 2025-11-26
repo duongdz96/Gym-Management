@@ -30,13 +30,12 @@ const search = ref("");
 
 
 onMounted(async () => {
-  // Bỏ logic load bill cũ, vì trang này là trang độc lập
-  
   try {
-    const res = await api.get("/product");
-    
-    // Lọc chỉ lấy các sản phẩm có type là "PT"
-    ptProducts.value = res.data.filter((p: ProductPT) => p.type === "PT"); 
+    const resPT = await api.get("/product/type/PT");
+    const ptData = resPT.data || []; 
+    const resMembership = await api.get("/product/type/Membership");
+    const membershipData = resMembership.data || []; 
+    ptProducts.value = [...ptData, ...membershipData];
   } catch (err) {
     console.error("Error fetching PT products:", err);
   }
@@ -73,8 +72,6 @@ function proceedToCheckout() {
       paymentStatus: null,
       date: new Date(),
       receptionist: { id: 3, name: "Nguyễn Văn Lễ Tân" },
-      // total sẽ được tính lại ở bước checkout
-      // receptionist, member, issuedCoupon có thể null hoặc được thêm sau
       
       // Chỉ chứa listSoldProduct là các gói PT
       listSoldProduct: finalListSoldProduct.map((item) => ({
@@ -129,7 +126,7 @@ function updateQuantity(item: SoldProduct, change: number) {
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
       <div class="lg:w-3/5 bg-white rounded-xl shadow-lg overflow-hidden">
         <div class="p-6 border-b border-gray-200">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">Available PT Packages</h2>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">Available Service Packages</h2>
           <div class="relative">
             <input
               type="text"
@@ -175,7 +172,7 @@ function updateQuantity(item: SoldProduct, change: number) {
       </div>
 
       <div class="lg:w-2/5 bg-white rounded-xl shadow-lg flex flex-col">
-        <h2 class="text-2xl font-bold text-gray-800 p-6 border-b border-gray-200">Selected PT Packages</h2>
+        <h2 class="text-2xl font-bold text-gray-800 p-6 border-b border-gray-200">Selected Service Packages</h2>
 
         <div class="flex-1 overflow-y-auto p-6">
           <div v-if="selectedPTPackages.length > 0" class="space-y-4">

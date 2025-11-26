@@ -31,17 +31,13 @@ const isLoading = ref(false);
 const API_BASE = "http://localhost:8080";
 const defaultImage = `${API_BASE}/image/defaults/no-image.png`;
 
-// 🔹 Lấy dữ liệu bill cũ và danh sách sản phẩm
+
 onMounted(async () => {
-  const data = sessionStorage.getItem("currentBill");
-  if (data) {
-    bill.value = JSON.parse(data);
-    cart.value = bill.value.listSoldProduct || [];
-  }
+  sessionStorage.clear();
 
   try {
     isLoading.value = true;
-    const res = await api.get("/product");
+    const res = await api.get("/product/exclude-types?types=PT,Membership");
     products.value = res.data?.map((p: Product) => ({
       ...p,
       image: p.image ? `${API_BASE}/${p.image}` : defaultImage,
