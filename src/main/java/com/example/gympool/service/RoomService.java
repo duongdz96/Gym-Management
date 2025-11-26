@@ -1,6 +1,8 @@
 package com.example.gympool.service;
 
 import com.example.gympool.entity.Room;
+import com.example.gympool.entity.SchedulePattern;
+
 import java.util.List;
 
 public interface RoomService {
@@ -9,4 +11,5 @@ public interface RoomService {
     Room getRoomById(Long id);
     Room updateRoom(Long id, Room roomDetails);
     void deleteRoom(Long id);
+    List<Room> getAvailableRoomsForPattern(SchedulePattern pattern);
 }

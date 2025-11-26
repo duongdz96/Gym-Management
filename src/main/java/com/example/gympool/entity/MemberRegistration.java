@@ -10,8 +10,8 @@ import java.util.Date;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "follow_class")
-public class FollowClass {
+@Table(name = "member_registration")
+public class MemberRegistration {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,8 +20,8 @@ public class FollowClass {
     private Date followDate;
 
     @ManyToOne
-    @JoinColumn(name = "class_template_id", nullable = false)
-    private ClassTemplate classTemplate;
+    @JoinColumn(name = "class_schedule_id", nullable = false)
+    private ClassSchedule classSchedule;
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)

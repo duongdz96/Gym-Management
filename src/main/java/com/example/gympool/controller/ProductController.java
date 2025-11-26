@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -69,4 +70,18 @@ public class ProductController {
         List<Product> products = productService.getAllProductsForAdmin();
         return ResponseEntity.ok(products);
     }
+
+    @GetMapping("/type/{type}") //lay cua pt
+    public ResponseEntity<List<Product>> getProductsByType(@PathVariable String type) {
+        List<Product> products = productService.getAllAvailableProductsByType(type);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/exclude-types")
+    public ResponseEntity<List<Product>> getProductsExcludeTypes(@RequestParam List<String> types) {
+
+        List<Product> products = productService.getAllAvailableProductsByTypeNot(types);
+        return ResponseEntity.ok(products);
+    }
+
 }

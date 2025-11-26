@@ -20,4 +20,11 @@ public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, Lo
                                                     @Param("startOfDay") LocalDateTime startOfDay,
                                                     @Param("endOfDay") LocalDateTime endOfDay);
 
+    @Query("SELECT s FROM ClassSchedule s " +
+            "WHERE s.startTime < :endTime AND s.endTime > :startTime " +
+            "AND s.status <> 'CANCELLED'")
+    List<ClassSchedule> findOverlappingSchedules(
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime
+    );
 }

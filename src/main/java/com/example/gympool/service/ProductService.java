@@ -13,4 +13,6 @@ public interface ProductService {
     Product getProductByName(String name);
     List<Product> getAllAvailableProducts();
     List<Product> getAllProductsForAdmin();
+    List<Product> getAllAvailableProductsByType(String type);
+    List<Product> getAllAvailableProductsByTypeNot(List<String> type);
 }

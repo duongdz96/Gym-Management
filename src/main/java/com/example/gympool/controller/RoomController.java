@@ -1,6 +1,7 @@
 package com.example.gympool.controller;
 
 import com.example.gympool.entity.Room;
+import com.example.gympool.entity.SchedulePattern;
 import com.example.gympool.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -43,4 +44,9 @@ public class RoomController {
         roomService.deleteRoom(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/available-for-pattern")
+    public ResponseEntity<List<Room>> getAvailableRooms(@RequestBody SchedulePattern pattern) {
+        return ResponseEntity.ok(roomService.getAvailableRoomsForPattern(pattern));
+    } 
 }

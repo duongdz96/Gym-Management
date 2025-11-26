@@ -74,4 +74,14 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> getAllProductsForAdmin() {
         return productRepository.findAll();
     }
+
+    @Override
+    public List<Product> getAllAvailableProductsByType(String type) {
+        return productRepository.findAllByTypeAndStatusFalse(type);
+    }
+
+    @Override
+    public List<Product> getAllAvailableProductsByTypeNot(List<String> type) {
+        return productRepository.findAllByTypeNotInAndStatusFalse(type);
+    }
 }

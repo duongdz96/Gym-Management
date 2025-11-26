@@ -22,6 +22,7 @@ public class ClassSchedule {
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private Integer capacity;
 
     @Column(length = 20)
     private String status;   //"OPEN", "CLOSED", "CANCELLED"

@@ -64,7 +64,7 @@ public class BillServiceImpl implements BillService {
 
             sp.setProduct(product);
             sp.setBill(bill);
-            if (!"PT".equalsIgnoreCase(product.getType())) {
+            if (!"PT".equalsIgnoreCase(product.getType()) && !"Membership".equalsIgnoreCase(product.getType())) {
                 if (product.getQuantity() == null) {
                     throw new RuntimeException("Product (non-PT) is missing quantity data: " + product.getName());
                 }
