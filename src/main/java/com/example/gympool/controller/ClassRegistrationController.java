@@ -31,14 +31,14 @@ public class ClassRegistrationController {
 
     // Staff đăng ký dạy 1 lớp
     @PostMapping
-    public ResponseEntity<ClassRegistration> registerTeaching(@RequestBody ClassRegistration reg) {
-        return ResponseEntity.ok(classRegistrationService.registerTeaching(reg));
+    public ResponseEntity<ClassRegistration> registerTeaching(@RequestBody Long staffId, ClassRegistration reg) {
+        return ResponseEntity.ok(classRegistrationService.registerTeaching(staffId,reg));
     }
 
     // Staff hủy đăng ký dạy
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> unregisterTeaching(@PathVariable Long id) { // Dùng @PathVariable
-        classRegistrationService.unregisterTeachingById(id); // Gọi một service mới theo ID
+    public ResponseEntity<String> unregisterTeaching(@PathVariable Long staffId ,Long registrationId) { // Dùng @PathVariable
+        classRegistrationService.unregisterTeachingById(staffId, registrationId); // Gọi một service mới theo ID
         return ResponseEntity.ok("Teaching registration removed successfully");
     }
 }

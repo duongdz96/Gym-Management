@@ -20,11 +20,12 @@ public class ImportedProduct {
 
     private int quantity;
 
+    private Double importPrice;
+
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
 
-    // Nhiều ImportedProduct thuộc về 1 ImportBill
     @ManyToOne
     @JoinColumn(name = "import_bill_id", nullable = false)
     @JsonIgnore

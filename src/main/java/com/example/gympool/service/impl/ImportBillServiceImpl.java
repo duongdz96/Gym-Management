@@ -39,6 +39,7 @@ public class ImportBillServiceImpl implements ImportBillService {
 
     @Override
     public ImportBill createImportBill(ImportBill importBill) {
+
         List<Long> productIds = importBill.getImportedProducts().stream()
                 .map(ip -> ip.getProduct().getId())
                 .toList();
@@ -47,29 +48,33 @@ public class ImportBillServiceImpl implements ImportBillService {
                 .stream()
                 .collect(Collectors.toMap(Product::getId, p -> p));
 
-        importBill.getImportedProducts().forEach(ip -> {
+        double totalBillPrice = 0.0;
+
+        for (ImportedProduct ip : importBill.getImportedProducts()) {
+
             Product product = productMap.get(ip.getProduct().getId());
             if (product == null) {
                 throw new RuntimeException("Product not found with id: " + ip.getProduct().getId());
             }
+
             ip.setProduct(product);
             ip.setImportBill(importBill);
 
-            int newQuantity = product.getQuantity() + ip.getQuantity();
-            product.setQuantity(newQuantity);
+            product.setQuantity(product.getQuantity() + ip.getQuantity());
 
-            Double importPrice = ip.getProduct().getImportPrice();
-            product.setImportPrice(importPrice);
+            totalBillPrice += ip.getQuantity() * ip.getImportPrice();
+        }
 
-            productRepository.save(product);
-        });
+        productRepository.saveAll(productMap.values());
+
+        importBill.setPrice(totalBillPrice);
 
         return importBillRepository.save(importBill);
     }
 
-
     @Override
     public ImportBill updateImportBill(Long id, ImportBill importBillDetails) {
+
         ImportBill bill = importBillRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("ImportBill not found with id: " + id));
 
@@ -77,11 +82,18 @@ public class ImportBillServiceImpl implements ImportBillService {
         bill.setProvider(importBillDetails.getProvider());
         bill.setManager(importBillDetails.getManager());
 
-        bill.getImportedProducts().forEach(ip -> {
-            Product product = ip.getProduct();
-            product.setQuantity(product.getQuantity() - ip.getQuantity());
-            productRepository.save(product);
-        });
+        // Trả lại số lượng sản phẩm cũ về kho
+        for (ImportedProduct oldIp : bill.getImportedProducts()) {
+            Product product = oldIp.getProduct();
+            product.setQuantity(product.getQuantity() - oldIp.getQuantity());
+        }
+
+        productRepository.saveAll(
+                bill.getImportedProducts()
+                        .stream()
+                        .map(ImportedProduct::getProduct)
+                        .toList()
+        );
 
         bill.getImportedProducts().clear();
 
@@ -93,23 +105,27 @@ public class ImportBillServiceImpl implements ImportBillService {
                 .stream()
                 .collect(Collectors.toMap(Product::getId, p -> p));
 
-        importBillDetails.getImportedProducts().forEach(ip -> {
+        double totalBillPrice = 0.0;
+
+        for (ImportedProduct ip : importBillDetails.getImportedProducts()) {
             Product product = productMap.get(ip.getProduct().getId());
+
             ip.setProduct(product);
             ip.setImportBill(bill);
             bill.getImportedProducts().add(ip);
 
-            int newQuantity = product.getQuantity() + ip.getQuantity();
-            product.setQuantity(newQuantity);
+            product.setQuantity(product.getQuantity() + ip.getQuantity());
 
-            Double importPrice = ip.getProduct().getImportPrice();
-            product.setImportPrice(importPrice);
+            totalBillPrice += ip.getQuantity() * ip.getImportPrice();
+        }
 
-            productRepository.save(product);
-        });
+        productRepository.saveAll(productMap.values());
+
+        bill.setPrice(totalBillPrice);
 
         return importBillRepository.save(bill);
     }
+
 
     @Override
     public void deleteImportBill(Long id) {

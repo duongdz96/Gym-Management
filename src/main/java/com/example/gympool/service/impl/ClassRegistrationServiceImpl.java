@@ -7,7 +7,9 @@ import com.example.gympool.repository.ClassRegistrationRepository;
 import com.example.gympool.repository.ClassTemplateRepository;
 import com.example.gympool.repository.StaffRepository;
 import com.example.gympool.service.ClassRegistrationService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -39,10 +41,10 @@ public class ClassRegistrationServiceImpl implements ClassRegistrationService {
     }
 
     @Override
-    public ClassRegistration registerTeaching(ClassRegistration reg) {
-        // Lấy entity từ DB
+    public ClassRegistration registerTeaching(Long staffId, ClassRegistration reg) {
         Staff staff = staffRepository.findById(reg.getStaff().getId())
                 .orElseThrow(() -> new RuntimeException("Staff not found with id: " + reg.getStaff().getId()));
+        if(!staff.getId().equals(staffId)) throw new AccessDeniedException("You cannot change other's people schedule");
         ClassTemplate template = classTemplateRepository.findById(reg.getClassTemplate().getId())
                 .orElseThrow(() -> new RuntimeException("ClassTemplate not found with id: " + reg.getClassTemplate().getId()));
 
@@ -52,7 +54,6 @@ public class ClassRegistrationServiceImpl implements ClassRegistrationService {
             throw new RuntimeException("This class template already has a teacher registered.");
         }
 
-        // Gắn lại entity từ DB để tránh lỗi transient
         reg.setStaff(staff);
         reg.setClassTemplate(template);
 
@@ -60,12 +61,12 @@ public class ClassRegistrationServiceImpl implements ClassRegistrationService {
     }
 
     @Override
-    public void unregisterTeachingById(Long registrationId) {
-        // Kiểm tra xem record có tồn tại không để đưa ra lỗi rõ ràng hơn (tùy chọn nhưng nên làm)
-        if (!classRegistrationRepository.existsById(registrationId)) {
-            throw new RuntimeException("Registration not found with id: " + registrationId);
+    public void unregisterTeachingById(Long staffId, Long registrationId) {
+        ClassRegistration registration = classRegistrationRepository.findById(registrationId)
+                .orElseThrow(() -> new EntityNotFoundException("Registration not found with id: " + registrationId));
+        if (!registration.getStaff().getId().equals(staffId)) {
+            throw new AccessDeniedException("You cannot unregister a class registered by another person.");
         }
-        // Chỉ cần gọi deleteById là đủ
         classRegistrationRepository.deleteById(registrationId);
     }
 }
