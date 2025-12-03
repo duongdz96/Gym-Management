@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
         if (existingUser instanceof Teacher teacher) {
             teacher.setPosition(request.getPosition());
             teacher.setSpecialize(request.getSpecialize());
-            teacher.setHirePrice(request.getHirePrice());
+//            teacher.setHirePrice(request.getHirePrice());
 
             // Lưu và TRẢ VỀ đối tượng Staff đã cập nhật
             return teacherRepository.save(teacher);

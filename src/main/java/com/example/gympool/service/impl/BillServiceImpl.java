@@ -255,4 +255,13 @@ public class BillServiceImpl implements BillService {
     public List<Bill> getBillByMemberId(Long memberId) {
         return billRepository.findByMember_id(memberId);
     }
+
+    @Override
+    @Transactional
+    public Bill updateBillPaymentStatus(Long id, String paymentStatus) {
+        Bill bill = billRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Bill not found with id: " + id));
+        bill.setPaymentStatus(paymentStatus);
+        return billRepository.save(bill);
+    }
 }

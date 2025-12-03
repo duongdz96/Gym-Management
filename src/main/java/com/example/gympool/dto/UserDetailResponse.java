@@ -39,7 +39,7 @@ public class UserDetailResponse {
         if (user instanceof Teacher teacher) {
             this.position = teacher.getPosition();
             this.specialize = teacher.getSpecialize();
-            this.hirePrice = teacher.getHirePrice();
+//            this.hirePrice = teacher.getHirePrice();
         }
 
         // (Bạn có thể thêm instanceof cho Manager/Receptionist nếu họ có trường riêng)

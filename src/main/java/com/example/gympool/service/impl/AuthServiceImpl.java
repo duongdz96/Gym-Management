@@ -112,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
 
                 teacher.setPosition(request.getPosition());
                 teacher.setSpecialize(request.getSpecialize());
-                teacher.setHirePrice(request.getHirePrice());
+//                teacher.setHirePrice(request.getHirePrice());
 
                 teacherRepository.save(teacher);
             }

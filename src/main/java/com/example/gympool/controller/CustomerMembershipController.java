@@ -27,8 +27,8 @@ public class CustomerMembershipController {
         return customerMembershipService.getMembershipByCustomerName(name);
     }
     @PostMapping()
-    public void RegisterMembership(@RequestBody CustomerMembership CustomerMembership) {
-        customerMembershipService.RegisterMembership(CustomerMembership);
+    public void RegisterMembership(@RequestBody com.example.gympool.dto.CustomerMembershipRequest request) {
+        customerMembershipService.RegisterMembership(request);
     }
 
     @PutMapping("/{id}")
