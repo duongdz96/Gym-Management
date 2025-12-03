@@ -8,6 +8,6 @@ public interface TrainingSessionService  {
     List<TrainingSession> getAllTrainingSession();
     TrainingSession getTrainingSessionById(Long id);
     TrainingSession getTrainingSessionByCustomerName(String name);
-    TrainingSession getTrainingSessionByStaffName(String name);
+    TrainingSession getTrainingSessionByPtName(String name);
     TrainingSession addTrainingSession(TrainingSession TrainingSession);
 }

@@ -14,6 +14,6 @@ public interface PTPackageIssuedRepository extends JpaRepository<PTPackageIssued
     @Query("SELECT pi FROM PTPackageIssued pi WHERE pi.member.fullName LIKE %:name%")
     Optional<PTPackageIssued> findByMemberName(String name);
 
-    @Query("SELECT pi FROM PTPackageIssued pi WHERE pi.staff.fullName LIKE %:name%")
-    Optional<PTPackageIssued> findByStaffName(String name);
+    @Query("SELECT pi FROM PTPackageIssued pi WHERE pi.pt.fullName LIKE %:name%")
+    Optional<PTPackageIssued> findByPTName(String name);
 }

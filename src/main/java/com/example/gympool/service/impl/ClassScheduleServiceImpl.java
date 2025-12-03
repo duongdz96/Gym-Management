@@ -19,7 +19,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
     @Autowired
     private ClassScheduleRepository classScheduleRepository;
     @Autowired
-    private ClassTemplateRepository classTemplateRepository;
+    private FitnessClassRepository fitnessClassRepository;
     @Autowired
     private SchedulePatternRepository schedulePatternRepository;
     @Autowired
@@ -49,7 +49,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
                     existing.setStartTime(classSchedule.getStartTime());
                     existing.setEndTime(classSchedule.getEndTime());
                     existing.setStatus(classSchedule.getStatus());
-                    existing.setClassTemplate(classSchedule.getClassTemplate());
+                    existing.setFitnessClass(classSchedule.getFitnessClass());
                     existing.setRoom(classSchedule.getRoom());
                     return classScheduleRepository.save(existing);
                 })
@@ -62,8 +62,8 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
     }
 
     @Override
-    public List<ClassSchedule> getByClassTemplateId(Long id) {
-        return classScheduleRepository.findByClassTemplateId(id);
+    public List<ClassSchedule> getByFitnessClassId(Long id) {
+        return classScheduleRepository.findByFitnessClassId(id);
     }
 
     @Override
@@ -74,12 +74,12 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         }
 
         Long patternId = classSchedule.getSchedulePattern().getId();
-        Long templateId = classSchedule.getClassTemplate().getId();
+        Long templateId = classSchedule.getFitnessClass().getId();
         Long roomId = classSchedule.getRoom().getId();
 
         SchedulePattern pattern = schedulePatternRepository.findById(patternId)
                 .orElseThrow(() -> new RuntimeException("Schedule pattern not found"));
-        ClassTemplate classTemplate = classTemplateRepository.findById(templateId)
+        FitnessClass fitnessClass = fitnessClassRepository.findById(templateId)
                 .orElseThrow(() -> new RuntimeException("Class template not found"));
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
@@ -132,7 +132,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
                 schedule.setStartTime(start);
                 schedule.setEndTime(end);
                 schedule.setStatus("OPEN");
-                schedule.setClassTemplate(classTemplate);
+                schedule.setFitnessClass(fitnessClass);
                 schedule.setSchedulePattern(pattern);
                 schedule.setRoom(room);
 

@@ -18,15 +18,15 @@ public class ClassRegistrationController {
     }
 
     // Lấy danh sách lớp mà staff đã đăng ký dạy
-    @GetMapping("/staff/{staffId}")
-    public ResponseEntity<List<ClassRegistration>> getByStaff(@PathVariable Long staffId) {
-        return ResponseEntity.ok(classRegistrationService.getByStaff(staffId));
+    @GetMapping("/teacher/{staffId}")
+    public ResponseEntity<List<ClassRegistration>> getByTeacher(@PathVariable Long staffId) {
+        return ResponseEntity.ok(classRegistrationService.getByTeacher(staffId));
     }
 
     // Lấy danh sách giáo viên đã đăng ký cho class template
-    @GetMapping("/classtemplate/{templateId}")
-    public ResponseEntity<List<ClassRegistration>> getByClassTemplate(@PathVariable Long templateId) {
-        return ResponseEntity.ok(classRegistrationService.getByClassTemplate(templateId));
+    @GetMapping("/fitness_class/{templateId}")
+    public ResponseEntity<List<ClassRegistration>> getByFitnessClass(@PathVariable Long templateId) {
+        return ResponseEntity.ok(classRegistrationService.getByFitnessClass(templateId));
     }
 
     // Staff đăng ký dạy 1 lớp

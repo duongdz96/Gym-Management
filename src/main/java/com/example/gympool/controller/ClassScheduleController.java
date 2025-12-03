@@ -46,9 +46,9 @@ public class ClassScheduleController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/by-template/{templateId}")
-    public ResponseEntity<List<ClassSchedule>> getByTemplateId(@PathVariable Long templateId) {
-        List<ClassSchedule> schedules = classScheduleService.getByClassTemplateId(templateId);
+    @GetMapping("/by-fitness_class/{templateId}")
+    public ResponseEntity<List<ClassSchedule>> getByFitnessClassId(@PathVariable Long templateId) {
+        List<ClassSchedule> schedules = classScheduleService.getByFitnessClassId(templateId);
         return ResponseEntity.ok(schedules);
     }
 

@@ -41,9 +41,6 @@ public class Bill {
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SoldProduct> listSoldProduct;
 
-    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<StaffAssigned> listStaffAssigned;
-
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;

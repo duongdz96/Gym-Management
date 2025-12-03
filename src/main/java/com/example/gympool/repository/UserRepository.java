@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByFullName(String fullName);
     boolean existsByEmail(String email);
 
-    @Query("SELECT u FROM User u WHERE u.role IN ('STAFF', 'RECEPTIONIST', 'MANAGER') AND u.isDeleted = false")
+    @Query("SELECT u FROM User u WHERE u.role IN ('PT', 'RECEPTIONIST', 'MANAGER', 'TEACHER') AND u.isDeleted = false")
     List<User> findAllStaffs();
 
     Optional<User> findByIdAndIsDeletedFalse(Long id);

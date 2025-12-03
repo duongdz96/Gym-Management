@@ -1,6 +1,6 @@
 package com.example.gympool.dto;
 
-import com.example.gympool.entity.Staff;
+import com.example.gympool.entity.Teacher;
 import com.example.gympool.entity.User;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -36,10 +36,10 @@ public class UserDetailResponse {
         this.role = user.getRole();
 
         // 2. Kiểm tra nếu là Staff thì set các trường riêng
-        if (user instanceof Staff staff) {
-            this.position = staff.getPosition();
-            this.specialize = staff.getSpecialize();
-            this.hirePrice = staff.getHirePrice();
+        if (user instanceof Teacher teacher) {
+            this.position = teacher.getPosition();
+            this.specialize = teacher.getSpecialize();
+            this.hirePrice = teacher.getHirePrice();
         }
 
         // (Bạn có thể thêm instanceof cho Manager/Receptionist nếu họ có trường riêng)

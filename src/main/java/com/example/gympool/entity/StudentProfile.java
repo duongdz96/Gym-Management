@@ -25,7 +25,7 @@ public class StudentProfile {
     private Member member;
 
     @ManyToOne
-    @JoinColumn(name = "staff_id", nullable = false)
-    private Staff staff;
+    @JoinColumn(name = "pt_id", nullable = false)
+    private PT pt;
 
 }

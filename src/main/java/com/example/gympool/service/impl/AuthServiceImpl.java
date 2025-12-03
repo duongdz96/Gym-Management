@@ -22,10 +22,11 @@ public class AuthServiceImpl implements AuthService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-    private final StaffRepository staffRepository;
+    private final TeacherRepository teacherRepository;
     private final ReceptionistRepository receptionistRepository;
     private final RefreshTokenService refreshTokenService;
     private final ManagerRepository managerRepository;
+    private final PTRepository ptRepository;
 
     @Override
     public void changePassword(String email, ChangePasswordRequest request) {
@@ -95,25 +96,25 @@ public class AuthServiceImpl implements AuthService {
         }
 
         switch (request.getRole().toUpperCase()) {
-            case "STAFF" -> {
-                if (staffRepository.findByEmail(request.getEmail()).isPresent()) {
+            case "TEACHER" -> {
+                if (teacherRepository.findByEmail(request.getEmail()).isPresent()) {
                     throw new RuntimeException("Email already taken");
                 }
 
-                Staff staff = new Staff();
-                staff.setEmail(request.getEmail());
-                staff.setPassword(passwordEncoder.encode(request.getPassword()));
-                staff.setFullName(request.getFullName());
-                staff.setDob(request.getDob());
-                staff.setGender(request.getGender());
-                staff.setPhone(request.getPhone());
-                staff.setRole("STAFF");
+                Teacher teacher = new Teacher();
+                teacher.setEmail(request.getEmail());
+                teacher.setPassword(passwordEncoder.encode(request.getPassword()));
+                teacher.setFullName(request.getFullName());
+                teacher.setDob(request.getDob());
+                teacher.setGender(request.getGender());
+                teacher.setPhone(request.getPhone());
+                teacher.setRole("TEACHER");
 
-                staff.setPosition(request.getPosition());
-                staff.setSpecialize(request.getSpecialize());
-                staff.setHirePrice(request.getHirePrice());
+                teacher.setPosition(request.getPosition());
+                teacher.setSpecialize(request.getSpecialize());
+                teacher.setHirePrice(request.getHirePrice());
 
-                staffRepository.save(staff);
+                teacherRepository.save(teacher);
             }
             case "RECEPTIONIST" -> {
                 if (receptionistRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -146,6 +147,22 @@ public class AuthServiceImpl implements AuthService {
                 manager.setRole("MANAGER");
 
                 managerRepository.save(manager);
+            }
+            case "PT" -> {
+                if (ptRepository.findByEmail(request.getEmail()).isPresent()) {
+                    throw new RuntimeException("Email already taken");
+                }
+                PT personalTrainer = new PT();
+
+                personalTrainer.setEmail(request.getEmail());
+                personalTrainer.setPassword(passwordEncoder.encode(request.getPassword())); // Mã hóa mật khẩu
+                personalTrainer.setFullName(request.getFullName());
+                personalTrainer.setDob(request.getDob());
+                personalTrainer.setGender(request.getGender());
+                personalTrainer.setPhone(request.getPhone());
+                personalTrainer.setRole("PT"); // Thiết lập Role là "PT"
+
+                ptRepository.save(personalTrainer);
             }
             default -> throw new RuntimeException("Invalid role for employee registration");
         }

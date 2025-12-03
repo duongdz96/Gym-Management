@@ -1,6 +1,5 @@
 package com.example.gympool.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -15,8 +14,8 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "class_template")
-public class ClassTemplate {
+@Table(name = "fitness_class")
+public class FitnessClass {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +32,7 @@ public class ClassTemplate {
 
     private String status;
 
-    @OneToMany(mappedBy = "classTemplate", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "fitnessClass", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<ClassSchedule> classSchedule;
 }

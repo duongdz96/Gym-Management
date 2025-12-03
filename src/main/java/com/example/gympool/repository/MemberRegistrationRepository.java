@@ -1,7 +1,6 @@
 package com.example.gympool.repository;
 
 import com.example.gympool.entity.ClassSchedule;
-import com.example.gympool.entity.ClassTemplate;
 import com.example.gympool.entity.MemberRegistration;
 import com.example.gympool.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;

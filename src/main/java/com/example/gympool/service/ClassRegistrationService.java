@@ -4,8 +4,8 @@ import com.example.gympool.entity.ClassRegistration;
 import java.util.List;
 
 public interface ClassRegistrationService {
-    List<ClassRegistration> getByStaff(Long staffId);
-    List<ClassRegistration> getByClassTemplate(Long templateId);
+    List<ClassRegistration> getByTeacher(Long teacherId);
+    List<ClassRegistration> getByFitnessClass(Long fitnessClassId);
     // Staff đăng ký dạy 1 lớp
     ClassRegistration registerTeaching(Long staffId,ClassRegistration reg);
 

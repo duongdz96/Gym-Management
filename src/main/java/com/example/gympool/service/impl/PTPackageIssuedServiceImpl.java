@@ -1,9 +1,7 @@
 package com.example.gympool.service.impl;
 
-import com.example.gympool.entity.PTPackage;
 import com.example.gympool.entity.PTPackageIssued;
 import com.example.gympool.repository.PTPackageIssuedRepository;
-import com.example.gympool.repository.PTPackageRepository;
 import com.example.gympool.service.PTPackageIssuedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,7 +30,7 @@ public class PTPackageIssuedServiceImpl implements PTPackageIssuedService {
         PTPackageIssued ptPackage = getPTPackageIssuedById(id);
 
         if (ptPackageUpd.getRemainingSessions() != null) ptPackage.setRemainingSessions(ptPackageUpd.getRemainingSessions());
-        if (ptPackageUpd.getStaff() != null) ptPackage.setStaff(ptPackageUpd.getStaff());
+        if (ptPackageUpd.getPt() != null) ptPackage.setPt(ptPackageUpd.getPt());
         return ptPackageIssuedRepository.save(ptPackage);
     }
     @Override
@@ -41,8 +39,8 @@ public class PTPackageIssuedServiceImpl implements PTPackageIssuedService {
                 .orElseThrow(() -> new IllegalArgumentException("PTPackageIssued not found with MemberName: " + name));
     }
     @Override
-    public PTPackageIssued getPTPackageIssuedByStaffName(String name){
-        return ptPackageIssuedRepository.findByStaffName(name)
+    public PTPackageIssued getPTPackageIssuedByPTName(String name){
+        return ptPackageIssuedRepository.findByPTName(name)
                 .orElseThrow(() -> new IllegalArgumentException("PTPackageIssued not found with StaffName: " + name));
     }
 }

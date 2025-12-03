@@ -1,9 +1,9 @@
 package com.example.gympool.service.impl;
 
 import com.example.gympool.dto.RegisterRequest;
-import com.example.gympool.entity.Staff;
+import com.example.gympool.entity.Teacher;
 import com.example.gympool.entity.User;
-import com.example.gympool.repository.StaffRepository;
+import com.example.gympool.repository.TeacherRepository;
 import com.example.gympool.repository.UserRepository;
 import com.example.gympool.service.UserService;
 import jakarta.transaction.Transactional;
@@ -18,7 +18,7 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
-    private StaffRepository staffRepository;
+    private TeacherRepository teacherRepository;
     // ==================== LẤY DỮ LIỆU ====================
 
     @Override
@@ -69,13 +69,13 @@ public class UserServiceImpl implements UserService {
         existingUser.setRole(request.getRole());
 
         // Nếu user này là một Staff...
-        if (existingUser instanceof Staff staff) {
-            staff.setPosition(request.getPosition());
-            staff.setSpecialize(request.getSpecialize());
-            staff.setHirePrice(request.getHirePrice());
+        if (existingUser instanceof Teacher teacher) {
+            teacher.setPosition(request.getPosition());
+            teacher.setSpecialize(request.getSpecialize());
+            teacher.setHirePrice(request.getHirePrice());
 
             // Lưu và TRẢ VỀ đối tượng Staff đã cập nhật
-            return staffRepository.save(staff);
+            return teacherRepository.save(teacher);
         }
 
         // ... (logic cho các role khác nếu cần) ...

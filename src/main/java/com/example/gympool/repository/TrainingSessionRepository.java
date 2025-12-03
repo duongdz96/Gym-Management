@@ -13,6 +13,6 @@ public interface TrainingSessionRepository extends JpaRepository<TrainingSession
     @Query("SELECT ts FROM TrainingSession ts WHERE ts.ptAppointment.ptPackageIssued.member.fullName LIKE %:name%")
     Optional<TrainingSession> findByMemberName(String name);
 
-    @Query("SELECT ts FROM TrainingSession ts WHERE ts.ptAppointment.staff.fullName LIKE %:name%")
-    Optional<TrainingSession> findByStaffName(String name);
+    @Query("SELECT ts FROM TrainingSession ts WHERE ts.ptAppointment.pt.fullName LIKE %:name%")
+    Optional<TrainingSession> findByPtName(String name);
 }

@@ -6,7 +6,6 @@ import com.example.gympool.service.BillService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,20 +16,20 @@ public class BillServiceImpl implements BillService {
 
     private final BillRepository billRepository;
     private final ProductRepository productRepository;
-    private final StaffRepository staffRepository;
+    private final TeacherRepository teacherRepository;
     private final ReceptionistRepository receptionistRepository;
     private final MemberRepository memberRepository;
     private final IssuedCouponRepository issuedCouponRepository;
 
     public BillServiceImpl(BillRepository billRepository,
                            ProductRepository productRepository,
-                           StaffRepository staffRepository,
+                           TeacherRepository teacherRepository,
                            MemberRepository memberRepository,
                            ReceptionistRepository receptionistRepository,
                            IssuedCouponRepository issuedCouponRepository) {
         this.billRepository = billRepository;
         this.productRepository = productRepository;
-        this.staffRepository = staffRepository;
+        this.teacherRepository = teacherRepository;
         this.receptionistRepository = receptionistRepository;
         this.memberRepository = memberRepository;
         this.issuedCouponRepository = issuedCouponRepository;
@@ -91,17 +90,6 @@ public class BillServiceImpl implements BillService {
             }
         });
 
-        // ---------------------------
-        // 4. Staff assignment (optional)
-        // ---------------------------
-        if (bill.getListStaffAssigned() != null) {
-            bill.getListStaffAssigned().forEach(sa -> {
-                Staff staff = staffRepository.findById(sa.getStaff().getId())
-                        .orElseThrow(() -> new RuntimeException("Staff not found"));
-                sa.setStaff(staff);
-                sa.setBill(bill);
-            });
-        }
 
         // ---------------------------
         // 5. Handle Issued Coupon (optional)
@@ -172,7 +160,6 @@ public class BillServiceImpl implements BillService {
         });
 
         bill.getListSoldProduct().clear();
-        bill.getListStaffAssigned().clear();
 
         //update-info
         bill.setPaymentMethod(billDetails.getPaymentMethod());
@@ -201,17 +188,6 @@ public class BillServiceImpl implements BillService {
                 sp.setProduct(product);
                 sp.setBill(bill);
                 bill.getListSoldProduct().add(sp);
-            });
-        }
-
-        //staff
-        if (billDetails.getListStaffAssigned() != null) {
-            billDetails.getListStaffAssigned().forEach(sa -> {
-                Staff staff = staffRepository.findById(sa.getStaff().getId())
-                        .orElseThrow(() -> new RuntimeException("Staff not found"));
-                sa.setStaff(staff);
-                sa.setBill(bill);
-                bill.getListStaffAssigned().add(sa);
             });
         }
 

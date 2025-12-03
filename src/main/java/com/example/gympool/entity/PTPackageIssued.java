@@ -1,7 +1,5 @@
 package com.example.gympool.entity;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,7 +27,7 @@ public class PTPackageIssued {
     private Member member;
 
     @ManyToOne
-    @JoinColumn(name = "staff_id", nullable = false)
-    private Staff staff;
+    @JoinColumn(name = "PT_id", nullable = false)
+    private PT pt;
 
 }

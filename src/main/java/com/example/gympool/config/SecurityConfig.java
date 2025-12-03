@@ -43,11 +43,9 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // dùng JWT, không dùng session
                 .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/api/auth/**").permitAll()   // cho phép login/register không cần token
-//                        .anyRequest().authenticated()                  // các request khác cần xác thực
+                        .requestMatchers("/api/auth/**").permitAll()   // cho phép login/register không cần token
+                        .anyRequest().authenticated()                  // các request khác cần xác thực
 
-                           .requestMatchers("/api/auth/me").authenticated()
-                           .anyRequest().permitAll()
                 );
 
         // Thêm JwtAuthenticationFilter vào trước UsernamePasswordAuthenticationFilter

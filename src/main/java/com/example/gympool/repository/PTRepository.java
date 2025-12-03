@@ -1,12 +1,13 @@
 package com.example.gympool.repository;
 
-import com.example.gympool.entity.Staff;
+import com.example.gympool.entity.PT;
+import com.example.gympool.entity.Receptionist;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface StaffRepository extends JpaRepository<Staff, Long> {
-    Optional<Staff> findByEmail(String email);
+public interface PTRepository extends JpaRepository<PT, Long> {
+    Optional<PT> findByEmail(String email);
 }

@@ -1,8 +1,6 @@
 package com.example.gympool.service.impl;
 
 import com.example.gympool.entity.StudentProfile;
-import com.example.gympool.entity.StudentProfile;
-import com.example.gympool.repository.StudentProfileRepository;
 import com.example.gympool.repository.StudentProfileRepository;
 import com.example.gympool.service.StudentProfileService;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +32,7 @@ public class StudentProfileServiceImpl implements StudentProfileService {
 
         if (StudentProfileUpd.getHeight() != null) studentProfile.setHeight(StudentProfileUpd.getHeight());
         if (StudentProfileUpd.getWeight() != null) studentProfile.setWeight(StudentProfileUpd.getWeight());
-        if (StudentProfileUpd.getStaff() != null) studentProfile.setStaff(StudentProfileUpd.getStaff());
+        if (StudentProfileUpd.getPt() != null) studentProfile.setPt(StudentProfileUpd.getPt());
         if (StudentProfileUpd.getTrainingPlan() != null) studentProfile.setTrainingPlan(StudentProfileUpd.getTrainingPlan());
         return studentProfileRepository.save(studentProfile);
     }
@@ -44,8 +42,8 @@ public class StudentProfileServiceImpl implements StudentProfileService {
                 .orElseThrow(() -> new IllegalArgumentException("StudentProfile not found with MemberName: " + name));
     }
     @Override
-    public StudentProfile getStudentProfileByStaffName(String name){
-        return studentProfileRepository.findByStaffName(name)
+    public StudentProfile getStudentProfileByPTName(String name){
+        return studentProfileRepository.findByPTName(name)
                 .orElseThrow(() -> new IllegalArgumentException("StudentProfile not found with StaffName: " + name));
     }
 }

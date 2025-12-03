@@ -16,11 +16,11 @@ public class ClassRegistration {
 
     @ManyToOne
     @JoinColumn(name = "staff_id", nullable = false)
-    private Staff staff;
+    private Teacher teacher;
 
     @ManyToOne
     @JoinColumn(name = "class_template_id", nullable = false)
-    private ClassTemplate classTemplate;
+    private FitnessClass fitnessClass;
 
     private String description;
 }
