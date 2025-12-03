@@ -26,6 +26,7 @@ import Banner from "@/views/Manager/Config/Banner.vue";
 import ManageMembership from "@/views/Manager/Membership/ManageMembership.vue";
 import ManageAddMembership from "@/views/Manager/Membership/ManageAddMembership.vue";
 import ManageAddTier from "@/views/Manager/Membership/ManageAddTier.vue";
+import ManagerDashboard from "@/views/Manager/ManagerDashboard.vue";
 
 import CustomerLayout from "@/layout/CustomerLayout.vue";
 import CustomerHome from "@/views/Customer/CustomerHome.vue";
@@ -73,7 +74,7 @@ const routes = [
             { path: "login", name: "login", component: Login },
             { path: "forbidden", name: "forbidden", component: Forbidden },
             { path: "test", component: Test },
-            { path: "change-password", component: ChangePassword}
+            { path: "change-password", component: ChangePassword }
         ],
     },
 
@@ -82,6 +83,8 @@ const routes = [
         component: ManagerLayout,
         meta: { requiresAuth: true, roles: ["MANAGER"] },
         children: [
+            { path: "", name: "manager.dashboard", component: ManagerDashboard },
+            { path: "dashboard", name: "manager.dashboard.full", component: ManagerDashboard },
             { path: "staff", name: "staff", component: Staff },
             { path: "staff/add", name: "staff.add", component: AddStaff },
             { path: "staff/:id", name: "staff.info", component: StaffInformation },
