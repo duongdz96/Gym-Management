@@ -68,7 +68,7 @@ const router = useRouter();
 
 // ====== ON MOUNT ======
 onMounted(async () => {
-  console.log("📘 ClassSchedule setup()");
+  console.log("ClassSchedule setup()");
   try {
     isLoading.value = true;
     error.value = null;
@@ -130,7 +130,7 @@ onMounted(async () => {
     }
 
     // --- Lấy danh sách schedule ---
-    const res = await api.get(`/classschedule/by-template/${parsedTemplate.id}`);
+    const res = await api.get(`/classschedule/by-fitness_class/${parsedTemplate.id}`);
     schedules.value = res.data || [];
     console.log("Loaded schedules:", schedules.value);
 
@@ -148,36 +148,7 @@ const formatDateTime = (isoString: string) => {
   return new Date(isoString).toLocaleString("vi-VN");
 };
 
-// ====== ACTIONS ======
-async function AddNewSchedule() {
-  if (!selectedTemplate.value?.id) {
-    alert("Please select a class template first!");
-    return;
-  }
 
-  try {
-    const payload = {
-      classTemplate: { id: selectedTemplate.value.id },
-      startTime: form.value.startTime,
-      endTime: form.value.endTime,
-      location: form.value.location,
-      status: form.value.status || "OPEN",
-      schedulePatternId: null,
-    };
-
-    console.log("📤 Sending single schedule:", payload);
-    await api.post("/classschedule", payload);
-
-    alert("✅ Added new class schedule successfully!");
-    isAddModalOpen.value = false;
-    await reloadSchedules();
-
-    resetForm(form.value);
-  } catch (err) {
-    console.error("❌ Failed to add schedule:", err);
-    alert("Failed to add schedule!");
-  }
-}
 
 // ====== ADD MULTIPLE ======
 async function AddBatchSchedules() {
@@ -193,7 +164,7 @@ async function AddBatchSchedules() {
 
   try {
     const payload = {
-      classTemplate: { id: selectedTemplate.value.id },
+      fitnessClass: { id: selectedTemplate.value.id },
       schedulePattern: { id: batchForm.value.schedulePatternId },
       room: { id: selectedRoom.value.id },
     };
@@ -244,7 +215,7 @@ const isDayInPattern = (shortDay) => {
             @click="router.push({ name: 'classtemplate' })"
             class="text-sm text-blue-600 hover:underline mb-2"
           >
-            &larr; Back to Templates
+            &larr; Back to Fitness Class
           </button>
           <h1 v-if="selectedTemplate" class="text-2xl font-bold text-gray-800">
             Schedules for:
@@ -320,57 +291,6 @@ const isDayInPattern = (shortDay) => {
             </tr>
           </tbody>
         </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== MODAL 1: ADD SINGLE CLASS ========== -->
-  <div
-    v-if="isAddModalOpen"
-    class="fixed inset-0 flex justify-center items-center bg-opacity-50 z-50"
-  >
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-      <h2 class="text-xl font-bold mb-4">
-        Add Class Schedule for {{ selectedTemplate.name }}
-      </h2>
-
-      <input
-        v-model="form.startTime"
-        type="datetime-local"
-        placeholder="Start Time"
-        class="border p-2 rounded w-full mb-2"
-      />
-      <input
-        v-model="form.endTime"
-        type="datetime-local"
-        placeholder="End Time"
-        class="border p-2 rounded w-full mb-2"
-      />
-      <input
-        v-model="form.location"
-        type="text"
-        placeholder="Location"
-        class="border p-2 rounded w-full mb-2"
-      />
-      <select v-model="form.status" class="border p-2 w-full rounded">
-        <option value="OPEN">OPEN</option>
-        <option value="CLOSED">CLOSED</option>
-        <option value="CANCELLED">CANCELLED</option>
-      </select>
-
-      <div class="flex justify-end space-x-3 mt-4">
-        <button
-          @click="isAddModalOpen = false"
-          class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-        >
-          Cancel
-        </button>
-        <button
-          @click="AddNewSchedule()"
-          class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Save
-        </button>
       </div>
     </div>
   </div>

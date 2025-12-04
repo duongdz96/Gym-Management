@@ -52,7 +52,7 @@ import PTMembers from "@/views/PT/PTMembers.vue";
 
 import Test from "@/views/Test.vue";
 import SchedulePattern from "@/views/Manager/Classes/SchedulePattern.vue";
-import TeacherRegister from "@/views/PT/TeacherRegister.vue";
+import TeacherRegister from "@/views/PT/TeacherRegisterClass.vue";
 import AddStaff from "@/views/Manager/Staff/AddStaff.vue";
 import StaffInformation from "@/views/Manager/Staff/StaffInformation.vue";
 import EditProduct from "@/views/Manager/Product/EditProduct.vue";
@@ -143,7 +143,7 @@ const routes = [
     {
         path: "/pt",
         component: PTLayout,
-        meta: { requiresAuth: true, roles: ["STAFF"] },
+        meta: { requiresAuth: true, roles: ["TEACHER", "PT"] },
         children: [
             {
                 path: '/pt/',

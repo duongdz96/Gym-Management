@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import api from '@/services/api'; // Assuming your API instance is defined
 import moment from 'moment'; // Install if needed: npm install moment
+import { useAuthStore } from "@/stores/useAuthStore";
 
 // Declare basic Interfaces (Types) for Bill data
 // You should define these types in a separate file (e.g., types/bill.ts)
@@ -36,7 +37,9 @@ interface Bill {
 }
 
 // --- STATE ---
-const memberId = 1; // Current member ID (Replace with actual ID logic)
+const authStore = useAuthStore();
+const user = authStore.user;
+const memberId = user.id;
 const bills = ref<Bill[]>([]);
 const isLoading = ref(false);
 const error = ref<string | null>(null);

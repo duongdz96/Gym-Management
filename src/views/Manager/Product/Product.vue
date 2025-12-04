@@ -267,7 +267,7 @@ async function doImport() {
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Import Price</th> <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Brand</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Brand</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
@@ -280,7 +280,7 @@ async function doImport() {
             <td class="px-4 py-3 text-sm text-blue-600 hover:underline hover:cursor-pointer">{{ p.name }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ p.type }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ p.price.toFixed(0) }}</td>
-            <td class="px-4 py-3 text-sm text-gray-600">{{ p.importPrice?.toFixed(0) || '-' }}</td> <td class="px-4 py-3 text-sm text-gray-600">{{ p.brand || '-' }}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">{{ p.brand || '-' }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ p.quantity ?? '-' }}</td>
             <td class="px-4 py-3 text-sm text-gray-600"> <span 
                 :class="[

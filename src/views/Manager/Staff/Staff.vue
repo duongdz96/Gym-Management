@@ -103,7 +103,9 @@ const formatDate = (dateString: string) => {
                 :class="[
                   'px-2 py-0.5 rounded-full text-xs font-medium',
                   user.role === 'MANAGER' ? 'bg-red-100 text-red-800' :
-                  user.role === 'STAFF' ? 'bg-blue-100 text-blue-800' :
+                  user.role === 'RECEPTIONIST' ? 'bg-blue-100 text-blue-800' :
+                  user.role === 'PT' ? 'bg-green-100 text-green-500' :
+                  user.role === 'TEACHER' ? 'bg-yellow-100 text-yellow-400' :
                   'bg-gray-100 text-gray-800'
                 ]"
               >

@@ -19,7 +19,7 @@ const router = useRouter();
 
 onMounted(async () => {
   try {
-    const res = await api.get("/classtemplate")
+    const res = await api.get("/fitness_class")
     classtemplates.value = res.data
   } catch (err) {
     console.error("Error fetching class templates:", err)

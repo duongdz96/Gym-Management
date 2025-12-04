@@ -42,8 +42,8 @@ const fetchData = async () => {
     isLoading.value = true;
 
     const [classTemplatesRes, registrationsRes] = await Promise.all([
-      api.get<ClassTemplate[]>("/classtemplate"),
-      api.get<any[]>(`/class-registrations/staff/${currentStaffId}`) 
+      api.get<ClassTemplate[]>("/fitness_class"),
+      api.get<any[]>(`/class-registrations/teacher/${currentStaffId}`) 
     ]);
 
     const allClassTemplates = classTemplatesRes.data;

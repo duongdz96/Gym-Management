@@ -43,7 +43,7 @@ onMounted(async () => {
     providers.value = resProviders.data;
     console.log("Providers fetched:", providers.value);
 
-    const resProducts = await api.get("/product");
+    const resProducts = await api.get("/product/exclude-types?types=PT,Membership");
     products.value = resProducts.data;
     console.log("Products fetched:", products.value);
   } catch (err) {

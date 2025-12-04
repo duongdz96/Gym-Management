@@ -43,7 +43,7 @@ const fetchData = async () => {
     isLoading.value = true;
     const [classTemplatesRes, followedClassesRes] = await Promise.all([
       api.get<ClassTemplate[]>("/classtemplate"),
-      api.get<any[]>(`/follow-classes/member/${currentMemberId}`)
+      api.get<any[]>(`/member-registrations/member/${currentMemberId}`)
     ]);
 
     const allClassTemplates = classTemplatesRes.data;
@@ -73,7 +73,7 @@ onMounted(fetchData);
 const handleFollowToggle = async (targetClass: ClassTemplateWithFollowStatus) => {
   try {
     if (targetClass.isFollowed) {
-      await api.delete(`/follow-classes/${targetClass.followId}`);
+      await api.delete(`/member-registrations/${targetClass.followId}`);
       targetClass.isFollowed = false;
       targetClass.followId = null;
     } else {
@@ -82,7 +82,7 @@ const handleFollowToggle = async (targetClass: ClassTemplateWithFollowStatus) =>
         classTemplate: { id: targetClass.id },
         member: { id: currentMemberId }
       };
-      const response = await api.post<any>("/follow-classes", payload);
+      const response = await api.post<any>("/member-registrations", payload);
       targetClass.isFollowed = true;
       targetClass.followId = response.data.id;
     }

@@ -15,7 +15,7 @@ const form = ref({
 const submit = async () => {
   console.log("Submitting class template:", form.value)
   try {
-    const res = await api.post("/classtemplate", form.value)
+    const res = await api.post("/fitness_class", form.value)
     if (res.status === 200 || res.status === 201) {
       alert("Class Template created successfully!")
       router.push({ name: "classtemplate" })
