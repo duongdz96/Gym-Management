@@ -88,6 +88,7 @@ public class BillServiceImpl implements BillService {
                 product.setQuantity(newQuantity);
                 productRepository.save(product);
             }
+            sp.setSoldPrice(product.getPrice());
         });
 
 
