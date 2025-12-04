@@ -51,6 +51,7 @@ import PTSchedule from "@/views/PT/PTSchedule.vue";
 import PTProfile from "@/views/PT/PTProfile.vue";
 import PTMembers from "@/views/PT/PTMembers.vue";
 
+import TestIndex from "@/views/Test/index.vue";
 import Test from "@/views/Test.vue";
 import SchedulePattern from "@/views/Manager/Classes/SchedulePattern.vue";
 import TeacherRegister from "@/views/PT/TeacherRegisterClass.vue";
@@ -64,7 +65,7 @@ import CustomerBillHistory from "@/views/Customer/History/CustomerBillHistory.vu
 const routes = [
     {
         path: "/test",
-        component: Test
+        component: TestIndex
     },
     {
         path: "/",
