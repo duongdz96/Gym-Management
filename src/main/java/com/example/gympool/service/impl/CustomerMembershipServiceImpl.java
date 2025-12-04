@@ -65,7 +65,22 @@ public class CustomerMembershipServiceImpl implements CustomerMembershipService 
         // Set default status
         customerMembership.setStatus("Active");
 
-        return customerMembershipRepository.save(customerMembership);
+        CustomerMembership savedMembership = customerMembershipRepository.save(customerMembership);
+
+        // Update Member info
+        Member member = savedMembership.getMember();
+        if (member != null) {
+            if (savedMembership.getMembershipPlan() != null && savedMembership.getMembershipPlan().getMembershipTier() != null) {
+                member.setMembership(savedMembership.getMembershipPlan().getMembershipTier().getName());
+            }
+            member.setStatus("Active");
+            if (member.getJoinDate() == null) {
+                member.setJoinDate(new java.util.Date());
+            }
+            memberService.updateMember(member.getId(), member);
+        }
+
+        return savedMembership;
     }
     @Override
     public CustomerMembership updateMembership(Long id, CustomerMembership customerMembershipDetails){

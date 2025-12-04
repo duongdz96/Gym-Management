@@ -14,9 +14,10 @@ public interface SoldProductRepository extends JpaRepository<SoldProduct, Long> 
     List<SoldProduct> findByProduct_Id(Long productId);
 
     @Query("SELECT new com.example.gympool.dto.ProductStatDTO(" +
-            "p.id, p.name, p.price, SUM(s.quantity), SUM(s.soldPrice * s.quantity)) " +
+            "p.id, p.name, p.price, COALESCE(SUM(s.quantity), 0L), " +
+            "COALESCE(SUM(CASE WHEN s.soldPrice > 0 THEN s.soldPrice ELSE p.price END * s.quantity), 0.0)) " +
             "FROM SoldProduct s JOIN s.product p " +
             "GROUP BY p.id, p.name, p.price " +
-            "ORDER BY SUM(s.soldPrice * s.quantity) DESC")
+            "ORDER BY COALESCE(SUM(CASE WHEN s.soldPrice > 0 THEN s.soldPrice ELSE p.price END * s.quantity), 0.0) DESC")
     List<ProductStatDTO> getProductSalesRanking();
 }
