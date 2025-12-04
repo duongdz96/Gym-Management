@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "../../../services/api";
 import Multiselect from "vue-multiselect";
@@ -19,6 +19,16 @@ const paymentMethod = ref<"CARD" | "CASH" | "BANKING" | null>(null);
 const members = ref<any[]>([]);
 const selectedMember = ref<any | null>(null);
 
+// QR Payment variables
+const bankCode = "MB";
+const accountNumber = "2666677888";
+const accountName = "VAN NGOC LONG";
+const qrUrl = ref("");
+const paymentStatus = ref("Pending");
+const transferCode = ref("");
+let pollInterval: ReturnType<typeof setInterval> | null = null;
+let createdBillId = ref<number | null>(null);
+
 // ===================== FETCH MEMBERS =====================
 async function fetchMembers() {
   try {
@@ -37,6 +47,11 @@ onMounted(() => {
     bill.value = JSON.parse(data);
   }
   fetchMembers();
+});
+
+// ===================== ON UNMOUNT =====================
+onUnmounted(() => {
+  if (pollInterval) clearInterval(pollInterval);
 });
 
 // ===================== COMPUTED =====================
@@ -62,6 +77,10 @@ const finalPrice = computed(() => {
   }
   return totalPrice.value;
 });
+
+const statusClass = computed(() =>
+  paymentStatus.value === "Paid" ? "text-green-600 font-bold" : "text-red-600 font-bold"
+);
 
 // ===================== CHECK COUPON =====================
 async function checkCoupon() {
@@ -113,6 +132,76 @@ async function checkCoupon() {
   }
 }
 
+// ===================== GENERATE QR =====================
+function generateQR() {
+  transferCode.value = `BILL${Date.now()}`;
+  qrUrl.value = `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact.png?amount=${finalPrice.value}&addInfo=${encodeURIComponent(transferCode.value)}&accountName=${encodeURIComponent(accountName)}`;
+  paymentStatus.value = "Pending";
+  toast.info("QR đã được tạo. Đang chờ thanh toán...");
+  startPolling();
+}
+
+// ===================== POLLING =====================
+function startPolling() {
+  if (pollInterval) clearInterval(pollInterval);
+
+  pollInterval = setInterval(async () => {
+    try {
+      const res = await api.get(
+        `/casso/check?addInfo=${encodeURIComponent(transferCode.value)}&amount=${finalPrice.value}`
+      );
+
+      console.log("Polling response:", res.data);
+
+      if (res.data?.paid) {
+        paymentStatus.value = "Paid";
+        toast.success("Đã nhận được thanh toán!");
+        
+        if (pollInterval) clearInterval(pollInterval);
+        
+        // Update bill status to PAID
+        if (createdBillId.value) {
+          await updateBillStatus(createdBillId.value, "PAID");
+        }
+      }
+    } catch (err) {
+      console.error("Error during polling:", err);
+    }
+  }, 3000);
+}
+
+// ===================== SIMULATE PAYMENT =====================
+async function simulatePayment() {
+  try {
+    const payload = {
+      data: [
+        {
+          amount: finalPrice.value,
+          description: transferCode.value,
+          tid: `SIM${Date.now()}`,
+          bank: bankCode,
+          cusumBalance: null
+        }
+      ]
+    };
+    
+    await api.post("/casso/webhook", payload);
+    toast.success("Giả lập chuyển khoản thành công!");
+  } catch (err) {
+    console.error("Error simulating payment:", err);
+    toast.error("Lỗi khi giả lập thanh toán!");
+  }
+}
+
+// ===================== UPDATE BILL STATUS =====================
+async function updateBillStatus(billId: number, status: string) {
+  try {
+    await api.patch(`/bills/${billId}/status`, { paymentStatus: status });
+    console.log(`Bill ${billId} status updated to ${status}`);
+  } catch (err) {
+    console.error("Error updating bill status:", err);
+  }
+}
 
 // ===================== SUBMIT =====================
 async function submit() {
@@ -142,17 +231,23 @@ async function submit() {
   };
 
   try {
-    // console.log(payload);
     const res = await api.post("/bills", payload);
     if (res.status === 200 || res.status === 201) {
-      toast.success("Thanh toán thành công!");
-      sessionStorage.removeItem("currentBill");
-      bill.value = null;
-      coupon.value = "";
-      appliedCoupon.value = null;
-      paymentMethod.value = null;
-      selectedMember.value = null;
-      router.push({ name: "salesselect" });
+      createdBillId.value = res.data.id;
+      
+      if (paymentMethod.value === "BANKING") {
+        toast.success("Hóa đơn đã được tạo! Vui lòng quét QR để thanh toán.");
+        generateQR();
+      } else {
+        toast.success("Thanh toán thành công!");
+        sessionStorage.removeItem("currentBill");
+        bill.value = null;
+        coupon.value = "";
+        appliedCoupon.value = null;
+        paymentMethod.value = null;
+        selectedMember.value = null;
+        router.push({ name: "salesselect" });
+      }
     }
   } catch (err) {
     console.error("Error submitting bill:", err);
@@ -312,6 +407,33 @@ async function submit() {
           @click="paymentMethod = 'BANKING'"
         >
           QR Banking
+        </button>
+      </div>
+    </div>
+
+    <!-- QR Code Display (only when BANKING is selected and QR is generated) -->
+    <div v-if="paymentMethod === 'BANKING' && qrUrl" class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4 text-center">QR Thanh toán</h3>
+      <div class="text-center">
+        <img :src="qrUrl" alt="QR Code" class="mx-auto border rounded shadow-md mb-4" />
+        <p class="text-sm text-gray-600 mb-2">
+          <strong>Mã chuyển khoản:</strong> {{ transferCode }}
+        </p>
+        <p class="text-sm text-gray-600 mb-2">
+          <strong>Số tiền:</strong> {{ finalPrice.toLocaleString() }} đ
+        </p>
+        <p class="text-sm mb-4">
+          <strong>Trạng thái:</strong>
+          <span :class="statusClass">{{ paymentStatus }}</span>
+        </p>
+        
+        <!-- Simulate Payment Button -->
+        <button
+          @click="simulatePayment"
+          class="px-4 py-2 rounded-lg bg-yellow-600 text-white hover:bg-yellow-700 transition"
+          :disabled="paymentStatus === 'Paid'"
+        >
+          🔧 Giả lập đã chuyển khoản
         </button>
       </div>
     </div>
