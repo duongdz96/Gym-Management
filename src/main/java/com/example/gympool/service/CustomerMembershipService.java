@@ -9,6 +9,6 @@ public interface CustomerMembershipService {
     List<CustomerMembership> getAllCustomerMembership();
     CustomerMembership getMembershipById(Long id);
     CustomerMembership getMembershipByCustomerName(String customerName);
-    CustomerMembership RegisterMembership(CustomerMembership customerMembership);
+    CustomerMembership RegisterMembership(com.example.gympool.dto.CustomerMembershipRequest request);
     CustomerMembership updateMembership(Long id, CustomerMembership customerMembership);
 }

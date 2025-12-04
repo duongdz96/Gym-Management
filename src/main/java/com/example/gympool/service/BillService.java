@@ -12,4 +12,5 @@ public interface BillService {
     Bill getBillById(Long id);
     List<Bill> getBillsByReceptionistId(Long receptionistId);
     List<Bill> getBillByMemberId(Long memberId);
+    Bill updateBillPaymentStatus(Long id, String paymentStatus);
 }

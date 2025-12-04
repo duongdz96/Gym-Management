@@ -13,8 +13,15 @@ import java.util.List;
 @Service
 public class CustomerMembershipServiceImpl implements CustomerMembershipService {
     private final CustomerMembershipRepository customerMembershipRepository;
-    public CustomerMembershipServiceImpl(CustomerMembershipRepository customerMembershipRepository) {
+    private final com.example.gympool.service.MemberService memberService;
+    private final com.example.gympool.repository.MembershipPlanRepository membershipPlanRepository;
+
+    public CustomerMembershipServiceImpl(CustomerMembershipRepository customerMembershipRepository, 
+                                         com.example.gympool.service.MemberService memberService,
+                                         com.example.gympool.repository.MembershipPlanRepository membershipPlanRepository) {
         this.customerMembershipRepository = customerMembershipRepository;
+        this.memberService = memberService;
+        this.membershipPlanRepository = membershipPlanRepository;
     }
     @Override
     public List<CustomerMembership> getAllCustomerMembership(){
@@ -31,7 +38,33 @@ public class CustomerMembershipServiceImpl implements CustomerMembershipService 
                 .orElseThrow(() -> new IllegalArgumentException("Member not found with name: " + customerName));
     }
     @Override
-    public CustomerMembership RegisterMembership(CustomerMembership customerMembership){
+    @org.springframework.transaction.annotation.Transactional
+    public CustomerMembership RegisterMembership(com.example.gympool.dto.CustomerMembershipRequest request){
+        CustomerMembership customerMembership = new CustomerMembership();
+        
+        // Handle member - create new or use existing
+        if (request.getMember() != null && request.getMember().getId() == null) {
+            Member newMember = memberService.createMember(request.getMember());
+            customerMembership.setMember(newMember);
+        } else if (request.getMember() != null && request.getMember().getId() != null) {
+            Member existingMember = memberService.getMemberById(request.getMember().getId());
+            customerMembership.setMember(existingMember);
+        }
+
+        // Handle membership plan
+        if (request.getMembershipPlanId() != null) {
+            com.example.gympool.entity.MembershipPlan plan = membershipPlanRepository.findById(request.getMembershipPlanId())
+                    .orElseThrow(() -> new IllegalArgumentException("Membership Plan not found"));
+            customerMembership.setMembershipPlan(plan);
+        }
+
+        // Set dates
+        customerMembership.setStartDate(request.getStartDate());
+        customerMembership.setEndDate(request.getEndDate());
+        
+        // Set default status
+        customerMembership.setStatus("Active");
+
         return customerMembershipRepository.save(customerMembership);
     }
     @Override
