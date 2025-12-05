@@ -242,23 +242,26 @@ onMounted(() => {
             <!-- Pie Chart Visual (Simplified for dynamic data) -->
             <div class="mt-8 flex justify-center">
               <div class="relative w-48 h-48">
-                 <!-- Note: SVG Pie chart logic is complex with dynamic data. 
-                      For now, using a simple placeholder or we can implement a proper chart library later. 
-                      Keeping the CSS circle for visual consistency if data exists. -->
+                 <!-- Pie chart with dynamic data -->
                 <svg viewBox="0 0 100 100" class="transform -rotate-90">
                   <circle cx="50" cy="50" r="40" fill="none" stroke="#E5E7EB" stroke-width="20" />
-                  <circle 
-                    v-if="membershipDistribution.length > 0"
-                    cx="50" cy="50" r="40" fill="none" stroke="#3B82F6" stroke-width="20" 
-                    :stroke-dasharray="`${membershipDistribution[0].percentage * 2.51} 251`" 
-                  />
-                  <circle 
-                    v-if="membershipDistribution.length > 1"
-                    cx="50" cy="50" r="40" fill="none" stroke="#A855F7" stroke-width="20" 
-                    :stroke-dasharray="`${membershipDistribution[1].percentage * 2.51} 251`"
-                    :stroke-dashoffset="`${-membershipDistribution[0].percentage * 2.51}`" 
-                  />
-                  <!-- More circles would require more complex calculation logic -->
+                  
+                  <template v-if="membershipDistribution.length > 0">
+                    <circle 
+                      v-for="(tier, index) in membershipDistribution"
+                      :key="tier.tier"
+                      cx="50" cy="50" r="40" fill="none" 
+                      :stroke="
+                        tier.tier === 'Platinum' ? '#3B82F6' : 
+                        tier.tier === 'Gold' ? '#A855F7' : 
+                        tier.tier === 'Basic' ? '#FACC15' : 
+                        tier.tier === 'Silver' ? '#4ADE80' : '#9CA3AF'
+                      "
+                      stroke-width="20" 
+                      :stroke-dasharray="`${tier.percentage * 2.51} 251`"
+                      :stroke-dashoffset="`${-membershipDistribution.slice(0, index).reduce((sum, t) => sum + t.percentage, 0) * 2.51}`" 
+                    />
+                  </template>
                 </svg>
               </div>
             </div>
