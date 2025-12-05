@@ -10,6 +10,8 @@ type ProductForm = {
   type: string
   price: number | null
   brand?: string
+  quantity? : number
+  unit: string
 }
 
 const form = ref<ProductForm>({
@@ -17,30 +19,60 @@ const form = ref<ProductForm>({
   type: "",
   price: null,
   brand: "",
+  quantity: 0,
+  unit: "",
 })
 
+const imageFile = ref<File | null>(null)
+
+function handleFileUpload(event: Event) {
+  const target = event.target as HTMLInputElement
+  if (target.files && target.files.length > 0) {
+    imageFile.value = target.files[0]
+  } else {
+    imageFile.value = null
+  }
+}
+
 async function submit() {
-  if (!form.value.name || !form.value.type || !form.value.price) {
+  if (!form.value.name || !form.value.type || !form.value.price || !form.value.unit) {
     alert("Please fill in all required fields.")
     return
   }
 
-  const payload = {
+  const formData = new FormData()
+  formData.append('product', JSON.stringify({
     name: form.value.name,
     type: form.value.type,
     price: form.value.price,
     brand: form.value.brand || null,
+    unit: form.value.unit,
+    quantity: form.value.quantity,
+  }))
+
+  if (imageFile.value) {
+    formData.append('image', imageFile.value)
   }
 
-  console.log("Submitting product:", payload)
-
   try {
-    const res = await api.post("/product", payload)
+    const res = await api.post("/product", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
 
     if (res.status === 200 || res.status === 201) {
       alert("Product has been added successfully!")
 
-      form.value = { name: "", type: "", price: null, brand: "" }
+      form.value = { 
+        name: "", 
+        type: "", 
+        price: null, 
+        brand: "", 
+        unit: "", 
+      }
+      imageFile.value = null
+      // Reset file input manually if needed, but simple ref reset is enough for logic
     }
   } catch (err: any) {
     console.error("Error adding product:", err)
@@ -134,6 +166,54 @@ async function submit() {
             class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             placeholder="e.g. Adidas"
           />
+        </div>
+
+        <!-- Unit -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Unit <span class="text-red-500">*</span>
+          </label>
+          <select
+            v-model="form.unit"
+            class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            required
+          >
+            <option value="" disabled>Select a unit</option>
+            <option value="Cái">Cái</option>
+            <option value="Hộp">Hộp</option>
+            <option value="Chai">Chai</option>
+            <option value="Gói">Gói</option>
+            <option value="Lon">Lon</option>
+            <option value="Thùng">Thùng</option>
+            <option value="Lọ">Lọ</option>
+            <option value="Kg">Kg</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Số lượng
+          </label>
+          <input
+            v-model="form.quantity"
+            type="number"
+            class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            placeholder="e.g. Adidas"
+          />
+        </div>
+
+        <!-- Image -->
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Product Image
+          </label>
+          <input
+            @change="handleFileUpload"
+            type="file"
+            accept="image/*"
+            class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+          />
+          <p class="text-xs text-gray-500 mt-1">If no image is selected, a default image will be used.</p>
         </div>
       </div>
 
