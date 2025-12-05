@@ -62,6 +62,11 @@ public class ImportBillServiceImpl implements ImportBillService {
 
             product.setQuantity(product.getQuantity() + ip.getQuantity());
 
+            // Update selling price if provided
+            if (ip.getPrice() != null && ip.getPrice() > 0) {
+                 product.setPrice(ip.getPrice());
+            }
+
             totalBillPrice += ip.getQuantity() * ip.getImportPrice();
         }
 
@@ -115,6 +120,10 @@ public class ImportBillServiceImpl implements ImportBillService {
             bill.getImportedProducts().add(ip);
 
             product.setQuantity(product.getQuantity() + ip.getQuantity());
+
+            if (ip.getPrice() != null && ip.getPrice() > 0) {
+                 product.setPrice(ip.getPrice());
+            }
 
             totalBillPrice += ip.getQuantity() * ip.getImportPrice();
         }

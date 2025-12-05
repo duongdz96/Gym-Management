@@ -1,52 +1,42 @@
 package com.example.gympool.controller;
 
-
 import com.example.gympool.entity.Provider;
 import com.example.gympool.service.ProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/provider")
+@RequestMapping("/api/providers")
+@CrossOrigin(origins = "*")
 public class ProviderController {
-    private final ProviderService providerService;
 
     @Autowired
-    public ProviderController(ProviderService providerService) {
-        this.providerService = providerService;
+    private ProviderService providerService;
+
+    @GetMapping
+    public List<Provider> getAllProviders() {
+        return providerService.getAllProvider();
     }
 
     @PostMapping
-    public void save(@RequestBody Provider provider){
+    public ResponseEntity<Provider> createProvider(@RequestBody Provider provider) {
         providerService.addProvider(provider);
+        return ResponseEntity.ok(provider);
     }
 
     @PutMapping("/{id}")
-    public Provider update(@PathVariable Long id, @RequestBody Provider provider){
+    public ResponseEntity<Provider> updateProvider(@PathVariable Long id, @RequestBody Provider provider) {
         provider.setId(id);
         providerService.updateProvider(provider);
-        return provider;
+        return ResponseEntity.ok(provider);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable Long id){
+    public ResponseEntity<Void> deleteProvider(@PathVariable Long id) {
         providerService.deleteProvider(id);
-    }
-
-    @GetMapping("/{id}")
-    public Provider findById(@PathVariable Long id){
-        return providerService.getProviderById(id);
-    }
-
-    @GetMapping("/name/{name}")
-    public Provider findByName(@PathVariable String name){
-        return providerService.getProviderByName(name);
-    }
-
-    @GetMapping
-    public List<Provider> findAll(){
-        return providerService.getAllProvider();
+        return ResponseEntity.ok().build();
     }
 }

@@ -30,6 +30,8 @@ public class StatsServiceImpl implements StatsService {
     private FitnessClassRepository fitnessClassRepository;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private ImportBillRepository importBillRepository;
 
     @Override
     public List<ProductStatDTO> getTopSellingProducts() {
@@ -148,18 +150,15 @@ public class StatsServiceImpl implements StatsService {
             ));
         }
 
-        // Lấy 5 product
-        List<Product> recentProducts = productRepository.findTop5ByOrderByImportDateDesc();
-        for (Product product : recentProducts) {
-            if(product.getImportDate() == null) {
-                continue;
-            }
+        // Lấy 5 import bill (recent products section updated)
+        List<com.example.gympool.entity.ImportBill> recentImportBills = importBillRepository.findTop5ByOrderByDateDesc();
+        for (com.example.gympool.entity.ImportBill bill : recentImportBills) {
             list.add(new ActivityWrapper(
-                    product.getImportDate(),
+                    bill.getDate(),
                     new RecentActivityDTO(
                             "product",
-                            "Nhập kho: " + product.getQuantity() + " " + product.getName(),
-                            getRelativeTime(product.getImportDate())
+                            "Phiếu nhập #" + bill.getId() + " - " + (bill.getProvider() != null ? bill.getProvider().getName() : "Unknown"),
+                            getRelativeTime(bill.getDate())
                     )
             ));
         }

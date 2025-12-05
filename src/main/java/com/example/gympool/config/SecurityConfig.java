@@ -59,7 +59,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173")); // FE Vue
+        config.setAllowedOriginPatterns(List.of("*")); // Allow all origins with credentials
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH",  "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);

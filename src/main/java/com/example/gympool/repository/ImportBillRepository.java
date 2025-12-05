@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ImportBillRepository extends JpaRepository<ImportBill, Long> {
-    // có thể thêm query custom sau này
+    java.util.List<ImportBill> findTop5ByOrderByDateDesc();
 }

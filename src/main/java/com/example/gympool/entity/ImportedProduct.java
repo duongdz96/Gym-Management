@@ -22,6 +22,9 @@ public class ImportedProduct {
 
     private Double importPrice;
 
+    @Transient
+    private Double price; // Temporary field to hold selling price update during import
+
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;

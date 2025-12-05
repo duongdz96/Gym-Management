@@ -26,4 +26,10 @@ public class Provider {
 
     @Column(length = 20)
     private String phone;
+
+    @Column(length = 255)
+    private String address;
+
+    @Column(length = 100)
+    private String email;
 }
