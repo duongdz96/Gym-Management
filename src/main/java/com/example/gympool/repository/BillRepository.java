@@ -25,13 +25,12 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     @Query("SELECT COUNT(b) FROM Bill b WHERE b.paymentStatus = 'PAID'")
     Long countCompletedBills();
 
-    @Query("SELECT new com.example.gympool.dto.MonthlyRevenueDTO(" +
-            "CAST(MONTH(b.date) AS string), SUM(b.total)) " +
+    @Query("SELECT MONTH(b.date), SUM(b.total) " +
             "FROM Bill b " +
             "WHERE YEAR(b.date) = :year AND b.paymentStatus = 'PAID' " +
             "GROUP BY MONTH(b.date) " +
             "ORDER BY MONTH(b.date)")
-    List<MonthlyRevenueDTO> getMonthlyRevenue(@Param("year") int year);
+    List<Object[]> getMonthlyRevenue(@Param("year") int year);
     
     @Query("SELECT SUM(b.total) FROM Bill b WHERE MONTH(b.date) = :month AND YEAR(b.date) = :year AND b.paymentStatus = 'PAID'")
     Double getRevenueByMonthAndYear(@Param("month") int month, @Param("year") int year);

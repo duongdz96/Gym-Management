@@ -3,6 +3,7 @@ package com.example.gympool.service.impl;
 import com.example.gympool.dto.*;
 import com.example.gympool.entity.Bill;
 import com.example.gympool.entity.Member;
+import com.example.gympool.entity.Product;
 import com.example.gympool.repository.*;
 import com.example.gympool.service.StatsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,10 +82,26 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<MonthlyRevenueDTO> getMonthlyRevenue(int year) {
-        List<MonthlyRevenueDTO> data = billRepository.getMonthlyRevenue(year);
-        // Ensure month format is T1, T2...
-        data.forEach(d -> d.setMonth("T" + d.getMonth()));
-        return data;
+        List<Object[]> results = billRepository.getMonthlyRevenue(year);
+        
+        // Tạo map để dễ tra cứu
+        java.util.Map<Integer, Double> revenueMap = new java.util.HashMap<>();
+        for (Object[] row : results) {
+            if (row[0] != null && row[1] != null) {
+                // Sử dụng Number để an toàn với các kiểu dữ liệu khác nhau (Long, Integer, BigDecimal, Double)
+                int month = ((Number) row[0]).intValue();
+                double revenue = ((Number) row[1]).doubleValue();
+                revenueMap.put(month, revenue);
+            }
+        }
+
+        List<MonthlyRevenueDTO> fullYearData = new ArrayList<>();
+        for (int i = 1; i <= 12; i++) {
+            Double revenue = revenueMap.getOrDefault(i, 0.0);
+            fullYearData.add(new MonthlyRevenueDTO("T" + i, revenue));
+        }
+        
+        return fullYearData;
     }
 
     @Override
@@ -127,6 +144,22 @@ public class StatsServiceImpl implements StatsService {
                             "member",
                             member.getFullName() + " đăng ký gói " + member.getMembership(),
                             getRelativeTime(member.getJoinDate())
+                    )
+            ));
+        }
+
+        // Lấy 5 product
+        List<Product> recentProducts = productRepository.findTop5ByOrderByImportDateDesc();
+        for (Product product : recentProducts) {
+            if(product.getImportDate() == null) {
+                continue;
+            }
+            list.add(new ActivityWrapper(
+                    product.getImportDate(),
+                    new RecentActivityDTO(
+                            "product",
+                            "Nhập kho: " + product.getQuantity() + " " + product.getName(),
+                            getRelativeTime(product.getImportDate())
                     )
             ));
         }

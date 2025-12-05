@@ -26,4 +26,5 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
 
     List<Product> findAllByTypeAndStatusFalse(String type); //lay nhung cai type
     List<Product> findAllByTypeNotInAndStatusFalse(List<String> type);  //bo nhung cai type
+    List<Product> findTop5ByOrderByImportDateDesc();
 }

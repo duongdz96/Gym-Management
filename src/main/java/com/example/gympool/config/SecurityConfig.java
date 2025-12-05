@@ -44,7 +44,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // dùng JWT, không dùng session
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/v1/stats/**").permitAll()   // cho phép login/register không cần token
+                        .requestMatchers("/api/**").permitAll()
+                        .requestMatchers(("/image/**")).permitAll()// cho phép login/register không cần token
                         .anyRequest().authenticated()                  // các request khác cần xác thực
 
                 );
