@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/product")
@@ -21,9 +25,13 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @PostMapping
-    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
-        Product newProduct = productService.addProduct(product);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Product> addProduct(
+            @RequestPart("product") String productJson,
+            @RequestPart(value = "image", required = false) MultipartFile image) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Product product = objectMapper.readValue(productJson, Product.class);
+        Product newProduct = productService.addProduct(product, image);
         return ResponseEntity.status(HttpStatus.CREATED).body(newProduct);
     }
 

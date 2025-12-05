@@ -5,7 +5,7 @@ import com.example.gympool.entity.Product;
 import java.util.List;
 
 public interface ProductService {
-    Product addProduct(Product product);
+    Product addProduct(Product product, org.springframework.web.multipart.MultipartFile image);
     Product updateProduct(Product product);
     void softDeleteProduct(Long id);
     void restoreProduct(Long id);

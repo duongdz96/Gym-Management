@@ -33,6 +33,17 @@ public class Product {
 
     private Integer quantity;
 
+    @Column(name = "import_date")
+
+
+    private Date importDate;
+
+    @Column(length = 255)
+    private String image;
+
+    @Column(length = 50)
+    private String unit;
+
     @Column(name = "status", nullable = false, columnDefinition = "boolean default false")
     private boolean status = false;     //isDeleted
 }

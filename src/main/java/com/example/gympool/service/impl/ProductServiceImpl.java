@@ -7,6 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.Date;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -17,9 +22,23 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product addProduct(Product product) {
+    public Product addProduct(Product product, MultipartFile image) {
         product.setStatus(false);
-        // Trả về đối tượng đã được lưu (sẽ chứa ID)
+        product.setImportDate(new Date());
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
+                Path path = Paths.get("image/products/" + fileName);
+                Files.createDirectories(path.getParent());
+                Files.write(path, image.getBytes());
+                product.setImage("image/products/" + fileName);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to save image", e);
+            }
+        } else {
+            product.setImage("image/defaults/no-image.png");
+        }
         return productRepository.save(product);
     }
 
@@ -34,6 +53,9 @@ public class ProductServiceImpl implements ProductService {
         existing.setPrice(product.getPrice());
         existing.setBrand(product.getBrand());
         existing.setQuantity(product.getQuantity());
+        existing.setImportDate(product.getImportDate());
+        existing.setImage(product.getImage());
+        existing.setUnit(product.getUnit());
         existing.setStatus(product.isStatus());
 
         // Trả về đối tượng đã được cập nhật
