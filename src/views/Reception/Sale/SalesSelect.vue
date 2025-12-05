@@ -37,7 +37,7 @@ onMounted(async () => {
 
   try {
     isLoading.value = true;
-    const res = await api.get("/product/exclude-types?types=PT,Membership");
+    const res = await api.get("/products/exclude-types?types=PT,Membership");
     products.value = res.data?.map((p: Product) => ({
       ...p,
       image: p.image ? `${API_BASE}/${p.image}` : defaultImage,

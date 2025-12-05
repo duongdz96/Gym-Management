@@ -22,31 +22,64 @@
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="flex gap-4 mb-6">
-      <div class="relative">
-        <Filter class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-        <select 
-          v-model="filterDifficulty"
-          class="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all appearance-none bg-white"
+    <!-- View Mode Toggle -->
+    <div class="flex justify-center mb-8">
+      <div class="bg-gray-100 p-1 rounded-xl inline-flex">
+        <button 
+          @click="viewMode = 'list'"
+          class="px-6 py-2 rounded-lg font-bold transition-all flex items-center gap-2"
+          :class="viewMode === 'list' 
+            ? 'bg-white text-blue-600 shadow-sm' 
+            : 'text-gray-500 hover:text-gray-700'"
         >
-          <option value="">Tất cả độ khó</option>
-          <option value="Beginner">Beginner</option>
-          <option value="Intermediate">Intermediate</option>
-          <option value="Advanced">Advanced</option>
-        </select>
-      </div>
-      
-      <div class="relative flex-1">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-        <input 
-          v-model="searchQuery" 
-          type="text" 
-          placeholder="Tìm kiếm lớp học..." 
-          class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-        />
+          <LayoutGrid class="w-5 h-5" />
+          Danh sách lớp
+        </button>
+        <button 
+          @click="viewMode = 'calendar'"
+          class="px-6 py-2 rounded-lg font-bold transition-all flex items-center gap-2"
+          :class="viewMode === 'calendar' 
+            ? 'bg-white text-blue-600 shadow-sm' 
+            : 'text-gray-500 hover:text-gray-700'"
+        >
+          <CalendarIcon class="w-5 h-5" />
+          Lịch học của tôi
+        </button>
       </div>
     </div>
+
+    <!-- Calendar View -->
+    <div v-if="viewMode === 'calendar'">
+      <schedule-calendar role="student" :user-id="currentStudentId" />
+    </div>
+
+    <!-- Class List View -->
+    <div v-else>
+      <!-- Filters -->
+      <div class="flex gap-4 mb-6">
+        <div class="relative">
+          <Filter class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <select 
+            v-model="filterDifficulty"
+            class="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all appearance-none bg-white"
+          >
+            <option value="">Tất cả độ khó</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+        
+        <div class="relative flex-1">
+          <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            placeholder="Tìm kiếm lớp học..." 
+            class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+          />
+        </div>
+      </div>
 
     <!-- Available Classes -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -107,7 +140,15 @@
             </div>
             <div>
               <span class="text-gray-500 font-semibold block flex items-center gap-1"><Calendar class="w-4 h-4" /> Lịch:</span>
-              <span class="text-gray-800">{{ getScheduleText(cls) }}</span>
+              <div class="flex items-center gap-2">
+                <span class="text-gray-800">{{ getScheduleText(cls) }}</span>
+                <button 
+                  @click.stop="viewSessions(cls)" 
+                  class="text-blue-600 hover:text-blue-800 text-xs font-bold underline flex items-center gap-1"
+                >
+                  <Eye class="w-3 h-3" /> Chi tiết
+                </button>
+              </div>
             </div>
             <div>
               <span class="text-gray-500 font-semibold block flex items-center gap-1"><Calendar class="w-4 h-4" /> Bắt đầu:</span>
@@ -179,6 +220,97 @@
       <Inbox class="w-16 h-16 text-gray-400 mx-auto mb-4" />
       <p class="text-gray-500 text-lg">Không có lớp học nào khả dụng</p>
     </div>
+  </div> 
+  <!-- End of v-else for Class List View -->
+  <!-- End of v-else for Class List View -->
+  <!-- Sessions Detail Modal -->
+    <transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div 
+        v-if="showSessionsModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+        @click.self="showSessionsModal = false"
+      >
+        <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col">
+          <!-- Modal Header -->
+          <div class="p-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white flex justify-between items-center shrink-0">
+            <div>
+              <h3 class="text-xl font-bold flex items-center gap-2">
+                <CalendarIcon class="w-6 h-6" />
+                Chi tiết lịch học
+              </h3>
+              <p class="text-blue-100 text-sm mt-1">{{ selectedClass?.name }}</p>
+            </div>
+            <button 
+              @click="showSessionsModal = false"
+              class="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-2 rounded-lg"
+            >
+              <X class="w-6 h-6" />
+            </button>
+          </div>
+          
+          <!-- Modal Body -->
+          <div class="p-6 overflow-y-auto flex-1">
+            <div v-if="selectedClassSessions.length === 0" class="text-center py-8 text-gray-500">
+              Chưa có lịch học cụ thể.
+            </div>
+            
+            <div v-else class="grid gap-3">
+              <div 
+                v-for="(session, idx) in selectedClassSessions" 
+                :key="session.id"
+                class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all"
+              >
+                <!-- Index -->
+                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0">
+                  {{ idx + 1 }}
+                </div>
+                
+                <!-- Date Info -->
+                <div class="flex-1">
+                  <div class="font-bold text-gray-800 flex items-center gap-2">
+                    <CalendarIcon class="w-4 h-4 text-blue-500" />
+                    {{ formatDate(session.date) }}
+                  </div>
+                  <div class="text-sm text-gray-500 mt-1 flex items-center gap-4">
+                    <span class="flex items-center gap-1">
+                      <Clock class="w-3 h-3" /> {{ session.startTime }} - {{ session.endTime }}
+                    </span>
+                    <span class="flex items-center gap-1">
+                      <MapPin class="w-3 h-3" /> {{ getRoomName(session.roomId) }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Status -->
+                <div 
+                  class="text-xs font-semibold px-2 py-1 rounded"
+                  :class="getSessionStatus(session).class"
+                >
+                  {{ getSessionStatus(session).text }}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Modal Footer -->
+          <div class="p-4 border-t bg-gray-50 flex justify-end shrink-0">
+            <button 
+              @click="showSessionsModal = false"
+              class="px-6 py-2 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition-colors"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -186,6 +318,7 @@
 import { ref, computed, onMounted } from 'vue';
 import mockApi, { rooms, teachers, students, studentRegistrations } from './mockData.js';
 import { formatDate, getWeeksUntilStart, canVIPRegister, canAllRegister } from './dateUtils.js';
+import ScheduleCalendar from './ScheduleCalendar.vue';
 import { 
   Dumbbell, 
   Search, 
@@ -193,13 +326,15 @@ import {
   Users, 
   MapPin, 
   Clock, 
-  Calendar, 
+  Calendar as CalendarIcon, 
   User, 
   Crown, 
   CheckCircle, 
   XCircle, 
   Hand,
-  Inbox
+  LayoutGrid,
+  Eye,
+  X
 } from 'lucide-vue-next';
 
 const classes = ref([]);
@@ -209,7 +344,42 @@ const registrations = ref([]);
 const filterDifficulty = ref('');
 const searchQuery = ref('');
 const currentStudentId = ref(1);
+const viewMode = ref('list'); // 'list' | 'calendar'
 const currentStudent = ref({ membershipTier: 'BASIC' });
+
+// Sessions Modal state
+const showSessionsModal = ref(false);
+const selectedClassSessions = ref([]);
+const selectedClass = ref(null);
+
+const viewSessions = async (cls) => {
+  selectedClass.value = cls;
+  try {
+    const sessions = await mockApi.getSessions(cls.id);
+    // Enrich with room names if needed, though they are usually same room
+    selectedClassSessions.value = sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+    showSessionsModal.value = true;
+  } catch (error) {
+    alert('Không thể tải lịch học: ' + error.message);
+  }
+};
+
+const getSessionStatus = (session) => {
+  const now = new Date();
+  const sessionDate = new Date(session.date);
+  // Reset hours for pure date comparison
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sDate = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
+
+  if (sDate < today) {
+    return { text: 'Đã diễn ra', class: 'bg-gray-100 text-gray-500' };
+  } else if (sDate.getTime() === today.getTime()) {
+    // Check time if needed, for simplicity assume 'Today' is Active/Upcoming
+    return { text: 'Hôm nay', class: 'bg-blue-100 text-blue-700' };
+  } else {
+    return { text: 'Sắp diễn ra', class: 'bg-green-100 text-green-700' };
+  }
+};
 
 const availableClasses = computed(() => {
   return classes.value.filter(c => c.status === 'ready_for_students');

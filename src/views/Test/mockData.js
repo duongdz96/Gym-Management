@@ -243,7 +243,7 @@ export const studentRegistrations = [
 
 // ==================== HELPER FUNCTIONS ====================
 
-let nextClassId = 4;
+let nextClassId = 7;
 let nextSessionId = 1;
 let nextApplicationId = 3; // Updated since we have 2 applications now
 let nextRegistrationId = 3;
@@ -584,7 +584,70 @@ export const mockApi = {
 
     // Conflict checking
     checkRoomConflicts,
-    checkTeacherConflicts
+    checkTeacherConflicts,
+
+    // Schedules
+    getStudentSchedule: (studentId, startDate, endDate) => {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        // Get student's active registrations
+        const myRegistrations = studentRegistrations.filter(r =>
+            r.studentId === studentId && r.status === 'active'
+        );
+        const myClassIds = myRegistrations.map(r => r.classId);
+
+        // Filter sessions
+        const mySessions = sessions.filter(s => {
+            const date = new Date(s.date);
+            return myClassIds.includes(s.classId) &&
+                date >= start &&
+                date <= end;
+        });
+
+        // Enrich with details
+        return Promise.resolve(mySessions.map(s => {
+            const cls = classes.find(c => c.id === s.classId);
+            const room = rooms.find(r => r.id === s.roomId);
+            const teacher = teachers.find(t => t.id === s.teacherId);
+            return {
+                ...s,
+                className: cls ? cls.name : 'Unknown Class',
+                roomName: room ? room.name : 'Unknown Room',
+                teacherName: teacher ? teacher.name : 'Unknown Teacher'
+            };
+        }));
+    },
+
+    getTeacherSchedule: (teacherId, startDate, endDate) => {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        // Get teacher's classes
+        const myClasses = classes.filter(c => c.teacherId === teacherId);
+        const myClassIds = myClasses.map(c => c.id);
+
+        // Filter sessions
+        const mySessions = sessions.filter(s => {
+            const date = new Date(s.date);
+            return myClassIds.includes(s.classId) &&
+                date >= start &&
+                date <= end;
+        });
+
+        // Enrich with details
+        return Promise.resolve(mySessions.map(s => {
+            const cls = classes.find(c => c.id === s.classId);
+            const room = rooms.find(r => r.id === s.roomId);
+            const teacher = teachers.find(t => t.id === teacherId); // Self
+            return {
+                ...s,
+                className: cls ? cls.name : 'Unknown Class',
+                roomName: room ? room.name : 'Unknown Room',
+                teacherName: teacher ? teacher.name : 'Me'
+            };
+        }));
+    }
 };
 
 // Initialize sessions for existing classes

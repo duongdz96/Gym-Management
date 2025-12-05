@@ -12,10 +12,11 @@ import Coupon from "@/views/Manager/Coupon/Coupon.vue";
 import AddCoupon from "@/views/Manager/Coupon/AddCoupon.vue";
 import CouponDetail from "@/views/Manager/Coupon/CouponDetail.vue";
 import EditCoupon from "@/views/Manager/Coupon/EditCoupon.vue";
-import Product from "@/views/Manager/Product/Product.vue";
-import AddProduct from "@/views/Manager/Product/AddProduct.vue";
-import ImportProduct from "@/views/Manager/Product/ImportProduct.vue";
-import ImportCheckout from "@/views/Manager/Product/ImportCheckout.vue";
+import ProductList from "@/views/Manager/Product/ProductList.vue";
+import SupplierList from "@/views/Manager/Product/SupplierList.vue";
+import ImportGoodsManager from "@/views/Manager/Product/ImportGoods.vue";
+import ImportReceiptList from "@/views/Manager/Product/ImportReceiptList.vue";
+import ImportReceiptDetail from "@/views/Manager/Product/ImportReceiptDetail.vue";
 import Staff from "@/views/Manager/Staff/Staff.vue";
 import Customer from "@/views/Manager/Customer/Customer.vue";
 import Attendance from "@/views/Manager/Attendance/Attendance.vue";
@@ -56,8 +57,6 @@ import Test from "@/views/Test.vue";
 import SchedulePattern from "@/views/Manager/Classes/SchedulePattern.vue";
 import TeacherRegister from "@/views/PT/TeacherRegisterClass.vue";
 import AddStaff from "@/views/Manager/Staff/AddStaff.vue";
-import StaffInformation from "@/views/Manager/Staff/StaffInformation.vue";
-import EditProduct from "@/views/Manager/Product/EditProduct.vue";
 import EditClassTemplate from "@/views/Manager/Classes/EditClassTemplate.vue";
 import EditClassSchedule from "@/views/Manager/Classes/EditClassSchedule.vue";
 import CustomerBillHistory from "@/views/Customer/History/CustomerBillHistory.vue";
@@ -88,18 +87,18 @@ const routes = [
             { path: "dashboard", name: "manager.dashboard.full", component: ManagerDashboard },
             { path: "staff", name: "staff", component: Staff },
             { path: "staff/add", name: "staff.add", component: AddStaff },
-            { path: "staff/:id", name: "staff.info", component: StaffInformation },
             { path: "customer", name: "customer", component: Customer },
             { path: "attendance", name: "attendance", component: Attendance },
             { path: "coupon", name: "coupon", component: Coupon },
             { path: "coupon/:id", name: "CouponDetail", component: CouponDetail },
             { path: "coupon/add", name: "coupon.add", component: AddCoupon },
             { path: "coupon/:id", name: "coupon.edit", component: EditCoupon },
-            { path: "product", name: "product", component: Product },
-            { path: "product/add", name: "product.add", component: AddProduct },
-            { path: "product/:id", name: "product.edit", component: EditProduct },
-            { path: "product/importproduct", name: "product.importproduct", component: ImportProduct },
-            { path: "product/importcheckout", name: "product.importcheckout", component: ImportCheckout },
+            { path: "product", redirect: "/manager/product/list" },
+            { path: "product/list", name: "product.list", component: ProductList },
+            { path: "product/supplier", name: "product.supplier", component: SupplierList },
+            { path: "product/import", name: "product.import", component: ImportGoodsManager },
+            { path: "product/history", name: "product.history", component: ImportReceiptList },
+            { path: "product/history/:id", name: "product.history.detail", component: ImportReceiptDetail },
             { path: "classtemplate", name: "classtemplate", component: ClassTemplate },
             { path: "classtemplate/add", name: "classtemplate.add", component: AddClassTemplate },
             { path: "classtemplate/edit/:id", name: "classtemplate.edit", component: EditClassTemplate },
@@ -110,7 +109,7 @@ const routes = [
             { path: "membership/add", name: "membership.add", component: ManageAddMembership },
             { path: "membership/add-tier", name: "membership.add-tier", component: ManageAddTier },
             { path: "schedulepattern", name: "schedulepattern", component: SchedulePattern },
-            { path: "banner", name: "banner", component: Banner }
+            { path: "banner", name: "banner", component: Banner },
         ],
     },
 

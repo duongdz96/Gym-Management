@@ -11,6 +11,7 @@ const toast = useToast();
 
 const isMenuOpen = ref(false);
 const isAccountMenuOpen = ref(false);
+const isProductMenuOpen = ref(false);
 
 const handleLogout = () => {
   authStore.logout();
@@ -55,13 +56,48 @@ const handleLogout = () => {
         >
           Attendance
         </RouterLink>
-        <RouterLink
-          to="/manager/product"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="route.path === '/manager/product' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+        <!-- Product Dropdown -->
+        <div
+          class="relative"
+          @mouseenter="isProductMenuOpen = true"
+          @mouseleave="isProductMenuOpen = false"
         >
-          Products
-        </RouterLink>
+          <button
+            class="uppercase tracking-wider hover:text-red-600 flex items-center gap-1"
+            :class="route.path.startsWith('/manager/product') ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+          >
+            Products
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          <transition name="fade">
+            <div
+              v-show="isProductMenuOpen"
+              class="absolute left-0 mt-2 w-56 bg-white rounded shadow-md z-50 text-gray-800"
+            >
+              <RouterLink
+                to="/manager/product/supplier"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Quản lý nhà cung cấp
+              </RouterLink>
+              <RouterLink
+                to="/manager/product/list"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Quản lý sản phẩm
+              </RouterLink>
+              <RouterLink
+                to="/manager/product/history"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Lịch sử nhập kho
+              </RouterLink>
+            </div>
+          </transition>
+        </div>
         <RouterLink
           to="/manager/coupon"
           class="uppercase tracking-wider hover:text-red-600"

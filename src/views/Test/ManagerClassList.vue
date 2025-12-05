@@ -948,8 +948,11 @@ const getRoomConflicts = (roomId) => {
 
 const createClass = async () => {
   try {
-    if (newClass.value.patternType === 'no_repeat') {
-      newClass.value.endDate = newClass.value.startDate;
+    if (newClass.value.patternType === 'no_repeat' && newClass.value.selectedDates && newClass.value.selectedDates.length > 0) {
+      // Sort dates to find start and end
+      const sortedDates = [...newClass.value.selectedDates].sort();
+      newClass.value.startDate = sortedDates[0];
+      newClass.value.endDate = sortedDates[sortedDates.length - 1];
     }
     console.log(newClass.value);
     await mockApi.createClass(newClass.value);
