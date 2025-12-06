@@ -13,5 +13,5 @@ public interface CouponService {
     void deleteCoupon(Long id);
     Optional<Coupon> getValidCouponForMember(String code, Long MemberId);
     List<IssuedCoupon> getIssuedCouponsByCouponId(Coupon coupon);
-    void createCouponAndIssueToMembers(Coupon coupon);
+    void createCouponAndIssueToMembers(Coupon coupon, List<Long> userIds);
 }

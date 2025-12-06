@@ -45,6 +45,23 @@ public class IssuedCouponController {
     }
 
 
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateIssuedCouponStatus(@PathVariable Long id, @RequestParam String status) {
+        try {
+            IssuedCoupon issuedCoupon = issuedCouponService.getIssuedCouponById(id);
+            if (issuedCoupon == null) {
+                return ResponseEntity.status(404).body("Issued coupon not found");
+            }
+            
+            issuedCoupon.setStatus(status);
+            issuedCouponService.updateIssuedCoupon(issuedCoupon);
+            return ResponseEntity.ok("Status updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteIssuedCoupon(@PathVariable Long id) {
         issuedCouponService.deleteIssuedCoupon(id);

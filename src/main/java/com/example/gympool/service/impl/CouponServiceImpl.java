@@ -66,22 +66,40 @@ public class CouponServiceImpl implements CouponService {
 
 
     @Override
-    public void createCouponAndIssueToMembers(Coupon couponRequest) {
+    public void createCouponAndIssueToMembers(Coupon couponRequest, List<Long> userIds) {
         // 1. Lưu coupon
         Coupon savedCoupon = couponRepository.save(couponRequest);
+        
+        // Default totalUses to 3 if not set
+        Integer totalUses = savedCoupon.getTotalUses() != null ? savedCoupon.getTotalUses() : 3;
 
-        // 2. Tìm tất cả CustomerMembership có tier.name = coupon.scope
-        List<CustomerMembership> matchedMemberships =
-                customerMembershipRepository.findByMembershipPlan_MembershipTier_Name(couponRequest.getScope());
+        if (userIds != null && !userIds.isEmpty()) {
+            // Issue riêng lẻ
+            List<com.example.gympool.entity.Member> members = memberRepository.findAllById(userIds);
+            for (com.example.gympool.entity.Member member : members) {
+                IssuedCoupon issued = new IssuedCoupon();
+                issued.setCoupon(savedCoupon);
+                issued.setMember(member);
+                issued.setRemainingUses(totalUses);
+                issued.setStatus("AVAILABLE");
+                issuedCouponRepository.save(issued);
+            }
 
-        // 3. Với mỗi member, tạo IssuedCoupon
-        for (CustomerMembership cm : matchedMemberships) {
-            IssuedCoupon issued = new IssuedCoupon();
-            issued.setCoupon(savedCoupon);
-            issued.setMember(cm.getMember());
-            issued.setRemainingUses(3); // ví dụ mặc định 3 lần
-            issued.setStatus("AVAILABLE");
-            issuedCouponRepository.save(issued);
+        } else if (couponRequest.getScope() != null && !couponRequest.getScope().isEmpty()) {
+            // Issue theo Scope (Membership Tier)
+            // 2. Tìm tất cả CustomerMembership có tier.name = coupon.scope
+            List<CustomerMembership> matchedMemberships =
+                    customerMembershipRepository.findByMembershipPlan_MembershipTier_Name(couponRequest.getScope());
+
+            // 3. Với mỗi member, tạo IssuedCoupon
+            for (CustomerMembership cm : matchedMemberships) {
+                IssuedCoupon issued = new IssuedCoupon();
+                issued.setCoupon(savedCoupon);
+                issued.setMember(cm.getMember());
+                issued.setRemainingUses(totalUses); 
+                issued.setStatus("AVAILABLE");
+                issuedCouponRepository.save(issued);
+            }
         }
     }
 
@@ -138,6 +156,15 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public void deleteCoupon(Long id) {
+        // First, delete all issued coupons related to this coupon
+        Coupon coupon = couponRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Coupon not found"));
+        
+        // Delete all issued coupons for this coupon
+        List<IssuedCoupon> issuedCoupons = issuedCouponRepository.findByCoupon(coupon);
+        issuedCouponRepository.deleteAll(issuedCoupons);
+        
+        // Then delete the coupon itself
         couponRepository.deleteById(id);
     }
 
