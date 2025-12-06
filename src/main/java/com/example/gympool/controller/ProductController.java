@@ -28,6 +28,16 @@ public class ProductController {
         return productService.getAllProductsForAdmin();
     }
 
+    @GetMapping("/exclude-types")
+    public List<Product> getProductsExcludeTypes(@RequestParam List<String> types) {
+        return productService.getAllAvailableProductsByTypeNot(types);
+    }
+
+    @GetMapping("/include-types")
+    public List<Product> getProductsIncludeTypes(@RequestParam List<String> types) {
+        return productService.getAllAvailableProductsByTypeIn(types);
+    }
+
     @PostMapping
     public ResponseEntity<Product> createProduct(@RequestParam("product") String productJson,
                                                  @RequestParam(value = "image", required = false) MultipartFile image) {

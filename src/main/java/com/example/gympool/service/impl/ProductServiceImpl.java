@@ -105,4 +105,9 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> getAllAvailableProductsByTypeNot(List<String> type) {
         return productRepository.findAllByTypeNotInAndStatusFalse(type);
     }
+
+    @Override
+    public List<Product> getAllAvailableProductsByTypeIn(List<String> types) {
+        return productRepository.findAllByTypeInAndStatusFalse(types);
+    }
 }

@@ -15,4 +15,5 @@ public interface ProductService {
     List<Product> getAllProductsForAdmin();
     List<Product> getAllAvailableProductsByType(String type);
     List<Product> getAllAvailableProductsByTypeNot(List<String> type);
+    List<Product> getAllAvailableProductsByTypeIn(List<String> types);
 }
