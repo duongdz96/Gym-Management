@@ -18,7 +18,7 @@ public interface SoldProductRepository extends JpaRepository<SoldProduct, Long> 
             "COALESCE(SUM(CASE WHEN s.soldPrice > 0 THEN s.soldPrice ELSE p.price END * s.quantity), 0.0)) " +
             "FROM SoldProduct s JOIN s.product p " +
             "GROUP BY p.id, p.name, p.price " +
-            "ORDER BY COALESCE(SUM(CASE WHEN s.soldPrice > 0 THEN s.soldPrice ELSE p.price END * s.quantity), 0.0) DESC " +
+            "ORDER BY COALESCE(SUM(s.quantity), 0L) DESC " +
             "LIMIT 5")
     List<ProductStatDTO> getProductSalesRanking();
 }
