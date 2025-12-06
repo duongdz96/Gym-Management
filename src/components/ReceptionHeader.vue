@@ -45,13 +45,6 @@ const handleLogout = () => {
         </RouterLink>
 
         <RouterLink
-          :to="{ name: 'salesBooking' }"
-          class="text-white uppercase tracking-wider hover:text-red-500 transition"
-        >
-          Services Sales
-        </RouterLink>
-
-        <RouterLink
           :to="{ name: 'add-membership' }"
           class="text-white uppercase tracking-wider hover:text-red-500 transition"
         >

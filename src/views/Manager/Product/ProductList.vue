@@ -266,7 +266,7 @@ const filteredProducts = computed(() => {
   return result;
 });
 
-const productTypes = ['Thực phẩm bổ sung', 'Phụ kiện', 'Quần áo', 'Thiết bị', 'Khác'];
+const productTypes = ['Thực phẩm bổ sung', 'Phụ kiện', 'Quần áo', 'Thiết bị', 'PT', 'Membership', 'Khác'];
 const unitOptions = ['Cái', 'Hộp', 'Đôi', 'Bộ', 'Gói', 'Khác'];
 
 const form = reactive({
