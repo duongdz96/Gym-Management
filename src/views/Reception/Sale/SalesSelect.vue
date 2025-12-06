@@ -92,8 +92,21 @@ const totalAmount = computed(() =>
 
 // Actions
 function addToCart(product: Product) {
+    // Check stock for physical products
+    if (activeTab.value === 'product') {
+        if (!product.quantity || product.quantity <= 0) {
+            toast.warning("Sản phẩm tạm hết hàng, vui lòng chọn sản phẩm khác!");
+            return;
+        }
+    }
+
     const existing = cart.value.find((item) => item.product.id === product.id);
     if (existing) {
+        // Check if adding more exceeds stock
+        if (activeTab.value === 'product' && existing.quantity >= (product.quantity || 0)) {
+            toast.warning("Số lượng trong kho không đủ!");
+            return;
+        }
         existing.quantity += 1;
     } else {
         cart.value.push({ product, quantity: 1 });
@@ -108,6 +121,16 @@ function removeFromCart(productId: number) {
 
 function updateQuantity(item: CartItem, newQty: number) {
     if(newQty < 1) return;
+
+    // Check stock if increasing quantity for physical products
+    if (newQty > item.quantity) {
+        const isService = ['PT', 'Membership', 'SVC'].includes(item.product.type);
+        if (!isService && newQty > (item.product.quantity || 0)) {
+            toast.warning("Số lượng trong kho không đủ!");
+            return;
+        }
+    }
+
     item.quantity = newQty;
     saveCart();
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { 
     UserIcon, 
@@ -13,9 +13,11 @@ import {
 } from 'lucide-vue-next';
 import api from '@/services/api';
 import Multiselect from 'vue-multiselect';
+import { useToast } from "vue-toastification";
 
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
 
 // ================= STATE =================
 const bill = ref(null);
@@ -29,7 +31,15 @@ const createdBillId = ref(null);
 const isPaid = ref(false);
 const activeTab = ref('product');
 const showQRModal = ref(false);
-const paymentStatus = ref('Pending');
+
+// QR Payment variables
+const bankCode = "MB";
+const accountNumber = "2666677888";
+const accountName = "VAN NGOC LONG";
+const qrUrl = ref("");
+const paymentStatus = ref("Pending");
+const transferCode = ref("");
+let pollInterval = null;
 
 const productsList = computed(() => {
     if (!bill.value || !bill.value.listSoldProduct) return [];
@@ -63,16 +73,6 @@ const finalPrice = computed(() => {
      return Math.max(0, total);
 });
 
-const transferCode = computed(() => {
-    return `PAY${createdBillId.value || '000'}GMS`;
-});
-
-const qrUrl = computed(() => {
-    if (!createdBillId.value) return '';
-    const content = transferCode.value;
-    return `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${content}`;
-});
-
 const statusClass = computed(() => {
     return paymentStatus.value === 'Paid' ? 'text-green-600' : 'text-yellow-600';
 });
@@ -83,13 +83,11 @@ onMounted(async () => {
     if (stateBill) {
         bill.value = JSON.parse(stateBill);
     } else {
-        // Fallback: Check local/session store if needed
         const sessionBill = sessionStorage.getItem('currentBill');
         if (sessionBill) {
             bill.value = JSON.parse(sessionBill);
         } else {
             console.warn("No bill found in state");
-            // Optional: alert user or redirect
         }
     }
 
@@ -104,6 +102,10 @@ onMounted(async () => {
     if (storedUser) {
         user.value = JSON.parse(storedUser);
     }
+});
+
+onUnmounted(() => {
+  if (pollInterval) clearInterval(pollInterval);
 });
 
 // ================= METHODS =================
@@ -131,6 +133,45 @@ const checkCoupon = async () => {
     }
 };
 
+function generateQR() {
+  transferCode.value = `BILL${Date.now()}`;
+  qrUrl.value = `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact.png?amount=${finalPrice.value}&addInfo=${encodeURIComponent(transferCode.value)}&accountName=${encodeURIComponent(accountName)}`;
+  paymentStatus.value = "Pending";
+  toast.info("QR đã được tạo. Đang chờ thanh toán...");
+  startPolling();
+}
+
+function startPolling() {
+  if (pollInterval) clearInterval(pollInterval);
+
+  pollInterval = setInterval(async () => {
+    try {
+      const res = await api.get(
+        `/casso/check?addInfo=${encodeURIComponent(transferCode.value)}&amount=${finalPrice.value}`
+      );
+
+      console.log("Polling response:", res.data);
+
+      if (res.data?.paid) {
+        paymentStatus.value = "Paid";
+        toast.success("Đã nhận được thanh toán!");
+        sessionStorage.removeItem('currentCart');
+        sessionStorage.removeItem('currentBill');
+        
+        if (pollInterval) clearInterval(pollInterval);
+        
+        // Update bill status to PAID
+        if (createdBillId.value) {
+          await updateBillStatus(createdBillId.value, "PAID");
+          isPaid.value = true;
+        }
+      }
+    } catch (err) {
+      console.error("Error during polling:", err);
+    }
+  }, 3000);
+}
+
 const submit = async () => {
     if (!bill.value) return;
     if (!paymentMethod.value) {
@@ -148,7 +189,6 @@ const submit = async () => {
             paymentStatus: paymentMethod.value === 'CASH' ? 'PAID' : 'PENDING',
             date: new Date(),
             totalPrice: finalPrice.value,
-            // Ensure products are mapped correctly
             listSoldProduct: bill.value.listSoldProduct.map(item => ({
                 product: { id: item.product.id },
                 quantity: item.quantity
@@ -162,15 +202,15 @@ const submit = async () => {
              
              if (paymentMethod.value === 'CASH') {
                  isPaid.value = true;
-                 handlePrint();
-                 alert("Thanh toán tiền mặt thành công!");
+                 sessionStorage.removeItem('currentCart');
+                 sessionStorage.removeItem('currentBill');
+                 toast.success("Thanh toán tiền mặt thành công!");
              } else {
-                 paymentStatus.value = 'Pending';
                  showQRModal.value = true;
+                 generateQR(); // Call generateQR here
              }
         }
     } catch (e) {
-        // Handle 403 or other errors
         const status = e.response?.status;
         const msg = e.response?.data?.message || e.message;
         if (status === 403) {
@@ -182,26 +222,42 @@ const submit = async () => {
     }
 };
 
-const simulatePayment = async () => {
-    if (!createdBillId.value) return;
-    try {
-        const res = await api.patch(`/bills/${createdBillId.value}/status`, {
-            paymentStatus: 'PAID'
-        });
-        
-        if (res.status === 200) {
-            paymentStatus.value = 'Paid';
-            isPaid.value = true;
-            setTimeout(() => {
-                showQRModal.value = false;
-                alert("Thanh toán chuyển khoản thành công!");
-            }, 1000);
+async function simulatePayment() {
+  try {
+    const payload = {
+      data: [
+        {
+          amount: finalPrice.value,
+          description: transferCode.value,
+          tid: `SIM${Date.now()}`,
+          bank: bankCode,
+          cusumBalance: null
         }
-    } catch (e) {
-        console.error(e);
-        alert("Lỗi cập nhật trạng thái thanh toán");
+      ]
+    };
+    
+    await api.post("/casso/webhook", payload);
+    toast.success("Giả lập chuyển khoản thành công!");
+    
+    // Auto update status in UI if polling doesn't catch it immediately (optional)
+    // But polling usually catches it.
+  } catch (err) {
+    console.error("Error simulating payment:", err);
+    toast.error("Lỗi khi giả lập thanh toán!");
+  }
+}
+
+async function updateBillStatus(billId, status) {
+  try {
+    await api.patch(`/bills/${billId}/status`, { paymentStatus: status });
+    console.log(`Bill ${billId} status updated to ${status}`);
+    if (status === 'PAID') {
+        isPaid.value = true;
     }
-};
+  } catch (err) {
+    console.error("Error updating bill status:", err);
+  }
+}
 
 const handlePrint = () => {
     setTimeout(() => {
@@ -305,8 +361,8 @@ const handlePrint = () => {
                             <tr v-for="item in servicesList" :key="item.product.id" class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4">
                                      <div class="flex items-center gap-3">
-                                         <div class="w-10 h-10 rounded bg-indigo-50 flex-shrink-0 border border-indigo-100 overflow-hidden flex items-center justify-center">
-                                            <span class="text-xs font-bold text-indigo-600">SVC</span>
+                                         <div class="w-10 h-10 rounded bg-gray-100 flex-shrink-0 border border-gray-200 overflow-hidden">
+                                             <img v-if="item.product.image" :src="item.product.image" class="w-full h-full object-cover" />
                                          </div>
                                          <div>
                                             <span class="font-medium text-gray-900 block">{{ item.product.name }}</span>
