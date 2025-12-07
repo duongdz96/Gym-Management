@@ -71,23 +71,21 @@ export const classRegistrationApi = {
   },
   
   registerTeaching: async (staffId, data) => {
-    // Backend signature: @PostMapping with @RequestBody Long staffId, ClassRegistration reg
-    // Spring Boot doesn't support multiple @RequestBody, so likely staffId is sent as part of the body
-    // Or backend might use a wrapper DTO. Try sending staffId in the request body
-    // Also ensure teacher.id matches staffId (backend checks this)
-    const payload = {
-      staffId: staffId,
-      teacher: { id: staffId }, // Ensure teacher.id matches staffId
-      fitnessClass: data.fitnessClass,
-      description: data.description || 'Pending approval'
+    
+    const classRegistrationBody = {
+        teacher: { 
+            id: staffId 
+        }, 
+        fitnessClass: { 
+            id: data.fitnessClass.id
+        },
+        description: data.description || 'Phân công giảng dạy'
     };
     const res = await api.post('/class-registrations', payload);
     return res.data;
-  },
+},
   
   unregisterTeaching: async (staffId, registrationId) => {
-    // According to backend: @DeleteMapping("/{id}") with @PathVariable Long staffId, Long registrationId
-    // So staffId should be in path or params
     const res = await api.delete(`/class-registrations/${registrationId}`, {
       params: { staffId }
     });

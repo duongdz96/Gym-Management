@@ -399,6 +399,15 @@ public class ClassRegistrationRequest {
 
         return memberRegistrationRepository.save(newRegistration);
     }
+        @Override
+    public List<MemberRegistration> registerBulk(Long memberId, List<Long> scheduleIds) {
+        List<MemberRegistration> resultList = new ArrayList<>();
+        for(Long scheduleId : scheduleIds){
+            MemberRegistration reg = this.registerForClass(memberId, scheduleId);
+            resultList.add(reg);
+        }
+        return resultList;
+    }
 @RequestMapping("/api/members")
 @RequestMapping("/api/teachers")
 @RequestMapping("/api/room")

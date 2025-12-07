@@ -311,11 +311,173 @@
         </div>
       </div>
     </transition>
+
+    <!-- Schedule Selection Modal -->
+    <transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div 
+        v-if="showScheduleModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+        @click.self="closeScheduleModal"
+      >
+        <div class="bg-white rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+          <!-- Modal Header -->
+          <div class="p-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white flex justify-between items-center shrink-0">
+            <div>
+              <h3 class="text-xl font-bold flex items-center gap-2">
+                <CalendarIcon class="w-6 h-6" />
+                Chọn lịch học
+              </h3>
+              <p class="text-blue-100 text-sm mt-1">{{ selectedFitnessClass?.name }}</p>
+            </div>
+            <button 
+              @click="closeScheduleModal"
+              class="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-2 rounded-lg"
+            >
+              <X class="w-6 h-6" />
+            </button>
+          </div>
+          
+          <!-- Modal Body -->
+          <div class="p-6 overflow-y-auto flex-1">
+            <div v-if="loadingSchedules" class="text-center py-8 text-gray-500">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              Đang tải lịch học...
+            </div>
+            
+            <div v-else-if="availableSchedules.length === 0" class="text-center py-8 text-gray-500">
+              <Inbox class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p class="text-lg font-semibold">Không có lịch học khả dụng</p>
+              <p class="text-sm mt-2">Tất cả các buổi học đã đầy hoặc đã diễn ra</p>
+            </div>
+            
+            <div v-else>
+              <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-sm text-blue-800">
+                  <strong>Hướng dẫn:</strong> Chọn các buổi học bạn muốn đăng ký bằng cách click vào từng dòng. 
+                  Bạn có thể chọn nhiều buổi cùng lúc.
+                </p>
+              </div>
+              
+              <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                  <thead>
+                    <tr class="bg-gray-100 border-b-2 border-gray-300">
+                      <th class="p-3 text-left font-bold text-gray-700 w-12">
+                        <input 
+                          ref="selectAllCheckbox"
+                          type="checkbox" 
+                          :checked="selectedScheduleIds.length === availableSchedules.filter(s => s.status === 'OPEN' && getScheduleAvailableSlots(s) > 0).length && availableSchedules.filter(s => s.status === 'OPEN' && getScheduleAvailableSlots(s) > 0).length > 0"
+                          @change="toggleAllSchedules"
+                          class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                      </th>
+                      <th class="p-3 text-left font-bold text-gray-700">Ngày</th>
+                      <th class="p-3 text-left font-bold text-gray-700">Thời gian</th>
+                      <th class="p-3 text-left font-bold text-gray-700">Phòng</th>
+                      <th class="p-3 text-left font-bold text-gray-700">Trạng thái</th>
+                      <th class="p-3 text-left font-bold text-gray-700">Chỗ trống</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr 
+                      v-for="schedule in availableSchedules" 
+                      :key="schedule.id"
+                      @click="toggleSchedule(schedule)"
+                      class="border-b border-gray-200 hover:bg-blue-50 cursor-pointer transition-colors"
+                      :class="{
+                        'bg-blue-100': selectedScheduleIds.includes(schedule.id),
+                        'opacity-50 cursor-not-allowed': schedule.status === 'CLOSED' || schedule.status === 'CANCELLED' || getScheduleAvailableSlots(schedule) <= 0
+                      }"
+                    >
+                      <td class="p-3">
+                        <input 
+                          type="checkbox" 
+                          :checked="selectedScheduleIds.includes(schedule.id)"
+                          :disabled="schedule.status === 'CLOSED' || schedule.status === 'CANCELLED' || getScheduleAvailableSlots(schedule) <= 0"
+                          @click.stop="toggleSchedule(schedule)"
+                          class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                      </td>
+                      <td class="p-3 font-medium text-gray-800">
+                        {{ formatScheduleDate(schedule.startTime || schedule.date) }}
+                      </td>
+                      <td class="p-3 text-gray-600">
+                        <span class="font-medium">{{ formatScheduleTime(schedule.startTime) }}</span>
+                        <span class="mx-1">-</span>
+                        <span class="font-medium">{{ formatScheduleTime(schedule.endTime) }}</span>
+                      </td>
+                      <td class="p-3 text-gray-600">
+                        {{ getRoomName(schedule.roomId) }}
+                      </td>
+                      <td class="p-3">
+                        <span 
+                          class="px-2 py-1 rounded text-xs font-semibold"
+                          :class="{
+                            'bg-green-100 text-green-700': schedule.status === 'OPEN',
+                            'bg-red-100 text-red-700': schedule.status === 'CLOSED' || schedule.status === 'CANCELLED',
+                            'bg-gray-100 text-gray-700': !schedule.status
+                          }"
+                        >
+                          {{ schedule.status === 'OPEN' ? 'Mở' : schedule.status === 'CLOSED' ? 'Đóng' : schedule.status === 'CANCELLED' ? 'Hủy' : 'N/A' }}
+                        </span>
+                      </td>
+                      <td class="p-3">
+                        <span 
+                          class="font-bold"
+                          :class="{
+                            'text-green-600': getScheduleAvailableSlots(schedule) > 5,
+                            'text-orange-600': getScheduleAvailableSlots(schedule) > 0 && getScheduleAvailableSlots(schedule) <= 5,
+                            'text-red-600': getScheduleAvailableSlots(schedule) <= 0
+                          }"
+                        >
+                          {{ getScheduleAvailableSlots(schedule) }}/{{ schedule.capacity || 20 }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <div v-if="selectedScheduleIds.length > 0" class="mt-4 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                <p class="text-green-800 font-semibold">
+                  Đã chọn <strong>{{ selectedScheduleIds.length }}</strong> buổi học
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Modal Footer -->
+          <div class="p-4 border-t bg-gray-50 flex justify-end gap-3 shrink-0">
+            <button 
+              @click="closeScheduleModal"
+              class="px-6 py-2 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition-colors"
+            >
+              Hủy
+            </button>
+            <button 
+              @click="registerSelectedSchedules"
+              :disabled="selectedScheduleIds.length === 0 || loadingSchedules"
+              class="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              <CheckCircle class="w-5 h-5" />
+              Đăng ký ({{ selectedScheduleIds.length }})
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useAuthStore } from '@/stores/useAuthStore';
 import unifiedApi from './unifiedApi.js';
 import apiService from './apiService.js';
@@ -367,6 +529,7 @@ const selectedFitnessClass = ref(null);
 const availableSchedules = ref([]);
 const selectedScheduleIds = ref([]);
 const loadingSchedules = ref(false);
+const selectAllCheckbox = ref(null);
 
 const viewSessions = async (cls) => {
   selectedClass.value = cls;
@@ -603,6 +766,27 @@ const toggleSchedule = (schedule) => {
     selectedScheduleIds.value.push(schedule.id);
   }
 };
+
+const toggleAllSchedules = (event) => {
+  if (event.target.checked) {
+    // Select all available schedules
+    selectedScheduleIds.value = availableSchedules.value
+      .filter(s => s.status === 'OPEN' && getScheduleAvailableSlots(s) > 0)
+      .map(s => s.id);
+  } else {
+    // Deselect all
+    selectedScheduleIds.value = [];
+  }
+};
+
+// Watch for changes to update indeterminate state
+watch([selectedScheduleIds, availableSchedules], () => {
+  if (selectAllCheckbox.value) {
+    const availableCount = availableSchedules.value.filter(s => s.status === 'OPEN' && getScheduleAvailableSlots(s) > 0).length;
+    const selectedCount = selectedScheduleIds.value.length;
+    selectAllCheckbox.value.indeterminate = selectedCount > 0 && selectedCount < availableCount;
+  }
+}, { immediate: true });
 
 const scheduleSlotsCache = ref({});
 

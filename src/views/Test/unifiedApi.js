@@ -300,14 +300,20 @@ export const unifiedApi = {
     if (USE_REAL_API) {
       const schedules = await apiService.classSchedule.getByFitnessClass(fitnessClassId);
       return schedules.map(cs => {
-        const startDate = new Date(cs.startTime);
-        const dateStr = startDate.toISOString().split('T')[0];
+        // Extract date directly from LocalDateTime string to avoid timezone issues
+        const dateStr = cs.startTime ? cs.startTime.split('T')[0] : null;
+        // Parse time from LocalDateTime for display
+        const startDateTime = new Date(cs.startTime);
+        const endDateTime = new Date(cs.endTime);
+        const startTimeStr = startDateTime.toTimeString().substring(0, 5);
+        const endTimeStr = endDateTime.toTimeString().substring(0, 5);
+        
         return {
           id: cs.id,
           classId: cs.fitnessClass?.id || fitnessClassId,
           date: dateStr,
-          startTime: cs.startTime,
-          endTime: cs.endTime,
+          startTime: cs.startTime, // Keep full ISO string for compatibility
+          endTime: cs.endTime, // Keep full ISO string for compatibility
           roomId: cs.room?.id || cs.roomId,
           room: cs.room,
           status: cs.status,
@@ -411,8 +417,6 @@ export const unifiedApi = {
   
   approveTeacher: async (applicationId, managerId) => {
     if (USE_REAL_API) {
-      // In real API, approval might be handled differently
-      // This is a placeholder - adjust based on your backend
       throw new Error('Teacher approval not yet implemented for real API');
     } else {
       const registration = classRegistrationsData.find(cr => cr.id === applicationId);
@@ -457,6 +461,9 @@ export const unifiedApi = {
   
   // Member Registrations
   registerBulkSchedules: async (memberId, scheduleIds) => {
+    console.log(`--- Bulk Registration Started ---`);
+    console.log(`Member ID: ${memberId}`);
+    console.log(`Schedule IDs to process:`, scheduleIds);
     if (USE_REAL_API) {
       return await apiService.memberRegistration.registerBulk(memberId, scheduleIds);
     } else {
@@ -627,20 +634,31 @@ export const unifiedApi = {
       const registrations = await apiService.memberRegistration.getByMember(studentId);
       const schedules = [];
       for (const reg of registrations) {
+        const fitnessClassDetails = reg.fitnessClass;
         if (reg.classSchedule) {
-          const scheduleDate = new Date(reg.classSchedule.startTime);
-          if (scheduleDate >= new Date(startDate) && scheduleDate <= new Date(endDate)) {
+          // Extract date directly from LocalDateTime string to avoid timezone issues
+          const dateStr = reg.classSchedule.startTime ? reg.classSchedule.startTime.split('T')[0] : null;
+          if (!dateStr) continue;
+          
+          // Compare dates as strings (YYYY-MM-DD format)
+          if (dateStr >= startDate && dateStr <= endDate) {
+            // Parse time from LocalDateTime for display
+            const startDateTime = new Date(reg.classSchedule.startTime);
+            const endDateTime = new Date(reg.classSchedule.endTime);
+            const startTimeStr = startDateTime.toTimeString().substring(0, 5);
+            const endTimeStr = endDateTime.toTimeString().substring(0, 5);
+            
             schedules.push({
               id: reg.classSchedule.id,
               classId: reg.classSchedule.fitnessClass?.id,
-              date: scheduleDate.toISOString().split('T')[0],
-              startTime: reg.classSchedule.startTime,
-              endTime: reg.classSchedule.endTime,
+              date: dateStr,
+              startTime: startTimeStr,
+              endTime: endTimeStr,
               roomId: reg.classSchedule.room?.id,
               room: reg.classSchedule.room,
               status: reg.classSchedule.status,
               capacity: reg.classSchedule.capacity,
-              className: reg.classSchedule.fitnessClass?.name || 'Unknown',
+              className: fitnessClassDetails?.name || 'Unknown',
               roomName: reg.classSchedule.room?.name || 'Unknown',
               teacherName: 'Unknown'
             });
@@ -668,21 +686,33 @@ export const unifiedApi = {
       const registrations = await apiService.classRegistration.getByTeacher(teacherId);
       const schedules = [];
       for (const reg of registrations) {
+        const fitnessClassDetails = reg.fitnessClass;
         const classSchedules = await apiService.classSchedule.getByFitnessClass(reg.fitnessClass?.id);
         for (const cs of classSchedules) {
-          const scheduleDate = new Date(cs.startTime);
-          if (scheduleDate >= new Date(startDate) && scheduleDate <= new Date(endDate)) {
+          // Extract date directly from LocalDateTime string to avoid timezone issues
+          // cs.startTime is in format "2024-01-15T00:00:00" (LocalDateTime, no timezone)
+          const dateStr = cs.startTime ? cs.startTime.split('T')[0] : null;
+          if (!dateStr) continue;
+          
+          // Compare dates as strings (YYYY-MM-DD format)
+          if (dateStr >= startDate && dateStr <= endDate) {
+            // Parse time from LocalDateTime for display
+            const startDateTime = new Date(cs.startTime);
+            const endDateTime = new Date(cs.endTime);
+            const startTimeStr = startDateTime.toTimeString().substring(0, 5);
+            const endTimeStr = endDateTime.toTimeString().substring(0, 5);
+            
             schedules.push({
               id: cs.id,
               classId: cs.fitnessClass?.id,
-              date: scheduleDate.toISOString().split('T')[0],
-              startTime: cs.startTime,
-              endTime: cs.endTime,
+              date: dateStr,
+              startTime: startTimeStr,
+              endTime: endTimeStr,
               roomId: cs.room?.id,
               room: cs.room,
               status: cs.status,
               capacity: cs.capacity,
-              className: cs.fitnessClass?.name || 'Unknown',
+              className: fitnessClassDetails?.name || 'DangNull',
               roomName: cs.room?.name || 'Unknown',
               teacherName: reg.teacher?.fullName || 'Unknown'
             });
