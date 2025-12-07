@@ -383,7 +383,7 @@
               
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div 
-                  v-for="room in rooms" 
+                  v-for="room in roomsData" 
                   :key="room.id"
                   @click="selectRoom(room.id)"
                   class="p-5 border-2 rounded-xl cursor-pointer transition-all"
@@ -664,7 +664,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import mockApi, { rooms, teachers, students, studentRegistrations, generateSessions, checkRoomConflicts } from './mockData.js';
+import unifiedApi from './unifiedApi.js';
 import { formatDate } from './dateUtils.js';
 import { 
   Dumbbell, 
@@ -696,6 +696,7 @@ const classes = ref([]);
 const roomsData = ref([]);
 const teachersData = ref([]);
 const studentsData = ref([]);
+const registrationsData = ref([]);
 const filterStatus = ref('');
 const searchQuery = ref('');
 const showCreateForm = ref(false);
@@ -774,7 +775,8 @@ const canProceed = computed(() => {
 
 const selectedClassStudents = computed(() => {
   if (!selectedClass.value) return [];
-  const registrations = studentRegistrations.filter(r => r.classId === selectedClass.value.id && r.status === 'active');
+  // Get all student registrations and filter by class
+  const registrations = registrationsData.value.filter(r => r.classId === selectedClass.value.id && r.status === 'active');
   return registrations.map(r => {
     const student = studentsData.value.find(s => s.id === r.studentId);
     return {
@@ -786,10 +788,19 @@ const selectedClassStudents = computed(() => {
 
 // Methods
 const loadData = async () => {
-  classes.value = await mockApi.getClasses();
-  roomsData.value = await mockApi.getRooms();
-  teachersData.value = await mockApi.getTeachers();
-  studentsData.value = await mockApi.getStudents();
+  classes.value = await unifiedApi.getClasses();
+  roomsData.value = await unifiedApi.getRooms();
+  console.log(roomsData.value);
+  teachersData.value = await unifiedApi.getTeachers();
+  studentsData.value = await unifiedApi.getStudents();
+  
+  // Load all registrations (for student list in details)
+  // In real app, we'd load per class, but for simplicity load all
+  registrationsData.value = [];
+  for (const student of studentsData.value) {
+    const studentRegs = await unifiedApi.getStudentRegistrations(student.id);
+    registrationsData.value.push(...studentRegs);
+  }
 };
 
 const onPatternTypeChange = () => {
@@ -881,7 +892,7 @@ const getTeacherName = (teacherId) => {
 };
 
 const getEnrolledCount = (classId) => {
-  return studentRegistrations.filter(r => r.classId === classId && r.status === 'active').length;
+  return registrationsData.value.filter(r => r.classId === classId && r.status === 'active').length;
 };
 
 const getScheduleText = (cls) => {
@@ -904,29 +915,83 @@ const getPatternTypeText = (type) => {
   return map[type] || type;
 };
 
-const updatePreview = () => {
+const updatePreview = async () => {
   if (canProceed.value && currentStep.value === 1) {
-    const tempClass = { ...newClass.value, id: 999 };
+    // Generate sessions based on pattern
+    const sessions = [];
+    const start = new Date(newClass.value.startDate);
+    const end = new Date(newClass.value.endDate);
+    
     if (newClass.value.patternType === 'no_repeat') {
-      tempClass.endDate = tempClass.startDate;
+      // Use selectedDates
+      if (newClass.value.selectedDates && newClass.value.selectedDates.length > 0) {
+        newClass.value.selectedDates.forEach(date => {
+          const [startHour, startMin] = newClass.value.startTime.split(':').map(Number);
+          const [endHour, endMin] = newClass.value.endTime.split(':').map(Number);
+          const startTime = new Date(date);
+          startTime.setHours(startHour, startMin, 0, 0);
+          const endTime = new Date(date);
+          endTime.setHours(endHour, endMin, 0, 0);
+          
+          sessions.push({
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString()
+          });
+        });
+      }
+    } else {
+      // Weekly pattern
+      let currentDate = new Date(start);
+      while (currentDate <= end) {
+        const dayOfWeek = currentDate.getDay();
+        if (newClass.value.daysOfWeek.includes(dayOfWeek)) {
+          const [startHour, startMin] = newClass.value.startTime.split(':').map(Number);
+          const [endHour, endMin] = newClass.value.endTime.split(':').map(Number);
+          const startTime = new Date(currentDate);
+          startTime.setHours(startHour, startMin, 0, 0);
+          const endTime = new Date(currentDate);
+          endTime.setHours(endHour, endMin, 0, 0);
+          
+          sessions.push({
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString()
+          });
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
     }
-    previewSessions.value = generateSessions(tempClass);
+    
+    previewSessions.value = sessions.map((s, idx) => ({
+      id: idx,
+      classId: 999,
+      date: new Date(s.startTime).toISOString().split('T')[0],
+      startTime: new Date(s.startTime).toTimeString().substring(0, 5),
+      endTime: new Date(s.endTime).toTimeString().substring(0, 5),
+      roomId: newClass.value.roomId,
+      teacherId: null,
+      status: 'scheduled'
+    }));
     
     roomConflicts.value = {};
-    roomsData.value.forEach(room => {
-      const conflicts = checkRoomConflicts(room.id, previewSessions.value);
+    for (const room of roomsData.value) {
+      const conflicts = unifiedApi.checkRoomConflicts(room.id, sessions);
       if (conflicts.length > 0) {
         roomConflicts.value[room.id] = conflicts;
       }
-    });
+    }
   }
 };
 
-const nextStep = () => {
+const nextStep = async () => {
   if (canProceed.value) {
     currentStep.value++;
     if (currentStep.value === 2) {
-      updatePreview();
+      // When moving to room selection step, update preview and load available rooms
+      await updatePreview();
+      // Also ensure rooms are loaded
+      if (roomsData.value.length === 0) {
+        roomsData.value = await unifiedApi.getRooms();
+      }
     }
   }
 };
@@ -955,7 +1020,7 @@ const createClass = async () => {
       newClass.value.endDate = sortedDates[sortedDates.length - 1];
     }
     console.log(newClass.value);
-    await mockApi.createClass(newClass.value);
+    await unifiedApi.createClass(newClass.value);
     alert('✅ Tạo lớp học thành công!');
     showCreateForm.value = false;
     currentStep.value = 0;
@@ -985,7 +1050,7 @@ const deleteClass = async (classId) => {
   }
   
   if (confirm('Bạn có chắc muốn xóa lớp học này?')) {
-    await mockApi.deleteClass(classId);
+    await unifiedApi.deleteClass(classId);
     await loadData();
   }
 };

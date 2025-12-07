@@ -237,7 +237,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import mockApi, { rooms, students, studentRegistrations } from './mockData.js';
+import unifiedApi from './unifiedApi.js';
 import { formatDate, getWeeksUntilStart, canVIPRegister } from './dateUtils.js';
 import { 
   UserCheck,
@@ -257,6 +257,7 @@ import {
 // State
 const classes = ref([]);
 const roomsData = ref([]);
+const studentsData = ref([]);
 const selectedClass = ref(null);
 const searchQuery = ref('');
 const searchResults = ref([]);
@@ -292,8 +293,21 @@ const filteredEarlyClasses = computed(() => {
 
 // Methods
 const loadData = async () => {
-  classes.value = await mockApi.getClasses();
-  roomsData.value = await mockApi.getRooms();
+  classes.value = await unifiedApi.getClasses();
+  roomsData.value = await unifiedApi.getRooms();
+  studentsData.value = await unifiedApi.getStudents();
+  
+  // Load all registrations
+  registrationsData.value = [];
+  for (const student of studentsData.value) {
+    const studentRegs = await unifiedApi.getStudentRegistrations(student.id);
+    registrationsData.value.push(...studentRegs);
+  }
+  
+  // Update available slots
+  for (const cls of classes.value) {
+    await updateAvailableSlots(cls);
+  }
 };
 
 const selectClass = (cls) => {
@@ -312,7 +326,7 @@ const searchStudent = () => {
     return;
   }
   
-  searchResults.value = students.filter(s => 
+  searchResults.value = studentsData.value.filter(s => 
     s.name.toLowerCase().includes(query) ||
     s.email.toLowerCase().includes(query)
   );
@@ -323,14 +337,27 @@ const getRoomName = (roomId) => {
   return room ? room.name : 'Không xác định';
 };
 
+const availableSlotsCache = ref({});
+
 const getAvailableSlots = (cls) => {
-  const enrolled = studentRegistrations.filter(r => r.classId === cls.id && r.status === 'active').length;
-  return cls.maxStudents - enrolled;
+  return availableSlotsCache.value[cls.id] ?? cls.maxStudents;
 };
+
+const updateAvailableSlots = async (cls) => {
+  try {
+    const registrations = await unifiedApi.getStudentRegistrations(0); // Get all
+    const enrolled = registrations.filter(r => r.classId === cls.id && r.status === 'active').length;
+    availableSlotsCache.value[cls.id] = Math.max(0, cls.maxStudents - enrolled);
+  } catch (error) {
+    availableSlotsCache.value[cls.id] = cls.maxStudents;
+  }
+};
+
+const registrationsData = ref([]);
 
 const isStudentRegistered = (studentId) => {
   if (!selectedClass.value) return false;
-  return studentRegistrations.some(r => 
+  return registrationsData.value.some(r => 
     r.classId === selectedClass.value.id && 
     r.studentId === studentId && 
     r.status === 'active'
@@ -360,7 +387,7 @@ const registerEarly = async (student) => {
   
   if (confirm(`Xác nhận đăng ký sớm lớp "${selectedClass.value.name}" cho ${student.name}?`)) {
     try {
-      await mockApi.registerStudent(selectedClass.value.id, student.id);
+      await unifiedApi.registerStudent(selectedClass.value.id, student.id);
       alert('✅ Đăng ký sớm thành công!');
       // Refresh search results to update button states
       searchStudent();

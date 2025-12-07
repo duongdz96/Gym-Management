@@ -153,7 +153,10 @@ import {
   User 
 } from 'lucide-vue-next';
 import { getCalendarWeeks, formatDate as formatDisplayDate } from './dateUtils.js';
-import mockApi from './mockData.js';
+import unifiedApi from './unifiedApi.js';
+import { useAuthStore } from '@/stores/useAuthStore';
+
+const authStore = useAuthStore();
 
 const props = defineProps({
   role: {
@@ -183,7 +186,9 @@ const calendarDays = computed(() => {
 const selectedDateSessions = computed(() => {
   if (!selectedDate.value) return [];
   const dateStr = selectedDate.value.toISOString().split('T')[0];
-  return sessions.value.filter(s => s.date === dateStr).sort((a, b) => a.startTime.localeCompare(b.startTime));
+  return sessions.value.filter(s => s.date === dateStr).sort((a, b) => {
+    return (a.startTime || '00:00').localeCompare(b.startTime || '00:00');
+  });
 });
 
 const loadSchedule = async () => {
@@ -194,11 +199,33 @@ const loadSchedule = async () => {
   const endStr = end.toISOString().split('T')[0];
 
   try {
+    // Get userId from authStore if not provided or use provided userId
+    const userId = props.userId || authStore.user?.id || 0;
+    
+    let scheduleData = [];
     if (props.role === 'student') {
-      sessions.value = await mockApi.getStudentSchedule(props.userId, startStr, endStr);
+      scheduleData = await unifiedApi.getStudentSchedule(userId, startStr, endStr);
     } else {
-      sessions.value = await mockApi.getTeacherSchedule(props.userId, startStr, endStr);
+      scheduleData = await unifiedApi.getTeacherSchedule(userId, startStr, endStr);
     }
+    
+    // Ensure sessions have the correct format
+    sessions.value = scheduleData.map(s => {
+      // If session already has date and startTime/endTime strings, use them
+      if (s.date && s.startTime && s.endTime && typeof s.startTime === 'string' && s.startTime.length <= 5) {
+        return s;
+      }
+      
+      // Otherwise, extract from ISO strings
+      const startDate = new Date(s.startTime);
+      const endDate = new Date(s.endTime);
+      return {
+        ...s,
+        date: startDate.toISOString().split('T')[0],
+        startTime: startDate.toTimeString().substring(0, 5),
+        endTime: endDate.toTimeString().substring(0, 5)
+      };
+    });
   } catch (error) {
     console.error('Error loading schedule:', error);
     sessions.value = [];
@@ -242,7 +269,9 @@ const isToday = (date) => {
 const getSessionsForDate = (date) => {
   if (!date) return [];
   const dateStr = date.toISOString().split('T')[0];
-  return sessions.value.filter(s => s.date === dateStr).sort((a, b) => a.startTime.localeCompare(b.startTime));
+  return sessions.value.filter(s => s.date === dateStr).sort((a, b) => {
+    return (a.startTime || '00:00').localeCompare(b.startTime || '00:00');
+  });
 };
 
 const openDayDetails = (date) => {

@@ -35,7 +35,7 @@
 
     <!-- Calendar View -->
     <div v-if="viewMode === 'calendar'">
-      <schedule-calendar role="teacher" :user-id="currentTeacherId" />
+      <schedule-calendar role="teacher" :user-id="currentTeacherId || 0" />
     </div>
 
     <!-- Class List View -->
@@ -130,13 +130,13 @@
           </div>
 
           <!-- Conflict Warning -->
-          <div v-if="hasConflict(cls)" class="p-3 bg-orange-50 border-2 border-orange-200 rounded-xl text-orange-700 font-semibold text-sm">
+          <div v-if="conflictMap[cls.id]" class="p-3 bg-orange-50 border-2 border-orange-200 rounded-xl text-orange-700 font-semibold text-sm">
             <div class="flex items-center gap-2 mb-1">
               <AlertTriangle class="w-4 h-4" />
               Bạn có lịch trùng với lớp này
             </div>
             <div class="mt-2 space-y-1 font-normal ml-6">
-              <div v-for="(conflict, idx) in getConflicts(cls)" :key="idx" class="flex items-center gap-1">
+              <div v-for="(conflict, idx) in conflictMap[cls.id]" :key="idx" class="flex items-center gap-1">
                 <Calendar class="w-3 h-3" />
                 {{ conflict.date }}: {{ conflict.time }} - {{ conflict.className }}
               </div>
@@ -179,7 +179,7 @@
         <div class="p-4 bg-gray-50 border-t">
           <button 
             @click="applyToTeach(cls)" 
-            :disabled="hasConflict(cls) || getApplicationStatus(cls.id)"
+            :disabled="conflictMap[cls.id] || getApplicationStatus(cls.id)"
             class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <component 
@@ -293,9 +293,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import mockApi, { rooms, generateSessions, checkTeacherConflicts } from './mockData.js';
+import { useAuthStore } from '@/stores/useAuthStore';
+import unifiedApi from './unifiedApi.js';
 import { formatDate } from './dateUtils.js';
 import ScheduleCalendar from './ScheduleCalendar.vue';
+
+const authStore = useAuthStore();
 import { 
   BookOpen, 
   Search, 
@@ -320,8 +323,12 @@ const roomsData = ref([]);
 const applications = ref([]);
 const filterDifficulty = ref('');
 const searchQuery = ref('');
-const currentTeacherId = ref(1);
+const currentTeacherId = computed(() => {
+  const user = authStore.user;
+  return user?.id || null;
+});
 const viewMode = ref('list'); // 'list' | 'calendar'
+const conflictMap = ref({}); // Store conflicts per class
 
 // Sessions Modal state
 const showSessionsModal = ref(false);
@@ -331,7 +338,7 @@ const selectedClass = ref(null);
 const viewSessions = async (cls) => {
   selectedClass.value = cls;
   try {
-    const sessions = await mockApi.getSessions(cls.id);
+    const sessions = await unifiedApi.getSessions(cls.id);
     selectedClassSessions.value = sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
     showSessionsModal.value = true;
   } catch (error) {
@@ -384,9 +391,30 @@ const filteredClasses = computed(() => {
 
 // Methods
 const loadData = async () => {
-  classes.value = await mockApi.getClasses();
-  roomsData.value = await mockApi.getRooms();
-  applications.value = await mockApi.getApplications();
+  classes.value = await unifiedApi.getClasses();
+  roomsData.value = await unifiedApi.getRooms();
+  applications.value = await unifiedApi.getApplications();
+  
+  console.log(classes.value);
+  console.log(currentTeacherId.value);
+  // Check conflicts for all classes
+  if (currentTeacherId.value) {
+    for (const cls of classes.value) {
+      try {
+        const sessions = await unifiedApi.getSessions(cls.id);
+        const sessionData = sessions.map(s => ({
+          startTime: `${s.date}T${s.startTime}:00`,
+          endTime: `${s.date}T${s.endTime}:00`
+        }));
+        const conflicts = unifiedApi.checkTeacherConflicts(currentTeacherId.value, sessionData, cls.id);
+        if (conflicts.length > 0) {
+          conflictMap.value[cls.id] = conflicts;
+        }
+      } catch (error) {
+        console.error('Error checking conflicts:', error);
+      }
+    }
+  }
 };
 
 const getRoomName = (roomId) => {
@@ -405,18 +433,31 @@ const getScheduleText = (cls) => {
   return 'Tùy chỉnh';
 };
 
-const hasConflict = (cls) => {
-  const sessions = generateSessions(cls);
-  const conflicts = checkTeacherConflicts(currentTeacherId.value, sessions, cls.id);
+const hasConflict = async (cls) => {
+  if (!currentTeacherId.value) return false;
+  // Get sessions for this class
+  const sessions = await unifiedApi.getSessions(cls.id);
+  // Convert to format needed for conflict check
+  const sessionData = sessions.map(s => ({
+    startTime: `${s.date}T${s.startTime}:00`,
+    endTime: `${s.date}T${s.endTime}:00`
+  }));
+  const conflicts = unifiedApi.checkTeacherConflicts(currentTeacherId.value, sessionData, cls.id);
   return conflicts.length > 0;
 };
 
-const getConflicts = (cls) => {
-  const sessions = generateSessions(cls);
-  return checkTeacherConflicts(currentTeacherId.value, sessions, cls.id);
+const getConflicts = async (cls) => {
+  if (!currentTeacherId.value) return [];
+  const sessions = await unifiedApi.getSessions(cls.id);
+  const sessionData = sessions.map(s => ({
+    startTime: `${s.date}T${s.startTime}:00`,
+    endTime: `${s.date}T${s.endTime}:00`
+  }));
+  return unifiedApi.checkTeacherConflicts(currentTeacherId.value, sessionData, cls.id);
 };
 
 const getApplicationStatus = (classId) => {
+  if (!currentTeacherId.value) return null;
   const app = applications.value.find(a => 
     a.classId === classId && a.teacherId === currentTeacherId.value
   );
@@ -424,6 +465,7 @@ const getApplicationStatus = (classId) => {
 };
 
 const getRejectionReason = (classId) => {
+  if (!currentTeacherId.value) return '';
   const app = applications.value.find(a => 
     a.classId === classId && a.teacherId === currentTeacherId.value
   );
@@ -439,18 +481,23 @@ const getApplicationStatusText = (classId) => {
 };
 
 const applyToTeach = async (cls) => {
-  if (hasConflict(cls)) {
+  if (!currentTeacherId.value) {
+    alert('❌ Vui lòng đăng nhập!');
+    return;
+  }
+  
+  if (conflictMap.value[cls.id]) {
     alert('❌ Bạn có lịch trùng với lớp này!');
     return;
   }
   
   if (confirm(`Bạn có chắc muốn đăng ký dạy lớp "${cls.name}"?`)) {
     try {
-      await mockApi.applyToTeach(cls.id, currentTeacherId.value);
+      await unifiedApi.applyToTeach(cls.id, currentTeacherId.value);
       alert('✅ Đăng ký thành công! Vui lòng chờ Manager duyệt.');
       await loadData();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      alert('❌ Lỗi: ' + (error.response?.data?.message || error.message));
     }
   }
 };

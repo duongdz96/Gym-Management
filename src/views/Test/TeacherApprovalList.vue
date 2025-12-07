@@ -152,7 +152,7 @@
 
                 <!-- Conflict Check -->
                 <div v-if="app.status === 'pending'">
-                  <div v-if="checkTeacherConflict(app).length === 0" class="p-2 bg-green-100 border border-green-300 rounded-lg text-green-700 text-sm font-semibold flex items-center gap-2">
+                  <div v-if="!conflictMap[app.id] || conflictMap[app.id].length === 0" class="p-2 bg-green-100 border border-green-300 rounded-lg text-green-700 text-sm font-semibold flex items-center gap-2">
                     <CheckCircle class="w-4 h-4" />
                     Không có xung đột lịch
                   </div>
@@ -162,7 +162,7 @@
                       Giáo viên có lịch trùng:
                     </div>
                     <div class="mt-1 space-y-1 text-xs ml-6">
-                      <div v-for="(conflict, idx) in checkTeacherConflict(app)" :key="idx" class="flex items-center gap-1">
+                      <div v-for="(conflict, idx) in conflictMap[app.id]" :key="idx" class="flex items-center gap-1">
                         <Calendar class="w-3 h-3" />
                         {{ conflict.date }}: {{ conflict.time }} - {{ conflict.className }}
                       </div>
@@ -294,7 +294,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import mockApi, { teachers, classes, checkTeacherConflicts, generateSessions } from './mockData.js';
+import unifiedApi from './unifiedApi.js';
 import { formatDateTime } from './dateUtils.js';
 import { 
   GraduationCap, 
@@ -319,6 +319,7 @@ const activeTab = ref('pending');
 const rejectModalApp = ref(null);
 const rejectionReason = ref('');
 const customRejectionReason = ref('');
+const conflictMap = ref({});
 
 // Computed
 const pendingApplications = computed(() => {
@@ -371,9 +372,23 @@ const canReject = computed(() => {
 
 // Methods
 const loadData = async () => {
-  applications.value = await mockApi.getApplications();
-  teachersData.value = await mockApi.getTeachers();
-  classesData.value = await mockApi.getClasses();
+  applications.value = await unifiedApi.getApplications();
+  teachersData.value = await unifiedApi.getTeachers();
+  classesData.value = await unifiedApi.getClasses();
+  
+  // Check conflicts for all pending applications
+  for (const app of applications.value) {
+    if (app.status === 'pending') {
+      try {
+        const conflicts = await checkTeacherConflict(app);
+        if (conflicts.length > 0) {
+          conflictMap.value[app.id] = conflicts;
+        }
+      } catch (error) {
+        console.error('Error checking conflicts:', error);
+      }
+    }
+  }
 };
 
 const getTeacher = (teacherId) => {
@@ -404,10 +419,17 @@ const getScheduleText = (cls) => {
   return 'Tùy chỉnh';
 };
 
-const checkTeacherConflict = (app) => {
+const checkTeacherConflict = async (app) => {
   const cls = getClass(app.classId);
-  const sessions = generateSessions(cls);
-  return checkTeacherConflicts(app.teacherId, sessions, cls.id);
+  if (!cls) return [];
+  
+  // Get sessions for this class
+  const sessions = await unifiedApi.getSessions(cls.id);
+  const sessionData = sessions.map(s => ({
+    startTime: `${s.date}T${s.startTime}:00`,
+    endTime: `${s.date}T${s.endTime}:00`
+  }));
+  return unifiedApi.checkTeacherConflicts(app.teacherId, sessionData, cls.id);
 };
 
 const classHasApprovedTeacher = (classId) => {
@@ -420,7 +442,7 @@ const classHasApprovedTeacher = (classId) => {
 const autoReject = async (app) => {
   if (confirm('Từ chối giáo viên này vì lớp đã có giáo viên được duyệt?')) {
     try {
-      await mockApi.rejectTeacher(app.id, 'manager', 'Đã chọn giáo viên khác');
+      await unifiedApi.rejectTeacher(app.id, 'manager', 'Đã chọn giáo viên khác');
       alert('❌ Đã từ chối đơn đăng ký');
       await loadData();
     } catch (error) {
@@ -432,7 +454,7 @@ const autoReject = async (app) => {
 const approve = async (app) => {
   if (confirm('Bạn có chắc muốn duyệt giáo viên này?')) {
     try {
-      await mockApi.approveTeacher(app.id, 'manager');
+      await unifiedApi.approveTeacher(app.id, 'manager');
       alert('✅ Đã duyệt giáo viên thành công!');
       await loadData();
     } catch (error) {
@@ -453,7 +475,7 @@ const reject = async () => {
     : rejectionReason.value;
   
   try {
-    await mockApi.rejectTeacher(rejectModalApp.value.id, 'manager', reason);
+    await unifiedApi.rejectTeacher(rejectModalApp.value.id, 'manager', reason);
     alert('❌ Đã từ chối đơn đăng ký');
     rejectModalApp.value = null;
     await loadData();

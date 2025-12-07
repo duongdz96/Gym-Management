@@ -50,7 +50,7 @@
 
     <!-- Calendar View -->
     <div v-if="viewMode === 'calendar'">
-      <schedule-calendar role="student" :user-id="currentStudentId" />
+      <schedule-calendar role="student" :user-id="currentStudentId || 0" />
     </div>
 
     <!-- Class List View -->
@@ -201,8 +201,8 @@
           <!-- Register Button if Not VIP Early Access -->
           <button 
             v-else
-            @click="register(cls)" 
-            :disabled="!canRegister(cls)"
+            @click="openScheduleSelection(cls)" 
+            :disabled="getAvailableSlots(cls) <= 0"
             class="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <component 
@@ -316,9 +316,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import mockApi, { rooms, teachers, students, studentRegistrations } from './mockData.js';
+import { useAuthStore } from '@/stores/useAuthStore';
+import unifiedApi from './unifiedApi.js';
+import apiService from './apiService.js';
 import { formatDate, getWeeksUntilStart, canVIPRegister, canAllRegister } from './dateUtils.js';
 import ScheduleCalendar from './ScheduleCalendar.vue';
+
+const authStore = useAuthStore();
+const USE_REAL_API = true; // Set to false to use mock data
 import { 
   Dumbbell, 
   Search, 
@@ -334,7 +339,8 @@ import {
   Hand,
   LayoutGrid,
   Eye,
-  X
+  X,
+  Inbox
 } from 'lucide-vue-next';
 
 const classes = ref([]);
@@ -343,7 +349,10 @@ const teachersData = ref([]);
 const registrations = ref([]);
 const filterDifficulty = ref('');
 const searchQuery = ref('');
-const currentStudentId = ref(1);
+const currentStudentId = computed(() => {
+  const user = authStore.user;
+  return user?.id || null;
+});
 const viewMode = ref('list'); // 'list' | 'calendar'
 const currentStudent = ref({ membershipTier: 'BASIC' });
 
@@ -352,10 +361,17 @@ const showSessionsModal = ref(false);
 const selectedClassSessions = ref([]);
 const selectedClass = ref(null);
 
+// Schedule Selection Modal state
+const showScheduleModal = ref(false);
+const selectedFitnessClass = ref(null);
+const availableSchedules = ref([]);
+const selectedScheduleIds = ref([]);
+const loadingSchedules = ref(false);
+
 const viewSessions = async (cls) => {
   selectedClass.value = cls;
   try {
-    const sessions = await mockApi.getSessions(cls.id);
+    const sessions = await unifiedApi.getSessions(cls.id);
     // Enrich with room names if needed, though they are usually same room
     selectedClassSessions.value = sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
     showSessionsModal.value = true;
@@ -404,13 +420,23 @@ const filteredClasses = computed(() => {
 });
 
 const loadData = async () => {
-  classes.value = await mockApi.getClasses();
-  roomsData.value = await mockApi.getRooms();
-  teachersData.value = await mockApi.getTeachers();
-  registrations.value = await mockApi.getStudentRegistrations(currentStudentId.value);
+  if (!currentStudentId.value) {
+    alert('Vui lòng đăng nhập!');
+    return;
+  }
   
-  const allStudents = await mockApi.getStudents();
+  classes.value = await unifiedApi.getClasses();
+  roomsData.value = await unifiedApi.getRooms();
+  teachersData.value = await unifiedApi.getTeachers();
+  registrations.value = await unifiedApi.getStudentRegistrations(currentStudentId.value);
+  
+  const allStudents = await unifiedApi.getStudents();
   currentStudent.value = allStudents.find(s => s.id === currentStudentId.value) || { membershipTier: 'BASIC' };
+  
+  // Update available slots for all classes
+  for (const cls of classes.value) {
+    await updateAvailableSlots(cls);
+  }
 };
 
 onMounted(() => {
@@ -437,9 +463,34 @@ const getScheduleText = (cls) => {
   return 'Tùy chỉnh';
 };
 
+const availableSlotsCache = ref({});
+
 const getAvailableSlots = (cls) => {
-  const enrolled = studentRegistrations.filter(r => r.classId === cls.id && r.status === 'active').length;
-  return cls.maxStudents - enrolled;
+  // Return cached value or default
+  return availableSlotsCache.value[cls.id] ?? cls.maxStudents;
+};
+
+const updateAvailableSlots = async (cls) => {
+  try {
+    const classSchedules = await unifiedApi.getSessions(cls.id);
+    if (classSchedules.length === 0) {
+      availableSlotsCache.value[cls.id] = cls.maxStudents;
+      return;
+    }
+    
+    // Get all registrations for all schedules of this class
+    // We need to count registrations per schedule and sum them
+    // For simplicity, use the first schedule's capacity
+    const firstSchedule = classSchedules[0];
+    const capacity = firstSchedule.capacity || cls.maxStudents;
+    
+    // Count total registrations across all schedules
+    // In real app, we'd query by schedule IDs, but for now estimate
+    const enrolled = registrations.value.filter(r => r.classId === cls.id).length;
+    availableSlotsCache.value[cls.id] = Math.max(0, capacity - enrolled);
+  } catch (error) {
+    availableSlotsCache.value[cls.id] = cls.maxStudents;
+  }
 };
 
 const isVIPEarlyAccess = (cls) => {
@@ -450,9 +501,10 @@ const isRegistered = (classId) => {
   return registrations.value.some(r => r.classId === classId && r.status === 'active');
 };
 
-const canRegister = (cls) => {
+const canRegister = async (cls) => {
   if (isRegistered(cls.id)) return false;
-  if (getAvailableSlots(cls) <= 0) return false;
+  const slots = getAvailableSlots(cls);
+  if (slots <= 0) return false;
   
   if (isVIPEarlyAccess(cls)) {
     return currentStudent.value.membershipTier === 'VIP';
@@ -479,28 +531,170 @@ const getRegisterButtonIcon = (cls) => {
   return Hand;
 };
 
-const register = async (cls) => {
-  if (!canRegister(cls)) return;
+const openScheduleSelection = async (cls) => {
+  selectedFitnessClass.value = cls;
+  selectedScheduleIds.value = [];
+  loadingSchedules.value = true;
+  showScheduleModal.value = true;
   
-  if (confirm(`Bạn có chắc muốn đăng ký lớp "${cls.name}"?`)) {
+  try {
+    // Get all schedules for this fitness class
+    const schedules = await unifiedApi.getSessions(cls.id);
+    availableSchedules.value = schedules;
+    
+    // Filter out past schedules and full schedules
+    const now = new Date();
+    const filteredSchedules = [];
+    
+    for (const s of schedules) {
+      // Handle both date string and ISO datetime
+      let scheduleDate;
+      if (s.startTime && typeof s.startTime === 'string' && s.startTime.includes('T')) {
+        scheduleDate = new Date(s.startTime);
+      } else if (s.date) {
+        scheduleDate = new Date(s.date);
+      } else {
+        continue;
+      }
+      
+      const isFuture = scheduleDate > now;
+      const isOpen = s.status === 'OPEN' || s.status === 'scheduled';
+      
+      if (isFuture && isOpen) {
+        // Update slots cache for this schedule
+        await updateScheduleSlots(s);
+        const hasSlots = getScheduleAvailableSlots(s) > 0;
+        if (hasSlots) {
+          filteredSchedules.push(s);
+        }
+      }
+    }
+    
+    availableSchedules.value = filteredSchedules.sort((a, b) => {
+      // Sort by date and time
+      const dateA = new Date(a.startTime || a.date);
+      const dateB = new Date(b.startTime || b.date);
+      return dateA - dateB;
+    });
+  } catch (error) {
+    alert('❌ Lỗi khi tải lịch học: ' + error.message);
+    closeScheduleModal();
+  } finally {
+    loadingSchedules.value = false;
+  }
+};
+
+const closeScheduleModal = () => {
+  showScheduleModal.value = false;
+  selectedFitnessClass.value = null;
+  availableSchedules.value = [];
+  selectedScheduleIds.value = [];
+};
+
+const toggleSchedule = (schedule) => {
+  if (schedule.status === 'CLOSED' || schedule.status === 'CANCELLED' || getScheduleAvailableSlots(schedule) <= 0) {
+    return;
+  }
+  
+  const index = selectedScheduleIds.value.indexOf(schedule.id);
+  if (index > -1) {
+    selectedScheduleIds.value.splice(index, 1);
+  } else {
+    selectedScheduleIds.value.push(schedule.id);
+  }
+};
+
+const scheduleSlotsCache = ref({});
+
+const getScheduleAvailableSlots = (schedule) => {
+  // Return cached value or use capacity as fallback
+  return scheduleSlotsCache.value[schedule.id] ?? (schedule.capacity || 20);
+};
+
+const updateScheduleSlots = async (schedule) => {
+  try {
+    if (USE_REAL_API) {
+      const registrations = await apiService.memberRegistration.getBySchedule(schedule.id);
+      const capacity = schedule.capacity || 20;
+      scheduleSlotsCache.value[schedule.id] = Math.max(0, capacity - registrations.length);
+    } else {
+      // For mock data, we'd need to check memberRegistrationsData
+      // This is a simplified version
+      scheduleSlotsCache.value[schedule.id] = schedule.capacity || 20;
+    }
+  } catch (e) {
+    scheduleSlotsCache.value[schedule.id] = schedule.capacity || 20;
+  }
+};
+
+const formatScheduleDate = (dateTime) => {
+  if (!dateTime) return '';
+  try {
+    const date = new Date(dateTime);
+    if (isNaN(date.getTime())) return '';
+    return formatDate(date.toISOString().split('T')[0]);
+  } catch (e) {
+    return '';
+  }
+};
+
+const formatScheduleTime = (dateTime) => {
+  if (!dateTime) return '';
+  try {
+    const date = new Date(dateTime);
+    if (isNaN(date.getTime())) return '';
+    return date.toTimeString().substring(0, 5);
+  } catch (e) {
+    // If it's already a time string like "18:00"
+    if (typeof dateTime === 'string' && dateTime.match(/^\d{2}:\d{2}$/)) {
+      return dateTime;
+    }
+    return '';
+  }
+};
+
+const registerSelectedSchedules = async () => {
+  if (!currentStudentId.value) {
+    alert('❌ Vui lòng đăng nhập!');
+    return;
+  }
+  
+  if (selectedScheduleIds.value.length === 0) {
+    alert('Vui lòng chọn ít nhất một buổi học!');
+    return;
+  }
+  
+  if (confirm(`Bạn có chắc muốn đăng ký ${selectedScheduleIds.value.length} buổi học cho lớp "${selectedFitnessClass.value.name}"?`)) {
     try {
-      await mockApi.registerStudent(cls.id, currentStudentId.value);
-      alert('✅ Đăng ký thành công!');
+      // Use bulk register API
+      await unifiedApi.registerBulkSchedules(currentStudentId.value, selectedScheduleIds.value);
+      alert(`✅ Đã đăng ký thành công ${selectedScheduleIds.value.length} buổi học!`);
+      closeScheduleModal();
       await loadData();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      alert('❌ Lỗi: ' + (error.response?.data?.message || error.message));
     }
   }
 };
 
+const register = async (cls) => {
+  // This is now replaced by openScheduleSelection
+  await openScheduleSelection(cls);
+};
+
 const cancelRegistration = async (cls) => {
+  if (!currentStudentId.value) {
+    alert('❌ Vui lòng đăng nhập!');
+    return;
+  }
+  
   if (confirm(`Bạn có chắc muốn hủy đăng ký lớp "${cls.name}"?`)) {
     try {
-      await mockApi.cancelRegistration(cls.id, currentStudentId.value);
+      await unifiedApi.cancelRegistration(cls.id, currentStudentId.value);
       alert('✅ Đã hủy đăng ký!');
       await loadData();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      alert('❌ Lỗi: ' + (error.response?.data?.message || error.message));
     }
   }
 };
