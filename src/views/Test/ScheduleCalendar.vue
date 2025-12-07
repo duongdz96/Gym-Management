@@ -60,10 +60,17 @@
               <div 
                 v-for="(session, sIndex) in getSessionsForDate(date)" 
                 :key="sIndex"
-                class="text-xs truncate px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100"
-                :title="`${session.startTime} - ${session.className}`"
+                class="text-xs truncate px-1.5 py-0.5 rounded border relative"
+                :class="getSessionClass(session)"
+                :title="`${session.startTime} - ${session.className} ${session.status === 'CANCELLED' ? '(Đã hủy)' : ''}`"
               >
-                {{ session.startTime }} {{ session.className }}
+                <div class="flex items-center justify-between gap-1">
+                  <span class="truncate">{{ session.startTime }} {{ session.className }}</span>
+                  <div class="flex items-center gap-0.5 shrink-0">
+                    <XCircle v-if="session.status === 'CANCELLED'" class="w-3 h-3 text-red-600" title="Đã hủy" />
+                    <StickyNote v-if="session.managerNote" class="w-3 h-3 text-blue-600" title="Có ghi chú" />
+                  </div>
+                </div>
               </div>
             </div>
           </template>
@@ -100,8 +107,9 @@
           </div>
           
           <div class="p-6 max-h-[60vh] overflow-y-auto">
-            <div v-if="selectedDateSessions.length === 0" class="text-center py-8 text-gray-500">
-              <div class="mb-2">😴</div>
+            <div v-if="selectedDateSessions.length === 0"
+              class="text-center py-8 text-gray-500 flex items-center justify-center gap-2">
+              <Frown class="w-5 h-5 text-gray-500"/>
               Không có lịch nào trong ngày này
             </div>
             
@@ -109,20 +117,31 @@
               <div 
                 v-for="session in selectedDateSessions" 
                 :key="session.id"
-                class="flex gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-blue-200 transition-colors bg-white group"
+                class="flex gap-4 p-4 rounded-xl border-2 transition-colors bg-white group"
+                :class="session.status === 'CANCELLED' ? 'border-red-200 bg-red-50' : 'border-gray-100 hover:border-blue-200'"
               >
                 <!-- Time Column -->
-                <div class="flex flex-col items-center justify-center w-20 bg-blue-50 rounded-lg text-blue-700 font-bold shrink-0">
+                <div class="flex flex-col items-center justify-center w-20 rounded-lg font-bold shrink-0"
+                  :class="session.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 'bg-blue-50 text-blue-700'"
+                >
                   <span class="text-lg">{{ session.startTime }}</span>
-                  <span class="text-xs text-blue-500 font-normal">đến</span>
+                  <span class="text-xs font-normal" :class="session.status === 'CANCELLED' ? 'text-red-500' : 'text-blue-500'">đến</span>
                   <span class="text-sm">{{ session.endTime }}</span>
                 </div>
                 
                 <!-- Info Column -->
                 <div class="flex-1">
-                  <h4 class="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors">
-                    {{ session.className }}
-                  </h4>
+                  <div class="flex items-center gap-2 mb-1">
+                    <h4 class="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors">
+                      {{ session.className }}
+                    </h4>
+                    <span v-if="session.status === 'CANCELLED'" class="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded">
+                      ĐÃ HỦY
+                    </span>
+                    <span v-else-if="session.status === 'TEACHER_ABSENT'" class="px-2 py-0.5 bg-orange-500 text-white text-xs font-bold rounded">
+                      GV VẮNG
+                    </span>
+                  </div>
                   <div class="flex items-center gap-2 text-sm text-gray-600 mt-1">
                     <MapPin class="w-4 h-4 text-gray-400" />
                     {{ session.roomName }}
@@ -130,6 +149,18 @@
                   <div class="flex items-center gap-2 text-sm text-gray-600 mt-1">
                     <User class="w-4 h-4 text-gray-400" />
                     {{ session.teacherName }}
+                  </div>
+                  
+                  <!-- Cancellation Reason -->
+                  <div v-if="session.cancellationReason" class="mt-3 p-2 bg-red-50 border-l-4 border-red-400 rounded">
+                    <div class="text-xs font-semibold text-red-800">Lý do hủy:</div>
+                    <div class="text-sm text-red-700">{{ session.cancellationReason }}</div>
+                  </div>
+                  
+                  <!-- Manager Note -->
+                  <div v-if="session.managerNote" class="mt-3 p-2 bg-blue-50 border-l-4 border-blue-400 rounded">
+                    <div class="text-xs font-semibold text-blue-800">Ghi chú:</div>
+                    <div class="text-sm text-blue-700">{{ session.managerNote }}</div>
                   </div>
                 </div>
               </div>
@@ -150,7 +181,10 @@ import {
   X, 
   Clock, 
   MapPin, 
-  User 
+  User,
+  XCircle,
+  StickyNote,
+  Frown
 } from 'lucide-vue-next';
 import { getCalendarWeeks, formatDate as formatDisplayDate } from './dateUtils.js';
 import unifiedApi from './unifiedApi.js';
@@ -276,6 +310,16 @@ const getSessionsForDate = (date) => {
 
 const openDayDetails = (date) => {
   selectedDate.value = date;
+};
+
+const getSessionClass = (session) => {
+  if (session.status === 'CANCELLED') {
+    return 'bg-red-50 text-red-700 border-red-200 line-through';
+  }
+  if (session.status === 'TEACHER_ABSENT') {
+    return 'bg-orange-50 text-orange-700 border-orange-200';
+  }
+  return 'bg-blue-50 text-blue-700 border-blue-100';
 };
 
 const formatDate = (date) => {

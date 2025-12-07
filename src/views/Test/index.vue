@@ -80,15 +80,50 @@
             <UserCheck class="w-5 h-5" />
             Duyệt giáo viên
           </button>
+          <button 
+            @click="managerSubView = 'leave'" 
+            :class="managerSubView === 'leave' 
+              ? 'text-blue-600 border-blue-600' 
+              : 'text-gray-500 border-transparent hover:text-blue-600'"
+            class="px-5 py-3 font-semibold border-b-3 transition-all duration-300 -mb-0.5 flex items-center gap-2"
+          >
+            <CalendarX class="w-5 h-5" />
+            Duyệt đơn nghỉ
+          </button>
         </div>
         
         <manager-class-list v-if="managerSubView === 'classes'" />
         <teacher-approval-list v-if="managerSubView === 'approvals'" />
+        <manager-leave-approval v-if="managerSubView === 'leave'" />
       </div>
 
       <!-- Teacher View -->
       <div v-if="currentView === 'teacher'" class="max-w-7xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-        <teacher-class-browse />
+        <div class="flex gap-2 px-5 pt-5 border-b-2 border-gray-200">
+          <button 
+            @click="teacherSubView = 'browse'" 
+            :class="teacherSubView === 'browse' 
+              ? 'text-blue-600 border-blue-600' 
+              : 'text-gray-500 border-transparent hover:text-blue-600'"
+            class="px-5 py-3 font-semibold border-b-3 transition-all duration-300 -mb-0.5 flex items-center gap-2"
+          >
+            <BookOpen class="w-5 h-5" />
+            Đăng ký dạy
+          </button>
+          <button 
+            @click="teacherSubView = 'sessions'" 
+            :class="teacherSubView === 'sessions' 
+              ? 'text-blue-600 border-blue-600' 
+              : 'text-gray-500 border-transparent hover:text-blue-600'"
+            class="px-5 py-3 font-semibold border-b-3 transition-all duration-300 -mb-0.5 flex items-center gap-2"
+          >
+            <CalendarCheck class="w-5 h-5" />
+            Quản lý buổi dạy
+          </button>
+        </div>
+        
+        <teacher-class-browse v-if="teacherSubView === 'browse'" />
+        <teacher-session-management v-if="teacherSubView === 'sessions'" />
       </div>
 
       <!-- Student View -->
@@ -108,7 +143,9 @@
 import { ref } from 'vue';
 import ManagerClassList from './ManagerClassList.vue';
 import TeacherApprovalList from './TeacherApprovalList.vue';
+import ManagerLeaveApproval from './ManagerLeaveApproval.vue';
 import TeacherClassBrowse from './TeacherClassBrowse.vue';
+import TeacherSessionManagement from './TeacherSessionManagement.vue';
 import StudentClassBrowse from './StudentClassBrowse.vue';
 import ReceptionistEarlyRegistration from './ReceptionistEarlyRegistration.vue';
 import { 
@@ -116,10 +153,13 @@ import {
   Briefcase, 
   GraduationCap, 
   BookOpen, 
-  UserCheck 
+  UserCheck,
+  CalendarCheck,
+  CalendarX
 } from 'lucide-vue-next';
 
 // State
 const currentView = ref('manager');
 const managerSubView = ref('classes');
+const teacherSubView = ref('browse');
 </script>

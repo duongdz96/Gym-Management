@@ -544,6 +544,15 @@ const viewSessions = async (cls) => {
 };
 
 const getSessionStatus = (session) => {
+  // Check session status first
+  if (session.status === 'CANCELLED') {
+    return { text: 'Đã hủy', class: 'bg-red-100 text-red-700' };
+  }
+  if (session.status === 'TEACHER_ABSENT') {
+    return { text: 'Giáo viên vắng', class: 'bg-orange-100 text-orange-700' };
+  }
+  
+  // Then check by date
   const now = new Date();
   const sessionDate = new Date(session.date);
   // Reset hours for pure date comparison

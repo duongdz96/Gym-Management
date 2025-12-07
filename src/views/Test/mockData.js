@@ -193,6 +193,24 @@ export const classes = [
         endDate: '2026-03-31',
         createdBy: 'manager',
         createdAt: '2025-11-29T11:00:00'
+    },
+    {
+        id: 7,
+        name: 'Morning Yoga Flow',
+        description: 'Lớp Yoga buổi sáng giúp khởi động ngày mới tràn đầy năng lượng',
+        difficulty: 'Beginner',
+        maxStudents: 15,
+        status: 'ready_for_students',
+        roomId: 1,
+        teacherId: 1, // Teacher ID 1
+        patternType: 'weekly',
+        startTime: '08:00',
+        endTime: '09:30',
+        daysOfWeek: [0, 6], // Sunday (0) and Saturday (6) - Hôm nay là thứ 7
+        startDate: '2025-12-06', // Bắt đầu hôm nay
+        endDate: '2026-03-31',
+        createdBy: 'manager',
+        createdAt: '2025-12-01T10:00:00'
     }
 ];
 
@@ -238,15 +256,88 @@ export const studentRegistrations = [
         studentId: 2,
         registeredAt: '2025-11-23T10:30:00',
         status: 'active'
-    }
+    },
+    {
+        id: 3,
+        classId: 7,
+        studentId: 1,
+        registeredAt: '2025-11-22T08:00:00',
+        status: 'active'
+    },
+];
+
+// Student Attendance Records
+export const studentAttendances = [
+    // Will be populated as sessions occur and attendance is marked
+    // Example structure:
+    // {
+    //     id: 1,
+    //     sessionId: 1,
+    //     studentId: 1,
+    //     status: 'PRESENT', // REGISTERED, PRESENT, ABSENT, EXCUSED, LATE
+    //     checkedInAt: '2025-12-03T07:05:00',
+    //     checkedInBy: 1, // Teacher ID
+    //     notes: null
+    // }
 ];
 
 // ==================== HELPER FUNCTIONS ====================
 
-let nextClassId = 7;
+let nextClassId = 8;
 let nextSessionId = 1;
 let nextApplicationId = 3; // Updated since we have 2 applications now
 let nextRegistrationId = 3;
+let nextAttendanceId = 1;
+
+// Helper to create session object with all fields
+function createSessionObject(classData, date) {
+    const sessionDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    sessionDate.setHours(0, 0, 0, 0);
+
+    // Determine initial status based on date
+    let status = 'SCHEDULED';
+    if (sessionDate < today) {
+        status = 'COMPLETED'; // Past sessions are auto-completed
+    }
+
+    return {
+        id: nextSessionId++,
+        classId: classData.id,
+        date: typeof date === 'string' ? date : date.toISOString().split('T')[0],
+        startTime: classData.startTime,
+        endTime: classData.endTime,
+        roomId: classData.roomId,
+        teacherId: classData.teacherId,
+
+        // Session Status
+        status: status, // SCHEDULED, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, TEACHER_ABSENT
+
+        // Cancellation
+        cancellationReason: null, // Reason for cancellation
+        cancelledBy: null, // Manager ID who cancelled
+        cancelledAt: null,
+
+        // Manager Note
+        managerNote: null, // Note from manager (e.g., "Teacher B will substitute")
+        managerNoteBy: null, // Manager ID who added note
+        managerNoteAt: null,
+
+        // Teacher Management
+        teacherConfirmed: false,
+        teacherConfirmedAt: null,
+        teacherLeaveRequest: false,
+        teacherLeaveReason: null,
+        teacherLeaveRequestedAt: null,
+        teacherLeaveApprovedBy: null,
+        teacherLeaveApprovedAt: null,
+
+        // Metadata
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+}
 
 // Generate sessions from class pattern
 export function generateSessions(classData) {
@@ -258,29 +349,11 @@ export function generateSessions(classData) {
         // Multiple sessions from selected dates
         if (classData.selectedDates && classData.selectedDates.length > 0) {
             classData.selectedDates.forEach(date => {
-                sessions.push({
-                    id: nextSessionId++,
-                    classId: classData.id,
-                    date: date,
-                    startTime: classData.startTime,
-                    endTime: classData.endTime,
-                    roomId: classData.roomId,
-                    teacherId: classData.teacherId,
-                    status: 'scheduled'
-                });
+                sessions.push(createSessionObject(classData, date));
             });
         } else {
             // Fallback to single session if no selectedDates
-            sessions.push({
-                id: nextSessionId++,
-                classId: classData.id,
-                date: classData.startDate,
-                startTime: classData.startTime,
-                endTime: classData.endTime,
-                roomId: classData.roomId,
-                teacherId: classData.teacherId,
-                status: 'scheduled'
-            });
+            sessions.push(createSessionObject(classData, classData.startDate));
         }
     } else if (classData.patternType === 'weekly') {
         // Weekly pattern
@@ -288,16 +361,7 @@ export function generateSessions(classData) {
         while (currentDate <= end) {
             const dayOfWeek = currentDate.getDay();
             if (classData.daysOfWeek.includes(dayOfWeek)) {
-                sessions.push({
-                    id: nextSessionId++,
-                    classId: classData.id,
-                    date: currentDate.toISOString().split('T')[0],
-                    startTime: classData.startTime,
-                    endTime: classData.endTime,
-                    roomId: classData.roomId,
-                    teacherId: classData.teacherId,
-                    status: 'scheduled'
-                });
+                sessions.push(createSessionObject(classData, currentDate));
             }
             currentDate.setDate(currentDate.getDate() + 1);
         }
@@ -307,16 +371,7 @@ export function generateSessions(classData) {
         while (currentDate <= end) {
             const dayOfWeek = currentDate.getDay();
             if (classData.daysOfWeek.includes(dayOfWeek)) {
-                sessions.push({
-                    id: nextSessionId++,
-                    classId: classData.id,
-                    date: currentDate.toISOString().split('T')[0],
-                    startTime: classData.startTime,
-                    endTime: classData.endTime,
-                    roomId: classData.roomId,
-                    teacherId: classData.teacherId,
-                    status: 'scheduled'
-                });
+                sessions.push(createSessionObject(classData, currentDate));
             }
             currentDate.setDate(currentDate.getDate() + 1);
         }
@@ -326,16 +381,7 @@ export function generateSessions(classData) {
         while (currentDate <= end) {
             const dayOfWeek = currentDate.getDay();
             if (classData.daysOfWeek.includes(dayOfWeek)) {
-                sessions.push({
-                    id: nextSessionId++,
-                    classId: classData.id,
-                    date: currentDate.toISOString().split('T')[0],
-                    startTime: classData.startTime,
-                    endTime: classData.endTime,
-                    roomId: classData.roomId,
-                    teacherId: classData.teacherId,
-                    status: 'scheduled'
-                });
+                sessions.push(createSessionObject(classData, currentDate));
             }
             currentDate.setDate(currentDate.getDate() + 1);
         }
@@ -407,11 +453,32 @@ function timeOverlap(start1, end1, start2, end2) {
     return start1 < end2 && end1 > start2;
 }
 
-// CRUD Operations
+// ==================== INITIALIZE SESSIONS ====================
+// Must be done BEFORE mockApi is defined so getSessions() has data
+console.log('=== INITIALIZING SESSIONS ===');
+console.log('Sessions array before init:', sessions);
+console.log('Sessions length before:', sessions.length);
+console.log('Total classes:', classes.length);
+classes.forEach(classData => {
+    console.log(`Generating sessions for class ${classData.id}: ${classData.name}`);
+    const classSessions = generateSessions(classData);
+    console.log(`Generated ${classSessions.length} sessions`);
+    sessions.push(...classSessions);
+});
+console.log('Total sessions after initialization:', sessions.length);
+console.log('Sessions array after init:', sessions);
+
+// ==================== CRUD OPERATIONS ====================
 export const mockApi = {
     // Classes
     getClasses: () => Promise.resolve([...classes]),
     getClass: (id) => Promise.resolve(classes.find(c => c.id === id)),
+    getSessions: () => {
+        console.log('getSessions called, sessions.length:', sessions.length);
+        console.log('sessions array:', sessions);
+        return Promise.resolve([...sessions]);
+    },
+    getRooms: () => Promise.resolve([...rooms]),
     createClass: (classData) => {
         const newClass = {
             ...classData,
@@ -647,13 +714,225 @@ export const mockApi = {
                 teacherName: teacher ? teacher.name : 'Me'
             };
         }));
+    },
+
+    // ==================== SESSION MANAGEMENT ====================
+
+    // Get session by ID
+    getSession: (sessionId) => {
+        const session = sessions.find(s => s.id === sessionId);
+        if (!session) return Promise.reject(new Error('Session not found'));
+        return Promise.resolve(session);
+    },
+
+    // Get sessions for a specific date range
+    getSessionsByDateRange: (startDate, endDate) => {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        return Promise.resolve(sessions.filter(s => {
+            const date = new Date(s.date);
+            return date >= start && date <= end;
+        }));
+    },
+
+    // Teacher confirms attendance for a session
+    confirmTeacherAttendance: (sessionId, teacherId) => {
+        const session = sessions.find(s => s.id === sessionId);
+        if (!session) return Promise.reject(new Error('Session not found'));
+        if (session.teacherId !== teacherId) {
+            return Promise.reject(new Error('Not authorized'));
+        }
+
+        session.teacherConfirmed = true;
+        session.teacherConfirmedAt = new Date().toISOString();
+        session.status = 'CONFIRMED';
+        session.updatedAt = new Date().toISOString();
+
+        return Promise.resolve(session);
+    },
+
+    // Teacher requests leave for a session
+    requestTeacherLeave: (sessionId, teacherId, reason) => {
+        const session = sessions.find(s => s.id === sessionId);
+        if (!session) return Promise.reject(new Error('Session not found'));
+        if (session.teacherId !== teacherId) {
+            return Promise.reject(new Error('Not authorized'));
+        }
+
+        session.teacherLeaveRequest = true;
+        session.teacherLeaveReason = reason;
+        session.teacherLeaveRequestedAt = new Date().toISOString();
+        session.updatedAt = new Date().toISOString();
+
+        return Promise.resolve(session);
+    },
+
+    // Manager approves/rejects teacher leave
+    approveTeacherLeave: (sessionId, managerId, approved) => {
+        const session = sessions.find(s => s.id === sessionId);
+        if (!session) return Promise.reject(new Error('Session not found'));
+        if (!session.teacherLeaveRequest) {
+            return Promise.reject(new Error('No leave request found'));
+        }
+
+        if (approved) {
+            // Just approve the leave request, don't auto-cancel
+            // Manager will decide whether to cancel or find substitute
+            session.teacherLeaveApprovedBy = managerId;
+            session.teacherLeaveApprovedAt = new Date().toISOString();
+        } else {
+            // Reject leave request
+            session.teacherLeaveRequest = false;
+            session.teacherLeaveReason = null;
+            session.teacherLeaveRequestedAt = null;
+        }
+        session.updatedAt = new Date().toISOString();
+
+        return Promise.resolve(session);
+    },
+
+    // Manager cancels a session with reason
+    cancelSession: (sessionId, managerId, reason) => {
+        const session = sessions.find(s => s.id === sessionId);
+        if (!session) return Promise.reject(new Error('Session not found'));
+
+        session.status = 'CANCELLED';
+        session.cancellationReason = reason;
+        session.cancelledBy = managerId;
+        session.cancelledAt = new Date().toISOString();
+        session.updatedAt = new Date().toISOString();
+
+        return Promise.resolve(session);
+    },
+
+    // Manager adds note to session
+    addSessionNote: (sessionId, managerId, note) => {
+        const session = sessions.find(s => s.id === sessionId);
+        if (!session) return Promise.reject(new Error('Session not found'));
+
+        session.managerNote = note;
+        session.managerNoteBy = managerId;
+        session.managerNoteAt = new Date().toISOString();
+        session.updatedAt = new Date().toISOString();
+
+        return Promise.resolve(session);
+    },
+
+    // Update session status
+    updateSessionStatus: (sessionId, status) => {
+        const session = sessions.find(s => s.id === sessionId);
+        if (!session) return Promise.reject(new Error('Session not found'));
+
+        session.status = status;
+        session.updatedAt = new Date().toISOString();
+
+        return Promise.resolve(session);
+    },
+
+    // ==================== ATTENDANCE TRACKING ====================
+
+    // Mark student attendance
+    markStudentAttendance: (sessionId, studentId, status, checkedInBy, notes = null) => {
+        // Check if attendance record already exists
+        let attendance = studentAttendances.find(a =>
+            a.sessionId === sessionId && a.studentId === studentId
+        );
+
+        if (attendance) {
+            // Update existing
+            attendance.status = status;
+            attendance.checkedInAt = new Date().toISOString();
+            attendance.checkedInBy = checkedInBy;
+            attendance.notes = notes;
+        } else {
+            // Create new
+            attendance = {
+                id: nextAttendanceId++,
+                sessionId,
+                studentId,
+                status,
+                checkedInAt: new Date().toISOString(),
+                checkedInBy,
+                notes
+            };
+            studentAttendances.push(attendance);
+        }
+
+        return Promise.resolve(attendance);
+    },
+
+    // Get all attendance for a session
+    getSessionAttendance: (sessionId) => {
+        const attendances = studentAttendances.filter(a => a.sessionId === sessionId);
+
+        // Enrich with student info
+        return Promise.resolve(attendances.map(a => {
+            const student = students.find(s => s.id === a.studentId);
+            return {
+                ...a,
+                studentName: student ? student.name : 'Unknown',
+                studentEmail: student ? student.email : ''
+            };
+        }));
+    },
+
+    // Get student's attendance history
+    getStudentAttendanceHistory: (studentId, startDate, endDate) => {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        const attendances = studentAttendances.filter(a => {
+            if (a.studentId !== studentId) return false;
+            const session = sessions.find(s => s.id === a.sessionId);
+            if (!session) return false;
+            const date = new Date(session.date);
+            return date >= start && date <= end;
+        });
+
+        // Enrich with session and class info
+        return Promise.resolve(attendances.map(a => {
+            const session = sessions.find(s => s.id === a.sessionId);
+            const cls = session ? classes.find(c => c.id === session.classId) : null;
+            return {
+                ...a,
+                sessionDate: session ? session.date : null,
+                sessionTime: session ? `${session.startTime} - ${session.endTime}` : null,
+                className: cls ? cls.name : 'Unknown'
+            };
+        }));
+    },
+
+    // Initialize attendance records for registered students when session is created
+    initializeSessionAttendance: (sessionId) => {
+        const session = sessions.find(s => s.id === sessionId);
+        if (!session) return Promise.reject(new Error('Session not found'));
+
+        // Find all students registered for this class
+        const registeredStudents = studentRegistrations.filter(r =>
+            r.classId === session.classId && r.status === 'active'
+        );
+
+        // Create REGISTERED attendance records for each student
+        registeredStudents.forEach(reg => {
+            const existing = studentAttendances.find(a =>
+                a.sessionId === sessionId && a.studentId === reg.studentId
+            );
+
+            if (!existing) {
+                studentAttendances.push({
+                    id: nextAttendanceId++,
+                    sessionId,
+                    studentId: reg.studentId,
+                    status: 'REGISTERED',
+                    checkedInAt: null,
+                    checkedInBy: null,
+                    notes: null
+                });
+            }
+        });
+
+        return Promise.resolve(true);
     }
 };
-
-// Initialize sessions for existing classes
-classes.forEach(classData => {
-    const classSessions = generateSessions(classData);
-    sessions.push(...classSessions);
-});
 
 export default mockApi;
