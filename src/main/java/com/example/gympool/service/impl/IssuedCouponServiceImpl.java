@@ -106,4 +106,21 @@ public class IssuedCouponServiceImpl implements IssuedCouponService {
         }
         issuedCouponRepository.deleteById(id);
     }
+
+    @Override
+    public IssuedCoupon getIssuedCouponById(Long id) {
+        return issuedCouponRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "IssuedCoupon not found"));
+    }
+
+    @Override
+    public IssuedCoupon updateIssuedCoupon(IssuedCoupon issuedCoupon) {
+        if (issuedCoupon == null || issuedCoupon.getId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "IssuedCoupon ID is required");
+        }
+        if (!issuedCouponRepository.existsById(issuedCoupon.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "IssuedCoupon not found");
+        }
+        return issuedCouponRepository.save(issuedCoupon);
+    }
 }

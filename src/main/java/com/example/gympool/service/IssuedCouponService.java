@@ -14,4 +14,6 @@ public interface IssuedCouponService {
     IssuedCoupon issueCouponToMember(IssuedCoupon coupon);
     void deleteIssuedCoupon(Long id);
     List<IssuedCoupon> getIssuedCouponsByMember(Long memberId);
+    IssuedCoupon getIssuedCouponById(Long id);
+    IssuedCoupon updateIssuedCoupon(IssuedCoupon issuedCoupon);
 }
