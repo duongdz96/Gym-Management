@@ -135,6 +135,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
                 schedule.setFitnessClass(fitnessClass);
                 schedule.setSchedulePattern(pattern);
                 schedule.setRoom(room);
+                schedule.setCapacity(classSchedule.getCapacity());
 
                 generated.add(schedule);
             }
