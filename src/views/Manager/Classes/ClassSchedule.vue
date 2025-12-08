@@ -12,8 +12,7 @@ type ClassTemplateInfo = {
 type Room = {
   id: number;
   name: string;
-  note?: string;
-  location?: string;
+  description?: string;
 };
 
 type ClassSchedule = {
@@ -292,8 +291,8 @@ const isDayInPattern = (shortDay) => {
           </tbody>
         </table>
       </div>
+      </div>
     </div>
-  </div>
 
   <!-- ========== MODAL 2: ADD BATCH ========== -->
   <div
@@ -357,7 +356,7 @@ const isDayInPattern = (shortDay) => {
       <div class="bg-blue-50 p-3 rounded border border-blue-200">
         <p v-if="selectedRoom" class="font-semibold">{{ selectedRoom.name }}</p>
         <p v-else class="text-red-500">No room selected</p>
-        <p v-if="selectedRoom?.location" class="text-sm text-gray-600">{{ selectedRoom.location }}</p>
+        <p v-if="selectedRoom?.description" class="text-sm text-gray-600">{{ selectedRoom.description }}</p>
       </div>
     </div>
 

@@ -60,6 +60,7 @@ import AddStaff from "@/views/Manager/Staff/AddStaff.vue";
 import EditClassTemplate from "@/views/Manager/Classes/EditClassTemplate.vue";
 import EditClassSchedule from "@/views/Manager/Classes/EditClassSchedule.vue";
 import CustomerBillHistory from "@/views/Customer/History/CustomerBillHistory.vue";
+import RoomManagement from "@/views/Manager/Classes/RoomManagement.vue";
 
 const routes = [
     {
@@ -110,6 +111,7 @@ const routes = [
             { path: "membership/add", name: "membership.add", component: ManageAddMembership },
             { path: "membership/add-tier", name: "membership.add-tier", component: ManageAddTier },
             { path: "schedulepattern", name: "schedulepattern", component: SchedulePattern },
+            { path: "room", name: "room", component: RoomManagement },
             { path: "banner", name: "banner", component: Banner },
         ],
     },

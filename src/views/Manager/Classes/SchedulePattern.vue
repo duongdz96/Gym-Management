@@ -17,8 +17,7 @@ interface SchedulePattern {
 interface Room {
   id: number;
   name: string;
-  note?: string;
-  location?: string;
+  description?: string;
 }
 
 const patterns = ref<SchedulePattern[]>([]);
@@ -298,7 +297,7 @@ onMounted(async () => {
               :value="room.id"
             >
               {{ room.name }}
-              <span v-if="room.location"> - {{ room.location }}</span>
+              <span v-if="room.description"> - {{ room.description }}</span>
             </option>
           </select>
 
