@@ -1,6 +1,7 @@
 package com.example.gympool.service.impl;
 
 import com.example.gympool.dto.RegisterRequest;
+import com.example.gympool.dto.UpdateProfileRequest;
 import com.example.gympool.entity.Teacher;
 import com.example.gympool.entity.User;
 import com.example.gympool.repository.TeacherRepository;
@@ -80,6 +81,27 @@ public class UserServiceImpl implements UserService {
         // ... (logic cho các role khác nếu cần) ...
 
         // Lưu và TRẢ VỀ đối tượng User đã cập nhật
+        return userRepository.save(existingUser);
+    }
+
+    @Override
+    public User updateProfile(Long id, UpdateProfileRequest request) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Chỉ cập nhật các trường được phép: fullName, dob, gender, phone
+        // KHÔNG cập nhật email và password
+        existingUser.setFullName(request.getFullName());
+        existingUser.setPhone(request.getPhone());
+        existingUser.setGender(request.getGender());
+        existingUser.setDob(request.getDob());
+
+        // Nếu user này là Teacher, vẫn lưu qua teacherRepository
+        if (existingUser instanceof Teacher teacher) {
+            return teacherRepository.save(teacher);
+        }
+
+        // Lưu và trả về user đã cập nhật
         return userRepository.save(existingUser);
     }
 

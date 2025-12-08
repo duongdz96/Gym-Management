@@ -1,6 +1,7 @@
 package com.example.gympool.service;
 
 import com.example.gympool.dto.RegisterRequest;
+import com.example.gympool.dto.UpdateProfileRequest;
 import com.example.gympool.entity.User;
 
 import java.util.List;
@@ -12,6 +13,7 @@ public interface UserService {
     User getUserByEmail(String email);
     void addUser(User user);
     User updateUser(Long id, RegisterRequest request);
+    User updateProfile(Long id, UpdateProfileRequest request);
     void deleteUser(Long id);
     void softDeleteUser(Long id);
     void restoreUser(Long id);

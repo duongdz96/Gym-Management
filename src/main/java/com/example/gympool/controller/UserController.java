@@ -1,6 +1,7 @@
 package com.example.gympool.controller;
 
 import com.example.gympool.dto.RegisterRequest;
+import com.example.gympool.dto.UpdateProfileRequest;
 import com.example.gympool.dto.UserDetailResponse;
 import com.example.gympool.entity.User;
 import com.example.gympool.service.UserService;
@@ -63,6 +64,15 @@ public class UserController {
 
         // Trả về DTO mới (đã chứa đủ các trường) cho frontend
         return ResponseEntity.ok(new UserDetailResponse(updatedUser)); // <--- Sửa 2
+    }
+
+    @PatchMapping("/{id}/profile")
+    public ResponseEntity<UserDetailResponse> updateProfile(
+            @PathVariable Long id,
+            @RequestBody UpdateProfileRequest request
+    ) {
+        User updatedUser = userService.updateProfile(id, request);
+        return ResponseEntity.ok(new UserDetailResponse(updatedUser));
     }
 
     // ==================== XOÁ MỀM / KHÔI PHỤC ====================
