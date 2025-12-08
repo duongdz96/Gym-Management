@@ -57,7 +57,7 @@ onMounted(async () => {
   
   try {
     isLoading.value = true
-    const res = await api.get(`/classtemplate/${templateId.value}`)
+    const res = await api.get(`/fitness_class/${templateId.value}`)
     formData.value = res.data
     console.log(res)
     errorMessage.value = ''
@@ -74,10 +74,10 @@ const handleSave = async () => {
   try {
     isLoading.value = true // Hiển thị loading khi đang lưu
     // Gửi TOÀN BỘ object formData, bao gồm cả classSchedule
-    await api.put(`/classtemplate/${templateId.value}`, formData.value)
+    await api.put(`/fitness_class/${templateId.value}`, formData.value)
     
     alert('Cập nhật thành công!')
-    router.push('/classtemplate') // Quay về trang danh sách
+    router.push('/fitness_class') // Quay về trang danh sách
   } catch (err) {
     console.error("Error updating class template:", err)
     alert('Có lỗi xảy ra khi cập nhật!')

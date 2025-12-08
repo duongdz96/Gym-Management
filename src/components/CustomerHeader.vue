@@ -65,6 +65,26 @@ const handleLogout = () => {
         </RouterLink>
 
         <RouterLink
+          to="/customer/calendar"
+          class="uppercase tracking-wider hover:text-red-600 transition"
+          :class="route.path === '/customer/calendar'
+            ? 'text-red-600 border-b-2 border-red-600 pb-1'
+            : 'text-white'"
+        >
+          Calendar
+        </RouterLink>
+
+        <RouterLink
+          to="/customer/billhistory"
+          class="uppercase tracking-wider hover:text-red-600 transition"
+          :class="route.path === '/customer/billhistory'
+            ? 'text-red-600 border-b-2 border-red-600 pb-1'
+            : 'text-white'"
+        >
+          Bill History
+        </RouterLink>
+
+        <RouterLink
           to="/customer/plan"
           class="uppercase tracking-wider hover:text-red-600 transition"
           :class="route.path === '/customer/plan'
@@ -85,7 +105,9 @@ const handleLogout = () => {
         </RouterLink>
 
         <!-- Account dropdown -->
-        <div
+        
+      </nav>
+      <div
           class="relative"
           @mouseenter="openAccountMenu"
           @mouseleave="closeAccountMenu"
@@ -103,16 +125,16 @@ const handleLogout = () => {
               class="absolute right-0 mt-2 w-44 bg-white rounded-md shadow-lg border border-gray-200 z-50"
             >
               <RouterLink
-                to="/customer/profile"
+                to="/profile"
                 class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
               >
                 Profile
               </RouterLink>
               <RouterLink
-                to="/customer/setting"
+                to="/change-password"
                 class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
               >
-                Settings
+                Change Password
               </RouterLink>
               <button
                 class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
@@ -123,7 +145,6 @@ const handleLogout = () => {
             </div>
           </transition>
         </div>
-      </nav>
     </div>
   </header>
 </template>

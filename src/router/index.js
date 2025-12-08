@@ -5,6 +5,8 @@ import MainLayout from "@/layout/MainLayout.vue";
 import Home from "@/views/Home.vue";
 import Login from "@/views/Login.vue";
 import Forbidden from "@/views/Forbidden.vue";
+import ChangePassword from "@/views/ChangePassword.vue";
+import Profile from "@/views/Profile.vue";
 
 import ManagerLayout from "@/layout/ManagerLayout.vue";
 import ManagerHome from "@/views/Manager/ManagerHome.vue";
@@ -13,10 +15,11 @@ import Coupon from "@/views/Manager/Coupon/Coupon.vue";
 import AddCoupon from "@/views/Manager/Coupon/AddCoupon.vue";
 import CouponDetail from "@/views/Manager/Coupon/CouponDetail.vue";
 import EditCoupon from "@/views/Manager/Coupon/EditCoupon.vue";
-import Product from "@/views/Manager/Product/Product.vue";
-import AddProduct from "@/views/Manager/Product/AddProduct.vue";
-import ImportProduct from "@/views/Manager/Product/ImportProduct.vue";
-import ImportCheckout from "@/views/Manager/Product/ImportCheckout.vue";
+import ProductList from "@/views/Manager/Product/ProductList.vue";
+import SupplierList from "@/views/Manager/Product/SupplierList.vue";
+import ImportGoodsManager from "@/views/Manager/Product/ImportGoods.vue";
+import ImportReceiptList from "@/views/Manager/Product/ImportReceiptList.vue";
+import ImportReceiptDetail from "@/views/Manager/Product/ImportReceiptDetail.vue";
 import Staff from "@/views/Manager/Staff/Staff.vue";
 import Customer from "@/views/Manager/Customer/Customer.vue";
 import CustomerCheckinHistory from "@/views/Manager/Customer/CustomerCheckinHistory.vue";
@@ -30,12 +33,14 @@ import ManageAddMembership from "@/views/Manager/Membership/ManageAddMembership.
 import ManageAddTier from "@/views/Manager/Membership/ManageAddTier.vue";
 import ManageEditMembership from "@/views/Manager/Membership/ManageEditMembership.vue";
 import ManageEditTier from "@/views/Manager/Membership/ManageEditTier.vue";
+import ManagerDashboard from "@/views/Manager/ManagerDashboard.vue";
 
 import CustomerLayout from "@/layout/CustomerLayout.vue";
 import CustomerHome from "@/views/Customer/CustomerHome.vue";
 import CustomerDashboard from "@/views/Customer/CustomerDashboard.vue";
 import CustomerMembership from "@/views/Customer/CustomerMembership.vue";
 import CustomerClass from "@/views/Customer/Classes/CustomerClass.vue";
+import CustomerPersonalCalendar from "@/views/Customer/Classes/CustomerPersonalCalendar.vue";
 import CustomerCoupon from "@/views/Customer/CustomerCoupon.vue";
 import CustomerPlan from "@/views/Customer/CustomerPlan.vue";
 import CustomerProfile from "@/views/Customer/CustomerProfile.vue";
@@ -58,20 +63,24 @@ import PTProfile from "@/views/PT/PTProfile.vue";
 import PTMembers from "@/views/PT/PTMembers.vue";
 import PTHistory from "@/views/PT/PTHistory.vue";
 
+import TestIndex from "@/views/Test/index.vue";
 import Test from "@/views/Test.vue";
 import SchedulePattern from "@/views/Manager/Classes/SchedulePattern.vue";
-import TeacherRegister from "@/views/PT/TeacherRegister.vue";
+import TeacherRegister from "@/views/Teacher/TeacherRegisterClass.vue";
 import AddStaff from "@/views/Manager/Staff/AddStaff.vue";
 import StaffInformation from "@/views/Manager/Staff/StaffInformation.vue";
 import StaffAttendanceHistory from "@/views/Manager/Staff/StaffAttendanceHistory.vue";
 import EditProduct from "@/views/Manager/Product/EditProduct.vue";
 import EditClassTemplate from "@/views/Manager/Classes/EditClassTemplate.vue";
 import EditClassSchedule from "@/views/Manager/Classes/EditClassSchedule.vue";
+import CustomerBillHistory from "@/views/Customer/History/CustomerBillHistory.vue";
+import TeacherLayout from "@/layout/TeacherLayout.vue";
+import TeacherPersonalCalendar from "@/views/Teacher/TeacherPersonalCalendar.vue";
 
 const routes = [
     {
         path: "/test",
-        component: Test
+        component: TestIndex
     },
     {
         path: "/",
@@ -81,20 +90,24 @@ const routes = [
             { path: "login", name: "login", component: Login },
             { path: "forbidden", name: "forbidden", component: Forbidden },
             { path: "test", component: Test },
+            { path: "/profile", name: "profile", component: Profile },
+            { path: "change-password", component: ChangePassword }
         ],
     },
 
     {
         path: "/manager",
         component: ManagerLayout,
-        meta: { requiresAuth: true, roles: ["MANAGER"] },
+        // meta: { requiresAuth: true, roles: ["MANAGER"] },
         children: [
             { path: "", name: "manager.home", component: ManagerHome },
             { path: "statistics", name: "manager.statistics", component: ManagerStatistics },
-            { path: "staff", name: "staff", component: Staff },
-            { path: "staff/add", name: "staff.add", component: AddStaff },
             { path: "staff/:id", name: "staff.info", component: StaffInformation },
             { path: "staff/attendance-history", name: "staff.attendance-history", component: StaffAttendanceHistory },
+            { path: "", name: "manager.dashboard", component: ManagerDashboard },
+            { path: "dashboard", name: "manager.dashboard.full", component: ManagerDashboard },
+            { path: "staff", name: "staff", component: Staff },
+            { path: "staff/add", name: "staff.add", component: AddStaff },
             { path: "customer", name: "customer", component: Customer },
             { path: "customer/checkin-history", name: "customer.checkin-history", component: CustomerCheckinHistory },
             { path: "attendance", name: "attendance", component: Attendance },
@@ -102,11 +115,12 @@ const routes = [
             { path: "coupon/:id", name: "CouponDetail", component: CouponDetail },
             { path: "coupon/add", name: "coupon.add", component: AddCoupon },
             { path: "coupon/:id", name: "coupon.edit", component: EditCoupon },
-            { path: "product", name: "product", component: Product },
-            { path: "product/add", name: "product.add", component: AddProduct },
-            { path: "product/:id", name: "product.edit", component: EditProduct },
-            { path: "product/importproduct", name: "product.importproduct", component: ImportProduct },
-            { path: "product/importcheckout", name: "product.importcheckout", component: ImportCheckout },
+            { path: "product", redirect: "/manager/product/list" },
+            { path: "product/list", name: "product.list", component: ProductList },
+            { path: "product/supplier", name: "product.supplier", component: SupplierList },
+            { path: "product/import", name: "product.import", component: ImportGoodsManager },
+            { path: "product/history", name: "product.history", component: ImportReceiptList },
+            { path: "product/history/:id", name: "product.history.detail", component: ImportReceiptDetail },
             { path: "classtemplate", name: "classtemplate", component: ClassTemplate },
             { path: "classtemplate/add", name: "classtemplate.add", component: AddClassTemplate },
             { path: "classtemplate/edit/:id", name: "classtemplate.edit", component: EditClassTemplate },
@@ -119,30 +133,33 @@ const routes = [
             { path: "membership/edit/:id", name: "membership.edit", component: ManageEditMembership },
             { path: "membership/edit-tier/:id", name: "membership.edit-tier", component: ManageEditTier },
             { path: "schedulepattern", name: "schedulepattern", component: SchedulePattern },
-            { path: "banner", name: "banner", component: Banner }
+            { path: "room", name: "room", component: RoomManagement },
+            { path: "banner", name: "banner", component: Banner },
         ],
     },
 
     {
         path: "/customer",
         component: CustomerLayout,
-        meta: { requiresAuth: true, roles: ["MEMBER"] },
+        // meta: { requiresAuth: true, roles: ["MEMBER"] },
         children: [
             { path: "", name: "customer.home", component: CustomerHome },
             { path: "dashboard", name: "customer.dashboard", component: CustomerDashboard },
             { path: "membership", name: "customer.membership", component: CustomerMembership },
             { path: "class", name: "customer.class", component: CustomerClass },
+            { path: "calendar", name: "customer.calendar", component: CustomerPersonalCalendar },
             { path: "coupon", name: "customer.coupon", component: CustomerCoupon },
             { path: "plan", name: "customer.plan", component: CustomerPlan },
             { path: "profile", name: "customer.profile", component: CustomerProfile },
             { path: "setting", name: "customer.setting", component: CustomerSetting },
+            { path: "billhistory", name: "customer.billhistory", component: CustomerBillHistory },
         ],
     },
 
     {
         path: "/reception",
         component: ReceptionLayout,
-        meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
+        // meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
         children: [
             { path: "", name: "reception.home", component: ReceptionHome },
             { path: "memberships", name: "reception.memberships", component: ReceptionMemberships },
@@ -157,7 +174,7 @@ const routes = [
     {
         path: "/pt",
         component: PTLayout,
-        meta: { requiresAuth: true, roles: ["STAFF"] },
+        meta: { requiresAuth: true, roles: ["PT"] },
         children: [
             {
                 path: '/pt/',
@@ -190,7 +207,16 @@ const routes = [
                 component: TeacherRegister
             }
         ]
-    }
+    },
+    {
+        path: "/teacher",
+        component: TeacherLayout,
+        meta: { requiresAuth: true, roles: ["TEACHER"] },
+        children: [
+            { path: "/teacher/registerclass", name: "teacher.register", component: TeacherRegister },
+            { path: "/teacher/calendar", name: "teacher.calendar", component: TeacherPersonalCalendar },
+        ],
+    },
 ]
 
 const router = createRouter({

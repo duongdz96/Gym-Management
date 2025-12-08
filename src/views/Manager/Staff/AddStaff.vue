@@ -124,17 +124,18 @@ const handleCancel = () => {
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-700">Role</label>
           <select v-model="role" class="mt-1 p-2 w-full border rounded-md shadow-sm bg-white focus:ring-blue-500 focus:border-blue-500">
-            <option value="STAFF">PT or Teacher</option>
+            <option value="TEACHER">Teacher</option>
+            <option value="PT">PT</option>
             <option value="RECEPTIONIST">Receptionist</option>
             <option value="MANAGER">Manager</option>
           </select>
         </div>
 
-        <template v-if="role === 'STAFF'">
+        <template v-if="role === 'TEACHER'">
           <hr class="md:col-span-2 my-2" />
           
           <div class="md:col-span-2 text-sm font-medium text-gray-600">
-            Only for PT or teacher roles
+            Only for Teacher roles
           </div>
 
           <div>

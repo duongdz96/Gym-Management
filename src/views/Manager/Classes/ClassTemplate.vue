@@ -19,10 +19,10 @@ const router = useRouter();
 
 onMounted(async () => {
   try {
-    const res = await api.get("/classtemplate")
+    const res = await api.get("/fitness_class")
     classtemplates.value = res.data
   } catch (err) {
-    console.error("Error fetching class templates:", err)
+    console.error("Error fetching fitness class:", err)
   }
 })
 
@@ -61,7 +61,7 @@ const handleSelect = (classtemplate : ClassTemplate) => {
 <template>
   <div class="space-y-4 p-4 md:p-6">
     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-      <h1 class="text-2xl font-semibold text-gray-800">Class Templates</h1>
+      <h1 class="text-2xl font-semibold text-gray-800">Fitness Classes</h1>
       <div class="flex flex-wrap items-center gap-2">
         <input
           v-model="search"
@@ -89,7 +89,7 @@ const handleSelect = (classtemplate : ClassTemplate) => {
       </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
       <div
         v-for="classtemplates in filteredTemplates"
         :key="classtemplates.id"
@@ -158,6 +158,6 @@ const handleSelect = (classtemplate : ClassTemplate) => {
         <p class="font-semibold">No class templates found</p>
         <p class="text-sm">Try adjusting your search or filters.</p>
       </div>
+      </div>
     </div>
-  </div>
 </template>

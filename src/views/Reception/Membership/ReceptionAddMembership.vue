@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/services/api";
 
@@ -22,7 +22,17 @@ type MembershipPlan = {
   membershipTier: MembershipTier,
 }
 
+type Member = {
+  id: number,
+  fullName: string,
+  email: string,
+  phone: string,
+}
+
 const membershipPlans = ref<MembershipPlan[]>([]);
+const members = ref<Member[]>([]);
+const isExistingMember = ref(false);
+const selectedMemberId = ref("");
 
 // form data
 const form = ref({
@@ -38,26 +48,39 @@ const form = ref({
 // Calculate end date based on plan duration
 const endDate = ref("");
 
-const isEmailValid = computed(() => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(form.value.email);
-});
-
 const submit = async () => {
   try {
-    const payload = {
-      member: {
-        fullName: form.value.fullName,
-        email: form.value.email,
-        dob: form.value.dob,
-        gender: form.value.gender,
-        phone: form.value.phone,
-        role: "MEMBER",
-      },
-      membershipPlanId: parseInt(form.value.membershipPlanId),
-      startDate: form.value.startDate,
-      endDate: endDate.value,
-    };
+    let payload;
+    if (isExistingMember.value) {
+      if (!selectedMemberId.value) {
+        alert("Please select a member");
+        return;
+      }
+      payload = {
+        member: {
+          id: parseInt(selectedMemberId.value)
+        },
+        membershipPlanId: parseInt(form.value.membershipPlanId),
+        startDate: form.value.startDate,
+        endDate: endDate.value,
+      };
+    } else {
+      payload = {
+        member: {
+          fullName: form.value.fullName,
+          email: form.value.email,
+          dob: form.value.dob,
+          gender: form.value.gender,
+          phone: form.value.phone,
+          role: "MEMBER",
+        },
+        membershipPlanId: parseInt(form.value.membershipPlanId),
+        startDate: form.value.startDate,
+        endDate: endDate.value,
+      };
+    }
+    console.log(payload);
+
     await api.post("/membership", payload);
     alert("Membership added successfully!");
     router.push({ name: "reception.memberships" });
@@ -93,6 +116,10 @@ onMounted(async () => {
     // Load membership plans
     const planRes = await api.get("/membershipplan");
     membershipPlans.value = planRes.data;
+
+    // Load members
+    const memberRes = await api.get("/members");
+    members.value = memberRes.data;
   } catch (error) {
     console.error("Error loading data:", error);
     alert("Failed to load data. Please try again.");
@@ -116,78 +143,117 @@ onMounted(async () => {
       class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4"
       @submit.prevent="submit"
     >
-      <!-- Full Name -->
-      <div>
-        <label
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >Full Name</label
-        >
-        <input
-          v-model="form.fullName"
-          type="text"
-          class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
+      <!-- Customer Type Selection -->
+      <div class="md:col-span-2 mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Customer Type</label>
+        <div class="flex gap-4">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" v-model="isExistingMember" :value="false" class="form-radio text-blue-600" />
+            <span>New Customer</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" v-model="isExistingMember" :value="true" class="form-radio text-blue-600" />
+            <span>Existing Customer</span>
+          </label>
+        </div>
       </div>
 
-      <!-- Email -->
-      <div>
+      <!-- Existing Member Selection -->
+      <div v-if="isExistingMember" class="md:col-span-2">
         <label
           class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >Email</label
-        >
-        <input
-          v-model="form.email"
-          type="email"
-          class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
-        <p v-if="form.email && !isEmailValid" class="text-red-500 text-sm mt-1">Email không hợp lệ</p>
-      </div>
-
-      <!-- DOB -->
-      <div>
-        <label
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >Date of Birth</label
-        >
-        <input
-          v-model="form.dob"
-          type="date"
-          class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
-      </div>
-
-      <!-- Gender -->
-      <div>
-        <label
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >Gender</label
+          >Select Member</label
         >
         <select
-          v-model="form.gender"
+          v-model="selectedMemberId"
           class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         >
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
+          <option value="" disabled>Select a member</option>
+          <option
+            v-for="member in members"
+            :key="member.id"
+            :value="member.id.toString()"
+          >
+            {{ member.fullName }} - {{ member.phone }}
+          </option>
         </select>
       </div>
 
-      <!-- Phone -->
-      <div>
-        <label
-          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >Phone</label
-        >
-        <input
-          v-model="form.phone"
-          type="tel"
-          class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
-      </div>
+      <!-- New Member Fields -->
+      <template v-else>
+        <!-- Full Name -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Full Name</label
+          >
+          <input
+            v-model="form.fullName"
+            type="text"
+            class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Email</label
+          >
+          <input
+            v-model="form.email"
+            type="email"
+            class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <!-- DOB -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Date of Birth</label
+          >
+          <input
+            v-model="form.dob"
+            type="date"
+            class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Gender -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Gender</label
+          >
+          <select
+            v-model="form.gender"
+            class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+
+        <!-- Phone -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >Phone</label
+          >
+          <input
+            v-model="form.phone"
+            type="tel"
+            class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+      </template>
 
       <!-- Membership Plan -->
       <div>

@@ -11,6 +11,8 @@ const toast = useToast();
 
 const isMenuOpen = ref(false);
 const isAccountMenuOpen = ref(false);
+const isProductMenuOpen = ref(false);
+const isClassMenuOpen = ref(false);
 
 const handleLogout = () => {
   authStore.logout();
@@ -55,19 +57,54 @@ const handleLogout = () => {
         >
           Attendance
         </RouterLink>
-        <RouterLink
-          to="/manager/product"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="route.path === '/manager/product' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+        <!-- Product Dropdown -->
+        <div
+          class="relative"
+          @mouseenter="isProductMenuOpen = true"
+          @mouseleave="isProductMenuOpen = false"
         >
-          Products
-        </RouterLink>
+          <button
+            class="uppercase tracking-wider hover:text-red-600 flex items-center gap-1"
+            :class="route.path.startsWith('/manager/product') ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+          >
+            Sản phẩm
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          <transition name="fade">
+            <div
+              v-show="isProductMenuOpen"
+              class="absolute left-0 mt-2 w-56 bg-white rounded shadow-md z-50 text-gray-800"
+            >
+              <RouterLink
+                to="/manager/product/supplier"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Quản lý nhà cung cấp
+              </RouterLink>
+              <RouterLink
+                to="/manager/product/list"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Quản lý sản phẩm
+              </RouterLink>
+              <RouterLink
+                to="/manager/product/history"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Lịch sử nhập kho
+              </RouterLink>
+            </div>
+          </transition>
+        </div>
         <RouterLink
           to="/manager/coupon"
           class="uppercase tracking-wider hover:text-red-600"
           :class="route.path === '/manager/coupon' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
         >
-          Coupons
+          Mã giảm giá
         </RouterLink>
         <RouterLink
           to="/manager/membership"
@@ -76,13 +113,56 @@ const handleLogout = () => {
         >
           Memberships
         </RouterLink>
-        <RouterLink
-          to="/manager/classtemplate"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="route.path === '/manager/classtemplate' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+        
+        <!-- Classes Dropdown -->
+        <div
+          class="relative"
+          @mouseenter="isClassMenuOpen = true"
+          @mouseleave="isClassMenuOpen = false"
         >
-          Classes
-        </RouterLink>
+          <button
+            class="uppercase tracking-wider hover:text-red-600 flex items-center gap-1"
+            :class="route.path.startsWith('/manager/class') || route.path.startsWith('/manager/room') || route.path.startsWith('/manager/schedulepattern') ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+          >
+            Classes
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          <transition name="fade">
+            <div
+              v-show="isClassMenuOpen"
+              class="absolute left-0 mt-2 w-56 bg-white rounded shadow-md z-50 text-gray-800"
+            >
+              <RouterLink
+                to="/manager/room"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Quản lý phòng học
+              </RouterLink>
+              <RouterLink
+                to="/manager/classtemplate"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Quản lý lớp học
+              </RouterLink>
+              <RouterLink
+                to="/manager/classschedule"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Lịch học
+              </RouterLink>
+              <RouterLink
+                to="/manager/schedulepattern"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Mẫu lịch học
+              </RouterLink>
+            </div>
+          </transition>
+        </div>
+        
         <RouterLink
           to="/manager/banner"
           class="uppercase tracking-wider hover:text-red-600"
@@ -117,16 +197,16 @@ const handleLogout = () => {
             class="absolute right-0 mt-2 w-44 bg-white rounded shadow-md z-50"
           >
             <RouterLink
-              to="/manager/profile"
+              to="/profile"
               class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
               Profile
             </RouterLink>
             <RouterLink
-              to="/manager/setting"
+              to="/change-password"
               class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
-              Settings
+              Change Password
             </RouterLink>
             <button
               @click="handleLogout"
