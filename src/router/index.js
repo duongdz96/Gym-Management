@@ -48,6 +48,7 @@ import SalesSelect from "@/views/Reception/Sale/SalesSelect.vue";
 import SalesCheckout from "@/views/Reception/Sale/SalesCheckout.vue";
 
 import PTLayout from "@/layout/PTLayout.vue";
+import PTHome from "@/views/PT/PTHome.vue";
 import PTSchedule from "@/views/PT/PTSchedule.vue";
 import PTProfile from "@/views/PT/PTProfile.vue";
 import PTMembers from "@/views/PT/PTMembers.vue";
@@ -83,7 +84,7 @@ const routes = [
     {
         path: "/manager",
         component: ManagerLayout,
-        meta: { requiresAuth: true, roles: ["MANAGER"] },
+        // meta: { requiresAuth: true, roles: ["MANAGER"] },
         children: [
             { path: "", name: "manager.dashboard", component: ManagerDashboard },
             { path: "dashboard", name: "manager.dashboard.full", component: ManagerDashboard },
@@ -119,7 +120,7 @@ const routes = [
     {
         path: "/customer",
         component: CustomerLayout,
-        meta: { requiresAuth: true, roles: ["MEMBER"] },
+        // meta: { requiresAuth: true, roles: ["MEMBER"] },
         children: [
             { path: "", name: "customer.home", component: CustomerHome },
             { path: "dashboard", name: "customer.dashboard", component: CustomerDashboard },
@@ -136,7 +137,7 @@ const routes = [
     {
         path: "/reception",
         component: ReceptionLayout,
-        meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
+        // meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
         children: [
             { path: "", name: "reception.home", component: ReceptionHome },
             { path: "memberships", name: "reception.memberships", component: ReceptionMemberships },
@@ -153,7 +154,7 @@ const routes = [
             {
                 path: '/pt/',
                 name: 'pt.home',
-                component: PTSchedule
+                component: PTHome
             },
             {
                 path: '/pt/schedule',

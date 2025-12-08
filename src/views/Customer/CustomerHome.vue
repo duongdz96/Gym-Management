@@ -1,216 +1,363 @@
 <script setup>
-import { ref } from "vue";
-import { RouterLink } from "vue-router";
-import { Camera, X } from "lucide-vue-next"; // import icon
-import axios from "axios";
+import { ref, onMounted, computed } from 'vue'
+import { RouterLink } from 'vue-router'
+import { Camera, X, TrendingUp, Calendar, Award, Ticket, Activity, Clock, Dumbbell, Heart } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/useAuthStore'
 
-const rating = ref(0);
-const hoverRating = ref(0);
-const comment = ref("");
-const images = ref([]);
-const memberId = 1;
+const authStore = useAuthStore()
 
+// ===================== STATE =====================
+const rating = ref(0)
+const hoverRating = ref(0)
+const comment = ref('')
+const images = ref([])
+const isLoading = ref(true)
+
+// Personal Stats
+const personalStats = ref({
+  activeMembership: null,
+  upcomingClasses: 0,
+  totalCheckIns: 0,
+  availableCoupons: 0,
+  membershipDaysLeft: 0
+})
+
+const recentActivities = ref([])
+
+// ===================== MOCK DATA =====================
+const fetchPersonalStats = async () => {
+  isLoading.value = true
+  
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 800))
+  
+  // Mock membership data
+  personalStats.value.activeMembership = {
+    tier: 'Gold',
+    startDate: '2024-01-01',
+    endDate: '2025-03-15'
+  }
+  
+  // Calculate days left
+  const endDate = new Date(personalStats.value.activeMembership.endDate)
+  const today = new Date()
+  const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24))
+  personalStats.value.membershipDaysLeft = daysLeft > 0 ? daysLeft : 0
+  
+  // Mock stats
+  personalStats.value.upcomingClasses = 5
+  personalStats.value.availableCoupons = 3
+  personalStats.value.totalCheckIns = 18
+  
+  // Mock recent activities
+  recentActivities.value = [
+    { type: 'checkin', action: 'Đã check-in vào phòng gym', time: '2 giờ trước', icon: Activity },
+    { type: 'class', action: 'Tham gia lớp Yoga buổi sáng', time: '1 ngày trước', icon: Dumbbell },
+    { type: 'coupon', action: 'Nhận mã giảm giá mới', time: '2 ngày trước', icon: Ticket },
+    { type: 'workout', action: 'Hoàn thành buổi tập cardio', time: '3 ngày trước', icon: Heart }
+  ]
+  
+  isLoading.value = false
+  
+  /* REAL API CALLS - Commented for mock data
+  try {
+    const API_BASE_URL = 'http://localhost:8080/api'
+    
+    // Fetch membership info
+    const membershipRes = await axios.get(`${API_BASE_URL}/customer-membership/current`, {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    })
+    if (membershipRes.data) {
+      personalStats.value.activeMembership = membershipRes.data
+      const endDate = new Date(membershipRes.data.endDate)
+      const today = new Date()
+      const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24))
+      personalStats.value.membershipDaysLeft = daysLeft > 0 ? daysLeft : 0
+    }
+
+    // Fetch upcoming classes
+    const classesRes = await axios.get(`${API_BASE_URL}/class-registration/my-classes`, {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    })
+    personalStats.value.upcomingClasses = classesRes.data?.length || 0
+
+    // Fetch available coupons
+    const couponsRes = await axios.get(`${API_BASE_URL}/issued-coupons/my-coupons`, {
+      headers: { Authorization: `Bearer ${authStore.token}` }
+    })
+    personalStats.value.availableCoupons = couponsRes.data?.filter(c => c.status === 'ACTIVE')?.length || 0
+  } catch (error) {
+    console.error('Error fetching personal stats:', error)
+  } finally {
+    isLoading.value = false
+  }
+  */
+}
+
+// ===================== FEEDBACK =====================
 const setRating = (star) => {
-  rating.value = star;
-};
+  rating.value = star
+}
 
 const previewImages = (event) => {
-  const files = Array.from(event.target.files);
+  const files = Array.from(event.target.files)
   images.value.push(
     ...files.map((file) => ({
       file,
-      url: URL.createObjectURL(file),
+      url: URL.createObjectURL(file)
     }))
-  );
-};
+  )
+}
 
 const removeImage = (index) => {
-  images.value.splice(index, 1);
-};
+  images.value.splice(index, 1)
+}
 
 const submitFeedback = async () => {
-  try {
-    const formData = new FormData();
-    formData.append("rating", rating.value);
-    formData.append("comment", comment.value);
-    formData.append("memberId", memberId);
-
-    // Thêm từng ảnh vào formData
-    images.value.forEach((img) => {
-      formData.append("images", img.file);
-    });
-
-    const response = await axios.post("http://localhost:8080/api/feedbacks", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    alert("Feedback submitted successfully!");
-    console.log("Response:", response.data);
-
-    // Reset form
-    rating.value = 0;
-    comment.value = "";
-    images.value = [];
-  } catch (error) {
-    console.error("Error submitting feedback:", error);
-    alert("Failed to submit feedback!");
+  if (!rating.value) {
+    alert('Vui lòng chọn số sao đánh giá!')
+    return
   }
-};
+  
+  if (!comment.value.trim()) {
+    alert('Vui lòng nhập nội dung đánh giá!')
+    return
+  }
+  
+  // Mock submission
+  alert('Cảm ơn bạn đã gửi đánh giá!')
+  rating.value = 0
+  comment.value = ''
+  images.value = []
+  
+  /* REAL API CALL - Commented for mock data
+  try {
+    const formData = new FormData()
+    formData.append('rating', rating.value)
+    formData.append('comment', comment.value)
+    formData.append('memberId', authStore.user?.id || 1)
+
+    images.value.forEach((img) => {
+      formData.append('images', img.file)
+    })
+
+    await axios.post(`${API_BASE_URL}/feedbacks`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+
+    alert('Feedback submitted successfully!')
+    rating.value = 0
+    comment.value = ''
+    images.value = []
+  } catch (error) {
+    console.error('Error submitting feedback:', error)
+    alert('Failed to submit feedback!')
+  }
+  */
+}
+
+// ===================== COMPUTED =====================
+const membershipStatusColor = computed(() => {
+  if (!personalStats.value.activeMembership) return 'gray'
+  if (personalStats.value.membershipDaysLeft > 30) return 'green'
+  if (personalStats.value.membershipDaysLeft > 7) return 'yellow'
+  return 'red'
+})
+
+onMounted(() => {
+  fetchPersonalStats()
+})
 </script>
 
 <template>
-  <div class="mx-auto max-w-7xl px-6 py-8">
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">
-      Welcome back, Customer 👋
-    </h1>
-
-    <!-- Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Membership -->
-      <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-        <h2 class="font-semibold text-gray-700 mb-2">My Membership</h2>
-        <p class="text-gray-500 text-sm">
-          Active until: <span class="font-medium">30/12/2025</span>
-        </p>
-        <RouterLink to="/customer/membership"
-          class="mt-3 inline-block text-red-600 text-sm font-semibold hover:underline">
-          View details →
-        </RouterLink>
+  <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8">
+    <div class="mx-auto max-w-7xl px-6">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          Chào mừng trở lại, {{ authStore.user?.fullName || 'Hội viên' }} 👋
+        </h1>
+        <p class="text-gray-600 mt-2">Tổng quan hành trình tập luyện của bạn</p>
       </div>
 
-      <!-- Classes -->
-      <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-        <h2 class="font-semibold text-gray-700 mb-2">My Classes</h2>
-        <p class="text-gray-500 text-sm">You have 2 classes today.</p>
-        <RouterLink to="/customer/class"
-          class="mt-3 inline-block text-red-600 text-sm font-semibold hover:underline">
-          View schedule →
-        </RouterLink>
+      <!-- Loading State -->
+      <div v-if="isLoading" class="flex justify-center items-center h-64">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
 
-      <!-- Training Plan -->
-      <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-        <h2 class="font-semibold text-gray-700 mb-2">Training Plan</h2>
-        <p class="text-gray-500 text-sm">Plan with PT updated last week.</p>
-        <RouterLink to="/customer/plan"
-          class="mt-3 inline-block text-red-600 text-sm font-semibold hover:underline">
-          View plan →
-        </RouterLink>
-      </div>
+      <div v-else class="space-y-8">
+        <!-- Personal Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Membership Card -->
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-indigo-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                <Award class="w-6 h-6 text-white" />
+              </div>
+              <span :class="`px-3 py-1 rounded-full text-xs font-semibold bg-${membershipStatusColor}-100 text-${membershipStatusColor}-700`">
+                {{ personalStats.membershipDaysLeft }} ngày còn lại
+              </span>
+            </div>
+            <h3 class="text-gray-600 text-sm font-medium mb-1">Gói thành viên</h3>
+            <p class="text-2xl font-bold text-gray-900">{{ personalStats.activeMembership?.tier || 'Chưa kích hoạt' }}</p>
+            <RouterLink to="/customer/membership" class="text-indigo-600 text-sm font-medium hover:underline mt-2 inline-block">
+              Xem chi tiết →
+            </RouterLink>
+          </div>
 
-      <!-- Coupons -->
-      <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-        <h2 class="font-semibold text-gray-700 mb-2">Coupons</h2>
-        <p class="text-gray-500 text-sm">You have 3 active coupons.</p>
-        <RouterLink to="/customer/coupon"
-          class="mt-3 inline-block text-red-600 text-sm font-semibold hover:underline">
-          View coupons →
-        </RouterLink>
-      </div>
+          <!-- Upcoming Classes -->
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-purple-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <Calendar class="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <h3 class="text-gray-600 text-sm font-medium mb-1">Lớp học sắp tới</h3>
+            <p class="text-2xl font-bold text-gray-900">{{ personalStats.upcomingClasses }}</p>
+            <RouterLink to="/customer/class" class="text-purple-600 text-sm font-medium hover:underline mt-2 inline-block">
+              Xem lịch học →
+            </RouterLink>
+          </div>
 
-      <!-- Notifications -->
-      <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-        <h2 class="font-semibold text-gray-700 mb-2">Notifications</h2>
-        <ul class="list-disc pl-4 text-sm text-gray-500">
-          <li>Your class "Yoga Morning" starts at 8:00</li>
-          <li>New coupon available!</li>
-        </ul>
-        <RouterLink to="/customer/notification"
-          class="mt-3 inline-block text-red-600 text-sm font-semibold hover:underline">
-          View all →
-        </RouterLink>
-      </div>
+          <!-- Check-ins -->
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-pink-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+                <TrendingUp class="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <h3 class="text-gray-600 text-sm font-medium mb-1">Check-in tháng này</h3>
+            <p class="text-2xl font-bold text-gray-900">{{ personalStats.totalCheckIns }}</p>
+            <p class="text-sm text-gray-500 mt-2">Tiếp tục phát huy! 💪</p>
+          </div>
 
-      <!-- History -->
-      <div class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-        <h2 class="font-semibold text-gray-700 mb-2">History</h2>
-        <p class="text-gray-500 text-sm">You checked in 15 times this month.</p>
-        <RouterLink to="/customer/history"
-          class="mt-3 inline-block text-red-600 text-sm font-semibold hover:underline">
-          View history →
-        </RouterLink>
-      </div>
-    </div>
-
-    <!-- Feedback -->
-    <div class="mt-12 bg-white p-6 rounded-xl shadow">
-      <h2 class="text-lg font-semibold text-gray-800 mb-4">Leave your Feedback</h2>
-
-      <!-- Star Rating -->
-      <div class="flex items-center mb-4">
-        <template v-for="star in 5" :key="star">
-          <svg
-            @click="setRating(star)"
-            @mouseover="hoverRating = star"
-            @mouseleave="hoverRating = 0"
-            class="w-6 h-6 cursor-pointer"
-            :class="[
-              (hoverRating >= star || rating >= star)
-                ? 'text-yellow-400'
-                : 'text-gray-300'
-            ]"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 22 20"
-          >
-            <path
-              d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 
-                 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 
-                 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 
-                 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 
-                 9.2a1.523 1.523 0 0 0 .387-1.575Z"
-            />
-          </svg>
-        </template>
-      </div>
-
-      <!-- Comment Box -->
-      <textarea
-        v-model="comment"
-        rows="4"
-        placeholder="Share details of your own experience at our place"
-        class="w-full border border-gray-300 rounded-lg p-3 mb-4 focus:ring-2 focus:ring-red-500 focus:outline-none"
-      ></textarea>
-
-      <!-- Upload Images -->
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Upload images (optional)</label>
-
-        <div class="flex flex-wrap gap-3">
-          <!-- Nút add ảnh -->
-          <label
-            class="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-red-400"
-          >
-            <Camera class="w-6 h-6 text-gray-400" />
-            <input type="file" class="hidden" multiple 
-            accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
-            @change="previewImages" />
-          </label>
-
-          <!-- Preview ảnh -->
-          <div
-            v-for="(img, index) in images"
-            :key="index"
-            class="relative w-20 h-20 rounded-lg overflow-hidden border"
-          >
-            <img :src="img.url" class="w-full h-full object-cover" />
-            <button
-              @click="removeImage(index)"
-              class="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-0.5 hover:bg-opacity-70"
-            >
-              <X class="w-4 h-4" />
-            </button>
+          <!-- Coupons -->
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-rose-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center">
+                <Ticket class="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <h3 class="text-gray-600 text-sm font-medium mb-1">Mã giảm giá khả dụng</h3>
+            <p class="text-2xl font-bold text-gray-900">{{ personalStats.availableCoupons }}</p>
+            <RouterLink to="/customer/coupon" class="text-rose-600 text-sm font-medium hover:underline mt-2 inline-block">
+              Xem mã giảm giá →
+            </RouterLink>
           </div>
         </div>
-      </div>
 
-      <!-- Submit -->
-      <button
-        @click="submitFeedback"
-        class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700"
-      >
-        Submit Feedback
-      </button>
+        <!-- Activity Timeline & Quick Actions -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Recent Activity Timeline -->
+          <div class="lg:col-span-2 bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-indigo-100">
+            <div class="flex items-center gap-2 mb-6">
+              <Clock class="w-5 h-5 text-indigo-600" />
+              <h2 class="text-xl font-bold text-gray-900">Hoạt động gần đây</h2>
+            </div>
+            <div class="space-y-4">
+              <div v-for="(activity, index) in recentActivities" :key="index" class="flex items-start gap-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl hover:shadow-md transition-shadow">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                  <component :is="activity.icon" class="w-5 h-5 text-white" />
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-900">{{ activity.action }}</p>
+                  <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Links -->
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-purple-100">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Liên kết nhanh</h2>
+            <div class="space-y-3">
+              <RouterLink to="/customer/plan" class="block p-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105">
+                <p class="font-semibold">Kế hoạch tập luyện</p>
+                <p class="text-xs opacity-90 mt-1">Xem kế hoạch PT của bạn</p>
+              </RouterLink>
+              <RouterLink to="/customer/billhistory" class="block p-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105">
+                <p class="font-semibold">Lịch sử thanh toán</p>
+                <p class="text-xs opacity-90 mt-1">Kiểm tra các giao dịch</p>
+              </RouterLink>
+              <RouterLink to="/customer/profile" class="block p-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105">
+                <p class="font-semibold">Hồ sơ của tôi</p>
+                <p class="text-xs opacity-90 mt-1">Cập nhật thông tin</p>
+              </RouterLink>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feedback Section -->
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-indigo-100">
+          <h2 class="text-2xl font-bold text-gray-900 mb-6">Chia sẻ đánh giá của bạn</h2>
+
+          <!-- Star Rating -->
+          <div class="flex items-center mb-6">
+            <template v-for="star in 5" :key="star">
+              <svg
+                @click="setRating(star)"
+                @mouseover="hoverRating = star"
+                @mouseleave="hoverRating = 0"
+                class="w-8 h-8 cursor-pointer transition-all"
+                :class="[(hoverRating >= star || rating >= star) ? 'text-yellow-400' : 'text-gray-300']"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 22 20"
+              >
+                <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
+              </svg>
+            </template>
+          </div>
+
+          <!-- Comment Box -->
+          <textarea
+            v-model="comment"
+            rows="4"
+            placeholder="Chia sẻ trải nghiệm của bạn tại phòng gym của chúng tôi"
+            class="w-full border border-gray-300 rounded-xl p-4 mb-6 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none"
+          ></textarea>
+
+          <!-- Upload Images -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-3">Tải ảnh lên (không bắt buộc)</label>
+            <div class="flex flex-wrap gap-3">
+              <label class="w-24 h-24 border-2 border-dashed border-indigo-300 rounded-xl flex items-center justify-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                <Camera class="w-8 h-8 text-indigo-400" />
+                <input type="file" class="hidden" multiple accept="image/png, image/jpeg, image/jpg, image/gif, image/webp" @change="previewImages" />
+              </label>
+
+              <div v-for="(img, index) in images" :key="index" class="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-indigo-200">
+                <img :src="img.url" class="w-full h-full object-cover" />
+                <button @click="removeImage(index)" class="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1 hover:bg-opacity-70">
+                  <X class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button @click="submitFeedback" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105">
+            Gửi đánh giá
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.space-y-8 > * {
+  animation: fadeIn 0.5s ease-out;
+}
+</style>
