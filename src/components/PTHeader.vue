@@ -96,7 +96,7 @@ const handleLogout = () => {
             class="absolute right-0 mt-2 w-44 bg-white rounded shadow-md z-50 border border-gray-200"
           >
             <RouterLink
-              to="/pt/profile"
+              to="/profile"
               class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
               >Profile</RouterLink
             >
