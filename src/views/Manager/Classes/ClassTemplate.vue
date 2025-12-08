@@ -22,7 +22,7 @@ onMounted(async () => {
     const res = await api.get("/fitness_class")
     classtemplates.value = res.data
   } catch (err) {
-    console.error("Error fetching class templates:", err)
+    console.error("Error fetching fitness class:", err)
   }
 })
 
@@ -60,34 +60,34 @@ const handleSelect = (classtemplate : ClassTemplate) => {
 
 <template>
   <div class="space-y-4 p-4 md:p-6">
-      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-        <h1 class="text-2xl font-semibold text-gray-800">Mẫu lớp học</h1>
-        <div class="flex flex-wrap items-center gap-2">
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Search by template name"
-            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-          />
-          <select v-model="difficultyFilter" class="px-3 py-2 border border-gray-300 rounded-lg">
-            <option value="">All Difficulties</option>
-            <option value="BEGINNER">Beginner</option>
-            <option value="INTERMEDIATE">Intermediate</option>
-            <option value="ADVANCED">Advanced</option>
-          </select>
-          <select v-model="statusFilter" class="px-3 py-2 border border-gray-300 rounded-lg">
-            <option value="">All Statuses</option>
-            <option value="ACTIVE">ACTIVE</option>
-            <option value="INACTIVE">INACTIVE</option>
-          </select>
-          <button
-            @click="handleAdd"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Add Template
-          </button>
-        </div>
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+      <h1 class="text-2xl font-semibold text-gray-800">Fitness Classes</h1>
+      <div class="flex flex-wrap items-center gap-2">
+        <input
+          v-model="search"
+          type="text"
+          placeholder="Search by template name"
+          class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+        />
+        <select v-model="difficultyFilter" class="px-3 py-2 border border-gray-300 rounded-lg">
+          <option value="">All Difficulties</option>
+          <option value="BEGINNER">Beginner</option>
+          <option value="INTERMEDIATE">Intermediate</option>
+          <option value="ADVANCED">Advanced</option>
+        </select>
+        <select v-model="statusFilter" class="px-3 py-2 border border-gray-300 rounded-lg">
+          <option value="">All Statuses</option>
+          <option value="ACTIVE">ACTIVE</option>
+          <option value="INACTIVE">INACTIVE</option>
+        </select>
+        <button
+          @click="handleAdd"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Add Template
+        </button>
       </div>
+    </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
       <div

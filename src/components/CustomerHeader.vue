@@ -65,6 +65,16 @@ const handleLogout = () => {
         </RouterLink>
 
         <RouterLink
+          to="/customer/calendar"
+          class="uppercase tracking-wider hover:text-red-600 transition"
+          :class="route.path === '/customer/calendar'
+            ? 'text-red-600 border-b-2 border-red-600 pb-1'
+            : 'text-white'"
+        >
+          Calendar
+        </RouterLink>
+
+        <RouterLink
           to="/customer/billhistory"
           class="uppercase tracking-wider hover:text-red-600 transition"
           :class="route.path === '/customer/billhistory'

@@ -53,6 +53,7 @@ const form = ref({
   endTime: "",
   location: "",
   status: "OPEN",
+  capacity: 1
 });
 
 const batchForm = ref({
@@ -61,6 +62,7 @@ const batchForm = ref({
   startDate: "",
   endDate: "",
   daysOfWeek: [] as string[],
+  capacity: 1
 });
 
 const router = useRouter();
@@ -160,12 +162,19 @@ async function AddBatchSchedules() {
     alert("Please select a room first!");
     return;
   }
+  
+  if (batchForm.value.capacity <= 0) {
+    alert("Capacity must be a positive number!");
+    return;
+  }
 
   try {
     const payload = {
       fitnessClass: { id: selectedTemplate.value.id },
       schedulePattern: { id: batchForm.value.schedulePatternId },
       room: { id: selectedRoom.value.id },
+      
+      capacity: batchForm.value.capacity,
     };
 
     console.log("📤 Sending batch schedules:", payload);
@@ -192,8 +201,18 @@ function resetForm(obj: Record<string, any>) {
 
 async function reloadSchedules() {
   if (!selectedTemplate.value?.id) return;
-  const res = await api.get(`/classschedule/by-template/${selectedTemplate.value.id}`);
-  schedules.value = res.data || [];
+  
+  const url = `/classschedule/by-fitness_class/${selectedTemplate.value.id}`;
+  
+  console.log(`🔍 Reloading schedules: Sending GET request to ${url}`); 
+  
+  try {
+    const res = await api.get(url);
+    schedules.value = res.data || [];
+    console.log("✅ GET schedules successful. Data received:", schedules.value.length); 
+  } catch (err) {
+    console.error(`❌ ERROR: Failed to GET schedules from ${url}`, err);
+  }
 }
 
 const isDayInPattern = (shortDay) => {
@@ -328,6 +347,18 @@ const isDayInPattern = (shortDay) => {
     <div class="mb-3">
       <label class="block mb-1 font-semibold">End Date:</label>
       <p>{{ schedulePattern?.classEndDate || 'Please select time' }}</p>
+    </div>
+
+    <div class="mb-3">
+      <label for="capacity" class="block mb-1 font-semibold">Capacity (Số lượng học viên tối đa):</label>
+      <input
+        id="capacity"
+        v-model.number="batchForm.capacity"
+        type="number"
+        min="1"
+        class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+        placeholder="Nhập sức chứa tối đa"
+      />
     </div>
 
     <!-- Days of week -->

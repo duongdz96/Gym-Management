@@ -67,17 +67,6 @@ const handleLogout = () => {
           "
           >Students</RouterLink
         >
-
-        <RouterLink
-          to="/teacher/registerclass"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="
-            route.path === '/teacher/registerclass'
-              ? 'text-red-600 border-b-2 border-red-600 pb-1'
-              : 'text-white'
-          "
-          >Register to teach</RouterLink
-        >
       </nav>
 
       <!-- Account dropdown (desktop) -->

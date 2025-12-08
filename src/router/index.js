@@ -35,6 +35,7 @@ import CustomerHome from "@/views/Customer/CustomerHome.vue";
 import CustomerDashboard from "@/views/Customer/CustomerDashboard.vue";
 import CustomerMembership from "@/views/Customer/CustomerMembership.vue";
 import CustomerClass from "@/views/Customer/Classes/CustomerClass.vue";
+import CustomerPersonalCalendar from "@/views/Customer/Classes/CustomerPersonalCalendar.vue";
 import CustomerCoupon from "@/views/Customer/CustomerCoupon.vue";
 import CustomerPlan from "@/views/Customer/CustomerPlan.vue";
 import CustomerProfile from "@/views/Customer/CustomerProfile.vue";
@@ -56,12 +57,13 @@ import PTMembers from "@/views/PT/PTMembers.vue";
 import TestIndex from "@/views/Test/index.vue";
 import Test from "@/views/Test.vue";
 import SchedulePattern from "@/views/Manager/Classes/SchedulePattern.vue";
-import TeacherRegister from "@/views/PT/TeacherRegisterClass.vue";
+import TeacherRegister from "@/views/Teacher/TeacherRegisterClass.vue";
 import AddStaff from "@/views/Manager/Staff/AddStaff.vue";
 import EditClassTemplate from "@/views/Manager/Classes/EditClassTemplate.vue";
 import EditClassSchedule from "@/views/Manager/Classes/EditClassSchedule.vue";
 import CustomerBillHistory from "@/views/Customer/History/CustomerBillHistory.vue";
-import RoomManagement from "@/views/Manager/Classes/RoomManagement.vue";
+import TeacherLayout from "@/layout/TeacherLayout.vue";
+import TeacherPersonalCalendar from "@/views/Teacher/TeacherPersonalCalendar.vue";
 
 const routes = [
     {
@@ -126,6 +128,7 @@ const routes = [
             { path: "dashboard", name: "customer.dashboard", component: CustomerDashboard },
             { path: "membership", name: "customer.membership", component: CustomerMembership },
             { path: "class", name: "customer.class", component: CustomerClass },
+            { path: "calendar", name: "customer.calendar", component: CustomerPersonalCalendar },
             { path: "coupon", name: "customer.coupon", component: CustomerCoupon },
             { path: "plan", name: "customer.plan", component: CustomerPlan },
             { path: "profile", name: "customer.profile", component: CustomerProfile },
@@ -149,7 +152,7 @@ const routes = [
     {
         path: "/pt",
         component: PTLayout,
-        // meta: { requiresAuth: true, roles: ["TEACHER", "PT"] },
+        meta: { requiresAuth: true, roles: ["PT"] },
         children: [
             {
                 path: '/pt/',
@@ -171,13 +174,17 @@ const routes = [
                 name: 'pt.members',
                 component: PTMembers
             },
-            {
-                path: '/teacher/registerclass',
-                name: 'teacher.register',
-                component: TeacherRegister
-            },
         ]
-    }
+    },
+    {
+        path: "/teacher",
+        component: TeacherLayout,
+        meta: { requiresAuth: true, roles: ["TEACHER"] },
+        children: [
+            { path: "/teacher/registerclass", name: "teacher.register", component: TeacherRegister },
+            { path: "/teacher/calendar", name: "teacher.calendar", component: TeacherPersonalCalendar },
+        ],
+    },
 ]
 
 const router = createRouter({

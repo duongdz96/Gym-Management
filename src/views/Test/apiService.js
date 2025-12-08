@@ -81,7 +81,7 @@ export const classRegistrationApi = {
         },
         description: data.description || 'Phân công giảng dạy'
     };
-    const res = await api.post('/class-registrations', payload);
+    const res = await api.post('/class-registrations', classRegistrationBody);
     return res.data;
 },
   

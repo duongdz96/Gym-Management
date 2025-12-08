@@ -121,7 +121,7 @@ const loginUser = async () => {
         router.push("/pt");
         break;
       case "teacher":
-        router.push("/pt");
+        router.push("/teacher");
         break;
       default:
         router.push("/"); // fallback nếu không có role
