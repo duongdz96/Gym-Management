@@ -16,3 +16,5 @@ cov/report/
 .ipynb_checkpoints/
 *.db
 *.csv
+node_modules/
+.vite/
