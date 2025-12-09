@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { Calendar, Users, TrendingUp, Clock, CheckCircle, BookOpen, Dumbbell, Award, User } from 'lucide-vue-next'
+import { Calendar, Users, TrendingUp, Clock, CheckCircle, BookOpen, Dumbbell, Award, User, BicepsFlexed } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/useAuthStore'
 
 const authStore = useAuthStore()
@@ -120,11 +120,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 py-8">
+  <div class="min-h-screen bg-gradient-to-br from-red-50 via-red-50 to-red-50 py-8">
     <div class="mx-auto max-w-7xl px-6">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-red-600 to-red-600 bg-clip-text text-transparent">
           Bảng điều khiển PT 💪
         </h1>
         <p class="text-gray-600 mt-2">Quản lý học viên và buổi tập của bạn</p>
@@ -132,31 +132,31 @@ onMounted(() => {
 
       <!-- Loading State -->
       <div v-if="isLoading" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
       </div>
 
       <div v-else class="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <!-- Left Sidebar - Stats -->
         <div class="lg:col-span-1 space-y-6">
           <!-- Stats Cards -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-teal-100">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center mb-4">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center mb-4">
               <Users class="w-6 h-6 text-white" />
             </div>
             <p class="text-gray-600 text-sm font-medium">Tổng học viên</p>
             <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.totalStudents }}</p>
           </div>
 
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-cyan-100">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center mb-4">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center mb-4">
               <Calendar class="w-6 h-6 text-white" />
             </div>
             <p class="text-gray-600 text-sm font-medium">Buổi tập tuần này</p>
             <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.sessionsThisWeek }}</p>
           </div>
 
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-blue-100">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center mb-4">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center mb-4">
               <TrendingUp class="w-6 h-6 text-white" />
             </div>
             <p class="text-gray-600 text-sm font-medium">Tỷ lệ hoàn thành</p>
@@ -164,13 +164,13 @@ onMounted(() => {
           </div>
 
           <!-- Quick Actions -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-teal-100">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100">
             <h3 class="font-bold text-gray-900 mb-4">Thao tác nhanh</h3>
             <div class="space-y-2">
-              <RouterLink to="/pt/schedule" class="block p-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium text-center">
+              <RouterLink to="/pt/schedule" class="block p-3 bg-gradient-to-r from-red-500 to-red-500 text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium text-center">
                 Xem lịch đầy đủ
               </RouterLink>
-              <RouterLink to="/pt/members" class="block p-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium text-center">
+              <RouterLink to="/pt/members" class="block p-3 bg-gradient-to-r from-red-500 to-red-500 text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium text-center">
                 Quản lý học viên
               </RouterLink>
             </div>
@@ -180,7 +180,7 @@ onMounted(() => {
         <!-- Main Content Area -->
         <div class="lg:col-span-3 space-y-6">
           <!-- Weekly Calendar -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-teal-100">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100">
             <div class="flex items-center justify-between mb-6">
               <h2 class="text-2xl font-bold text-gray-900">Tuần này</h2>
               <div class="flex items-center gap-2 text-sm text-gray-600">
@@ -195,7 +195,7 @@ onMounted(() => {
                    :class="[
                      'p-4 rounded-xl text-center transition-all cursor-pointer',
                      day.isToday 
-                       ? 'bg-gradient-to-br from-teal-500 to-cyan-500 text-white shadow-lg scale-105' 
+                       ? 'bg-gradient-to-br from-red-500 to-red-500 text-white shadow-lg scale-105' 
                        : 'bg-gray-50 hover:bg-gray-100'
                    ]">
                 <p class="text-xs font-medium mb-1">{{ day.dayName }}</p>
@@ -211,9 +211,9 @@ onMounted(() => {
               </div>
               <div v-else class="space-y-3">
                 <div v-for="session in todaySessions" :key="session.id" 
-                     class="flex items-center justify-between p-4 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl border border-teal-100">
+                     class="flex items-center justify-between p-4 bg-gradient-to-r from-red-50 to-red-50 rounded-xl border border-red-100">
                   <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center">
                       <Dumbbell class="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -222,7 +222,7 @@ onMounted(() => {
                     </div>
                   </div>
                   <div class="text-right">
-                    <p class="font-semibold text-teal-600">{{ session.time }}</p>
+                    <p class="font-semibold text-red-600">{{ session.time }}</p>
                     <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">{{ session.status }}</span>
                   </div>
                 </div>
@@ -233,19 +233,19 @@ onMounted(() => {
           <!-- Student Progress & Upcoming Appointments -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Student Progress -->
-            <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-cyan-100">
+            <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100">
               <div class="flex items-center gap-2 mb-6">
-                <Award class="w-5 h-5 text-cyan-600" />
+                <Award class="w-5 h-5 text-red-600" />
                 <h3 class="text-xl font-bold text-gray-900">Tiến độ học viên</h3>
               </div>
               <div class="space-y-4">
-                <div v-for="student in studentProgress" :key="student.name" class="p-4 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl">
+                <div v-for="student in studentProgress" :key="student.name" class="p-4 bg-gradient-to-r from-red-50 to-red-50 rounded-xl">
                   <div class="flex items-center justify-between mb-2">
                     <p class="font-semibold text-gray-900">{{ student.name }}</p>
-                    <span class="text-sm font-bold text-cyan-600">{{ student.progress }}%</span>
+                    <span class="text-sm font-bold text-red-600">{{ student.progress }}%</span>
                   </div>
                   <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
-                    <div class="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full transition-all" :style="{ width: student.progress + '%' }"></div>
+                    <div class="bg-gradient-to-r from-red-500 to-red-500 h-2 rounded-full transition-all" :style="{ width: student.progress + '%' }"></div>
                   </div>
                   <div class="flex items-center justify-between text-xs text-gray-600">
                     <span>{{ student.sessions }} buổi tập</span>
@@ -256,16 +256,16 @@ onMounted(() => {
             </div>
 
             <!-- Upcoming Appointments -->
-            <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-blue-100">
+            <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100">
               <div class="flex items-center gap-2 mb-6">
-                <BookOpen class="w-5 h-5 text-blue-600" />
+                <BookOpen class="w-5 h-5 text-red-600" />
                 <h3 class="text-xl font-bold text-gray-900">Lịch hẹn sắp tới</h3>
               </div>
               <div class="space-y-3">
                 <div v-for="(apt, index) in upcomingAppointments" :key="index" 
-                     class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                     class="flex items-center justify-between p-4 bg-gradient-to-r from-red-50 to-red-50 rounded-xl border border-red-100">
                   <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center">
                       <User class="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -274,7 +274,7 @@ onMounted(() => {
                     </div>
                   </div>
                   <div class="text-right">
-                    <p class="font-semibold text-blue-600">{{ apt.time }}</p>
+                    <p class="font-semibold text-red-600">{{ apt.time }}</p>
                     <p class="text-xs text-gray-500">{{ apt.date }}</p>
                   </div>
                 </div>

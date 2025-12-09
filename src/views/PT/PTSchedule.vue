@@ -48,7 +48,7 @@ async function fetchSchedule(query = "") {
     const data = Array.isArray(res.data) ? res.data : [];
 
     // Filter appointments for the current PT
-    const ptAppointments = data.filter(appt => appt.staff.id === authStore.user.id);
+    const ptAppointments = data.filter(appt => appt.pt.id === authStore.user.id);
 
     // Map backend appointment shape to the calendar event shape expected by this component
     schedule.value = ptAppointments.map((appt) => {
@@ -61,18 +61,18 @@ async function fetchSchedule(query = "") {
         date: toDateStr(start),
         // user-facing time range
         time: formatTimeRange(start, end),
-        // show member name (fallback to package/member or staff if missing)
+        // show member name (fallback to package/member or pt if missing)
         name:
           appt.ptPackageIssued?.member?.fullName ||
           appt.ptPackageIssued?.ptPackage?.name ||
-          appt.staff?.fullName ||
+          appt.pt?.fullName ||
           "Appointment",
         // appointments are usually 1 member; keep for display
         members: 1,
         status: appt.status,
         // include some useful details for modal if needed
         member: appt.ptPackageIssued?.member || null,
-        staff: appt.staff || null,
+        pt: appt.pt || null,
         remainingSessions: appt.ptPackageIssued?.remainingSessions ?? null,
         raw: appt,
       };

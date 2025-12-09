@@ -9,7 +9,7 @@ const profile = ref(null);
 
 onMounted(async () => {
   try {
-    const res = await api.get("/staffs");
+    const res = await api.get("/pts");
     const staffs = Array.isArray(res.data) ? res.data : [];
     const currentStaff = staffs.find(staff => staff.id === authStore.user.id);
     if (currentStaff) {
