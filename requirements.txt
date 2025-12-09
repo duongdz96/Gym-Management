@@ -1,24 +1,8 @@
-# Face Recognition với DeepFace - Maximum Accuracy
-# Cho Desktop App với GPU support (GTX 1650)
-
-# Core dependencies
 numpy
 opencv-python
 scipy
-
-# Deep Learning - GPU support
-# TensorFlow với CUDA support cho NVIDIA GPU
 tensorflow[and-cuda]>=2.15.0
-
-# Face Recognition
 deepface
-
-# Database
-# sqlite3 built-in Python, không cần cài
-
-# Optional - Cho better performance
 pillow
 pandas
-
-# Utilities
-tqdm  # Progress bars
+tqdm
