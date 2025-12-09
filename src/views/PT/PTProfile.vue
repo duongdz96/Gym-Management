@@ -38,12 +38,12 @@ onMounted(async () => {
 <template>
   <div class="p-6 space-y-8">
     <!-- Title -->
-    <h1 class="text-3xl font-bold text-stone-800 mb-6">Personal Information</h1>
+    <h1 class="text-3xl font-bold text-stone-800 mb-6">Thông tin cá nhân</h1>
 
     <!-- Thông tin cá nhân -->
     <section v-if="profile" class="bg-white rounded-xl shadow-lg p-8">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-semibold text-gray-800">PT Profile</h2>
+        <h2 class="text-2xl font-semibold text-gray-800">Hồ sơ PT</h2>
       </div>
       <div
         class="flex flex-col md:flex-row items-start space-y-6 md:space-y-0 md:space-x-8"
@@ -52,7 +52,7 @@ onMounted(async () => {
         <div class="flex-1 grid md:grid-cols-2 gap-6">
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >Full Name</label
+              >Họ và tên</label
             >
             <p class="mt-1 text-lg text-gray-900 font-medium">
               {{ profile.fullName }}
@@ -64,31 +64,31 @@ onMounted(async () => {
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >Phone Number</label
+              >Số điện thoại</label
             >
             <p class="mt-1 text-lg text-gray-900">{{ profile.phone }}</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >Date of Birth</label
+              >Ngày sinh</label
             >
             <p class="mt-1 text-lg text-gray-900">{{ profile.dob }}</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >Gender</label
+              >Giới tính</label
             >
             <p class="mt-1 text-lg text-gray-900">{{ profile.gender }}</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >Position</label
+              >Chức vụ</label
             >
             <p class="mt-1 text-lg text-gray-900">{{ profile.position }}</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >Specialization</label
+              >Chuyên môn</label
             >
             <p class="mt-1 text-lg text-gray-900">
               {{ profile.specialize }}
@@ -96,7 +96,7 @@ onMounted(async () => {
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >Hire Price</label
+              >Giá thuê</label
             >
             <p class="mt-1 text-lg text-gray-900">{{ profile.hirePrice }} VND</p>
           </div>
@@ -104,7 +104,7 @@ onMounted(async () => {
       </div>
     </section>
     <div v-else class="text-center py-8 text-gray-500">
-      Loading profile...
+      Đang tải hồ sơ...
     </div>
   </div>
 </template>

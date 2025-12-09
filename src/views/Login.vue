@@ -51,7 +51,6 @@
               required
               class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-red-500 focus:outline-none"
             />
-            <p v-if="email && !isEmailValid" class="text-red-500 text-sm mt-1">Email không hợp lệ</p>
           </div>
 
           <div>
@@ -90,7 +89,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -100,11 +99,6 @@ const password = ref("");
 const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
-
-const isEmailValid = computed(() => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email.value);
-});
 
 const loginUser = async () => {
   try {

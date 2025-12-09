@@ -52,7 +52,7 @@ async function fetchSchedule(query = "") {
     const data = Array.isArray(res.data) ? res.data : [];
 
     // Filter appointments for the current PT
-    const ptAppointments = data.filter(appt => appt.pt.id === authStore.user.id);
+    const ptAppointments = data.filter(appt => appt.pt && appt.pt.id === authStore.user.id);
 
     // Map backend appointment shape to the calendar event shape expected by this component
     schedule.value = ptAppointments.map((appt) => {
@@ -216,37 +216,37 @@ onMounted(async () => {
   <div class="p-6 space-y-8">
     <!-- Title and Search -->
     <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-stone-800">PT Schedule</h1>
+      <h1 class="text-2xl font-bold text-stone-800">Lịch PT</h1>
       <div class="flex items-center space-x-2">
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search by member name"
+          placeholder="Tìm kiếm theo tên học viên"
           class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           @click="searchSchedule"
           class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
-          Search
+          Tìm kiếm
         </button>
         <button
           @click="fetchSchedule"
           class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
         >
-          Reset
+          Đặt lại
         </button>
       </div>
     </div>
 
     <!-- Lịch dạy hôm nay -->
     <section class="bg-white rounded-xl shadow p-4">
-      <h2 class="text-lg font-semibold mb-3 text-gray-800">Today's Schedule</h2>
+      <h2 class="text-lg font-semibold mb-3 text-gray-800">Lịch hôm nay</h2>
       <div
         v-if="todayEvents.length === 0"
         class="text-center py-4 text-gray-500"
       >
-        No classes today
+        Không có lớp nào hôm nay
       </div>
       <div v-else class="overflow-x-auto">
         <div class="flex space-x-4 pb-2 min-w-max">

@@ -116,7 +116,7 @@ onMounted(async () => {
     const res = await api.get("/studentprofile");
     const data = Array.isArray(res.data) ? res.data : [];
     // Filter profiles for the current PT
-    const ptProfiles = data.filter(profile => profile.pt.id === authStore.user.id);
+    const ptProfiles = data.filter(profile => profile.pt && profile.pt.id === authStore.user.id);
     // Map to member objects
     members.value = ptProfiles.map(profile => ({
       id: profile.id,
@@ -151,7 +151,7 @@ onMounted(async () => {
     <div class="flex gap-6 h-screen">
       <!-- Bên trái: Danh sách học viên -->
       <div class="w-1/3 bg-white rounded-xl shadow p-5 overflow-y-auto">
-        <h2 class="text-xl font-semibold mb-4">My Members</h2>
+        <h2 class="text-xl font-semibold mb-4">Học viên của tôi</h2>
 
         <!-- Search Bar -->
         <div class="mb-4">
@@ -164,7 +164,7 @@ onMounted(async () => {
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search members by name..."
+              placeholder="Tìm kiếm học viên theo tên..."
               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -192,12 +192,12 @@ onMounted(async () => {
 
       <!-- Bên phải: Thông tin chi tiết -->
       <div class="w-2/3 bg-white rounded-xl shadow p-5">
-        <h2 class="text-xl font-semibold mb-4">Detailed Information</h2>
+        <h2 class="text-xl font-semibold mb-4">Thông tin chi tiết</h2>
         <div v-if="selectedMember" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Full Name</label
+                >Họ và tên</label
               >
               <p class="mt-1 text-lg font-semibold text-gray-900">
                 {{ selectedMember.name }}
@@ -213,7 +213,7 @@ onMounted(async () => {
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Weight</label
+                >Cân nặng</label
               >
               <div class="mt-1 flex items-center space-x-2">
                 <input
@@ -232,20 +232,20 @@ onMounted(async () => {
                   @click="startEditingWeight"
                   class="text-blue-600 hover:text-blue-800 text-sm"
                 >
-                  Edit
+                  Chỉnh sửa
                 </button>
                 <div v-if="isEditingWeight" class="flex space-x-1">
                   <button
                     @click="saveCurrentWeight"
                     class="text-green-600 hover:text-green-800 text-sm"
                   >
-                    Save
+                    Lưu
                   </button>
                   <button
                     @click="cancelEditingWeight"
                     class="text-red-600 hover:text-red-800 text-sm"
                   >
-                    Cancel
+                    Hủy
                   </button>
                 </div>
               </div>
