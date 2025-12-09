@@ -41,18 +41,13 @@ public class ClassRegistrationServiceImpl implements ClassRegistrationService {
     }
 
     @Override
-    public ClassRegistration registerTeaching(Long staffId, ClassRegistration reg) {
-        Teacher teacher = teacherRepository.findById(reg.getTeacher().getId())
-                .orElseThrow(() -> new RuntimeException("Staff not found with id: " + reg.getTeacher().getId()));
-        if(!teacher.getId().equals(staffId)) throw new AccessDeniedException("You cannot change other's people schedule");
-        FitnessClass template = fitnessClassRepository.findById(reg.getFitnessClass().getId())
-                .orElseThrow(() -> new RuntimeException("ClassTemplate not found with id: " + reg.getFitnessClass().getId()));
+    public ClassRegistration registerTeaching(ClassRegistration reg) {
+        Long teacherId = reg.getTeacher().getId();
 
-        // Kiểm tra lớp đã có người đăng ký chưa
-        List<ClassRegistration> existing = classRegistrationRepository.findByFitnessClass(template);
-        if (!existing.isEmpty()) {
-            throw new RuntimeException("This class template already has a teacher registered.");
-        }
+        Teacher teacher = teacherRepository.findById(teacherId)
+                .orElseThrow(() -> new RuntimeException("Staff not found with id: " + teacherId));
+        FitnessClass template = fitnessClassRepository.findById(reg.getFitnessClass().getId())
+                .orElseThrow(() -> new RuntimeException("ClassTemplate not found"));
 
         reg.setTeacher(teacher);
         reg.setFitnessClass(template);

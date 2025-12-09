@@ -31,8 +31,8 @@ public class ClassRegistrationController {
 
     // Staff đăng ký dạy 1 lớp
     @PostMapping
-    public ResponseEntity<ClassRegistration> registerTeaching(@RequestBody Long staffId, ClassRegistration reg) {
-        return ResponseEntity.ok(classRegistrationService.registerTeaching(staffId,reg));
+    public ResponseEntity<ClassRegistration> registerTeaching(@RequestBody ClassRegistration reg) {
+        return ResponseEntity.ok(classRegistrationService.registerTeaching(reg));
     }
 
     // Staff hủy đăng ký dạy
