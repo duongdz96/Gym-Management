@@ -76,6 +76,7 @@ import EditClassSchedule from "@/views/Manager/Classes/EditClassSchedule.vue";
 import CustomerBillHistory from "@/views/Customer/History/CustomerBillHistory.vue";
 import TeacherLayout from "@/layout/TeacherLayout.vue";
 import TeacherPersonalCalendar from "@/views/Teacher/TeacherPersonalCalendar.vue";
+import RoomManagement from "@/views/Manager/Classes/RoomManagement.vue";
 
 const routes = [
     {
@@ -98,7 +99,7 @@ const routes = [
     {
         path: "/manager",
         component: ManagerLayout,
-        // meta: { requiresAuth: true, roles: ["MANAGER"] },
+        meta: { requiresAuth: true, roles: ["MANAGER"] },
         children: [
             { path: "", name: "manager.home", component: ManagerHome },
             { path: "statistics", name: "manager.statistics", component: ManagerStatistics },
@@ -135,13 +136,14 @@ const routes = [
             { path: "schedulepattern", name: "schedulepattern", component: SchedulePattern },
             { path: "room", name: "room", component: RoomManagement },
             { path: "banner", name: "banner", component: Banner },
+
         ],
     },
 
     {
         path: "/customer",
         component: CustomerLayout,
-        // meta: { requiresAuth: true, roles: ["MEMBER"] },
+        meta: { requiresAuth: true, roles: ["MEMBER"] },
         children: [
             { path: "", name: "customer.home", component: CustomerHome },
             { path: "dashboard", name: "customer.dashboard", component: CustomerDashboard },
@@ -159,7 +161,7 @@ const routes = [
     {
         path: "/reception",
         component: ReceptionLayout,
-        // meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
+        meta: { requiresAuth: true, roles: ["RECEPTIONIST"] },
         children: [
             { path: "", name: "reception.home", component: ReceptionHome },
             { path: "memberships", name: "reception.memberships", component: ReceptionMemberships },

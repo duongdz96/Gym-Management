@@ -116,7 +116,7 @@ onMounted(async () => {
     const res = await api.get("/studentprofile");
     const data = Array.isArray(res.data) ? res.data : [];
     // Filter profiles for the current PT
-    const ptProfiles = data.filter(profile => profile.staff.id === authStore.user.id);
+    const ptProfiles = data.filter(profile => profile.pt.id === authStore.user.id);
     // Map to member objects
     members.value = ptProfiles.map(profile => ({
       id: profile.id,

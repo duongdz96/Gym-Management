@@ -170,11 +170,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8">
+  <div class="min-h-screen bg-gradient-to-br from-red-50 via-red-50 to-red-50 py-8">
     <div class="mx-auto max-w-7xl px-6">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-red-600 to-red-600 bg-clip-text text-transparent">
           Chào mừng trở lại, {{ authStore.user?.fullName || 'Hội viên' }} 👋
         </h1>
         <p class="text-gray-600 mt-2">Tổng quan hành trình tập luyện của bạn</p>
@@ -182,16 +182,16 @@ onMounted(() => {
 
       <!-- Loading State -->
       <div v-if="isLoading" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
       </div>
 
       <div v-else class="space-y-8">
         <!-- Personal Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <!-- Membership Card -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-indigo-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center">
                 <Award class="w-6 h-6 text-white" />
               </div>
               <span :class="`px-3 py-1 rounded-full text-xs font-semibold bg-${membershipStatusColor}-100 text-${membershipStatusColor}-700`">
@@ -200,29 +200,29 @@ onMounted(() => {
             </div>
             <h3 class="text-gray-600 text-sm font-medium mb-1">Gói thành viên</h3>
             <p class="text-2xl font-bold text-gray-900">{{ personalStats.activeMembership?.tier || 'Chưa kích hoạt' }}</p>
-            <RouterLink to="/customer/membership" class="text-indigo-600 text-sm font-medium hover:underline mt-2 inline-block">
+            <RouterLink to="/customer/membership" class="text-red-600 text-sm font-medium hover:underline mt-2 inline-block">
               Xem chi tiết →
             </RouterLink>
           </div>
 
           <!-- Upcoming Classes -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-purple-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center">
                 <Calendar class="w-6 h-6 text-white" />
               </div>
             </div>
             <h3 class="text-gray-600 text-sm font-medium mb-1">Lớp học sắp tới</h3>
             <p class="text-2xl font-bold text-gray-900">{{ personalStats.upcomingClasses }}</p>
-            <RouterLink to="/customer/class" class="text-purple-600 text-sm font-medium hover:underline mt-2 inline-block">
+            <RouterLink to="/customer/class" class="text-red-600 text-sm font-medium hover:underline mt-2 inline-block">
               Xem lịch học →
             </RouterLink>
           </div>
 
           <!-- Check-ins -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-pink-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center">
                 <TrendingUp class="w-6 h-6 text-white" />
               </div>
             </div>
@@ -249,14 +249,14 @@ onMounted(() => {
         <!-- Activity Timeline & Quick Actions -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Recent Activity Timeline -->
-          <div class="lg:col-span-2 bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-indigo-100">
+          <div class="lg:col-span-2 bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100">
             <div class="flex items-center gap-2 mb-6">
-              <Clock class="w-5 h-5 text-indigo-600" />
+              <Clock class="w-5 h-5 text-red-600" />
               <h2 class="text-xl font-bold text-gray-900">Hoạt động gần đây</h2>
             </div>
             <div class="space-y-4">
-              <div v-for="(activity, index) in recentActivities" :key="index" class="flex items-start gap-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl hover:shadow-md transition-shadow">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+              <div v-for="(activity, index) in recentActivities" :key="index" class="flex items-start gap-4 p-4 bg-gradient-to-r from-red-50 to-red-50 rounded-xl hover:shadow-md transition-shadow">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center flex-shrink-0">
                   <component :is="activity.icon" class="w-5 h-5 text-white" />
                 </div>
                 <div class="flex-1">
@@ -268,18 +268,18 @@ onMounted(() => {
           </div>
 
           <!-- Quick Links -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-purple-100">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100">
             <h2 class="text-xl font-bold text-gray-900 mb-6">Liên kết nhanh</h2>
             <div class="space-y-3">
-              <RouterLink to="/customer/plan" class="block p-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105">
+              <RouterLink to="/customer/plan" class="block p-4 bg-gradient-to-r from-red-500 to-red-500 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105">
                 <p class="font-semibold">Kế hoạch tập luyện</p>
                 <p class="text-xs opacity-90 mt-1">Xem kế hoạch PT của bạn</p>
               </RouterLink>
-              <RouterLink to="/customer/billhistory" class="block p-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105">
+              <RouterLink to="/customer/billhistory" class="block p-4 bg-gradient-to-r from-red-500 to-red-500 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105">
                 <p class="font-semibold">Lịch sử thanh toán</p>
                 <p class="text-xs opacity-90 mt-1">Kiểm tra các giao dịch</p>
               </RouterLink>
-              <RouterLink to="/customer/profile" class="block p-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105">
+              <RouterLink to="/customer/profile" class="block p-4 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105">
                 <p class="font-semibold">Hồ sơ của tôi</p>
                 <p class="text-xs opacity-90 mt-1">Cập nhật thông tin</p>
               </RouterLink>
@@ -288,7 +288,7 @@ onMounted(() => {
         </div>
 
         <!-- Feedback Section -->
-        <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-indigo-100">
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-red-100">
           <h2 class="text-2xl font-bold text-gray-900 mb-6">Chia sẻ đánh giá của bạn</h2>
 
           <!-- Star Rating -->
@@ -314,19 +314,19 @@ onMounted(() => {
             v-model="comment"
             rows="4"
             placeholder="Chia sẻ trải nghiệm của bạn tại phòng gym của chúng tôi"
-            class="w-full border border-gray-300 rounded-xl p-4 mb-6 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none"
+            class="w-full border border-gray-300 rounded-xl p-4 mb-6 focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none"
           ></textarea>
 
           <!-- Upload Images -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-3">Tải ảnh lên (không bắt buộc)</label>
             <div class="flex flex-wrap gap-3">
-              <label class="w-24 h-24 border-2 border-dashed border-indigo-300 rounded-xl flex items-center justify-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all">
-                <Camera class="w-8 h-8 text-indigo-400" />
+              <label class="w-24 h-24 border-2 border-dashed border-red-300 rounded-xl flex items-center justify-center cursor-pointer hover:border-red-500 hover:bg-red-50 transition-all">
+                <Camera class="w-8 h-8 text-red-400" />
                 <input type="file" class="hidden" multiple accept="image/png, image/jpeg, image/jpg, image/gif, image/webp" @change="previewImages" />
               </label>
 
-              <div v-for="(img, index) in images" :key="index" class="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-indigo-200">
+              <div v-for="(img, index) in images" :key="index" class="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-red-200">
                 <img :src="img.url" class="w-full h-full object-cover" />
                 <button @click="removeImage(index)" class="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1 hover:bg-opacity-70">
                   <X class="w-4 h-4" />
@@ -336,7 +336,7 @@ onMounted(() => {
           </div>
 
           <!-- Submit -->
-          <button @click="submitFeedback" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105">
+          <button @click="submitFeedback" class="bg-gradient-to-r from-red-600 to-red-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105">
             Gửi đánh giá
           </button>
         </div>

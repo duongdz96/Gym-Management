@@ -1,7 +1,7 @@
 <template>
   <div class="p-6">
     <div class="flex items-center gap-3 mb-6">
-      <CalendarIcon class="w-8 h-8 text-blue-600" />
+      <CalendarIcon class="w-8 h-8 text-red-600" />
       <h1 class="text-2xl font-bold text-gray-800">Lịch học của tôi</h1>
     </div>
     <ScheduleCalendar role="student" :user-id="userId" />

@@ -34,15 +34,7 @@ const handleLogout = () => {
 
       <!-- Navigation -->
       <nav class="flex items-center gap-6 text-sm font-medium">
-        <RouterLink
-          to="/customer/dashboard"
-          class="uppercase tracking-wider hover:text-red-600 transition"
-          :class="route.path === '/customer/dashboard'
-            ? 'text-red-600 border-b-2 border-red-600 pb-1'
-            : 'text-white'"
-        >
-          Dashboard
-        </RouterLink>
+
 
         <RouterLink
           to="/customer/membership"
