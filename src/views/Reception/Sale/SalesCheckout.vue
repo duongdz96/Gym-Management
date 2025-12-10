@@ -115,21 +115,33 @@ const goBack = () => {
 
 const checkCoupon = async () => {
     if (!coupon.value) return;
+    
+    // Member is required for checking coupon in backend
+    if (!selectedMember.value || !selectedMember.value.id) {
+        toast.warning("Vui lòng chọn khách hàng trước khi áp dụng mã giảm giá");
+        return;
+    }
+
     try {
-        if (coupon.value === 'GYM35') {
-            appliedCoupon.value = {
-                id: 99,
-                code: 'GYM35',
-                discountType: 'PERCENTAGE',
-                discountValue: 30
-            };
+        const res = await api.get('/coupons/check', {
+            params: {
+                code: coupon.value,
+                memberId: selectedMember.value.id
+            }
+        });
+
+        if (res.data) {
+            appliedCoupon.value = res.data;
+            toast.success("Áp dụng mã giảm giá thành công!");
         } else {
-            alert('Mã giảm giá không hợp lệ');
+            // Backend returns false if invalid or not found
+            toast.error("Mã giảm giá không hợp lệ hoặc không áp dụng cho khách hàng này");
             appliedCoupon.value = null;
         }
     } catch (e) {
         console.error(e);
-        alert('Lỗi kiểm tra mã giảm giá');
+        toast.error("Lỗi kiểm tra mã giảm giá");
+        appliedCoupon.value = null;
     }
 };
 
@@ -189,6 +201,7 @@ const submit = async () => {
             paymentStatus: paymentMethod.value === 'CASH' ? 'PAID' : 'PENDING',
             date: new Date(),
             totalPrice: finalPrice.value,
+            coupon: appliedCoupon.value ? { id: appliedCoupon.value.id } : null,
             listSoldProduct: bill.value.listSoldProduct.map(item => ({
                 product: { id: item.product.id },
                 quantity: item.quantity
