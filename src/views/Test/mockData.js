@@ -453,21 +453,6 @@ function timeOverlap(start1, end1, start2, end2) {
     return start1 < end2 && end1 > start2;
 }
 
-// ==================== INITIALIZE SESSIONS ====================
-// Must be done BEFORE mockApi is defined so getSessions() has data
-console.log('=== INITIALIZING SESSIONS ===');
-console.log('Sessions array before init:', sessions);
-console.log('Sessions length before:', sessions.length);
-console.log('Total classes:', classes.length);
-classes.forEach(classData => {
-    console.log(`Generating sessions for class ${classData.id}: ${classData.name}`);
-    const classSessions = generateSessions(classData);
-    console.log(`Generated ${classSessions.length} sessions`);
-    sessions.push(...classSessions);
-});
-console.log('Total sessions after initialization:', sessions.length);
-console.log('Sessions array after init:', sessions);
-
 // ==================== CRUD OPERATIONS ====================
 export const mockApi = {
     // Classes

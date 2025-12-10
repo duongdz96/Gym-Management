@@ -136,16 +136,29 @@ const handleLogout = () => {
               class="absolute left-0 mt-2 w-56 bg-white rounded shadow-md z-50 text-gray-800"
             >
               <RouterLink
+                to="/manager/room"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Quản lý phòng học
+              </RouterLink>
+              <RouterLink
                 to="/manager/class"
                 class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
               >
                 Quản lý lớp học
               </RouterLink>
+
               <RouterLink
-                to="/manager/room"
+                to="/manager/teacher-approval"
                 class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
               >
-                Quản lý phòng học
+                Duyệt giáo viên
+              </RouterLink>
+              <RouterLink
+                to="/manager/leave-approval"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Duyệt nghỉ phép
               </RouterLink>
             </div>
           </transition>

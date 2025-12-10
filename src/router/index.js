@@ -60,6 +60,8 @@ import CustomerBillHistory from "@/views/Customer/History/CustomerBillHistory.vu
 import TeacherLayout from "@/layout/TeacherLayout.vue";
 import TeacherPersonalCalendar from "@/views/Teacher/TeacherPersonalCalendar.vue";
 import RoomManagement from "@/views/Manager/Classes/RoomManagement.vue";
+import TeacherApprovalList from "@/views/Manager/Classes/TeacherApprovalList.vue";
+import ManagerLeaveApproval from "@/views/Manager/Classes/ManagerLeaveApproval.vue";
 
 const routes = [
     {
@@ -106,6 +108,8 @@ const routes = [
             { path: "membership/add", name: "membership.add", component: ManageAddMembership },
             { path: "membership/add-tier", name: "membership.add-tier", component: ManageAddTier },
             { path: "room", name: "room", component: RoomManagement },
+            { path: "teacher-approval", name: "manager.teacher-approval", component: TeacherApprovalList },
+            { path: "leave-approval", name: "manager.leave-approval", component: ManagerLeaveApproval },
             { path: "banner", name: "banner", component: Banner },
 
         ],

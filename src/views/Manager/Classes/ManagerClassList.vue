@@ -613,6 +613,45 @@
             </div>
           </div>
 
+          <!-- Sessions List -->
+          <div>
+            <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <Calendar class="w-5 h-5 text-red-600" />
+              Danh sách buổi học
+            </h3>
+            
+            <div v-if="loadingSessionsDetails" class="text-center py-8">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+              Đang tải...
+            </div>
+            
+            <div v-else-if="selectedClassSessions.length > 0" class="space-y-2 max-h-96 overflow-y-auto">
+              <div 
+                v-for="(session, idx) in selectedClassSessions" 
+                :key="session.id"
+                class="flex items-center gap-4 p-3 rounded-xl border border-gray-200 hover:border-red-300 hover:bg-red-50 transition-all"
+              >
+                <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold text-sm shrink-0">
+                  {{ idx + 1 }}
+                </div>
+                <div class="flex-1">
+                  <div class="font-bold text-gray-800">{{ formatDate(session.date) }}</div>
+                  <div class="text-sm text-gray-500">{{ formatScheduleTime(session.startTime) }} - {{ formatScheduleTime(session.endTime) }}</div>
+                </div>
+                <div class="text-xs font-semibold px-2 py-1 rounded" :class="{
+                  'bg-green-100 text-green-700': session.status === 'OPEN',
+                  'bg-gray-100 text-gray-500': session.status === 'CLOSED'
+                }">
+                  {{ session.status === 'OPEN' ? 'Mở' : 'Đóng' }}
+                </div>
+              </div>
+            </div>
+            
+            <div v-else class="text-center py-8 bg-gray-50 rounded-xl border border-gray-100 border-dashed">
+              <p class="text-gray-500 italic">Chưa có buổi học nào được tạo</p>
+            </div>
+          </div>
+
           <!-- Enrolled Students -->
           <div>
             <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
@@ -709,6 +748,9 @@ const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 const previewSessions = ref([]);
 const roomConflicts = ref({});
 const tempDate = ref('');
+const loadingSessionsDetails = ref(false);
+const selectedClassSessions = ref([]);
+
 
 const getEmptyClass = () => ({
   name: '',
@@ -897,12 +939,16 @@ const getEnrolledCount = (classId) => {
 };
 
 const getScheduleText = (cls) => {
+  if (!cls) return '';
+  const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   if (cls.patternType === 'weekly') {
-    const days = cls.daysOfWeek.map(d => daysOfWeek[d]).join(', ');
+    const days = cls.daysOfWeek?.map(d => daysOfWeek[d]).join(', ') || '';
     return `Hàng tuần: ${days}`;
   }
   if (cls.patternType === 'monthly') return 'Hàng tháng';
-  if (cls.patternType === 'no_repeat') return 'Một lần';
+  if (cls.patternType === 'no_repeat') {
+    return 'Tùy chọn';
+  }
   return 'Tùy chỉnh';
 };
 
@@ -917,7 +963,7 @@ const getPatternTypeText = (type) => {
 };
 
 const updatePreview = async () => {
-  if (canProceed.value && currentStep.value === 1) {
+  if (canProceed.value && (currentStep.value === 1 || currentStep.value === 2)) {
     // Generate sessions based on pattern
     const sessions = [];
     const start = new Date(newClass.value.startDate);
@@ -974,12 +1020,16 @@ const updatePreview = async () => {
     }));
     
     roomConflicts.value = {};
+    console.log('🔍 Checking conflicts for', sessions.length, 'sessions');
     for (const room of roomsData.value) {
-      const conflicts = unifiedApi.checkRoomConflicts(room.id, sessions);
+      const conflicts = await unifiedApi.checkRoomConflicts(room.id, sessions);
+      console.log(`Room ${room.name} (${room.id}):`, conflicts.length, 'conflicts');
       if (conflicts.length > 0) {
         roomConflicts.value[room.id] = conflicts;
+        console.log('Conflicts:', conflicts);
       }
     }
+    console.log('Final roomConflicts:', roomConflicts.value);
   }
 };
 
@@ -1143,9 +1193,35 @@ const createClass = async () => {
   }
 };
 
-const viewDetails = (cls) => {
+
+const viewDetails = async (cls) => {
   selectedClass.value = cls;
   showDetailsModal.value = true;
+  loadingSessionsDetails.value = true;
+  selectedClassSessions.value = [];
+  
+  try {
+    const sessions = await unifiedApi.getSessions(cls.id);
+    selectedClassSessions.value = sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+  } catch (error) {
+    console.error('Error loading sessions:', error);
+  } finally {
+    loadingSessionsDetails.value = false;
+  }
+};
+
+const formatScheduleTime = (dateTime) => {
+  if (!dateTime) return '';
+  try {
+    const date = new Date(dateTime);
+    if (isNaN(date.getTime())) return '';
+    return date.toTimeString().substring(0, 5);
+  } catch (e) {
+    if (typeof dateTime === 'string' && dateTime.match(/^\d{2}:\d{2}$/)) {
+      return dateTime;
+    }
+    return '';
+  }
 };
 
 const approveTeacher = async (cls) => {

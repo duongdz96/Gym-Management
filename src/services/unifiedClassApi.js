@@ -1,6 +1,7 @@
 // Unified API Service - Can switch between mock and real backend
 // Set USE_REAL_API = true to use real backend, false for mock data
 import apiService from '../views/Test/apiService';
+import { formatDate } from '../views/Test/dateUtils';
 import {
   users,
   teachers,
@@ -59,27 +60,27 @@ function getMember(memberId) {
 function getFitnessClassWithTeacher(fitnessClassId) {
   const fc = fitnessClassesData.find(f => f.id === fitnessClassId);
   if (!fc) return null;
-  
+
   const registration = classRegistrationsData.find(cr => cr.fitnessClassId === fitnessClassId);
   const teacher = registration ? getTeacher(registration.staffId) : null;
-  
+
   const pattern = schedulePatternsData.find(sp => {
     const schedule = classSchedulesData.find(cs => cs.fitnessClassId === fitnessClassId);
     return schedule && schedule.schedulePatternId === sp.id;
   });
-  
+
   const firstSchedule = classSchedulesData.find(cs => cs.fitnessClassId === fitnessClassId);
   const room = firstSchedule ? rooms.find(r => r.id === firstSchedule.roomId) : null;
-  
+
   const schedules = classSchedulesData.filter(cs => cs.fitnessClassId === fitnessClassId);
-  
+
   let status = 'pending_teacher';
   if (registration) {
     status = 'ready_for_students';
   }
-  
+
   const maxStudents = schedules.length > 0 ? Math.max(...schedules.map(s => s.capacity)) : 20;
-  
+
   const startTime = pattern ? pattern.timeStart.substring(0, 5) : '07:00';
   const endTime = pattern ? pattern.timeEnd.substring(0, 5) : '08:30';
   const daysOfWeek = pattern ? pattern.daysOfWeek.split(',').map(d => {
@@ -88,7 +89,7 @@ function getFitnessClassWithTeacher(fitnessClassId) {
   }).filter(d => d !== undefined) : [];
   const startDate = pattern ? pattern.classStartDate : '';
   const endDate = pattern ? pattern.classEndDate : '';
-  
+
   return {
     id: fc.id,
     name: fc.name,
@@ -114,13 +115,13 @@ function classScheduleToSession(cs) {
   const room = rooms.find(r => r.id === cs.roomId);
   const registration = classRegistrationsData.find(cr => cr.fitnessClassId === cs.fitnessClassId);
   const teacher = registration ? getTeacher(registration.staffId) : null;
-  
+
   const startDate = new Date(cs.startTime);
   const dateStr = startDate.toISOString().split('T')[0];
   const startTimeStr = startDate.toTimeString().substring(0, 5);
   const endDate = new Date(cs.endTime);
   const endTimeStr = endDate.toTimeString().substring(0, 5);
-  
+
   return {
     id: cs.id,
     classId: cs.fitnessClassId,
@@ -145,7 +146,7 @@ export const unifiedApi = {
     if (USE_REAL_API) {
       const data = await apiService.fitnessClass.getAll();
       const classes = [];
-      
+
       for (const fc of data) {
         // Get teacher registration for this class
         let teacherId = null;
@@ -157,7 +158,7 @@ export const unifiedApi = {
         } catch (e) {
           // No teacher registered yet
         }
-        
+
         // Get schedules to determine maxStudents and schedule info
         let maxStudents = 20;
         let startTime = '07:00';
@@ -166,14 +167,15 @@ export const unifiedApi = {
         let startDate = '';
         let endDate = '';
         let roomId = null;
-        
+        let patternType = 'weekly'; // Default
+
         try {
           const schedules = await apiService.classSchedule.getByFitnessClass(fc.id);
           if (schedules.length > 0) {
             maxStudents = Math.max(...schedules.map(s => s.capacity || 20));
             const firstSchedule = schedules[0];
             roomId = firstSchedule.room?.id || firstSchedule.roomId;
-            
+
             // Get schedule pattern info if available
             if (firstSchedule.schedulePattern) {
               const pattern = firstSchedule.schedulePattern;
@@ -181,17 +183,25 @@ export const unifiedApi = {
               endTime = pattern.timeEnd?.substring(0, 5) || '08:30';
               startDate = pattern.classStartDate || '';
               endDate = pattern.classEndDate || '';
-              
+
               if (pattern.daysOfWeek) {
                 const dayMap = { 'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3, 'THURSDAY': 4, 'FRIDAY': 5, 'SATURDAY': 6, 'SUNDAY': 0 };
                 daysOfWeek = pattern.daysOfWeek.split(',').map(d => dayMap[d.trim()]).filter(d => d !== undefined);
               }
             }
+
+            // Determine pattern type based on schedules
+            // If we have specific schedules but no repeating pattern (or empty daysOfWeek), it's custom dates
+            if (schedules.length > 0 && daysOfWeek.length === 0) {
+              patternType = 'no_repeat';
+            } else if (daysOfWeek.length > 0) {
+              patternType = 'weekly';
+            }
           }
         } catch (e) {
           // No schedules yet
         }
-        
+
         classes.push({
           id: fc.id,
           name: fc.name,
@@ -201,7 +211,7 @@ export const unifiedApi = {
           status: teacherId ? 'ready_for_students' : 'pending_teacher',
           roomId: roomId,
           teacherId: teacherId,
-          patternType: 'weekly',
+          patternType: patternType,
           startTime: startTime,
           endTime: endTime,
           daysOfWeek: daysOfWeek,
@@ -211,13 +221,13 @@ export const unifiedApi = {
           createdAt: fc.createdAt || new Date().toISOString()
         });
       }
-      
+
       return classes;
     } else {
       return fitnessClassesData.map(fc => getFitnessClassWithTeacher(fc.id)).filter(c => c !== null);
     }
   },
-  
+
   getClass: async (id) => {
     if (USE_REAL_API) {
       const fc = await apiService.fitnessClass.getById(id);
@@ -243,7 +253,7 @@ export const unifiedApi = {
       return getFitnessClassWithTeacher(id);
     }
   },
-  
+
   createClass: async (classData) => {
     if (USE_REAL_API) {
       const data = {
@@ -266,7 +276,7 @@ export const unifiedApi = {
       return getFitnessClassWithTeacher(newFitnessClass.id);
     }
   },
-  
+
   updateClass: async (id, updates) => {
     if (USE_REAL_API) {
       return await apiService.fitnessClass.update(id, updates);
@@ -279,7 +289,7 @@ export const unifiedApi = {
       throw new Error('Class not found');
     }
   },
-  
+
   deleteClass: async (id) => {
     if (USE_REAL_API) {
       return await apiService.fitnessClass.delete(id);
@@ -294,7 +304,7 @@ export const unifiedApi = {
       throw new Error('Class not found');
     }
   },
-  
+
   // Class Schedules
   getSessions: async (fitnessClassId) => {
     if (USE_REAL_API) {
@@ -307,7 +317,7 @@ export const unifiedApi = {
         const endDateTime = new Date(cs.endTime);
         const startTimeStr = startDateTime.toTimeString().substring(0, 5);
         const endTimeStr = endDateTime.toTimeString().substring(0, 5);
-        
+
         return {
           id: cs.id,
           classId: cs.fitnessClass?.id || fitnessClassId,
@@ -328,7 +338,7 @@ export const unifiedApi = {
       return schedules.map(cs => classScheduleToSession(cs));
     }
   },
-  
+
   // Teacher Registrations
   applyToTeach: async (fitnessClassId, teacherId) => {
     if (USE_REAL_API) {
@@ -350,7 +360,7 @@ export const unifiedApi = {
         rejectionReason: null
       };
     } else {
-      const existing = classRegistrationsData.find(cr => 
+      const existing = classRegistrationsData.find(cr =>
         cr.fitnessClassId === fitnessClassId && cr.staffId === teacherId
       );
       if (existing) {
@@ -375,7 +385,7 @@ export const unifiedApi = {
       };
     }
   },
-  
+
   getApplications: async () => {
     if (USE_REAL_API) {
       // Get all classes and their registrations
@@ -414,7 +424,7 @@ export const unifiedApi = {
       }));
     }
   },
-  
+
   approveTeacher: async (applicationId, managerId) => {
     if (USE_REAL_API) {
       throw new Error('Teacher approval not yet implemented for real API');
@@ -434,7 +444,7 @@ export const unifiedApi = {
       };
     }
   },
-  
+
   rejectTeacher: async (applicationId, managerId, reason) => {
     if (USE_REAL_API) {
       // In real API, rejection might be handled differently
@@ -458,7 +468,7 @@ export const unifiedApi = {
       };
     }
   },
-  
+
   // Member Registrations
   registerBulkSchedules: async (memberId, scheduleIds) => {
     console.log(`--- Bulk Registration Started ---`);
@@ -471,13 +481,13 @@ export const unifiedApi = {
       for (const scheduleId of scheduleIds) {
         const schedule = classSchedulesData.find(cs => cs.id === scheduleId);
         if (!schedule) throw new Error(`Schedule ${scheduleId} not found`);
-        
-        const existing = memberRegistrationsData.find(mr => 
+
+        const existing = memberRegistrationsData.find(mr =>
           mr.classScheduleId === scheduleId && mr.memberId === memberId
         );
         if (existing) continue;
-        
-        const currentCount = memberRegistrationsData.filter(mr => 
+
+        const currentCount = memberRegistrationsData.filter(mr =>
           mr.classScheduleId === scheduleId
         ).length;
         if (currentCount >= schedule.capacity) {
@@ -486,7 +496,7 @@ export const unifiedApi = {
         if (schedule.status !== 'OPEN') {
           throw new Error(`Schedule ${scheduleId} is not open for registration`);
         }
-        
+
         const registration = {
           id: nextMemberRegistrationId++,
           followDate: new Date().toISOString(),
@@ -499,7 +509,7 @@ export const unifiedApi = {
       return results;
     }
   },
-  
+
   getStudentRegistrations: async (studentId) => {
     if (USE_REAL_API) {
       const registrations = await apiService.memberRegistration.getByMember(studentId);
@@ -526,7 +536,7 @@ export const unifiedApi = {
       });
     }
   },
-  
+
   cancelRegistration: async (fitnessClassId, studentId) => {
     if (USE_REAL_API) {
       // Get all registrations for this student
@@ -534,7 +544,7 @@ export const unifiedApi = {
       // Find registration for schedules of this class
       const schedules = await apiService.classSchedule.getByFitnessClass(fitnessClassId);
       const scheduleIds = schedules.map(s => s.id);
-      const registration = registrations.find(r => 
+      const registration = registrations.find(r =>
         scheduleIds.includes(r.classSchedule?.id)
       );
       if (registration) {
@@ -543,7 +553,7 @@ export const unifiedApi = {
       throw new Error('Registration not found');
     } else {
       const schedules = classSchedulesData.filter(cs => cs.fitnessClassId === fitnessClassId);
-      const registration = memberRegistrationsData.find(mr => 
+      const registration = memberRegistrationsData.find(mr =>
         schedules.some(cs => cs.id === mr.classScheduleId) &&
         mr.memberId === studentId
       );
@@ -555,7 +565,7 @@ export const unifiedApi = {
       return registration;
     }
   },
-  
+
   // Rooms, Teachers, Students
   getRooms: async () => {
     if (USE_REAL_API) {
@@ -575,7 +585,7 @@ export const unifiedApi = {
       }));
     }
   },
-  
+
   getAvailableRoomsForPattern: async (pattern) => {
     if (USE_REAL_API) {
       // pattern should have: daysOfWeek, timeStart, timeEnd, classStartDate, classEndDate
@@ -596,7 +606,7 @@ export const unifiedApi = {
       }));
     }
   },
-  
+
   getTeachers: async () => {
     if (USE_REAL_API) {
       const data = await apiService.teacher.getAll();
@@ -612,7 +622,7 @@ export const unifiedApi = {
       return teachers.map(t => getTeacher(t.id)).filter(t => t !== null);
     }
   },
-  
+
   getStudents: async () => {
     if (USE_REAL_API) {
       const data = await apiService.member.getAll();
@@ -627,7 +637,7 @@ export const unifiedApi = {
       return members.map(m => getMember(m.id)).filter(m => m !== null);
     }
   },
-  
+
   // Schedules
   getStudentSchedule: async (studentId, startDate, endDate) => {
     if (USE_REAL_API) {
@@ -639,7 +649,7 @@ export const unifiedApi = {
           // Extract date directly from LocalDateTime string to avoid timezone issues
           const dateStr = reg.classSchedule.startTime ? reg.classSchedule.startTime.split('T')[0] : null;
           if (!dateStr) continue;
-          
+
           // Compare dates as strings (YYYY-MM-DD format)
           if (dateStr >= startDate && dateStr <= endDate) {
             // Parse time from LocalDateTime for display
@@ -647,7 +657,7 @@ export const unifiedApi = {
             const endDateTime = new Date(reg.classSchedule.endTime);
             const startTimeStr = startDateTime.toTimeString().substring(0, 5);
             const endTimeStr = endDateTime.toTimeString().substring(0, 5);
-            
+
             schedules.push({
               id: reg.classSchedule.id,
               classId: reg.classSchedule.fitnessClass?.id,
@@ -680,7 +690,7 @@ export const unifiedApi = {
       return mySchedules.map(cs => classScheduleToSession(cs));
     }
   },
-  
+
   getTeacherSchedule: async (teacherId, startDate, endDate) => {
     if (USE_REAL_API) {
       const registrations = await apiService.classRegistration.getByTeacher(teacherId);
@@ -693,7 +703,7 @@ export const unifiedApi = {
           // cs.startTime is in format "2024-01-15T00:00:00" (LocalDateTime, no timezone)
           const dateStr = cs.startTime ? cs.startTime.split('T')[0] : null;
           if (!dateStr) continue;
-          
+
           // Compare dates as strings (YYYY-MM-DD format)
           if (dateStr >= startDate && dateStr <= endDate) {
             // Parse time from LocalDateTime for display
@@ -701,7 +711,7 @@ export const unifiedApi = {
             const endDateTime = new Date(cs.endTime);
             const startTimeStr = startDateTime.toTimeString().substring(0, 5);
             const endTimeStr = endDateTime.toTimeString().substring(0, 5);
-            
+
             schedules.push({
               id: cs.id,
               classId: cs.fitnessClass?.id,
@@ -734,13 +744,83 @@ export const unifiedApi = {
       return mySchedules.map(cs => classScheduleToSession(cs));
     }
   },
-  
-  // Conflict checking (mock only for now)
-  checkRoomConflicts: (roomId, newSessions, excludeFitnessClassId = null) => {
-    // This would need real implementation for real API
-    return [];
+
+  // Conflict checking
+  checkRoomConflicts: async (roomId, newSessions, excludeFitnessClassId = null) => {
+    try {
+      // Get all schedules for this room
+      const allSchedules = await apiService.classSchedule.getAll();
+      const roomSchedules = allSchedules.filter(s => s.room?.id === roomId);
+
+      console.log(`📅 Room ${roomId}: Found ${roomSchedules.length} existing schedules`);
+      console.log('New sessions to check:', newSessions);
+
+      // Fetch all fitness classes and build a schedule-to-class map
+      const allClasses = await apiService.fitnessClass.getAll();
+      const scheduleToClassMap = {};
+
+      for (const cls of allClasses) {
+        try {
+          const classSchedules = await apiService.classSchedule.getByFitnessClass(cls.id);
+          classSchedules.forEach(schedule => {
+            scheduleToClassMap[schedule.id] = cls.name;
+          });
+        } catch (e) {
+          console.error(`Error fetching schedules for class ${cls.id}:`, e);
+        }
+      }
+
+      console.log('📚 Schedule to Class map:', scheduleToClassMap);
+
+      const conflicts = [];
+
+      for (const newSession of newSessions) {
+        const newStart = new Date(newSession.startTime);
+        const newEnd = new Date(newSession.endTime);
+
+        for (const existing of roomSchedules) {
+          // Skip if it's from the class we're editing
+          if (excludeFitnessClassId && existing.fitnessClass?.id === excludeFitnessClassId) {
+            continue;
+          }
+
+          const existingStart = new Date(existing.startTime);
+          const existingEnd = new Date(existing.endTime);
+
+          // Check if time ranges overlap
+          if (newStart < existingEnd && newEnd > existingStart) {
+            const dateStr = existingStart.toISOString().split('T')[0];
+            const timeStr = `${existingStart.toTimeString().substring(0, 5)} - ${existingEnd.toTimeString().substring(0, 5)}`;
+
+            console.log('🔍 Existing schedule ID:', existing.id);
+
+            // Get class name from schedule-to-class map
+            const className = scheduleToClassMap[existing.id] || 'Unknown Class';
+            console.log('🔍 Class name from map:', className);
+
+            console.log('⚠️ CONFLICT FOUND:', {
+              newSession: `${newStart.toISOString()} - ${newEnd.toISOString()}`,
+              existing: `${existingStart.toISOString()} - ${existingEnd.toISOString()}`,
+              className: className
+            });
+
+            conflicts.push({
+              date: formatDate(dateStr),
+              time: timeStr,
+              className: className
+            });
+          }
+        }
+      }
+
+      return conflicts;
+    } catch (error) {
+      console.error('Error checking room conflicts:', error);
+      return [];
+    }
   },
-  
+
+
   checkTeacherConflicts: (teacherId, newSessions, excludeFitnessClassId = null) => {
     // This would need real implementation for real API
     return [];
