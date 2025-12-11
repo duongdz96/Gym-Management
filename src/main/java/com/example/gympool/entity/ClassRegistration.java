@@ -15,7 +15,7 @@ public class ClassRegistration {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "staff_id", nullable = false)
+    @JoinColumn(name = "teacher_id", nullable = false)
     private Teacher teacher;
 
     @ManyToOne
