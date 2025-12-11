@@ -33,6 +33,6 @@ public class FitnessClass {
     private String status;
 
     @OneToMany(mappedBy = "fitnessClass", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<ClassSchedule> classSchedule;
 }

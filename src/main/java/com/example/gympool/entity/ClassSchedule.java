@@ -28,7 +28,7 @@ public class ClassSchedule {
 
     @ManyToOne
     @JoinColumn(name = "fitness_class_id", nullable = true)
-    @JsonBackReference
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"schedules", "registrations"})
     private FitnessClass fitnessClass;
 
     @ManyToOne

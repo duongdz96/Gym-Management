@@ -1,6 +1,7 @@
 package com.example.gympool.service.impl;
 
 import com.example.gympool.entity.ClassSchedule;
+import com.example.gympool.entity.FitnessClass;
 import com.example.gympool.entity.Member;
 import com.example.gympool.entity.MemberRegistration;
 import com.example.gympool.repository.ClassScheduleRepository;
@@ -60,6 +61,19 @@ public class MemberRegistrationServiceImpl implements MemberRegistrationService 
             throw new RuntimeException("Học viên đã đăng ký lớp học này rồi.");
         }
 
+        // Check for schedule conflicts
+        List<MemberRegistration> memberRegistrations = memberRegistrationRepository.findByMember(member);
+        for (MemberRegistration existingReg : memberRegistrations) {
+            ClassSchedule existingSchedule = existingReg.getClassSchedule();
+            if (schedulesOverlap(schedule, existingSchedule)) {
+                throw new RuntimeException(
+                    "Lịch học bị trùng với lớp " + 
+                    (existingSchedule.getFitnessClass() != null ? existingSchedule.getFitnessClass().getName() : "khác") +
+                    " vào " + schedule.getStartTime().toLocalDate()
+                );
+            }
+        }
+
         //cái này để tăng, về cơ bản là select count(*)
         int currentRegistrations = memberRegistrationRepository.countByClassScheduleId(scheduleId);
 
@@ -74,8 +88,24 @@ public class MemberRegistrationServiceImpl implements MemberRegistrationService 
 
         return memberRegistrationRepository.save(newRegistration);
     }
+    
+    private boolean schedulesOverlap(ClassSchedule sch1, ClassSchedule sch2) {
+        // Check if dates are the same
+        if (!sch1.getStartTime().toLocalDate().equals(sch2.getStartTime().toLocalDate())) {
+            return false;
+        }
+        
+        // Check if times overlap
+        LocalDateTime start1 = sch1.getStartTime();
+        LocalDateTime end1 = sch1.getEndTime();
+        LocalDateTime start2 = sch2.getStartTime();
+        LocalDateTime end2 = sch2.getEndTime();
+        
+        return start1.isBefore(end2) && end1.isAfter(start2);
+    }
 
     @Override
+    @Transactional
     public void cancelRegistration(Long registrationId, Long memberId) {
         MemberRegistration registration = memberRegistrationRepository.findById(registrationId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bản ghi đăng ký với id: " + registrationId));
@@ -83,7 +113,26 @@ public class MemberRegistrationServiceImpl implements MemberRegistrationService 
         if (!registration.getMember().getId().equals(memberId)) {
             throw new RuntimeException("Bạn không có quyền hủy lịch học của người khác!");
         }
-        memberRegistrationRepository.delete(registration);
+        
+        // Get the fitness class of this registration
+        FitnessClass fitnessClass = registration.getClassSchedule().getFitnessClass();
+        if (fitnessClass == null) {
+            // If no fitness class, just delete this single registration
+            memberRegistrationRepository.delete(registration);
+            return;
+        }
+        
+        // Find and delete ALL registrations of this member for this fitness class
+        Member member = registration.getMember();
+        List<MemberRegistration> allRegistrations = memberRegistrationRepository.findByMember(member);
+        
+        for (MemberRegistration reg : allRegistrations) {
+            if (reg.getClassSchedule() != null && 
+                reg.getClassSchedule().getFitnessClass() != null &&
+                reg.getClassSchedule().getFitnessClass().getId().equals(fitnessClass.getId())) {
+                memberRegistrationRepository.delete(reg);
+            }
+        }
     }
 
     @Override

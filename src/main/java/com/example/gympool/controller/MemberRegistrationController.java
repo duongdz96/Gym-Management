@@ -41,7 +41,7 @@ public class MemberRegistrationController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> cancelRegistration(@PathVariable Long registrationId, Long memberId) {
+    public ResponseEntity<String> cancelRegistration(@PathVariable("id") Long registrationId, @RequestParam Long memberId) {
         try {
             memberRegistrationService.cancelRegistration(registrationId, memberId);
             return ResponseEntity.ok("Cancelled successfully");
