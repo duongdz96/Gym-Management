@@ -206,7 +206,8 @@
                     </button>
                     <button 
                       @click="approve(app)" 
-                      class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-semibold hover:bg-green-600 transition-all flex items-center gap-1"
+                      :disabled="conflictMap[app.id] && conflictMap[app.id].length > 0"
+                      class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-semibold hover:bg-green-600 transition-all flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <CheckCircle class="w-4 h-4" />
                       Duyệt
@@ -423,13 +424,65 @@ const checkTeacherConflict = async (app) => {
   const cls = getClass(app.classId);
   if (!cls) return [];
   
-  // Get sessions for this class
-  const sessions = await unifiedApi.getSessions(cls.id);
-  const sessionData = sessions.map(s => ({
-    startTime: `${s.date}T${s.startTime}:00`,
-    endTime: `${s.date}T${s.endTime}:00`
-  }));
-  return unifiedApi.checkTeacherConflicts(app.teacherId, sessionData, cls.id);
+  const conflicts = [];
+  
+  // Get all approved applications for this teacher (excluding current one)
+  const teacherApprovedApps = applications.value.filter(a => 
+    a.teacherId === app.teacherId && 
+    a.status === 'approved' && 
+    a.id !== app.id
+  );
+  
+  // Check if new class schedule conflicts with any approved class
+  for (const approvedApp of teacherApprovedApps) {
+    const approvedClass = getClass(approvedApp.classId);
+    if (!approvedClass) continue;
+    
+    // Check if schedules overlap
+    if (schedulesOverlap(cls, approvedClass)) {
+      conflicts.push({
+        date: formatSchedule(approvedClass),
+        time: `${approvedClass.startTime} - ${approvedClass.endTime}`,
+        className: approvedClass.name
+      });
+    }
+  }
+  
+  return conflicts;
+};
+
+const schedulesOverlap = (class1, class2) => {
+  // Check time overlap
+  const time1Start = class1.startTime;
+  const time1End = class1.endTime;
+  const time2Start = class2.startTime;
+  const time2End = class2.endTime;
+  
+  const timeOverlap = time1Start < time2End && time1End > time2Start;
+  if (!timeOverlap) return false;
+  
+  // Check day overlap based on pattern type
+  if (class1.patternType === 'weekly' && class2.patternType === 'weekly') {
+    // Check if any days overlap
+    const days1 = class1.daysOfWeek || [];
+    const days2 = class2.daysOfWeek || [];
+    return days1.some(d => days2.includes(d));
+  }
+  
+  // For other patterns, would need more complex logic
+  // For now, assume they might conflict
+  return true;
+};
+
+const formatSchedule = (cls) => {
+  const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  if (cls.patternType === 'weekly') {
+    const days = (cls.daysOfWeek || []).map(d => daysOfWeek[d]).join(', ');
+    return `Hàng tuần: ${days}`;
+  }
+  if (cls.patternType === 'monthly') return 'Hàng tháng';
+  if (cls.patternType === 'no_repeat') return 'Một lần';
+  return 'Tùy chỉnh';
 };
 
 const classHasApprovedTeacher = (classId) => {
@@ -452,13 +505,21 @@ const autoReject = async (app) => {
 };
 
 const approve = async (app) => {
+  // Check for conflicts before confirming
+  if (conflictMap.value[app.id] && conflictMap.value[app.id].length > 0) {
+    alert('❌ Không thể duyệt! Giáo viên có lịch trùng với lớp khác.');
+    return;
+  }
+  
   if (confirm('Bạn có chắc muốn duyệt giáo viên này?')) {
     try {
       await unifiedApi.approveTeacher(app.id, 'manager');
       alert('✅ Đã duyệt giáo viên thành công!');
       await loadData();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      // Show detailed error message from backend
+      const errorMsg = error.response?.data?.message || error.response?.data || error.message;
+      alert('❌ Lỗi: ' + errorMsg);
     }
   }
 };

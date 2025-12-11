@@ -52,6 +52,13 @@ const handleLogout = () => {
         </RouterLink>
 
         <RouterLink
+          to="/reception/class-registration"
+          class="text-white uppercase tracking-wider hover:text-red-500 transition"
+        >
+          Class Registration
+        </RouterLink>
+
+        <RouterLink
           to="/customer-management"
           class="text-white uppercase tracking-wider hover:text-red-500 transition"
         >

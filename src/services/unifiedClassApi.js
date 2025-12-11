@@ -148,12 +148,14 @@ export const unifiedApi = {
       const classes = [];
 
       for (const fc of data) {
-        // Get teacher registration for this class
+        // Get APPROVED teacher registration for this class
         let teacherId = null;
         try {
           const registrations = await apiService.classRegistration.getByFitnessClass(fc.id);
-          if (registrations.length > 0) {
-            teacherId = registrations[0].teacher?.id || registrations[0].staffId;
+          // Only set teacherId if there's an APPROVED registration
+          const approvedReg = registrations.find(r => r.status === 'APPROVED' || r.status === 'approved');
+          if (approvedReg) {
+            teacherId = approvedReg.teacher?.id || approvedReg.staffId;
           }
         } catch (e) {
           // No teacher registered yet
@@ -405,11 +407,11 @@ export const unifiedApi = {
               id: reg.id,
               classId: cls.id,
               teacherId: reg.teacher?.id || reg.staffId,
-              status: 'pending', // Will need to check approval status
+              status: (reg.status || 'PENDING').toLowerCase(), // Use actual status from backend
               appliedAt: new Date().toISOString(),
-              reviewedAt: null,
-              reviewedBy: null,
-              rejectionReason: null
+              reviewedAt: reg.status === 'APPROVED' || reg.status === 'REJECTED' ? new Date().toISOString() : null,
+              reviewedBy: reg.status === 'APPROVED' || reg.status === 'REJECTED' ? 'manager' : null,
+              rejectionReason: reg.status === 'REJECTED' ? reg.description : null
             });
           });
         } catch (e) {
@@ -433,7 +435,20 @@ export const unifiedApi = {
 
   approveTeacher: async (applicationId, managerId) => {
     if (USE_REAL_API) {
-      throw new Error('Teacher approval not yet implemented for real API');
+      try {
+        // Approve the registration - backend returns the updated registration
+        const updatedRegistration = await apiService.classRegistration.approve(applicationId);
+
+        return {
+          id: applicationId,
+          status: 'approved',
+          reviewedAt: new Date().toISOString(),
+          reviewedBy: managerId
+        };
+      } catch (error) {
+        console.error('Error approving teacher:', error);
+        throw error;
+      }
     } else {
       const registration = classRegistrationsData.find(cr => cr.id === applicationId);
       if (!registration) throw new Error('Application not found');
@@ -453,8 +468,21 @@ export const unifiedApi = {
 
   rejectTeacher: async (applicationId, managerId, reason) => {
     if (USE_REAL_API) {
-      // In real API, rejection might be handled differently
-      throw new Error('Teacher rejection not yet implemented for real API');
+      try {
+        // Reject the registration with reason
+        await apiService.classRegistration.reject(applicationId, reason);
+
+        return {
+          id: applicationId,
+          status: 'rejected',
+          reviewedAt: new Date().toISOString(),
+          reviewedBy: managerId,
+          rejectionReason: reason
+        };
+      } catch (error) {
+        console.error('Error rejecting teacher:', error);
+        throw error;
+      }
     } else {
       const registration = classRegistrationsData.find(cr => cr.id === applicationId);
       if (!registration) throw new Error('Application not found');

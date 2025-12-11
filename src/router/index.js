@@ -45,6 +45,7 @@ import ReceptionAddMembership from "@/views/Reception/Membership/ReceptionAddMem
 import ReceptionMemberships from "@/views/Reception/Membership/ReceptionMemberships.vue";
 import SalesSelect from "@/views/Reception/Sale/SalesSelect.vue";
 import SalesCheckout from "@/views/Reception/Sale/SalesCheckout.vue";
+import ReceptionClassRegistration from "@/views/Reception/Classes/ReceptionClassRegistration.vue";
 
 import PTLayout from "@/layout/PTLayout.vue";
 import PTHome from "@/views/PT/PTHome.vue";
@@ -141,6 +142,7 @@ const routes = [
             { path: "", name: "reception.home", component: ReceptionHome },
             { path: "memberships", name: "reception.memberships", component: ReceptionMemberships },
             { path: "add-membership", name: "add-membership", component: ReceptionAddMembership },
+            { path: "class-registration", name: "reception.class-registration", component: ReceptionClassRegistration },
             { path: "salesselect", name: "salesselect", component: SalesSelect },
             { path: "salescheckout", name: "salesCheckout", component: SalesCheckout },
         ],

@@ -95,6 +95,18 @@ export const classRegistrationApi = {
       params: { staffId }
     });
     return res.data;
+  },
+
+  approve: async (registrationId) => {
+    const res = await api.put(`/class-registrations/${registrationId}/approve`);
+    return res.data;
+  },
+
+  reject: async (registrationId, reason) => {
+    const res = await api.put(`/class-registrations/${registrationId}/reject`, null, {
+      params: { reason }
+    });
+    return res.data;
   }
 };
 
