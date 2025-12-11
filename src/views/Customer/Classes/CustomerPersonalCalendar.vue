@@ -26,7 +26,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useAuthStore } from '@/stores/useAuthStore';
-import ScheduleCalendar from '@/views/Test/ScheduleCalendar.vue';
+import ScheduleCalendar from '@/components/common/ScheduleCalendar.vue';
 import { Calendar } from 'lucide-vue-next';
 
 const authStore = useAuthStore();

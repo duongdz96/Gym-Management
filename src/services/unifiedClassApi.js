@@ -678,7 +678,6 @@ export const unifiedApi = {
       const registrations = await apiService.memberRegistration.getByMember(studentId);
       const schedules = [];
       for (const reg of registrations) {
-        const fitnessClassDetails = reg.fitnessClass;
         if (reg.classSchedule) {
           // Extract date directly from LocalDateTime string to avoid timezone issues
           const dateStr = reg.classSchedule.startTime ? reg.classSchedule.startTime.split('T')[0] : null;
@@ -692,6 +691,25 @@ export const unifiedApi = {
             const startTimeStr = startDateTime.toTimeString().substring(0, 5);
             const endTimeStr = endDateTime.toTimeString().substring(0, 5);
 
+            // Get className - try multiple sources
+            let className = 'Unknown';
+
+            if (reg.fitnessClass?.name) {
+              className = reg.fitnessClass.name;
+            } else if (reg.classSchedule.fitnessClass?.name) {
+              className = reg.classSchedule.fitnessClass.name;
+            } else if (reg.classSchedule.fitnessClass?.id) {
+              // Fetch class details if we have the ID but not the name
+              try {
+                const classDetails = await apiService.fitnessClass.getById(reg.classSchedule.fitnessClass.id);
+                className = classDetails.name || 'Unknown';
+              } catch (e) {
+                console.warn('❌ Could not fetch class details:', e);
+              }
+            } else {
+              console.warn('⚠️ No fitnessClass data available');
+            }
+
             schedules.push({
               id: reg.classSchedule.id,
               classId: reg.classSchedule.fitnessClass?.id,
@@ -702,9 +720,9 @@ export const unifiedApi = {
               room: reg.classSchedule.room,
               status: reg.classSchedule.status,
               capacity: reg.classSchedule.capacity,
-              className: fitnessClassDetails?.name || 'Unknown',
+              className: className,
               roomName: reg.classSchedule.room?.name || 'Unknown',
-              teacherName: 'Unknown'
+              teacherName: reg.classSchedule.teacher?.fullName || 'Unknown'
             });
           }
         }
@@ -728,8 +746,10 @@ export const unifiedApi = {
   getTeacherSchedule: async (teacherId, startDate, endDate) => {
     if (USE_REAL_API) {
       const registrations = await apiService.classRegistration.getByTeacher(teacherId);
+      // Only show APPROVED classes
+      const approvedRegistrations = registrations.filter(r => r.status === 'APPROVED');
       const schedules = [];
-      for (const reg of registrations) {
+      for (const reg of approvedRegistrations) {
         const fitnessClassDetails = reg.fitnessClass;
         const classSchedules = await apiService.classSchedule.getByFitnessClass(reg.fitnessClass?.id);
         for (const cs of classSchedules) {
@@ -756,7 +776,7 @@ export const unifiedApi = {
               room: cs.room,
               status: cs.status,
               capacity: cs.capacity,
-              className: fitnessClassDetails?.name || 'DangNull',
+              className: fitnessClassDetails?.name || cs.fitnessClass?.name || 'Unknown',
               roomName: cs.room?.name || 'Unknown',
               teacherName: reg.teacher?.fullName || 'Unknown'
             });
@@ -786,8 +806,6 @@ export const unifiedApi = {
       const allSchedules = await apiService.classSchedule.getAll();
       const roomSchedules = allSchedules.filter(s => s.room?.id === roomId);
 
-      console.log(`📅 Room ${roomId}: Found ${roomSchedules.length} existing schedules`);
-      console.log('New sessions to check:', newSessions);
 
       // Fetch all fitness classes and build a schedule-to-class map
       const allClasses = await apiService.fitnessClass.getAll();
@@ -804,7 +822,6 @@ export const unifiedApi = {
         }
       }
 
-      console.log('📚 Schedule to Class map:', scheduleToClassMap);
 
       const conflicts = [];
 
@@ -826,17 +843,9 @@ export const unifiedApi = {
             const dateStr = existingStart.toISOString().split('T')[0];
             const timeStr = `${existingStart.toTimeString().substring(0, 5)} - ${existingEnd.toTimeString().substring(0, 5)}`;
 
-            console.log('🔍 Existing schedule ID:', existing.id);
 
             // Get class name from schedule-to-class map
             const className = scheduleToClassMap[existing.id] || 'Unknown Class';
-            console.log('🔍 Class name from map:', className);
-
-            console.log('⚠️ CONFLICT FOUND:', {
-              newSession: `${newStart.toISOString()} - ${newEnd.toISOString()}`,
-              existing: `${existingStart.toISOString()} - ${existingEnd.toISOString()}`,
-              className: className
-            });
 
             conflicts.push({
               date: formatDate(dateStr),
