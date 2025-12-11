@@ -23,4 +23,6 @@ public class ClassRegistration {
     private FitnessClass fitnessClass;
 
     private String description;
+    
+    private String status; // PENDING, APPROVED, REJECTED
 }

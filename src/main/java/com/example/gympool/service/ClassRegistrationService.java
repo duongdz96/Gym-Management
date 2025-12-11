@@ -12,4 +12,10 @@ public interface ClassRegistrationService {
     // Staff hủy đăng ký dạy
     void unregisterTeachingById(Long staffId, Long registrationId);
 
+    // Manager approve registration
+    ClassRegistration approveRegistration(Long registrationId);
+
+    // Manager reject registration
+    ClassRegistration rejectRegistration(Long registrationId, String reason);
+
 }

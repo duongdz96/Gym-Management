@@ -41,4 +41,19 @@ public class ClassRegistrationController {
         classRegistrationService.unregisterTeachingById(staffId, registrationId); // Gọi một service mới theo ID
         return ResponseEntity.ok("Teaching registration removed successfully");
     }
+
+    // Manager approve teacher registration
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<ClassRegistration> approveTeacher(@PathVariable Long id) {
+        return ResponseEntity.ok(classRegistrationService.approveRegistration(id));
+    }
+
+    // Manager reject teacher registration
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<ClassRegistration> rejectTeacher(
+            @PathVariable Long id,
+            @RequestParam(required = false) String reason
+    ) {
+        return ResponseEntity.ok(classRegistrationService.rejectRegistration(id, reason));
+    }
 }
