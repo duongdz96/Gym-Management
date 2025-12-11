@@ -194,6 +194,12 @@ export const unifiedApi = {
             // If we have specific schedules but no repeating pattern (or empty daysOfWeek), it's custom dates
             if (schedules.length > 0 && daysOfWeek.length === 0) {
               patternType = 'no_repeat';
+              // For no_repeat, calculate startDate and endDate from actual schedules
+              const scheduleDates = schedules.map(s => s.startTime.split('T')[0]).sort();
+              if (scheduleDates.length > 0) {
+                startDate = scheduleDates[0];
+                endDate = scheduleDates[scheduleDates.length - 1];
+              }
             } else if (daysOfWeek.length > 0) {
               patternType = 'weekly';
             }
