@@ -170,7 +170,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-red-50 via-red-50 to-red-50 py-8">
+  <div class="min-h-screen bg-white py-8">
     <div class="mx-auto max-w-7xl px-6">
       <!-- Header -->
       <div class="mb-8">
@@ -206,7 +206,7 @@ onMounted(() => {
           </div>
 
           <!-- Upcoming Classes -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
               <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center">
                 <Calendar class="w-6 h-6 text-white" />

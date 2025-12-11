@@ -15,7 +15,6 @@ const role = ref('STAFF') // Mặc định là STAFF
 // --- Các trường dành riêng cho STAFF ---
 const position = ref('')
 const specialize = ref('')
-const hirePrice = ref(0) // Mặc định là 0
 
 // --- State xử lý UI ---
 const isLoading = ref(false)
@@ -38,16 +37,16 @@ const handleSubmit = async () => {
     role: role.value,
   }
 
-  if (role.value === 'STAFF') {
+  if (role.value === 'TEACHER') {
     payload = {
       ...payload,
       position: position.value,
       specialize: specialize.value,
-      hirePrice: hirePrice.value,
     }
   }
 
   try {
+    console.log('Payload đăng ký nhân viên:', payload)
     const response = await api.post('/auth/register-employee', payload)
     
     toast.success("Thêm nhân viên thành công!");
@@ -59,7 +58,6 @@ const handleSubmit = async () => {
     phone.value = ''
     position.value = ''
     specialize.value = ''
-    hirePrice.value = 0
     
     setTimeout(() => {
       router.push('/manager/staff') 
@@ -148,10 +146,6 @@ const handleCancel = () => {
             <input v-model="specialize" type="text" placeholder="e.g., Yoga, HIIT, Cardio" class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
           </div>
 
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700">Hire Price</label>
-            <input v-model.number="hirePrice" type="number" min="0" class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
-          </div>
         </template>
         </div>
 
