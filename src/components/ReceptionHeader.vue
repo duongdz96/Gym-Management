@@ -59,14 +59,14 @@ const handleLogout = () => {
         </RouterLink>
 
         <RouterLink
-          to="/customer-management"
+          :to="{ name: 'reception.customer-management' }"
           class="text-white uppercase tracking-wider hover:text-red-500 transition"
         >
           Customer Management
         </RouterLink>
 
         <RouterLink
-          to="/attendance-history"
+          :to="{ name: 'reception.attendance-history' }"
           class="text-white uppercase tracking-wider hover:text-red-500 transition"
         >
           Attendance History
