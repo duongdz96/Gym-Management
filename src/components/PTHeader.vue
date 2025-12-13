@@ -67,6 +67,39 @@ const handleLogout = () => {
           "
           >Students</RouterLink
         >
+
+        <RouterLink
+          to="/pt/register-class"
+          class="uppercase tracking-wider hover:text-red-600"
+          :class="
+            route.path === '/pt/register-class'
+              ? 'text-red-600 border-b-2 border-red-600 pb-1'
+              : 'text-white'
+          "
+          >Register Class</RouterLink
+        >
+
+        <RouterLink
+          to="/pt/attendance-history"
+          class="uppercase tracking-wider hover:text-red-600"
+          :class="
+            route.path === '/pt/attendance-history'
+              ? 'text-red-600 border-b-2 border-red-600 pb-1'
+              : 'text-white'
+          "
+          >Attendance</RouterLink
+        >
+
+        <RouterLink
+          to="/pt/sessions"
+          class="uppercase tracking-wider hover:text-red-600"
+          :class="
+            route.path === '/pt/sessions'
+              ? 'text-red-600 border-b-2 border-red-600 pb-1'
+              : 'text-white'
+          "
+          >Sessions</RouterLink
+        >
       </nav>
 
       <!-- Account dropdown (desktop) -->
@@ -152,6 +185,27 @@ const handleLogout = () => {
             class="uppercase tracking-wider text-white hover:text-red-600"
             @click="isMenuOpen = false"
             >Students</RouterLink
+          >
+
+          <RouterLink
+            to="/pt/register-class"
+            class="uppercase tracking-wider text-white hover:text-red-600"
+            @click="isMenuOpen = false"
+            >Register Class</RouterLink
+          >
+
+          <RouterLink
+            to="/pt/attendance-history"
+            class="uppercase tracking-wider text-white hover:text-red-600"
+            @click="isMenuOpen = false"
+            >Attendance</RouterLink
+          >
+
+          <RouterLink
+            to="/pt/sessions"
+            class="uppercase tracking-wider text-white hover:text-red-600"
+            @click="isMenuOpen = false"
+            >Sessions</RouterLink
           >
         </nav>
       </div>

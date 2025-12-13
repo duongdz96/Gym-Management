@@ -116,23 +116,6 @@ function endClass(eventId) {
 // Computed properties for calendar
 const currentMonth = computed(() => currentDate.value.getMonth());
 const currentYear = computed(() => currentDate.value.getFullYear());
-const monthName = computed(() => {
-  const months = [
-    "Month 1",
-    "Month 2",
-    "Month 3",
-    "Month 4",
-    "Month 5",
-    "Month 6",
-    "Month 7",
-    "Month 8",
-    "Month 9",
-    "Month 10",
-    "Month 11",
-    "Month 12",
-  ];
-  return months[currentMonth.value];
-});
 
 const calendarDays = computed(() => {
   const firstDay = new Date(currentYear.value, currentMonth.value, 1);
@@ -215,9 +198,9 @@ onMounted(async () => {
 <template>
   <div class="p-6 space-y-8">
     <!-- Title and Search -->
-    <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-stone-800">Lịch PT</h1>
-      <div class="flex items-center space-x-2">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <h1 class="text-xl sm:text-2xl font-bold text-stone-800">Lịch PT</h1>
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
         <input
           v-model="searchQuery"
           type="text"
@@ -249,7 +232,7 @@ onMounted(async () => {
         Không có lớp nào hôm nay
       </div>
       <div v-else class="overflow-x-auto">
-        <div class="flex space-x-4 pb-2 min-w-max">
+        <div class="flex space-x-4 pb-2 min-w-max sm:min-w-0">
           <div
             v-for="event in todayEvents"
             :key="event.id"
@@ -285,191 +268,156 @@ onMounted(async () => {
     </section>
 
     <!-- Calendar -->
-    <section class="bg-white rounded-xl shadow p-6">
-      <!-- Calendar Header -->
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold">{{ monthName }} {{ currentYear }}</h2>
-        <div class="flex gap-2">
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+      <!-- Header -->
+      <div class="p-4 sm:p-6 bg-white border-b border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h2 class="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+          Lịch Dạy - Tháng {{ currentMonth + 1 }}/{{ currentYear }}
+        </h2>
+        <div class="flex gap-2 justify-center sm:justify-end">
           <button
             @click="previousMonth"
-            class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            class="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
           >
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7"
-              ></path>
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
           </button>
           <button
             @click="nextMonth"
-            class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            class="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
           >
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              ></path>
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
           </button>
         </div>
       </div>
 
       <!-- Calendar Grid -->
-      <div class="grid grid-cols-7 gap-1">
-        <!-- Day Headers -->
-        <div
-          v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']"
-          :key="day"
-          class="p-2 text-center font-medium text-gray-500 text-sm"
-        >
-          {{ day }}
+      <div class="p-4 overflow-x-auto">
+        <!-- Days Header -->
+        <div class="grid grid-cols-7 mb-2 min-w-[700px]">
+          <div
+            v-for="day in ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']"
+            :key="day"
+            class="text-center font-semibold text-gray-500 py-2 text-sm uppercase tracking-wider"
+          >
+            {{ day }}
+          </div>
         </div>
 
-        <!-- Calendar Days -->
-        <div
-          v-for="dayData in calendarDays"
-          :key="dayData.date.toISOString()"
-          @click="dayData.events.length > 0 && selectDate(dayData)"
-          :class="[
-            'min-h-[60px] p-1 transition-colors relative hover:bg-gray-50 text-xs',
-            dayData.events.length > 0 ? 'cursor-pointer' : '',
-            !dayData.isCurrentMonth
-              ? 'text-gray-400 bg-gray-50'
-              : 'text-gray-900',
-            dayData.isToday ? 'bg-red-100' : '',
-          ]"
-        >
-          <div class="font-medium mb-1">{{ dayData.day }}</div>
-          <!-- Event indicators -->
+        <!-- Days Grid -->
+        <div class="grid grid-cols-7 gap-2 min-w-[700px]">
           <div
-            v-if="dayData.events.length > 0"
-            class="flex justify-center space-x-1"
+            v-for="dayData in calendarDays"
+            :key="dayData.date.toISOString()"
+            class="min-h-[100px] border rounded-xl p-2 transition-all relative group"
+            :class="[
+              !dayData.isCurrentMonth ? 'bg-gray-50/50 border-transparent' : 'bg-white border-gray-100 hover:border-blue-300 hover:shadow-md cursor-pointer',
+              dayData.isToday ? 'ring-2 ring-blue-500 ring-offset-1' : '',
+              dayData.events.length > 0 ? '' : ''
+            ]"
+            @click="dayData.events.length > 0 && selectDate(dayData)"
           >
-            <div
-              v-for="event in dayData.events"
-              :key="event.id"
-              class="w-1 h-1 bg-blue-500 rounded-full"
-            ></div>
+            <template v-if="dayData.isCurrentMonth">
+              <span
+                class="text-sm font-medium block mb-1"
+                :class="dayData.isToday ? 'text-blue-600 font-bold' : 'text-gray-700'"
+              >
+                {{ dayData.day }}
+              </span>
+
+              <!-- Events -->
+              <div class="space-y-1">
+                <div
+                  v-for="event in dayData.events.slice(0, 3)"
+                  :key="event.id"
+                  class="text-xs truncate px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100"
+                  :title="`${event.time} - ${event.name}`"
+                >
+                  {{ event.time }} {{ event.name }}
+                </div>
+                <div v-if="dayData.events.length > 3" class="text-xs text-gray-500">
+                  +{{ dayData.events.length - 3 }} more
+                </div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Modal for Day Details -->
-    <div
-      v-if="showModal"
-      class="fixed inset-0 flex items-center justify-center z-50"
+    <!-- Details Modal -->
+    <transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
     >
-      <!-- Overlay -->
-      <div class="absolute inset-1 backdrop-blur-sm" @click="closeModal"></div>
-      <!-- Modal Content -->
       <div
-        class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto relative z-10"
-        @click.stop
+        v-if="showModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+        @click.self="closeModal"
       >
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-900">
-              Schedule for
-              {{ selectedDate ? selectedDate.toLocaleDateString("en-US") : "" }}
+        <div class="bg-white rounded-2xl w-full max-w-lg mx-4 shadow-2xl overflow-hidden">
+          <div class="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <h3 class="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Lịch trình ngày {{ selectedDate ? selectedDate.toLocaleDateString("vi-VN") : "" }}
             </h3>
             <button
               @click="closeModal"
-              class="text-gray-400 hover:text-gray-600"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <svg
-                class="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                ></path>
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
             </button>
           </div>
 
-          <div
-            v-if="selectedDateEvents.length === 0"
-            class="text-center py-8 text-gray-500"
-          >
-            No classes on this day
-          </div>
+          <div class="p-4 sm:p-6 max-h-[60vh] overflow-y-auto">
+            <div v-if="selectedDateEvents.length === 0" class="text-center py-8 text-gray-500">
+              <div class="mb-2">😴</div>
+              Không có lịch nào trong ngày này
+            </div>
 
-          <div v-else class="space-y-3">
-            <div
-              v-for="event in selectedDateEvents"
-              :key="event.id"
-              class="border border-gray-200 rounded-lg p-4 bg-blue-50 shadow-sm"
-            >
-              <div class="flex items-start">
+            <div v-else class="space-y-4">
+              <div
+                v-for="event in selectedDateEvents"
+                :key="event.id"
+                class="flex gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-blue-200 transition-colors bg-white group"
+              >
+                <!-- Time Column -->
+                <div class="flex flex-col items-center justify-center w-20 rounded-lg font-bold shrink-0 bg-blue-50 text-blue-700">
+                  <span class="text-lg">{{ event.time.split(' - ')[0] }}</span>
+                  <span class="text-xs font-normal text-blue-500">đến</span>
+                  <span class="text-sm">{{ event.time.split(' - ')[1] }}</span>
+                </div>
+
+                <!-- Info Column -->
                 <div class="flex-1">
-                  <h4 class="font-medium text-gray-900 flex items-center mb-2">
-                    <svg
-                      class="w-4 h-4 mr-2 text-blue-500"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                        clip-rule="evenodd"
-                      ></path>
-                    </svg>
+                  <h4 class="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors">
                     {{ event.name }}
                   </h4>
-                  <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                    <div class="flex items-center">
-                      <svg
-                        class="w-4 h-4 mr-1 text-gray-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        ></path>
-                      </svg>
-                      {{ event.time }}
-                    </div>
-                    <div class="flex items-center">
-                      <svg
-                        class="w-4 h-4 mr-1 text-gray-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                        ></path>
-                      </svg>
-                      {{ event.members }} members
-                    </div>
+                  <div class="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    {{ event.members }} học viên
+                  </div>
+                  <div class="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Trạng thái: {{ event.status }}
                   </div>
                 </div>
               </div>
@@ -477,7 +425,7 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-    </div>
+    </transition>
 
     <!-- Modal for Today's Class Details -->
     <div
