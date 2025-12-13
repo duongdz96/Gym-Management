@@ -15,5 +15,4 @@ public class RegisterRequest {
     private String role;
     private String position;
     private String specialize;
-    private String hirePrice;
 }

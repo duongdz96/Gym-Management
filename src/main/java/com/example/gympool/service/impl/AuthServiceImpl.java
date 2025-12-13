@@ -112,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
 
                 teacher.setPosition(request.getPosition());
                 teacher.setSpecialize(request.getSpecialize());
-
+//                System.out.println(teacher);
                 teacherRepository.save(teacher);
             }
             case "RECEPTIONIST" -> {
