@@ -122,7 +122,7 @@ const handleLogout = () => {
         >
           <button
             class="uppercase tracking-wider hover:text-red-600 flex items-center gap-1"
-            :class="route.path.startsWith('/manager/class') || route.path.startsWith('/manager/room') || route.path.startsWith('/manager/schedulepattern') ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+            :class="route.path.startsWith('/manager/class') || route.path.startsWith('/manager/room') ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
           >
             Classes
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -142,22 +142,23 @@ const handleLogout = () => {
                 Quản lý phòng học
               </RouterLink>
               <RouterLink
-                to="/manager/classtemplate"
+                to="/manager/class"
                 class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
               >
                 Quản lý lớp học
               </RouterLink>
+
               <RouterLink
-                to="/manager/classschedule"
+                to="/manager/teacher-approval"
                 class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
               >
-                Lịch học
+                Duyệt giáo viên
               </RouterLink>
               <RouterLink
-                to="/manager/schedulepattern"
+                to="/manager/leave-approval"
                 class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
               >
-                Mẫu lịch học
+                Duyệt nghỉ phép
               </RouterLink>
             </div>
           </transition>

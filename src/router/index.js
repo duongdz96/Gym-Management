@@ -21,9 +21,7 @@ import ImportReceiptDetail from "@/views/Manager/Product/ImportReceiptDetail.vue
 import Staff from "@/views/Manager/Staff/Staff.vue";
 import Customer from "@/views/Manager/Customer/Customer.vue";
 import Attendance from "@/views/Manager/Attendance/Attendance.vue";
-import ClassTemplate from "@/views/Manager/Classes/ClassTemplate.vue";
-import AddClassTemplate from "@/views/Manager/Classes/AddClassTemplate.vue";
-import ClassSchedule from "@/views/Manager/Classes/ClassSchedule.vue";
+import ManagerClassList from "@/views/Manager/Classes/ManagerClassList.vue";
 import Banner from "@/views/Manager/Config/Banner.vue";
 import ManageMembership from "@/views/Manager/Membership/ManageMembership.vue";
 import ManageAddMembership from "@/views/Manager/Membership/ManageAddMembership.vue";
@@ -47,6 +45,7 @@ import ReceptionAddMembership from "@/views/Reception/Membership/ReceptionAddMem
 import ReceptionMemberships from "@/views/Reception/Membership/ReceptionMemberships.vue";
 import SalesSelect from "@/views/Reception/Sale/SalesSelect.vue";
 import SalesCheckout from "@/views/Reception/Sale/SalesCheckout.vue";
+import ReceptionClassRegistration from "@/views/Reception/Classes/ReceptionClassRegistration.vue";
 
 import PTLayout from "@/layout/PTLayout.vue";
 import PTHome from "@/views/PT/PTHome.vue";
@@ -56,15 +55,14 @@ import PTMembers from "@/views/PT/PTMembers.vue";
 
 import TestIndex from "@/views/Test/index.vue";
 import Test from "@/views/Test.vue";
-import SchedulePattern from "@/views/Manager/Classes/SchedulePattern.vue";
 import TeacherRegister from "@/views/Teacher/TeacherRegisterClass.vue";
 import AddStaff from "@/views/Manager/Staff/AddStaff.vue";
-import EditClassTemplate from "@/views/Manager/Classes/EditClassTemplate.vue";
-import EditClassSchedule from "@/views/Manager/Classes/EditClassSchedule.vue";
 import CustomerBillHistory from "@/views/Customer/History/CustomerBillHistory.vue";
 import TeacherLayout from "@/layout/TeacherLayout.vue";
 import TeacherPersonalCalendar from "@/views/Teacher/TeacherPersonalCalendar.vue";
 import RoomManagement from "@/views/Manager/Classes/RoomManagement.vue";
+import TeacherApprovalList from "@/views/Manager/Classes/TeacherApprovalList.vue";
+import ManagerLeaveApproval from "@/views/Manager/Classes/ManagerLeaveApproval.vue";
 
 const routes = [
     {
@@ -105,17 +103,14 @@ const routes = [
             { path: "product/import", name: "product.import", component: ImportGoodsManager },
             { path: "product/history", name: "product.history", component: ImportReceiptList },
             { path: "product/history/:id", name: "product.history.detail", component: ImportReceiptDetail },
-            { path: "classtemplate", name: "classtemplate", component: ClassTemplate },
-            { path: "classtemplate/add", name: "classtemplate.add", component: AddClassTemplate },
-            { path: "classtemplate/edit/:id", name: "classtemplate.edit", component: EditClassTemplate },
-            { path: "classschedule", name: "classschedule", component: ClassSchedule },
-            { path: "classschedule/edit/:id", name: "classschedule.edit", component: EditClassSchedule },
+            { path: "class", name: "manager.class", component: ManagerClassList },
             { path: "banner", name: "banner", component: Banner },
             { path: "membership", name: "membership", component: ManageMembership },
             { path: "membership/add", name: "membership.add", component: ManageAddMembership },
             { path: "membership/add-tier", name: "membership.add-tier", component: ManageAddTier },
-            { path: "schedulepattern", name: "schedulepattern", component: SchedulePattern },
             { path: "room", name: "room", component: RoomManagement },
+            { path: "teacher-approval", name: "manager.teacher-approval", component: TeacherApprovalList },
+            { path: "leave-approval", name: "manager.leave-approval", component: ManagerLeaveApproval },
             { path: "banner", name: "banner", component: Banner },
 
         ],
@@ -147,6 +142,7 @@ const routes = [
             { path: "", name: "reception.home", component: ReceptionHome },
             { path: "memberships", name: "reception.memberships", component: ReceptionMemberships },
             { path: "add-membership", name: "add-membership", component: ReceptionAddMembership },
+            { path: "class-registration", name: "reception.class-registration", component: ReceptionClassRegistration },
             { path: "salesselect", name: "salesselect", component: SalesSelect },
             { path: "salescheckout", name: "salesCheckout", component: SalesCheckout },
         ],

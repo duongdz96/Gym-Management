@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="p-6 bg-white border-b border-gray-100 flex justify-between items-center">
       <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-        <CalendarIcon class="w-6 h-6 text-red-600" />
+        <CalendarIcon class="w-6 h-6 text-blue-600" />
         Lịch {{ role === 'student' ? 'Học' : 'Dạy' }} - Tháng {{ currentMonth + 1 }}/{{ currentYear }}
       </h2>
       <div class="flex gap-2">
@@ -42,15 +42,15 @@
           :key="index"
           class="min-h-[100px] border rounded-xl p-2 transition-all relative group"
           :class="[
-            !date ? 'bg-gray-50/50 border-transparent' : 'bg-white border-gray-100 hover:border-red-300 hover:shadow-md cursor-pointer',
-            isToday(date) ? 'ring-2 ring-red-500 ring-offset-1' : ''
+            !date ? 'bg-gray-50/50 border-transparent' : 'bg-white border-gray-100 hover:border-blue-300 hover:shadow-md cursor-pointer',
+            isToday(date) ? 'ring-2 ring-blue-500 ring-offset-1' : ''
           ]"
           @click="date && openDayDetails(date)"
         >
           <template v-if="date">
             <span 
               class="text-sm font-medium block mb-1"
-              :class="isToday(date) ? 'text-red-600 font-bold' : 'text-gray-700'"
+              :class="isToday(date) ? 'text-blue-600 font-bold' : 'text-gray-700'"
             >
               {{ date.getDate() }}
             </span>
@@ -61,7 +61,7 @@
                 v-for="(session, sIndex) in getSessionsForDate(date)" 
                 :key="sIndex"
                 class="text-xs truncate px-1.5 py-0.5 rounded"
-                :class="session.isRegistered ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-red-50 text-red-700 border border-red-100'"
+                :class="session.isRegistered ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-blue-50 text-blue-700 border border-blue-100'"
                 :title="`${session.startTime} - ${session.className}`"
               >
                 {{ session.startTime }} {{ session.className }}
@@ -89,7 +89,7 @@
         <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
           <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
             <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <Clock class="w-5 h-5 text-red-600" />
+              <Clock class="w-5 h-5 text-blue-600" />
               Lịch trình ngày {{ formatDate(selectedDate) }}
             </h3>
             <button 
@@ -110,20 +110,20 @@
               <div 
                 v-for="session in selectedDateSessions" 
                 :key="session.id"
-                class="flex gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-red-200 transition-colors bg-white group"
+                class="flex gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-blue-200 transition-colors bg-white group"
               >
                 <!-- Time Column -->
                 <div class="flex flex-col items-center justify-center w-20 rounded-lg font-bold shrink-0"
-                  :class="session.isRegistered ? 'bg-red-50 text-red-700' : 'bg-red-50 text-red-700'"
+                  :class="session.isRegistered ? 'bg-blue-50 text-blue-700' : 'bg-blue-50 text-blue-700'"
                 >
                   <span class="text-lg">{{ session.startTime }}</span>
-                  <span class="text-xs font-normal" :class="session.isRegistered ? 'text-red-500' : 'text-red-500'">đến</span>
+                  <span class="text-xs font-normal" :class="session.isRegistered ? 'text-blue-500' : 'text-blue-500'">đến</span>
                   <span class="text-sm">{{ session.endTime }}</span>
                 </div>
                 
                 <!-- Info Column -->
                 <div class="flex-1">
-                  <h4 class="font-bold text-gray-800 text-lg group-hover:text-red-600 transition-colors">
+                  <h4 class="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors">
                     {{ session.className }}
                   </h4>
                   <div class="flex items-center gap-2 text-sm text-gray-600 mt-1">
@@ -217,13 +217,16 @@ const loadSchedule = async () => {
 
   try {
     const userId = props.userId || authStore.user?.id || 0;
+    console.log('📅 loadSchedule called:', { userId, role: props.role, startStr, endStr });
     
     let scheduleData = [];
     if (props.role === 'student') {
+      console.log('👨‍🎓 Loading student schedule...');
       scheduleData = await unifiedApi.getStudentSchedule(userId, startStr, endStr);
       const regs = await unifiedApi.getStudentRegistrations(userId);
       registeredScheduleIds.value = new Set(regs.map(r => r.scheduleId)); 
     } else {
+      console.log('👨‍🏫 Loading teacher schedule...');
       scheduleData = await unifiedApi.getTeacherSchedule(userId, startStr, endStr);
       registeredScheduleIds.value = new Set();
     }

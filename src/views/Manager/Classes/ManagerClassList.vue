@@ -3,14 +3,14 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <div class="flex items-center gap-3">
-        <Dumbbell class="w-10 h-10 text-blue-600" />
-        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+        <Dumbbell class="w-10 h-10 text-red-600" />
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
           Quản Lý Lớp Học
         </h1>
       </div>
       <button 
         @click="showCreateForm = true" 
-        class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
+        class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
       >
         <Plus class="w-5 h-5" />
         Tạo Lớp Mới
@@ -23,7 +23,7 @@
         <Filter class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <select 
           v-model="filterStatus" 
-          class="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all appearance-none bg-white"
+          class="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all appearance-none bg-white"
         >
           <option value="">Tất cả trạng thái</option>
           <option value="draft">Nháp</option>
@@ -39,7 +39,7 @@
           v-model="searchQuery" 
           type="text" 
           placeholder="Tìm kiếm lớp học..." 
-          class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+          class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
         />
       </div>
     </div>
@@ -56,7 +56,7 @@
         }"
       >
         <!-- Card Header -->
-        <div class="p-5 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+        <div class="p-5 bg-gradient-to-r from-red-600 to-red-700 text-white">
           <div class="flex justify-between items-start">
             <h3 class="text-xl font-bold">{{ cls.name }}</h3>
             <span class="px-3 py-1 bg-white/20 rounded-full text-xs font-semibold flex items-center gap-1">
@@ -115,7 +115,7 @@
           </button>
           <button 
             @click="deleteClass(cls.id)" 
-            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold transition-all flex items-center justify-center"
+            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-semibold transition-all flex items-center justify-center"
           >
             <Trash2 class="w-4 h-4" />
           </button>
@@ -131,7 +131,7 @@
     >
       <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
         <!-- Modal Header -->
-        <div class="sticky top-0 p-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white flex justify-between items-center rounded-t-2xl z-50">
+        <div class="sticky top-0 p-6 bg-gradient-to-r from-red-600 to-red-700 text-white flex justify-between items-center rounded-t-2xl z-50">
           <h2 class="text-2xl font-bold">Tạo Lớp Học Mới</h2>
           <button 
             @click="showCreateForm = false" 
@@ -156,7 +156,7 @@
               <div 
                 class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all border-4"
                 :class="currentStep === index 
-                  ? 'bg-white border-blue-600 text-blue-600 scale-110 shadow-lg' 
+                  ? 'bg-white border-red-600 text-red-600 scale-110 shadow-lg' 
                   : currentStep > index 
                     ? 'bg-white border-green-500 text-green-500' 
                     : 'bg-white border-gray-300 text-gray-400'"
@@ -165,7 +165,7 @@
               </div>
               <div 
                 class="mt-2 text-sm font-semibold text-center"
-                :class="currentStep === index ? 'text-blue-600' : 'text-gray-500'"
+                :class="currentStep === index ? 'text-red-600' : 'text-gray-500'"
               >
                 {{ step }}
               </div>
@@ -177,7 +177,7 @@
             <!-- Step 1: Basic Info -->
             <div v-show="currentStep === 0" class="space-y-4 text-gray-800">
               <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Info class="w-6 h-6 text-blue-600" />
+                <Info class="w-6 h-6 text-red-600" />
                 Thông tin cơ bản
               </h3>
               
@@ -187,7 +187,7 @@
                   v-model="newClass.name" 
                   type="text" 
                   placeholder="VD: Yoga Buổi Sáng" 
-                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
                 />
               </div>
               
@@ -197,7 +197,7 @@
                   v-model="newClass.description" 
                   rows="3" 
                   placeholder="Mô tả về lớp học..."
-                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
                 ></textarea>
               </div>
               
@@ -206,7 +206,7 @@
                   <label class="block text-sm font-semibold text-gray-700 mb-2">Độ khó *</label>
                   <select 
                     v-model="newClass.difficulty"
-                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
                   >
                     <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
@@ -221,7 +221,7 @@
                     type="number" 
                     min="1" 
                     max="50"
-                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
                   />
                 </div>
               </div>
@@ -230,7 +230,7 @@
             <!-- Step 2: Schedule -->
             <div v-show="currentStep === 1" class="space-y-4 text-gray-800">
               <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Calendar class="w-6 h-6 text-blue-600" />
+                <Calendar class="w-6 h-6 text-red-600" />
                 Lịch học
               </h3>
               
@@ -239,7 +239,7 @@
                 <select 
                   v-model="newClass.patternType" 
                   @change="onPatternTypeChange"
-                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                  class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
                 >
                   <option value="weekly">Hàng tuần (lặp đến hết tháng hiện tại)</option>
                   <option value="monthly">Hàng tháng (lặp đến hết tháng 12)</option>
@@ -255,7 +255,7 @@
                     v-model="newClass.startDate" 
                     type="date" 
                     @change="onStartDateChange"
-                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
                   />
                 </div>
                 
@@ -268,7 +268,7 @@
                     type="date"
                     :disabled="newClass.patternType !== 'custom_range'"
                     @input="newClass.endDate = $event.target.value"
-                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -281,12 +281,12 @@
                     v-model="tempDate" 
                     type="date" 
                     @change="addDate"
-                    class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
                   />
                   <button 
                     @click="addDate" 
                     type="button"
-                    class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2"
+                    class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2"
                   >
                     <Plus class="w-5 h-5" />
                     Thêm
@@ -297,7 +297,7 @@
                   <div 
                     v-for="(date, idx) in newClass.selectedDates" 
                     :key="idx"
-                    class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full text-sm font-semibold flex items-center gap-2 animate-slideIn"
+                    class="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-full text-sm font-semibold flex items-center gap-2 animate-slideIn"
                   >
                     <Calendar class="w-4 h-4" /> {{ formatDate(date) }}
                     <button 
@@ -318,7 +318,7 @@
                   <input 
                     v-model="newClass.startTime" 
                     type="time"
-                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
                   />
                 </div>
                 
@@ -327,7 +327,7 @@
                   <input 
                     v-model="newClass.endTime" 
                     type="time"
-                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
                   />
                 </div>
               </div>
@@ -338,16 +338,16 @@
                   <label 
                     v-for="(day, index) in daysOfWeek" 
                     :key="index"
-                    class="flex items-center gap-2 px-4 py-2 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-600 hover:bg-gray-50"
-                    :class="newClass.daysOfWeek.includes(index) ? 'border-blue-600 bg-purple-50' : 'border-gray-200'"
+                    class="flex items-center gap-2 px-4 py-2 border-2 rounded-lg cursor-pointer transition-all hover:border-red-600 hover:bg-gray-50"
+                    :class="newClass.daysOfWeek.includes(index) ? 'border-red-600 bg-purple-50' : 'border-gray-200'"
                   >
                     <input 
                       type="checkbox" 
                       :value="index" 
                       v-model="newClass.daysOfWeek"
-                      class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                      class="w-4 h-4 text-red-600 rounded focus:ring-red-500"
                     />
-                    <span :class="newClass.daysOfWeek.includes(index) ? 'text-blue-600 font-bold' : 'text-gray-700'">
+                    <span :class="newClass.daysOfWeek.includes(index) ? 'text-red-600 font-bold' : 'text-gray-700'">
                       {{ day }}
                     </span>
                   </label>
@@ -356,7 +356,7 @@
               
               <div v-if="previewSessions.length > 0" class="mt-6 p-4 bg-gray-50 rounded-xl border-2 border-gray-200">
                 <h4 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                  <Eye class="w-5 h-5 text-blue-600" />
+                  <Eye class="w-5 h-5 text-red-600" />
                   Xem trước: {{ previewSessions.length }} buổi học
                 </h4>
                 <div class="space-y-2 max-h-40 overflow-y-auto">
@@ -377,7 +377,7 @@
             <!-- Step 3: Room Selection -->
             <div v-show="currentStep === 2" class="space-y-4 text-gray-800">
               <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <MapPin class="w-6 h-6 text-blue-600" />
+                <MapPin class="w-6 h-6 text-red-600" />
                 Chọn phòng học
               </h3>
               
@@ -390,14 +390,14 @@
                   :class="{
                     'border-green-500 bg-green-50': newClass.roomId === room.id,
                     'border-red-300 bg-red-50 cursor-not-allowed opacity-60': isRoomConflicted(room.id) || !isRoomCapacityValid(room),
-                    'border-gray-200 hover:border-blue-600 hover:bg-gray-50': newClass.roomId !== room.id && !isRoomConflicted(room.id) && isRoomCapacityValid(room)
+                    'border-gray-200 hover:border-red-600 hover:bg-gray-50': newClass.roomId !== room.id && !isRoomConflicted(room.id) && isRoomCapacityValid(room)
                   }"
                 >
                   <h4 class="font-bold text-gray-800 mb-2">{{ room.name }}</h4>
                   <p class="text-sm text-gray-600 mb-3">{{ room.description }}</p>
                   <div 
                     class="text-sm font-semibold flex items-center gap-1"
-                    :class="!isRoomCapacityValid(room) ? 'text-blue-600' : 'text-gray-700'"
+                    :class="!isRoomCapacityValid(room) ? 'text-red-600' : 'text-gray-700'"
                   >
                     <Users class="w-4 h-4" />
                     Sức chứa: {{ room.capacity }} người
@@ -406,12 +406,12 @@
                     </span>
                   </div>
                   
-                  <div v-if="!isRoomCapacityValid(room)" class="mt-3 p-2 bg-blue-100 rounded text-xs text-blue-700 font-semibold flex items-center gap-2">
+                  <div v-if="!isRoomCapacityValid(room)" class="mt-3 p-2 bg-red-100 rounded text-xs text-red-700 font-semibold flex items-center gap-2">
                     <XCircle class="w-4 h-4" />
                     Phòng không đủ chỗ cho {{ newClass.maxStudents }} học viên
                   </div>
                   
-                  <div v-else-if="isRoomConflicted(room.id)" class="mt-3 p-2 bg-blue-100 rounded text-xs text-blue-700 font-semibold">
+                  <div v-else-if="isRoomConflicted(room.id)" class="mt-3 p-2 bg-red-100 rounded text-xs text-red-700 font-semibold">
                     <div class="flex items-center gap-2 mb-1">
                       <AlertTriangle class="w-4 h-4" />
                       Phòng bị trùng lịch
@@ -430,13 +430,13 @@
             <!-- Step 4: Review -->
             <div v-show="currentStep === 3" class="space-y-4 text-gray-800">
               <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <CheckSquare class="w-6 h-6 text-blue-600" />
+                <CheckSquare class="w-6 h-6 text-red-600" />
                 Xác nhận thông tin
               </h3>
               
               <div class="p-5 bg-gray-50 rounded-xl space-y-3">
                 <h4 class="font-bold text-gray-800 flex items-center gap-2">
-                  <Info class="w-5 h-5 text-blue-600" />
+                  <Info class="w-5 h-5 text-red-600" />
                   Thông tin lớp học
                 </h4>
                 <div class="grid grid-cols-2 gap-3 text-sm">
@@ -449,7 +449,7 @@
               
               <div class="p-5 bg-gray-50 rounded-xl space-y-3">
                 <h4 class="font-bold text-gray-800 flex items-center gap-2">
-                  <Calendar class="w-5 h-5 text-blue-600" />
+                  <Calendar class="w-5 h-5 text-red-600" />
                   Lịch học
                 </h4>
                 <div class="grid grid-cols-2 gap-3 text-sm">
@@ -467,7 +467,7 @@
               
               <div class="p-5 bg-gray-50 rounded-xl space-y-3">
                 <h4 class="font-bold text-gray-800 flex items-center gap-2">
-                  <MapPin class="w-5 h-5 text-blue-600" />
+                  <MapPin class="w-5 h-5 text-red-600" />
                   Phòng học
                 </h4>
                 <div class="text-sm">
@@ -492,7 +492,7 @@
             v-if="currentStep < 3" 
             @click="nextStep" 
             :disabled="!canProceed"
-            class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Tiếp theo →
           </button>
@@ -516,10 +516,10 @@
     >
       <div class="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fadeIn">
         <!-- Modal Header -->
-        <div class="sticky top-0 p-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white flex justify-between items-start rounded-t-2xl z-50">
+        <div class="sticky top-0 p-6 bg-gradient-to-r from-red-600 to-red-700 text-white flex justify-between items-start rounded-t-2xl z-50">
           <div>
             <h2 class="text-2xl font-bold mb-1">{{ selectedClass.name }}</h2>
-            <div class="flex items-center gap-2 text-blue-100 text-sm">
+            <div class="flex items-center gap-2 text-red-100 text-sm">
               <component :is="getStatusIcon(selectedClass.status)" class="w-4 h-4" />
               {{ getStatusText(selectedClass.status) }}
             </div>
@@ -537,7 +537,7 @@
           <!-- Description -->
           <div>
             <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <Info class="w-5 h-5 text-blue-600" />
+              <Info class="w-5 h-5 text-red-600" />
               Mô tả
             </h3>
             <p class="text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100">
@@ -548,12 +548,12 @@
           <!-- General Info -->
           <div>
             <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <FileText class="w-5 h-5 text-blue-600" />
+              <FileText class="w-5 h-5 text-red-600" />
               Thông tin chung
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center gap-3">
-                <BarChart3 class="w-8 h-8 text-blue-500 bg-blue-100 p-1.5 rounded-lg" />
+                <BarChart3 class="w-8 h-8 text-red-500 bg-red-100 p-1.5 rounded-lg" />
                 <div>
                   <div class="text-xs text-gray-500 font-semibold uppercase">Độ khó</div>
                   <div class="font-bold text-gray-800">{{ selectedClass.difficulty }}</div>
@@ -588,7 +588,7 @@
           <!-- Schedule Info -->
           <div>
             <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <Calendar class="w-5 h-5 text-blue-600" />
+              <Calendar class="w-5 h-5 text-red-600" />
               Lịch học
             </h3>
             <div class="bg-gray-50 rounded-xl border border-gray-100 p-5 space-y-3">
@@ -613,10 +613,49 @@
             </div>
           </div>
 
+          <!-- Sessions List -->
+          <div>
+            <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <Calendar class="w-5 h-5 text-red-600" />
+              Danh sách buổi học
+            </h3>
+            
+            <div v-if="loadingSessionsDetails" class="text-center py-8">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+              Đang tải...
+            </div>
+            
+            <div v-else-if="selectedClassSessions.length > 0" class="space-y-2 max-h-96 overflow-y-auto">
+              <div 
+                v-for="(session, idx) in selectedClassSessions" 
+                :key="session.id"
+                class="flex items-center gap-4 p-3 rounded-xl border border-gray-200 hover:border-red-300 hover:bg-red-50 transition-all"
+              >
+                <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold text-sm shrink-0">
+                  {{ idx + 1 }}
+                </div>
+                <div class="flex-1">
+                  <div class="font-bold text-gray-800">{{ formatDate(session.date) }}</div>
+                  <div class="text-sm text-gray-500">{{ formatScheduleTime(session.startTime) }} - {{ formatScheduleTime(session.endTime) }}</div>
+                </div>
+                <div class="text-xs font-semibold px-2 py-1 rounded" :class="{
+                  'bg-green-100 text-green-700': session.status === 'OPEN',
+                  'bg-gray-100 text-gray-500': session.status === 'CLOSED'
+                }">
+                  {{ session.status === 'OPEN' ? 'Mở' : 'Đóng' }}
+                </div>
+              </div>
+            </div>
+            
+            <div v-else class="text-center py-8 bg-gray-50 rounded-xl border border-gray-100 border-dashed">
+              <p class="text-gray-500 italic">Chưa có buổi học nào được tạo</p>
+            </div>
+          </div>
+
           <!-- Enrolled Students -->
           <div>
             <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <Users class="w-5 h-5 text-blue-600" />
+              <Users class="w-5 h-5 text-red-600" />
               Danh sách học viên ({{ selectedClassStudents.length }})
             </h3>
             
@@ -639,7 +678,7 @@
                         class="px-2 py-1 rounded-full text-xs font-bold"
                         :class="{
                           'bg-yellow-100 text-yellow-700': student.membershipTier === 'VIP',
-                          'bg-blue-100 text-blue-700': student.membershipTier === 'PREMIUM',
+                          'bg-red-100 text-red-700': student.membershipTier === 'PREMIUM',
                           'bg-gray-100 text-gray-700': student.membershipTier === 'BASIC'
                         }"
                       >
@@ -664,8 +703,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import unifiedApi from './unifiedApi.js';
-import { formatDate } from './dateUtils.js';
+import unifiedApi from '@/services/unifiedClassApi.js';
+import { formatDate } from '@/views/Test/dateUtils.js';
 import api from '@/services/api';
 import { 
   Dumbbell, 
@@ -709,6 +748,9 @@ const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 const previewSessions = ref([]);
 const roomConflicts = ref({});
 const tempDate = ref('');
+const loadingSessionsDetails = ref(false);
+const selectedClassSessions = ref([]);
+
 
 const getEmptyClass = () => ({
   name: '',
@@ -897,12 +939,16 @@ const getEnrolledCount = (classId) => {
 };
 
 const getScheduleText = (cls) => {
+  if (!cls) return '';
+  const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   if (cls.patternType === 'weekly') {
-    const days = cls.daysOfWeek.map(d => daysOfWeek[d]).join(', ');
+    const days = cls.daysOfWeek?.map(d => daysOfWeek[d]).join(', ') || '';
     return `Hàng tuần: ${days}`;
   }
   if (cls.patternType === 'monthly') return 'Hàng tháng';
-  if (cls.patternType === 'no_repeat') return 'Một lần';
+  if (cls.patternType === 'no_repeat') {
+    return 'Tùy chọn';
+  }
   return 'Tùy chỉnh';
 };
 
@@ -917,7 +963,7 @@ const getPatternTypeText = (type) => {
 };
 
 const updatePreview = async () => {
-  if (canProceed.value && currentStep.value === 1) {
+  if (canProceed.value && (currentStep.value === 1 || currentStep.value === 2)) {
     // Generate sessions based on pattern
     const sessions = [];
     const start = new Date(newClass.value.startDate);
@@ -974,12 +1020,16 @@ const updatePreview = async () => {
     }));
     
     roomConflicts.value = {};
+    console.log('🔍 Checking conflicts for', sessions.length, 'sessions');
     for (const room of roomsData.value) {
-      const conflicts = unifiedApi.checkRoomConflicts(room.id, sessions);
+      const conflicts = await unifiedApi.checkRoomConflicts(room.id, sessions);
+      console.log(`Room ${room.name} (${room.id}):`, conflicts.length, 'conflicts');
       if (conflicts.length > 0) {
         roomConflicts.value[room.id] = conflicts;
+        console.log('Conflicts:', conflicts);
       }
     }
+    console.log('Final roomConflicts:', roomConflicts.value);
   }
 };
 
@@ -1143,9 +1193,35 @@ const createClass = async () => {
   }
 };
 
-const viewDetails = (cls) => {
+
+const viewDetails = async (cls) => {
   selectedClass.value = cls;
   showDetailsModal.value = true;
+  loadingSessionsDetails.value = true;
+  selectedClassSessions.value = [];
+  
+  try {
+    const sessions = await unifiedApi.getSessions(cls.id);
+    selectedClassSessions.value = sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+  } catch (error) {
+    console.error('Error loading sessions:', error);
+  } finally {
+    loadingSessionsDetails.value = false;
+  }
+};
+
+const formatScheduleTime = (dateTime) => {
+  if (!dateTime) return '';
+  try {
+    const date = new Date(dateTime);
+    if (isNaN(date.getTime())) return '';
+    return date.toTimeString().substring(0, 5);
+  } catch (e) {
+    if (typeof dateTime === 'string' && dateTime.match(/^\d{2}:\d{2}$/)) {
+      return dateTime;
+    }
+    return '';
+  }
 };
 
 const approveTeacher = async (cls) => {

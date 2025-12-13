@@ -323,12 +323,9 @@ const getSessionStatus = (session) => {
 
 // Computed
 const availableClasses = computed(() => {
-  return classes.value.filter(c => 
-    c.status === 'pending_teacher' || 
-    (c.status === 'waiting_approval' && c.pendingTeacherId !== currentTeacherId.value) ||
-    // Also show classes where this teacher has applied (even if rejected or approved) so they can see status
-    applications.value.some(a => a.classId === c.id && a.teacherId === currentTeacherId.value)
-  );
+  // Show ALL classes - multiple teachers can apply for the same class
+  // Manager will approve one of them
+  return classes.value;
 });
 
 const filteredClasses = computed(() => {
