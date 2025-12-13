@@ -192,7 +192,7 @@ onMounted(() => {
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-2">Xem thành viên</h3>
             <p class="text-gray-600 text-sm mb-4">Xem và quản lý gói thành viên khách hàng</p>
-            <RouterLink to="/reception/memberships" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-500 text-white text-sm font-semibold rounded-lg hover:shadow-lg transition-all">
+            <RouterLink :to="{ name: 'reception.customer-management' }" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-500 text-white text-sm font-semibold rounded-lg hover:shadow-lg transition-all">
               Xem danh sách →
             </RouterLink>
           </div>

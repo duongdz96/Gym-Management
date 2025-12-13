@@ -18,177 +18,272 @@ type Member = {
 type CheckinRecord = {
   id: number;
   member: Member;
-  checkInTime: string;
-  checkOutTime?: string;
-  date: string;
+  checkinTime: string;
+  status: "success" | "late" | "absent";
 };
 
-const members = ref<Member[]>([]);
-const selectedMember = ref<Member | null>(null);
-const searchMember = ref("");
-const selectedMonth = ref(new Date().getMonth() + 1);
-const selectedYear = ref(new Date().getFullYear());
-const checkinHistory = ref<CheckinRecord[]>([]);
-const toast = useToast();
+// State
+const checkinRecords = ref<CheckinRecord[]>([]);
+const searchQuery = ref("");
+const statusFilter = ref("");
+const dateFilter = ref("");
+const isLoading = ref(true);
 
+// Lifecycle
 onMounted(async () => {
   try {
-    const res = await api.get("/members");
-    members.value = res.data;
-  } catch (err) {
-    console.error("Error fetching members:", err);
-    toast.error("Failed to load members. Please try again.");
-    members.value = [];
+    isLoading.value = true;
+    // Mock data - thay bằng API call thực tế
+    checkinRecords.value = [
+      {
+        id: 1,
+        member: {
+          id: 1,
+          fullName: "Nguyễn Văn A",
+          membership: "Premium",
+          joinDate: "2024-01-15",
+          status: "Active",
+          faceId: null,
+          cardId: "CARD001"
+        },
+        checkinTime: "2024-12-14T08:30:00",
+        status: "success"
+      },
+      {
+        id: 2,
+        member: {
+          id: 2,
+          fullName: "Trần Thị B",
+          membership: "Basic",
+          joinDate: "2024-02-20",
+          status: "Active",
+          faceId: "FACE002",
+          cardId: null
+        },
+        checkinTime: "2024-12-14T09:15:00",
+        status: "late"
+      },
+      {
+        id: 3,
+        member: {
+          id: 3,
+          fullName: "Lê Văn C",
+          membership: "VIP",
+          joinDate: "2024-03-10",
+          status: "Active",
+          faceId: null,
+          cardId: "CARD003"
+        },
+        checkinTime: "2024-12-14T07:45:00",
+        status: "success"
+      }
+    ];
+  } catch (error) {
+    console.error("Error fetching checkin records:", error);
+    useToast().error("Không thể tải dữ liệu check-in");
+  } finally {
+    isLoading.value = false;
   }
 });
 
 // Computed
-const filteredMembers = computed(() => {
-  return members.value.filter(m =>
-    m.fullName.toLowerCase().includes(searchMember.value.toLowerCase())
-  );
-});
+const filteredRecords = computed(() => {
+  return checkinRecords.value.filter(record => {
+    const matchesSearch = !searchQuery.value ||
+      record.member.fullName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      record.member.membership.toLowerCase().includes(searchQuery.value.toLowerCase());
 
-const groupedCheckins = computed(() => {
-  const grouped: { [date: string]: CheckinRecord[] } = {};
-  checkinHistory.value.forEach(record => {
-    const date = new Date(record.date).toLocaleDateString();
-    if (!grouped[date]) grouped[date] = [];
-    grouped[date].push(record);
+    const matchesStatus = !statusFilter.value || record.status === statusFilter.value;
+
+    const matchesDate = !dateFilter.value ||
+      record.checkinTime.startsWith(dateFilter.value);
+
+    return matchesSearch && matchesStatus && matchesDate;
   });
-  return grouped;
 });
 
-// Functions
-const selectMember = async (member: Member) => {
-  selectedMember.value = member;
-  await fetchCheckinHistory();
-};
-
-const fetchCheckinHistory = async () => {
-  if (!selectedMember.value) return;
+// Helpers
+const formatDate = (dateString: string) => {
+  if (!dateString) return 'N/A';
   try {
-    const res = await api.get(`/attendance/member/${selectedMember.value.id}`, {
-      params: { month: selectedMonth.value, year: selectedYear.value }
-    });
-    checkinHistory.value = res.data;
-  } catch (err) {
-    console.error("Error fetching checkin history:", err);
-    toast.error("Failed to load checkin history. Please try again.");
-    checkinHistory.value = [];
+    return new Date(dateString).toLocaleDateString('vi-VN');
+  } catch {
+    return dateString;
   }
 };
 
-const formatTime = (timeString: string) => {
-  return new Date(timeString).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+const formatTime = (dateString: string) => {
+  if (!dateString) return 'N/A';
+  try {
+    return new Date(dateString).toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch {
+    return dateString;
+  }
+};
+
+const getStatusText = (status: string) => {
+  switch (status) {
+    case 'success': return 'Thành công';
+    case 'late': return 'Muộn';
+    case 'absent': return 'Vắng';
+    default: return status;
+  }
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'success': return 'bg-green-100 text-green-800';
+    case 'late': return 'bg-yellow-100 text-yellow-800';
+    case 'absent': return 'bg-red-100 text-red-800';
+    default: return 'bg-gray-100 text-gray-800';
+  }
+};
+
+const getCheckinMethod = (record: CheckinRecord) => {
+  if (record.member.faceId) return 'Face ID';
+  if (record.member.cardId) return 'Thẻ';
+  return 'Manual';
 };
 </script>
 
 <template>
-  <div class="p-6 bg-gray-100 min-h-screen">
-    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
-      <!-- Bên trái: Danh sách Members -->
-      <div class="lg:w-1/3 bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="p-6 border-b border-gray-200">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">Select a Member</h2>
-          <div class="relative">
-            <input
-              type="text"
-              v-model="searchMember"
-              placeholder="Search member by name..."
-              class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                     transition duration-200 ease-in-out"
-            />
-            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5a6.5 6.5 0 10-6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            </svg>
-          </div>
-        </div>
-
-        <div class="p-6 max-h-96 overflow-y-auto">
-          <div v-if="filteredMembers.length > 0" class="space-y-3">
-            <div
-              v-for="member in filteredMembers"
-              :key="member.id"
-              @click="selectMember(member)"
-              :class="[
-                'p-4 rounded-lg cursor-pointer transition-colors border',
-                selectedMember?.id === member.id
-                  ? 'bg-blue-100 border-blue-300'
-                  : 'bg-gray-50 hover:bg-gray-100',
-              ]"
-            >
-              <div class="font-medium text-gray-900">{{ member.fullName }}</div>
-              <div class="text-sm text-gray-500">{{ member.membership }}</div>
-              <div class="text-sm text-gray-500">{{ member.status }}</div>
-            </div>
-          </div>
-          <div v-else class="text-center text-gray-500 py-10">
-            No members found.
-          </div>
+  <div class="p-6 bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <div class="flex items-center gap-3">
+        <button
+          @click="$router.back()"
+          class="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 text-gray-600 transition shadow-sm"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div>
+          <h1 class="text-xl font-bold text-gray-800">Lịch Sử Check-in</h1>
+          <p class="text-xs text-gray-500">Theo dõi hoạt động check-in của học viên</p>
         </div>
       </div>
 
-      <!-- Bên phải: Lịch sử Checkin -->
-      <div class="lg:w-2/3 bg-white rounded-xl shadow-lg flex flex-col">
-        <h2 class="text-2xl font-bold text-gray-800 p-6 border-b border-gray-200">Checkin History</h2>
+      <div class="flex gap-2">
+        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-semibold">
+          {{ filteredRecords.length }} bản ghi
+        </span>
+      </div>
+    </div>
 
-        <div class="flex-1 p-6">
-          <div v-if="selectedMember" class="space-y-6">
-            <div class="bg-blue-50 p-4 rounded-lg">
-              <h3 class="text-lg font-semibold text-gray-900">Selected Member</h3>
-              <p class="text-gray-700">{{ selectedMember.fullName }}</p>
-              <p class="text-gray-600">{{ selectedMember.membership }}</p>
-            </div>
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="relative">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Tìm kiếm học viên..."
+            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-            <!-- Chọn tháng và năm -->
-            <div class="flex gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Month</label>
-                <select
-                  v-model="selectedMonth"
-                  @change="fetchCheckinHistory"
-                  class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option v-for="m in 12" :key="m" :value="m">{{ m }}</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Year</label>
-                <select
-                  v-model="selectedYear"
-                  @change="fetchCheckinHistory"
-                  class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option v-for="y in 10" :key="y" :value="new Date().getFullYear() - 10 + y">{{ new Date().getFullYear() - 10 + y }}</option>
-                </select>
-              </div>
-            </div>
+        <div class="relative">
+          <select
+            v-model="statusFilter"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white pr-10"
+          >
+            <option value="">Tất cả trạng thái</option>
+            <option value="success">Thành công</option>
+            <option value="late">Muộn</option>
+            <option value="absent">Vắng</option>
+          </select>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
 
-            <!-- Hiển thị lịch sử -->
-            <div v-if="Object.keys(groupedCheckins).length > 0" class="space-y-4">
-              <div v-for="(records, date) in groupedCheckins" :key="date" class="border rounded-lg p-4">
-                <h4 class="font-semibold text-gray-900 mb-2">{{ date }}</h4>
-                <div class="space-y-2">
-                  <div v-for="record in records" :key="record.id" class="flex justify-between items-center bg-gray-50 p-2 rounded">
-                    <div>
-                      <span class="font-medium">Check-in: {{ formatTime(record.checkInTime) }}</span>
-                      <span v-if="record.checkOutTime" class="ml-4 font-medium">Check-out: {{ formatTime(record.checkOutTime) }}</span>
-                      <span v-else class="ml-4 text-red-500">Not checked out</span>
-                    </div>
+        <div>
+          <input
+            v-model="dateFilter"
+            type="date"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div class="flex items-end">
+          <button
+            @click="() => { searchQuery = ''; statusFilter = ''; dateFilter = '' }"
+            class="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium"
+          >
+            Xóa bộ lọc
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div v-if="isLoading" class="animate-pulse">
+        <div class="h-16 bg-gray-200 mb-4"></div>
+        <div class="space-y-3 px-6 pb-6">
+          <div v-for="i in 5" :key="i" class="h-12 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Học Viên</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Gói Tập</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Thời Gian</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Phương Thức</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Trạng Thái</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="record in filteredRecords" :key="record.id" class="hover:bg-gray-50 transition">
+              <td class="px-6 py-4">
+                <div class="flex items-center">
+                  <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm mr-3">
+                    {{ record.member.fullName.charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <div class="text-sm font-semibold text-gray-900">{{ record.member.fullName }}</div>
+                    <div class="text-xs text-gray-500">ID: {{ record.member.id }}</div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div v-else class="text-center text-gray-500 py-10">
-              No checkin records found for this month.
-            </div>
-          </div>
-          <div v-else class="text-center text-gray-500 py-10">
-            Select a member to view checkin history.
-          </div>
-        </div>
+              </td>
+
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ record.member.membership }}
+                </span>
+              </td>
+
+              <td class="px-6 py-4 text-sm text-gray-600">
+                <div class="font-medium">{{ formatDate(record.checkinTime) }}</div>
+                <div class="text-xs text-gray-500">{{ formatTime(record.checkinTime) }}</div>
+              </td>
+
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  {{ getCheckinMethod(record) }}
+                </span>
+              </td>
+
+              <td class="px-6 py-4">
+                <span :class="['inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium', getStatusColor(record.status)]">
+                  {{ getStatusText(record.status) }}
+                </span>
+              </td>
+            </tr>
+
+            <tr v-if="filteredRecords.length === 0">
+              <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-4 text-gray-300"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <p>Không tìm thấy bản ghi check-in nào</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
