@@ -182,4 +182,73 @@ public class TestDataHelper {
 
         return coupon;
     }
+
+// =================================================================
+// 6. IMPORT BILL HELPERS
+// =================================================================
+
+    public static Provider createProvider(
+            String name,
+            String address,
+            String phone,
+            String email
+    ) {
+        Provider provider = new Provider();
+        provider.setName(name);
+        provider.setAddress(address);
+        provider.setPhone(phone);
+        provider.setEmail(email);
+        return provider;
+    }
+
+    public static Manager createManager(
+            String fullName,
+            String email,
+            String phone
+    ) {
+        Manager manager = new Manager();
+        manager.setFullName(fullName);
+        manager.setEmail(email);
+        manager.setPhone(phone);
+        manager.setPassword("password123");
+        manager.setGender("Male");
+        manager.setRole("MANAGER");
+        manager.setDob(Date.from(
+                LocalDate.now().minusYears(30).atStartOfDay(ZoneId.systemDefault()).toInstant()
+        ));
+        return manager;
+    }
+
+    public static ImportBill createImportBill(
+            Date date,
+            Provider provider,
+            Manager manager,
+            List<ImportedProduct> importedProducts
+    ) {
+        ImportBill importBill = new ImportBill();
+        importBill.setDate(date);
+        importBill.setProvider(provider);
+        importBill.setManager(manager);
+        
+        if (importedProducts != null) {
+            importedProducts.forEach(ip -> ip.setImportBill(importBill));
+        }
+        importBill.setImportedProducts(importedProducts);
+        
+        return importBill;
+    }
+
+    public static ImportedProduct createImportedProduct(
+            int quantity,
+            Double importPrice,
+            Double price,
+            Product product
+    ) {
+        ImportedProduct importedProduct = new ImportedProduct();
+        importedProduct.setQuantity(quantity);
+        importedProduct.setImportPrice(importPrice);
+        importedProduct.setPrice(price);
+        importedProduct.setProduct(product);
+        return importedProduct;
+    }
 }
