@@ -316,4 +316,38 @@ public class TestDataHelper {
         schedule.setStatus("OPEN");
         return schedule;
     }
+
+// =================================================================
+// 8. MEMBER REGISTRATION HELPERS
+// =================================================================
+
+    public static Member createMember(
+            String fullName,
+            String email,
+            String phone
+    ) {
+        Member member = new Member();
+        member.setFullName(fullName);
+        member.setEmail(email);
+        member.setPhone(phone);
+        member.setPassword("password123");
+        member.setGender("Male");
+        member.setRole("MEMBER");
+        member.setDob(Date.from(
+                LocalDate.now().minusYears(25).atStartOfDay(ZoneId.systemDefault()).toInstant()
+        ));
+        return member;
+    }
+
+    public static MemberRegistration createMemberRegistration(
+            Member member,
+            ClassSchedule schedule,
+            Date followDate
+    ) {
+        MemberRegistration registration = new MemberRegistration();
+        registration.setMember(member);
+        registration.setClassSchedule(schedule);
+        registration.setFollowDate(followDate);
+        return registration;
+    }
 }
