@@ -3,6 +3,7 @@ package com.example.gympool.service;
 import com.example.gympool.entity.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -250,5 +251,69 @@ public class TestDataHelper {
         importedProduct.setPrice(price);
         importedProduct.setProduct(product);
         return importedProduct;
+    }
+
+// =================================================================
+// 7. CLASS REGISTRATION HELPERS
+// =================================================================
+
+    public static Teacher createTeacher(
+            String fullName,
+            String email,
+            String phone
+    ) {
+        Teacher teacher = new Teacher();
+        teacher.setFullName(fullName);
+        teacher.setEmail(email);
+        teacher.setPhone(phone);
+        teacher.setPassword("password123");
+        teacher.setGender("Male");
+        teacher.setRole("TEACHER");
+        teacher.setPosition("Senior Trainer");
+        teacher.setSpecialize("Yoga, Fitness");
+        teacher.setDob(Date.from(
+                LocalDate.now().minusYears(30).atStartOfDay(ZoneId.systemDefault()).toInstant()
+        ));
+        return teacher;
+    }
+
+    public static FitnessClass createFitnessClass(
+            String name,
+            String difficultyLevel,
+            String description
+    ) {
+        FitnessClass fitnessClass = new FitnessClass();
+        fitnessClass.setName(name);
+        fitnessClass.setDifficultyLevel(difficultyLevel);
+        fitnessClass.setDescription(description);
+        fitnessClass.setStatus("ACTIVE");
+        return fitnessClass;
+    }
+
+    public static ClassRegistration createClassRegistration(
+            Teacher teacher,
+            FitnessClass fitnessClass,
+            String status,
+            String description
+    ) {
+        ClassRegistration registration = new ClassRegistration();
+        registration.setTeacher(teacher);
+        registration.setFitnessClass(fitnessClass);
+        registration.setStatus(status);
+        registration.setDescription(description);
+        return registration;
+    }
+
+    public static ClassSchedule createClassSchedule(
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            FitnessClass fitnessClass
+    ) {
+        ClassSchedule schedule = new ClassSchedule();
+        schedule.setStartTime(startTime);
+        schedule.setEndTime(endTime);
+        schedule.setFitnessClass(fitnessClass);
+        schedule.setStatus("OPEN");
+        return schedule;
     }
 }
