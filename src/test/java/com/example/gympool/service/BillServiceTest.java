@@ -16,10 +16,7 @@ import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -211,11 +208,12 @@ public class BillServiceTest {
         verify(issuedCouponRepository, never()).save(any());
     }
 
-    // B05: Thiếu total (NULL Constraint) và kiểm tra Rollback.
+    // B05: Thành công khi không truyền Total, Service tự động tính toán.
     @Test
-    void createBillwithNoTotal_ThrowsExceptionAndVerifiesRollbackLogic() {
+    void createBillwithNoTotal_ShouldCalculateTotalAndSucceed() {
+        // Gán Total = null để kiểm tra logic tự tính toán
         mockInputBill.setTotal(null);
-        mockInputBill.setIssuedCoupon(null);
+        mockInputBill.setIssuedCoupon(null); // Giữ null nếu không kiểm tra coupon
 
         when(receptionistRepository.findById(mockReceptionist.getId()))
                 .thenReturn(Optional.of(mockReceptionist));
@@ -226,14 +224,21 @@ public class BillServiceTest {
         when(productRepository.findAllById(List.of(mockProduct.getId())))
                 .thenReturn(List.of(mockProduct));
 
-        when(billRepository.save(any(Bill.class))).thenThrow(
-                new RuntimeException("Simulated NULL constraint violation or other DB error causing rollback")
-        );
+        // Dùng thenAnswer để giả lập việc gán ID khi lưu (và Bill đã có Total được Service tính toán)
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> {
+            Bill billToSave = invocation.getArgument(0);
 
-        assertThrows(RuntimeException.class, () -> {
-            billService.createBill(mockInputBill);
+            // **Kiểm tra xem Service đã tính Total chưa:**
+            assertThat(billToSave.getTotal()).isNotNull();
+
+            billToSave.setId(300L);
+            return billToSave;
         });
 
+        Bill resultBill = billService.createBill(mockInputBill);
+
+        assertThat(resultBill).isNotNull();
+        assertThat(resultBill.getId()).isEqualTo(300L);
         verify(productRepository, times(1)).save(argThat(product ->
                 product.getQuantity() == 99
         ));
@@ -261,18 +266,132 @@ public class BillServiceTest {
         verify(issuedCouponRepository, never()).findByMemberIdAndCouponId(anyLong(), anyLong());
         verify(issuedCouponRepository, never()).save(any());
     }
-// B07: Độ dài paymentMethod vượt quá 50 ký tự.
-// B08: Truy xuất Receptionist liên quan thành công.
-// B09: Truy xuất Member liên quan (có/không) thành công.
-// B10: Truy xuất IssuedCoupon liên quan (có/không) thành công.
-// B11: SoldProduct được lưu thành công khi tạo Bill (Cascade).
-// B12: Xóa Bill dẫn đến xóa tất cả SoldProduct liên quan (orphanRemoval).
-// B13: Cập nhật danh sách SoldProduct (thêm/xóa) thành công.
-// B14: Thuộc tính coupon (@Transient) không được lưu vào DB.
-// B15: Thuộc tính totalPrice (@Transient) không được lưu vào DB.
-// B16: Logic tính toán total chính xác (Service Layer Test).
-// B17: Cập nhật các trường dữ liệu của Bill thành công.
-// B18: Truy xuất (Find) đối tượng Bill bằng ID thành công.
-// B19: Xóa (Delete) đối tượng Bill thành công.
+    // B07: Tạo hóa đơn thành công khi member null (Member = null).
+    @Test
+    void createBillwithNoMember_ShouldSucceedWithoutMemberInteractions() {
+        mockInputBill.setMember(null);
+        mockInputBill.setIssuedCoupon(null);
+
+        when(receptionistRepository.findById(mockReceptionist.getId()))
+                .thenReturn(Optional.of(mockReceptionist));
+
+        when(productRepository.findAllById(List.of(mockProduct.getId())))
+                .thenReturn(List.of(mockProduct));
+
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> {
+            Bill billToSave = invocation.getArgument(0);
+            assertThat(billToSave.getTotal()).isNotNull();
+            billToSave.setId(300L);
+            return billToSave;
+        });
+
+        Bill resultBill = billService.createBill(mockInputBill);
+
+        assertThat(resultBill).isNotNull();
+        assertThat(resultBill.getId()).isEqualTo(300L);
+
+        verify(productRepository, times(1)).save(argThat(product ->
+                product.getQuantity() == 99
+        ));
+        verify(billRepository, times(1)).save(any(Bill.class));
+
+        verify(memberRepository, never()).findById(anyLong());
+        verify(issuedCouponRepository, never()).findByMemberIdAndCouponId(anyLong(), anyLong());
+        verify(issuedCouponRepository, never()).save(any());
+    }
+    // B08: Tạo hóa đơn thành công khi product có type là PT hoặc membership, ko trừ quantity
+    @Test
+    void createBill_Success_PTorMembershipProduct_ShouldNotDecreaseInventory() {
+        mockProduct.setType("PT");
+        mockInputBill.setIssuedCoupon(null);
+        mockInputBill.setTotal(null);
+
+        when(receptionistRepository.findById(mockReceptionist.getId()))
+                .thenReturn(Optional.of(mockReceptionist));
+
+        when(memberRepository.findById(mockMember.getId()))
+                .thenReturn(Optional.of(mockMember));
+
+        when(productRepository.findAllById(List.of(mockProduct.getId())))
+                .thenReturn(List.of(mockProduct));
+
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> {
+            Bill billToSave = invocation.getArgument(0);
+            billToSave.setId(300L);
+            return billToSave;
+        });
+
+        Bill resultBill = billService.createBill(mockInputBill);
+
+        assertThat(resultBill).isNotNull();
+        assertThat(resultBill.getId()).isEqualTo(300L);
+
+        verify(productRepository, never()).save(any());
+
+        verify(billRepository, times(1)).save(any(Bill.class));
+
+        verify(issuedCouponRepository, never()).findByMemberIdAndCouponId(anyLong(), anyLong());
+        verify(issuedCouponRepository, never()).save(any());
+
+        mockProduct.setType("clothes");
+    }
+
+    // B09: Cập nhật Bill hợp lệ: Thay đổi Member, Product, và KHÔNG có Coupon.
+    @Test
+    void updateBill_FullUpdateScenario_ShouldRevertAndApplyNewChanges() {
+        Product oldProduct = TestDataHelper.createProduct("T-shirt-old", "clothes", 10.0, "Adidas", 100, false);
+        oldProduct.setId(100L);
+        SoldProduct oldSoldProduct = TestDataHelper.createSoldProduct(2, 10.0, oldProduct);
+
+        List<SoldProduct> mutableOldSoldProducts = new ArrayList<>(List.of(oldSoldProduct));
+
+        Bill existingBill = TestDataHelper.createBill(
+                "CASH", "Paid", mockReceptionist, new Date(), mockMember, null, mutableOldSoldProducts
+        );
+        existingBill.setId(500L);
+
+        Product newProduct = TestDataHelper.createProduct("Water-new", "drink", 2.0, "Nestle", 50, false);
+        newProduct.setId(101L);
+        SoldProduct newSoldProduct = TestDataHelper.createSoldProduct(5, 2.0, newProduct);
+
+        Bill billDetails = TestDataHelper.createBill(
+                "CARD", "Completed", mockReceptionist, new Date(), mockMember, null, List.of(newSoldProduct)
+        );
+
+        when(billRepository.findById(existingBill.getId())).thenReturn(Optional.of(existingBill));
+        when(memberRepository.findById(mockMember.getId()))
+                .thenReturn(Optional.of(mockMember));
+
+        when(productRepository.findById(newProduct.getId())).thenReturn(Optional.of(newProduct));
+
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Bill updatedBill = billService.updateBill(existingBill.getId(), billDetails);
+
+        verify(productRepository, times(1)).save(argThat(product ->
+                product.getId().equals(oldProduct.getId()) &&
+                        product.getQuantity() == 102
+        ));
+
+        verify(productRepository, times(1)).save(argThat(product ->
+                product.getId().equals(newProduct.getId()) &&
+                        product.getQuantity() == 45
+        ));
+
+        assertThat(updatedBill.getId()).isEqualTo(500L);
+        assertThat(updatedBill.getListSoldProduct()).hasSize(1);
+        assertThat(updatedBill.getTotal()).isEqualTo(10.0);
+        assertThat(updatedBill.getIssuedCoupon()).isNull();
+
+        verify(billRepository, times(1)).save(any(Bill.class));
+
+        oldProduct.setQuantity(100);
+    }
+
+// B10: Hoàn tác Coupon (Bill mới không có Coupon).
+// B11: Hoàn tác Tồn kho (Revert Inventory).
+// B12: Lỗi: Bill không tồn tại (Bill not found).
+// B13: Lỗi: Không đủ hàng tồn kho mới (Not enough stock).
+// B14: Lỗi: Coupon mới không hợp lệ (Coupon is not valid or has no remaining uses).
 
 }

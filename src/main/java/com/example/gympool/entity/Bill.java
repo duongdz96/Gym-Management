@@ -21,10 +21,10 @@ public class Bill {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "payment_method", nullable = false, length = 50)
+    @Column(name = "payment_method", nullable = false)
     private String paymentMethod;
 
-    @Column(name = "payment_status", nullable = false, length = 50)
+    @Column(name = "payment_status", nullable = false)
     private String paymentStatus;
 
     @Column(name = "date", nullable = false)
