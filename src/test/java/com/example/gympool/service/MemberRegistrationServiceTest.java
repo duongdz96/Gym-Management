@@ -86,6 +86,7 @@ public class MemberRegistrationServiceTest {
 
     // ==================== REGISTER FOR CLASS TESTS ====================
 
+    // UDKH1: Đăng ký lớp thành công
     @Test
     void registerForClass_Success_ShouldCreateRegistration() {
         when(memberRepository.findById(mockMember1.getId())).thenReturn(Optional.of(mockMember1));
@@ -110,6 +111,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, times(1)).save(any(MemberRegistration.class));
     }
 
+    // UDKH2: Đăng ký lớp - thiết lập ngày đăng ký
     @Test
     void registerForClass_SetFollowDate_ShouldSetCurrentDate() {
         when(memberRepository.findById(mockMember1.getId())).thenReturn(Optional.of(mockMember1));
@@ -126,6 +128,7 @@ public class MemberRegistrationServiceTest {
         assertThat(result.getFollowDate()).isCloseTo(new Date(), 5000); // Within 5 seconds
     }
 
+    // UDKH3: Đăng ký lớp không có xung đột lịch
     @Test
     void registerForClass_NoConflict_ShouldRegister() {
         when(memberRepository.findById(mockMember1.getId())).thenReturn(Optional.of(mockMember1));
@@ -141,6 +144,7 @@ public class MemberRegistrationServiceTest {
         assertThat(result).isNotNull();
     }
 
+    // UDKH4: Đăng ký lớp với sức chứa còn trống
     @Test
     void registerForClass_CapacityAvailable_ShouldRegister() {
         mockSchedule1.setCapacity(20);
@@ -158,6 +162,7 @@ public class MemberRegistrationServiceTest {
         assertThat(result).isNotNull();
     }
 
+    // UDKH5: Đăng ký lớp với sức chứa đầy
     @Test
     void registerForClass_CapacityFull_ShouldThrowException() {
         mockSchedule1.setCapacity(20);
@@ -176,6 +181,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, never()).save(any());
     }
 
+    // UDKH6: Đăng ký lớp với sức chứa null (dùng mặc định)
     @Test
     void registerForClass_NullCapacity_ShouldUseDefaultOne() {
         mockSchedule1.setCapacity(null); // Null capacity
@@ -194,6 +200,7 @@ public class MemberRegistrationServiceTest {
         // Capacity = null → default = 1, currentRegistrations = 0 → OK
     }
 
+    // UDKH7: Đăng ký lớp đã đăng ký trước đó
     @Test
     void registerForClass_AlreadyRegistered_ShouldThrowException() {
         when(memberRepository.findById(mockMember1.getId())).thenReturn(Optional.of(mockMember1));
@@ -208,6 +215,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, never()).save(any());
     }
 
+    // UDKH8: Đăng ký lớp với xung đột lịch
     @Test
     void registerForClass_WithScheduleConflict_ShouldThrowException() {
         // Create overlapping schedule
@@ -237,6 +245,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, never()).save(any());
     }
 
+    // UDKH9: Đăng ký lớp với lịch trùng ngày và chồng lấn giờ
     @Test
     void registerForClass_SameDateOverlappingTime_ShouldThrowException() {
         // Same date, overlapping time: 9:00-10:00 vs 9:30-10:30
@@ -263,6 +272,7 @@ public class MemberRegistrationServiceTest {
         });
     }
 
+    // UDKH10: Đăng ký lớp với lịch trùng ngày nhưng không chồng lấn
     @Test
     void registerForClass_SameDateNonOverlapping_ShouldRegister() {
         // Same date, but non-overlapping: 9:00-10:00 vs 10:00-11:00 (edge case)
@@ -291,6 +301,7 @@ public class MemberRegistrationServiceTest {
         assertThat(result).isNotNull();
     }
 
+    // UDKH11: Đăng ký lớp với lịch khác ngày
     @Test
     void registerForClass_DifferentDate_ShouldRegister() {
         // Different date - no conflict
@@ -319,6 +330,7 @@ public class MemberRegistrationServiceTest {
         assertThat(result).isNotNull();
     }
 
+    // UDKH12: Đăng ký lớp với member không tồn tại
     @Test
     void registerForClass_MemberNotFound_ShouldThrowException() {
         when(memberRepository.findById(999L)).thenReturn(Optional.empty());
@@ -330,6 +342,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, never()).save(any());
     }
 
+    // UDKH13: Đăng ký lớp với lịch không tồn tại
     @Test
     void registerForClass_ScheduleNotFound_ShouldThrowException() {
         when(memberRepository.findById(mockMember1.getId())).thenReturn(Optional.of(mockMember1));
@@ -344,6 +357,7 @@ public class MemberRegistrationServiceTest {
 
     // ==================== CANCEL REGISTRATION TESTS ====================
 
+    // UDKH14: Hủy đăng ký thành công
     @Test
     void cancelRegistration_Success_ShouldDelete() {
         mockRegistration.setMember(mockMember1);
@@ -358,6 +372,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, times(1)).delete(mockRegistration);
     }
 
+    // UDKH15: Hủy đăng ký hàng loạt (cùng lớp học)
     @Test
     void cancelRegistration_BulkDelete_ShouldDeleteAllSameClass() {
         // Member has 3 registrations for the same fitness class
@@ -382,6 +397,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, never()).delete(reg3);
     }
 
+    // UDKH16: Hủy đăng ký không có lớp học (chỉ xóa 1)
     @Test
     void cancelRegistration_NoFitnessClass_ShouldDeleteOnlyOne() {
         mockRegistration.setMember(mockMember1);
@@ -396,6 +412,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, never()).findByMember(any());
     }
 
+    // UDKH17: Hủy đăng ký của member khác (không có quyền)
     @Test
     void cancelRegistration_DifferentMember_ShouldThrowException() {
         mockRegistration.setMember(mockMember1); // Owned by member1
@@ -410,6 +427,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, never()).delete(any());
     }
 
+    // UDKH18: Hủy đăng ký của chính member đó
     @Test
     void cancelRegistration_CorrectMember_ShouldDelete() {
         mockRegistration.setMember(mockMember1);
@@ -424,6 +442,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, times(1)).delete(mockRegistration);
     }
 
+    // UDKH19: Hủy đăng ký nhiều buổi của cùng lớp
     @Test
     void cancelRegistration_MultipleSessions_ShouldDeleteAll() {
         // Member has 2 sessions of the same class
@@ -443,6 +462,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, times(1)).delete(reg2);
     }
 
+    // UDKH20: Hủy đăng ký chỉ có 1 buổi
     @Test
     void cancelRegistration_OnlyOneSession_ShouldDeleteOne() {
         mockRegistration.setMember(mockMember1);
@@ -457,6 +477,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, times(1)).delete(mockRegistration);
     }
 
+    // UDKH21: Hủy đăng ký không tồn tại
     @Test
     void cancelRegistration_RegistrationNotFound_ShouldThrowException() {
         when(memberRegistrationRepository.findById(999L)).thenReturn(Optional.empty());
@@ -470,6 +491,7 @@ public class MemberRegistrationServiceTest {
 
     // ==================== BULK OPERATIONS TESTS ====================
 
+    // UDKH22: Đăng ký hàng loạt thành công
     @Test
     void registerBulk_Success_ShouldRegisterAll() {
         List<Long> scheduleIds = List.of(mockSchedule1.getId(), mockSchedule2.getId());
@@ -489,6 +511,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, times(2)).save(any(MemberRegistration.class));
     }
 
+    // UDKH23: Đăng ký hàng loạt với 1 lỗi
     @Test
     void registerBulk_OneFailure_ShouldThrowException() {
         List<Long> scheduleIds = List.of(mockSchedule1.getId(), 999L); // Second one doesn't exist
@@ -507,6 +530,7 @@ public class MemberRegistrationServiceTest {
         });
     }
 
+    // UDKH24: Hủy đăng ký hàng loạt thành công
     @Test
     void cancelBulkRegistration_Success_ShouldCancelAll() {
         MemberRegistration reg1 = TestDataHelper.createMemberRegistration(mockMember1, mockSchedule1, new Date());
@@ -526,6 +550,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, times(2)).delete(any(MemberRegistration.class));
     }
 
+    // UDKH25: Hủy đăng ký hàng loạt với 1 lỗi
     @Test
     void cancelBulkRegistration_OneFailure_ShouldThrowException() {
         MemberRegistration reg1 = TestDataHelper.createMemberRegistration(mockMember1, mockSchedule1, new Date());
@@ -544,6 +569,7 @@ public class MemberRegistrationServiceTest {
 
     // ==================== QUERY METHODS TESTS ====================
 
+    // UDKH26: Lấy đăng ký theo member
     @Test
     void getByMember_ValidMember_ShouldReturnRegistrations() {
         List<MemberRegistration> mockRegistrations = List.of(mockRegistration);
@@ -558,6 +584,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, times(1)).findByMember(mockMember1);
     }
 
+    // UDKH27: Lấy đăng ký với member không tồn tại
     @Test
     void getByMember_MemberNotFound_ShouldThrowException() {
         when(memberRepository.findById(999L)).thenReturn(Optional.empty());
@@ -569,6 +596,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, never()).findByMember(any());
     }
 
+    // UDKH28: Lấy đăng ký theo lịch lớp
     @Test
     void getByClassSchedule_ValidSchedule_ShouldReturnRegistrations() {
         List<MemberRegistration> mockRegistrations = List.of(mockRegistration);
@@ -583,6 +611,7 @@ public class MemberRegistrationServiceTest {
         verify(memberRegistrationRepository, times(1)).findByClassSchedule(mockSchedule1);
     }
 
+    // UDKH29: Lấy đăng ký với lịch lớp không tồn tại
     @Test
     void getByClassSchedule_ScheduleNotFound_ShouldThrowException() {
         when(classScheduleRepository.findById(999L)).thenReturn(Optional.empty());

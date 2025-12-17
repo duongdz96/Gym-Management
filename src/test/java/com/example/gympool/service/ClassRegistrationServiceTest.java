@@ -80,6 +80,7 @@ public class ClassRegistrationServiceTest {
 
     // ==================== REGISTER TEACHING TESTS ====================
 
+    // UDKD1: Đăng ký dạy lớp thành công
     @Test
     void registerTeaching_Success_ShouldSetPendingStatus() {
         ClassRegistration inputReg = TestDataHelper.createClassRegistration(
@@ -106,6 +107,7 @@ public class ClassRegistrationServiceTest {
         verify(classRegistrationRepository, times(1)).save(any(ClassRegistration.class));
     }
 
+    // UDKD2: Đăng ký dạy lớp với mô tả
     @Test
     void registerTeaching_WithDescription_ShouldSaveDescription() {
         ClassRegistration inputReg = TestDataHelper.createClassRegistration(
@@ -124,6 +126,7 @@ public class ClassRegistrationServiceTest {
         assertThat(result.getDescription()).isEqualTo("I have 5 years of experience");
     }
 
+    // UDKD3: Đăng ký dạy lớp với giáo viên không tồn tại
     @Test
     void registerTeaching_TeacherNotFound_ShouldThrowException() {
         ClassRegistration inputReg = TestDataHelper.createClassRegistration(
@@ -142,6 +145,7 @@ public class ClassRegistrationServiceTest {
         verify(classRegistrationRepository, never()).save(any());
     }
 
+    // UDKD4: Đăng ký dạy lớp với lớp học không tồn tại
     @Test
     void registerTeaching_FitnessClassNotFound_ShouldThrowException() {
         ClassRegistration inputReg = TestDataHelper.createClassRegistration(
@@ -163,6 +167,7 @@ public class ClassRegistrationServiceTest {
 
     // ==================== APPROVE REGISTRATION TESTS ====================
 
+    // UDKD5: Duyệt đăng ký thành công
     @Test
     void approveRegistration_Success_ShouldSetApprovedStatus() {
         mockRegistration.setStatus("PENDING");
@@ -180,6 +185,7 @@ public class ClassRegistrationServiceTest {
         verify(classRegistrationRepository, times(1)).save(mockRegistration);
     }
 
+    // UDKD6: Duyệt đăng ký không có xung đột lịch
     @Test
     void approveRegistration_NoConflict_ShouldApprove() {
         mockRegistration.setStatus("PENDING");
@@ -207,6 +213,7 @@ public class ClassRegistrationServiceTest {
         assertThat(result.getStatus()).isEqualTo("APPROVED");
     }
 
+    // UDKD7: Duyệt đăng ký với xung đột lịch
     @Test
     void approveRegistration_WithScheduleConflict_ShouldThrowException() {
         mockRegistration.setStatus("PENDING");
@@ -241,6 +248,7 @@ public class ClassRegistrationServiceTest {
         verify(classRegistrationRepository, never()).save(any());
     }
 
+    // UDKD8: Duyệt đăng ký với lịch trùng ngày và chồng lấn giờ
     @Test
     void approveRegistration_SameDateOverlappingTime_ShouldThrowException() {
         mockRegistration.setStatus("PENDING");
@@ -272,6 +280,7 @@ public class ClassRegistrationServiceTest {
         });
     }
 
+    // UDKD9: Duyệt đăng ký với lịch trùng ngày nhưng không chồng lấn
     @Test
     void approveRegistration_SameDateNonOverlapping_ShouldApprove() {
         mockRegistration.setStatus("PENDING");
@@ -304,6 +313,7 @@ public class ClassRegistrationServiceTest {
         assertThat(result.getStatus()).isEqualTo("APPROVED");
     }
 
+    // UDKD10: Duyệt đăng ký với lịch khác ngày
     @Test
     void approveRegistration_DifferentDate_ShouldApprove() {
         mockRegistration.setStatus("PENDING");
@@ -336,6 +346,7 @@ public class ClassRegistrationServiceTest {
         assertThat(result.getStatus()).isEqualTo("APPROVED");
     }
 
+    // UDKD11: Duyệt đăng ký với nhiều lớp đã duyệt
     @Test
     void approveRegistration_MultipleApprovedClasses_ShouldCheckAll() {
         mockRegistration.setStatus("PENDING");
@@ -383,6 +394,7 @@ public class ClassRegistrationServiceTest {
         verify(classScheduleRepository, times(1)).findByFitnessClassId(class3.getId());
     }
 
+    // UDKD12: Duyệt đăng ký - bỏ qua đăng ký pending
     @Test
     void approveRegistration_IgnorePendingRegistrations_ShouldOnlyCheckApproved() {
         mockRegistration.setStatus("PENDING");
@@ -429,6 +441,7 @@ public class ClassRegistrationServiceTest {
         verify(classScheduleRepository, times(1)).findByFitnessClassId(class3.getId());
     }
 
+    // UDKD13: Duyệt đăng ký không tồn tại
     @Test
     void approveRegistration_RegistrationNotFound_ShouldThrowException() {
         when(classRegistrationRepository.findById(999L)).thenReturn(Optional.empty());
@@ -440,6 +453,7 @@ public class ClassRegistrationServiceTest {
 
     // ==================== UNREGISTER TEACHING TESTS ====================
 
+    // UDKD14: Hủy đăng ký dạy lớp thành công
     @Test
     void unregisterTeachingById_Success_ShouldDelete() {
         mockRegistration.setStatus("PENDING");
@@ -451,6 +465,7 @@ public class ClassRegistrationServiceTest {
         verify(classRegistrationRepository, times(1)).deleteById(100L);
     }
 
+    // UDKD15: Hủy đăng ký của giáo viên khác (không có quyền)
     @Test
     void unregisterTeachingById_DifferentTeacher_ShouldThrowAccessDeniedException() {
         mockRegistration.setStatus("PENDING");
@@ -466,6 +481,7 @@ public class ClassRegistrationServiceTest {
         verify(classRegistrationRepository, never()).deleteById(any());
     }
 
+    // UDKD16: Hủy đăng ký của chính giáo viên đó
     @Test
     void unregisterTeachingById_CorrectTeacher_ShouldDelete() {
         mockRegistration.setStatus("PENDING");
@@ -479,6 +495,7 @@ public class ClassRegistrationServiceTest {
         verify(classRegistrationRepository, times(1)).deleteById(100L);
     }
 
+    // UDKD17: Hủy đăng ký không tồn tại
     @Test
     void unregisterTeachingById_RegistrationNotFound_ShouldThrowException() {
         when(classRegistrationRepository.findById(999L)).thenReturn(Optional.empty());
@@ -492,6 +509,7 @@ public class ClassRegistrationServiceTest {
 
     // ==================== REJECT REGISTRATION TESTS ====================
 
+    // UDKD18: Từ chối đăng ký thành công
     @Test
     void rejectRegistration_Success_ShouldSetRejectedStatus() {
         mockRegistration.setStatus("PENDING");
@@ -505,6 +523,7 @@ public class ClassRegistrationServiceTest {
         verify(classRegistrationRepository, times(1)).save(mockRegistration);
     }
 
+    // UDKD19: Từ chối đăng ký với lý do
     @Test
     void rejectRegistration_WithReason_ShouldSaveReason() {
         mockRegistration.setStatus("PENDING");
@@ -517,6 +536,7 @@ public class ClassRegistrationServiceTest {
         assertThat(result.getDescription()).isEqualTo("Insufficient experience");
     }
 
+    // UDKD20: Từ chối đăng ký không có lý do
     @Test
     void rejectRegistration_WithoutReason_ShouldStillReject() {
         mockRegistration.setStatus("PENDING");
@@ -531,6 +551,7 @@ public class ClassRegistrationServiceTest {
         assertThat(result.getDescription()).isEqualTo("Original description"); // Unchanged
     }
 
+    // UDKD21: Từ chối đăng ký với lý do rỗng
     @Test
     void rejectRegistration_EmptyReason_ShouldNotSaveReason() {
         mockRegistration.setStatus("PENDING");
@@ -545,6 +566,7 @@ public class ClassRegistrationServiceTest {
         assertThat(result.getDescription()).isEqualTo("Original description"); // Unchanged
     }
 
+    // UDKD22: Từ chối đăng ký không tồn tại
     @Test
     void rejectRegistration_RegistrationNotFound_ShouldThrowException() {
         when(classRegistrationRepository.findById(999L)).thenReturn(Optional.empty());
@@ -556,6 +578,7 @@ public class ClassRegistrationServiceTest {
 
     // ==================== QUERY METHODS TESTS ====================
 
+    // UDKD23: Lấy đăng ký theo giáo viên
     @Test
     void getByTeacher_ValidTeacher_ShouldReturnRegistrations() {
         List<ClassRegistration> mockRegistrations = List.of(mockRegistration);
@@ -570,6 +593,7 @@ public class ClassRegistrationServiceTest {
         verify(classRegistrationRepository, times(1)).findByTeacher(mockTeacher1);
     }
 
+    // UDKD24: Lấy đăng ký với giáo viên không tồn tại
     @Test
     void getByTeacher_TeacherNotFound_ShouldThrowException() {
         when(teacherRepository.findById(999L)).thenReturn(Optional.empty());
@@ -581,6 +605,7 @@ public class ClassRegistrationServiceTest {
         verify(classRegistrationRepository, never()).findByTeacher(any());
     }
 
+    // UDKD25: Lấy đăng ký theo lớp học
     @Test
     void getByFitnessClass_ValidClass_ShouldReturnRegistrations() {
         List<ClassRegistration> mockRegistrations = List.of(mockRegistration);
@@ -595,6 +620,7 @@ public class ClassRegistrationServiceTest {
         verify(classRegistrationRepository, times(1)).findByFitnessClass(mockFitnessClass1);
     }
 
+    // UDKD26: Lấy đăng ký với lớp học không tồn tại
     @Test
     void getByFitnessClass_ClassNotFound_ShouldThrowException() {
         when(fitnessClassRepository.findById(999L)).thenReturn(Optional.empty());

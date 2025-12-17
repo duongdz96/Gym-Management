@@ -66,6 +66,7 @@ public class ImportBillServiceTest {
 
     // ==================== CREATE IMPORT BILL TESTS ====================
 
+    // UNH1: Tạo phiếu nhập thành công và tăng tồn kho
     @Test
     void createImportBill_Success_ShouldIncreaseInventoryAndCalculateTotal() {
         when(productRepository.findAllById(List.of(mockProduct1.getId())))
@@ -89,6 +90,7 @@ public class ImportBillServiceTest {
         verify(importBillRepository, times(1)).save(any(ImportBill.class));
     }
 
+    // UNH2: Tạo phiếu nhập với cập nhật giá bán
     @Test
     void createImportBill_WithPriceUpdate_ShouldUpdateSellingPrice() {
         mockImportedProduct1.setPrice(550.0); // New selling price
@@ -105,6 +107,7 @@ public class ImportBillServiceTest {
         }));
     }
 
+    // UNH3: Tạo phiếu nhập không cập nhật giá bán
     @Test
     void createImportBill_WithoutPriceUpdate_ShouldKeepOriginalPrice() {
         mockImportedProduct1.setPrice(null); // No price update
@@ -121,6 +124,7 @@ public class ImportBillServiceTest {
         }));
     }
 
+    // UNH4: Tạo phiếu nhập với giá bằng 0 (giữ nguyên giá cũ)
     @Test
     void createImportBill_WithZeroPrice_ShouldKeepOriginalPrice() {
         mockImportedProduct1.setPrice(0.0); // Zero price should not update
@@ -137,6 +141,7 @@ public class ImportBillServiceTest {
         }));
     }
 
+    // UNH5: Tạo phiếu nhập với nhiều sản phẩm
     @Test
     void createImportBill_MultipleProducts_ShouldHandleAllCorrectly() {
         mockImportBill.getImportedProducts().add(mockImportedProduct2);
@@ -156,6 +161,7 @@ public class ImportBillServiceTest {
         }));
     }
 
+    // UNH6: Tạo phiếu nhập - tính tổng tiền chính xác
     @Test
     void createImportBill_CalculateTotalPrice_ShouldSumCorrectly() {
         mockImportedProduct1.setQuantity(5);
@@ -170,6 +176,7 @@ public class ImportBillServiceTest {
         assertThat(result.getPrice()).isEqualTo(500.0); // 5 * 100
     }
 
+    // UNH7: Tạo phiếu nhập với sản phẩm không tồn tại
     @Test
     void createImportBill_ProductNotFound_ShouldThrowException() {
         when(productRepository.findAllById(List.of(mockProduct1.getId())))
@@ -182,6 +189,7 @@ public class ImportBillServiceTest {
         verify(importBillRepository, never()).save(any());
     }
 
+    // UNH8: Tạo phiếu nhập với danh sách sản phẩm rỗng
     @Test
     void createImportBill_EmptyProductList_ShouldThrowException() {
         mockImportBill.setImportedProducts(new ArrayList<>());
@@ -194,6 +202,7 @@ public class ImportBillServiceTest {
 
     // ==================== UPDATE IMPORT BILL TESTS ====================
 
+    // UNH9: Cập nhật phiếu nhập - hoàn tồn kho cũ và cộng tồn kho mới
     @Test
     void updateImportBill_Success_ShouldRevertOldAndApplyNewInventory() {
         // Setup existing bill with old product
@@ -244,6 +253,7 @@ public class ImportBillServiceTest {
         assertThat(result.getPrice()).isEqualTo(1500.0); // 10 * 150
     }
 
+    // UNH10: Cập nhật phiếu nhập - thay đổi sản phẩm
     @Test
     void updateImportBill_ChangeProducts_ShouldUpdateInventoryCorrectly() {
         Product oldProduct = TestDataHelper.createProduct("Old", "type", 100.0, "Brand", 100, false);
@@ -266,6 +276,7 @@ public class ImportBillServiceTest {
         verify(productRepository, times(2)).saveAll(any());
     }
 
+    // UNH11: Cập nhật phiếu nhập - cập nhật giá
     @Test
     void updateImportBill_UpdatePrices_ShouldApplyNewPrices() {
         Product oldProduct = TestDataHelper.createProduct("Product", "type", 100.0, "Brand", 50, false);
@@ -292,6 +303,7 @@ public class ImportBillServiceTest {
         }));
     }
 
+    // UNH12: Cập nhật phiếu nhập - tính lại tổng tiền
     @Test
     void updateImportBill_RecalculateTotal_ShouldBeCorrect() {
         Product oldProduct = TestDataHelper.createProduct("Product", "type", 100.0, "Brand", 50, false);
@@ -316,6 +328,7 @@ public class ImportBillServiceTest {
         assertThat(result.getPrice()).isEqualTo(4500.0); // 15 * 300
     }
 
+    // UNH13: Cập nhật phiếu nhập - thay đổi nhà cung cấp
     @Test
     void updateImportBill_ChangeProvider_ShouldUpdateProvider() {
         Product oldProduct = TestDataHelper.createProduct("Product", "type", 100.0, "Brand", 50, false);
@@ -341,6 +354,7 @@ public class ImportBillServiceTest {
         assertThat(result.getProvider().getId()).isEqualTo(2L);
     }
 
+    // UNH14: Cập nhật phiếu nhập - thay đổi quản lý
     @Test
     void updateImportBill_ChangeManager_ShouldUpdateManager() {
         Product oldProduct = TestDataHelper.createProduct("Product", "type", 100.0, "Brand", 50, false);
@@ -366,6 +380,7 @@ public class ImportBillServiceTest {
         assertThat(result.getManager().getId()).isEqualTo(2L);
     }
 
+    // UNH15: Cập nhật phiếu nhập không tồn tại
     @Test
     void updateImportBill_BillNotFound_ShouldThrowException() {
         when(importBillRepository.findById(999L)).thenReturn(Optional.empty());
@@ -375,6 +390,7 @@ public class ImportBillServiceTest {
         });
     }
 
+    // UNH16: Cập nhật phiếu nhập với sản phẩm không tồn tại
     @Test
     void updateImportBill_ProductNotFound_ShouldThrowException() {
         Product oldProduct = TestDataHelper.createProduct("Product", "type", 100.0, "Brand", 50, false);
@@ -396,6 +412,7 @@ public class ImportBillServiceTest {
 
     // ==================== OTHER METHODS TESTS ====================
 
+    // UNH17: Xóa phiếu nhập thành công
     @Test
     void deleteImportBill_ValidId_ShouldDeleteSuccessfully() {
         Long billId = 100L;
@@ -405,6 +422,7 @@ public class ImportBillServiceTest {
         verify(importBillRepository, times(1)).deleteById(billId);
     }
 
+    // UNH18: Lấy tất cả phiếu nhập
     @Test
     void getAllImportBills_ShouldReturnAllBills() {
         List<ImportBill> mockBills = List.of(mockImportBill);
@@ -416,6 +434,7 @@ public class ImportBillServiceTest {
         verify(importBillRepository, times(1)).findAll();
     }
 
+    // UNH19: Lấy phiếu nhập theo ID hợp lệ
     @Test
     void getImportBillById_ValidId_ShouldReturnBill() {
         Long billId = 100L;
@@ -429,6 +448,7 @@ public class ImportBillServiceTest {
         verify(importBillRepository, times(1)).findById(billId);
     }
 
+    // UNH20: Lấy phiếu nhập theo ID không hợp lệ
     @Test
     void getImportBillById_InvalidId_ShouldThrowException() {
         Long billId = 999L;
@@ -441,6 +461,7 @@ public class ImportBillServiceTest {
 
     // ==================== CSV IMPORT TESTS ====================
 
+    // UNH21: Nhập từ CSV thành công
     @Test
     void importFromCsv_ValidFile_ShouldCreateBillAndUpdateInventory() throws Exception {
         String csvContent = "productId,quantity\n1,10\n2,20";
@@ -468,6 +489,7 @@ public class ImportBillServiceTest {
         verify(importBillRepository, times(1)).save(any(ImportBill.class));
     }
 
+    // UNH22: Nhập từ CSV với nhiều sản phẩm
     @Test
     void importFromCsv_MultipleProducts_ShouldHandleAll() throws Exception {
         String csvContent = "productId,quantity\n1,5\n2,10";
@@ -490,6 +512,7 @@ public class ImportBillServiceTest {
         verify(importBillRepository, times(1)).save(any(ImportBill.class));
     }
 
+    // UNH23: Nhập từ CSV - cập nhật tồn kho chính xác
     @Test
     void importFromCsv_UpdateInventory_ShouldIncreaseCorrectly() throws Exception {
         String csvContent = "productId,quantity\n1,25";
@@ -512,6 +535,7 @@ public class ImportBillServiceTest {
         ));
     }
 
+    // UNH24: Nhập từ CSV với định dạng không hợp lệ
     @Test
     void importFromCsv_InvalidCSVFormat_ShouldThrowException() {
         String csvContent = "invalid,format\n1,abc"; // Invalid quantity
@@ -527,6 +551,7 @@ public class ImportBillServiceTest {
         });
     }
 
+    // UNH25: Nhập từ CSV với sản phẩm không tồn tại
     @Test
     void importFromCsv_ProductNotFound_ShouldThrowException() {
         String csvContent = "productId,quantity\n999,10"; // Product ID 999 doesn't exist
@@ -544,6 +569,7 @@ public class ImportBillServiceTest {
         });
     }
 
+    // UNH26: Nhập từ CSV với nhà cung cấp không tồn tại
     @Test
     void importFromCsv_ProviderNotFound_ShouldThrowException() {
         String csvContent = "productId,quantity\n1,10";
@@ -562,6 +588,7 @@ public class ImportBillServiceTest {
         });
     }
 
+    // UNH27: Nhập từ CSV với quản lý không tồn tại
     @Test
     void importFromCsv_ManagerNotFound_ShouldThrowException() {
         String csvContent = "productId,quantity\n1,10";
@@ -581,6 +608,7 @@ public class ImportBillServiceTest {
         });
     }
 
+    // UNH28: Nhập từ CSV với file rỗng
     @Test
     void importFromCsv_EmptyFile_ShouldThrowException() {
         String csvContent = "productId,quantity\n"; // Only header, no data

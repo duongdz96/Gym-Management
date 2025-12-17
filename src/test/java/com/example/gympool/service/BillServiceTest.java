@@ -77,6 +77,7 @@ public class BillServiceTest {
 
     // ==================== CREATE BILL TESTS ====================
 
+    // UTT1: Tạo hóa đơn thành công và cập nhật tồn kho
     @Test
     void createBill_Success_FullScenario_ShouldUpdateInventory() {
         when(receptionistRepository.findById(mockReceptionist.getId()))
@@ -101,6 +102,7 @@ public class BillServiceTest {
         verify(billRepository, times(1)).save(any(Bill.class));
     }
 
+    // UTT2: Tạo hóa đơn với coupon giảm giá phần trăm
     @Test
     void createBill_WithPercentageCoupon_ShouldApplyDiscountAndDecrementUses() {
         mockInputBill.setCoupon(mockCouponDTO);
@@ -128,6 +130,7 @@ public class BillServiceTest {
         verify(billRepository, times(1)).save(any(Bill.class));
     }
 
+    // UTT3: Tạo hóa đơn với coupon giảm giá cố định
     @Test
     void createBill_WithFixedAmountCoupon_ShouldApplyDiscountAndDecrementUses() {
         Coupon fixedCoupon = TestDataHelper.createCoupon("FIXED50", "FIXED_AMOUNT", 50.0, 10);
@@ -166,6 +169,7 @@ public class BillServiceTest {
         ));
     }
 
+    // UTT4: Tạo hóa đơn với coupon lần dùng cuối cùng
     @Test
     void createBill_WithCouponLastUse_ShouldSetStatusToUnavailable() {
         IssuedCoupon lastUseCoupon = TestDataHelper.createIssuedCoupon(1, "AVAILABLE", mockCoupon, mockMember);
@@ -194,6 +198,7 @@ public class BillServiceTest {
         ));
     }
 
+    // UTT5: Tạo hóa đơn với coupon nhưng không có member
     @Test
     void createBill_WithCouponButNoMember_ShouldThrowException() {
         mockInputBill.setMember(null);
@@ -209,6 +214,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT6: Tạo hóa đơn với coupon không hợp lệ
     @Test
     void createBill_WithInvalidCoupon_ShouldThrowException() {
         mockInputBill.setCoupon(mockCouponDTO);
@@ -227,6 +233,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT7: Tạo hóa đơn với sản phẩm không tồn tại
     @Test
     void createBill_ProductNotFound_ShouldThrowException() {
         when(receptionistRepository.findById(mockReceptionist.getId()))
@@ -241,6 +248,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT8: Tạo hóa đơn với số lượng sản phẩm null
     @Test
     void createBill_ProductQuantityNull_ShouldThrowException() {
         mockProduct.setQuantity(null);
@@ -259,6 +267,7 @@ public class BillServiceTest {
         mockProduct.setQuantity(100);
     }
 
+    // UTT9: Tạo hóa đơn với tồn kho không đủ
     @Test
     void createBill_NotEnoughStock_ShouldThrowException() {
         mockProduct.setQuantity(0);
@@ -277,6 +286,7 @@ public class BillServiceTest {
         mockProduct.setQuantity(100);
     }
 
+    // UTT10: Tạo hóa đơn với nhiều sản phẩm
     @Test
     void createBill_MultipleProducts_ShouldSucceed() {
         Product product2 = TestDataHelper.createProduct("Protein", "supplement", 50.0, "ON", 20, false);
@@ -304,6 +314,7 @@ public class BillServiceTest {
         verify(productRepository, times(1)).save(argThat(p -> p.getId().equals(103L) && p.getQuantity() == 18));
     }
 
+    // UTT11: Tạo hóa đơn với cả sản phẩm thường và PT
     @Test
     void createBill_MixedProductTypes_ShouldHandleInventoryCorrectly() {
         Product ptProduct = TestDataHelper.createProduct("PT Session", "PT", 100.0, "Gym", null, false);
@@ -331,6 +342,7 @@ public class BillServiceTest {
         verify(productRepository, never()).save(argThat(p -> p.getId().equals(104L)));
     }
 
+    // UTT12: Tạo hóa đơn với receptionist không tồn tại
     @Test
     void createBill_ReceptionistNotFound_ShouldThrowException() {
         when(receptionistRepository.findById(mockReceptionist.getId()))
@@ -341,6 +353,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT13: Tạo hóa đơn với member không tồn tại
     @Test
     void createBill_MemberNotFound_ShouldThrowException() {
         when(receptionistRepository.findById(mockReceptionist.getId()))
@@ -353,6 +366,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT14: Tạo hóa đơn không có phương thức thanh toán
     @Test
     void createBillwithNoPaymentMethod_ThrowsException() {
         mockInputBill.setPaymentMethod(null);
@@ -372,6 +386,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT15: Tạo hóa đơn không có trạng thái thanh toán
     @Test
     void createBillwithNoPaymentStatus_ThrowsException() {
         mockInputBill.setPaymentStatus(null);
@@ -391,6 +406,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT16: Tạo hóa đơn không có ngày
     @Test
     void createBillwithNoDate_ThrowsException() {
         mockInputBill.setDate(null);
@@ -410,6 +426,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT17: Tạo hóa đơn không có tổng tiền (tự động tính)
     @Test
     void createBillwithNoTotal_ShouldCalculateTotalAndSucceed() {
         mockInputBill.setTotal(null);
@@ -433,6 +450,7 @@ public class BillServiceTest {
         assertThat(resultBill.getId()).isEqualTo(300L);
     }
 
+    // UTT18: Tạo hóa đơn không có receptionist
     @Test
     void createBillwithNoReceptionist_ThrowsException() {
         mockInputBill.setReceptionist(null);
@@ -442,6 +460,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT19: Tạo hóa đơn không có member (vẫn thành công)
     @Test
     void createBillwithNoMember_ShouldSucceed() {
         mockInputBill.setMember(null);
@@ -462,6 +481,7 @@ public class BillServiceTest {
         verify(memberRepository, never()).findById(anyLong());
     }
 
+    // UTT20: Tạo hóa đơn với sản phẩm PT (không giảm tồn kho)
     @Test
     void createBill_PTProduct_ShouldNotDecreaseInventory() {
         mockProduct.setType("PT");
@@ -485,6 +505,7 @@ public class BillServiceTest {
         mockProduct.setType("clothes");
     }
 
+    // UTT21: Tạo hóa đơn với sản phẩm Membership (không giảm tồn kho)
     @Test
     void createBill_MembershipProduct_ShouldNotDecreaseInventory() {
         mockProduct.setType("Membership");
@@ -510,6 +531,7 @@ public class BillServiceTest {
 
     // ==================== UPDATE BILL TESTS ====================
 
+    // UTT22: Cập nhật hóa đơn thành công (hoàn tồn kho cũ và trừ tồn kho mới)
     @Test
     void updateBill_FullUpdateScenario_ShouldRevertAndApplyNewChanges() {
         Product oldProduct = TestDataHelper.createProduct("T-shirt-old", "clothes", 10.0, "Adidas", 100, false);
@@ -550,6 +572,7 @@ public class BillServiceTest {
         assertThat(updatedBill.getTotal()).isEqualTo(10.0);
     }
 
+    // UTT23: Cập nhật hóa đơn - hoàn lại coupon cũ
     @Test
     void updateBill_RevertOldCoupon_ShouldIncreaseRemainingUses() {
         Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
@@ -582,6 +605,7 @@ public class BillServiceTest {
         ));
     }
 
+    // UTT24: Cập nhật hóa đơn - thêm coupon mới
     @Test
     void updateBill_AddNewCoupon_ShouldApplyDiscount() {
         Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
@@ -615,6 +639,7 @@ public class BillServiceTest {
         assertThat(updatedBill.getTotal()).isEqualTo(50.0); // 100 - 50%
     }
 
+    // UTT25: Cập nhật hóa đơn không tồn tại
     @Test
     void updateBill_BillNotFound_ShouldThrowException() {
         when(billRepository.findById(999L)).thenReturn(Optional.empty());
@@ -624,6 +649,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT26: Cập nhật hóa đơn với member không tồn tại
     @Test
     void updateBill_MemberNotFound_ShouldThrowException() {
         Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
@@ -644,6 +670,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT27: Cập nhật hóa đơn với sản phẩm không tồn tại
     @Test
     void updateBill_ProductNotFound_ShouldThrowException() {
         Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
@@ -673,6 +700,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT28: Cập nhật hóa đơn với tồn kho không đủ
     @Test
     void updateBill_NotEnoughStockForNewProducts_ShouldThrowException() {
         Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
@@ -702,6 +730,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT29: Cập nhật hóa đơn với coupon không hợp lệ
     @Test
     void updateBill_InvalidCoupon_ShouldThrowException() {
         Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
@@ -733,6 +762,7 @@ public class BillServiceTest {
 
     // ==================== OTHER METHODS TESTS ====================
 
+    // UTT30: Xóa hóa đơn thành công
     @Test
     void deleteBill_ValidId_ShouldDeleteSuccessfully() {
         Long billId = 100L;
@@ -742,6 +772,7 @@ public class BillServiceTest {
         verify(billRepository, times(1)).deleteById(billId);
     }
 
+    // UTT31: Lấy tất cả hóa đơn
     @Test
     void getAllBills_ShouldReturnAllBills() {
         List<Bill> mockBills = List.of(mockInputBill);
@@ -753,6 +784,7 @@ public class BillServiceTest {
         verify(billRepository, times(1)).findAll();
     }
 
+    // UTT32: Lấy hóa đơn theo ID hợp lệ
     @Test
     void getBillById_ValidId_ShouldReturnBill() {
         Long billId = 100L;
@@ -766,6 +798,7 @@ public class BillServiceTest {
         verify(billRepository, times(1)).findById(billId);
     }
 
+    // UTT33: Lấy hóa đơn theo ID không hợp lệ
     @Test
     void getBillById_InvalidId_ShouldThrowException() {
         Long billId = 999L;
@@ -776,6 +809,7 @@ public class BillServiceTest {
         });
     }
 
+    // UTT34: Lấy hóa đơn theo receptionist ID
     @Test
     void getBillsByReceptionistId_ShouldReturnFilteredBills() {
         Long receptionistId = 1L;
@@ -788,6 +822,7 @@ public class BillServiceTest {
         verify(billRepository, times(1)).findByReceptionist_Id(receptionistId);
     }
 
+    // UTT35: Lấy hóa đơn theo member ID
     @Test
     void getBillByMemberId_ShouldReturnFilteredBills() {
         Long memberId = 10L;
@@ -800,6 +835,7 @@ public class BillServiceTest {
         verify(billRepository, times(1)).findByMember_id(memberId);
     }
 
+    // UTT36: Cập nhật trạng thái thanh toán thành công
     @Test
     void updateBillPaymentStatus_ValidId_ShouldUpdateStatus() {
         Long billId = 100L;
@@ -816,6 +852,7 @@ public class BillServiceTest {
         verify(billRepository, times(1)).save(any(Bill.class));
     }
 
+    // UTT37: Cập nhật trạng thái thanh toán với ID không hợp lệ
     @Test
     void updateBillPaymentStatus_InvalidId_ShouldThrowException() {
         Long billId = 999L;
