@@ -118,8 +118,6 @@ public class BillServiceImpl implements BillService {
             bill.setIssuedCoupon(issued);
         }
 
-
-
         // ---------------------------
         // 6. Set final total (đã giảm giá)
         // FE gửi:

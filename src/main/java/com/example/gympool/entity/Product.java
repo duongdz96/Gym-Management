@@ -34,8 +34,6 @@ public class Product {
     private Integer quantity;
 
     @Column(name = "import_date")
-
-
     private Date importDate;
 
     @Column(length = 255)
