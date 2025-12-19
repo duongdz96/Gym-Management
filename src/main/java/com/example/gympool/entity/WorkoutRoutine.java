@@ -1,5 +1,6 @@
 package com.example.gympool.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,6 +32,7 @@ public class WorkoutRoutine {
     private User creator;
 
     @Column(name = "is_public")
+    @JsonProperty("isPublic")
     private boolean isPublic;
 
     @OneToMany(mappedBy = "routine", cascade = CascadeType.ALL, orphanRemoval = true)

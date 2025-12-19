@@ -1,5 +1,6 @@
 package com.example.gympool.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,6 +17,7 @@ public class TrainingPlanDetails {
     private Long id;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "plan_id", nullable = false)
     private TrainingPlans trainingPlan;
 
@@ -28,7 +30,4 @@ public class TrainingPlanDetails {
 
     @Column(name = "rep_count")
     private String repCount;
-
-    @Column(name = "weight")
-    private String weight;
 }

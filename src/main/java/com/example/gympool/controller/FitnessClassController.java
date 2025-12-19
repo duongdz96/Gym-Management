@@ -18,7 +18,7 @@ public class FitnessClassController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FitnessClass>> getAll() {
+    public ResponseEntity<List<FitnessClass>> getAllFitnessClass() {
         return ResponseEntity.ok(classTypeService.getAll());
     }
 
@@ -30,7 +30,7 @@ public class FitnessClassController {
     }
 
     @PostMapping
-    public ResponseEntity<FitnessClass> create(@RequestBody FitnessClass fitnessClass) {
+    public ResponseEntity<FitnessClass> CreateFitnessClass(@RequestBody FitnessClass fitnessClass) {
         return ResponseEntity.ok(classTypeService.create(fitnessClass));
     }
 
