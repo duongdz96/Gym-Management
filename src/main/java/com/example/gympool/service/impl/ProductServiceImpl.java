@@ -1,8 +1,11 @@
 package com.example.gympool.service.impl;
 
+import com.example.gympool.entity.MembershipPlan;
 import com.example.gympool.entity.Product;
+import com.example.gympool.repository.MembershipPlanRepository;
 import com.example.gympool.repository.ProductRepository;
 import com.example.gympool.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,20 +15,22 @@ import java.util.Date;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 @Service
 public class ProductServiceImpl implements ProductService {
-    private final ProductRepository productRepository;
 
-    public ProductServiceImpl(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
+    @Autowired
+    private ProductRepository productRepository;
+    @Autowired
+    private MembershipPlanRepository membershipPlanRepository;
 
     @Override
     public Product addProduct(Product product, MultipartFile image) {
         product.setStatus(false);
         product.setImportDate(new Date());
 
+        if(product.getType().equals("Membership")) throw new RuntimeException("Product cannot be membership");
         if (image != null && !image.isEmpty()) {
             try {
                 String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
@@ -58,7 +63,14 @@ public class ProductServiceImpl implements ProductService {
         existing.setUnit(product.getUnit());
         existing.setStatus(product.isStatus());
 
-        // Trả về đối tượng đã được cập nhật
+        if(existing.getType().equals("Membership")) {
+            MembershipPlan plan = membershipPlanRepository.findByName(product.getName())
+                    .orElseThrow(() -> new RuntimeException("Membership Plan không tồn tại với tên này!"));
+            plan.setName(product.getName());
+            plan.setPrice(product.getPrice());
+            membershipPlanRepository.save(plan);
+        }
+
         return productRepository.save(existing);
     }
 

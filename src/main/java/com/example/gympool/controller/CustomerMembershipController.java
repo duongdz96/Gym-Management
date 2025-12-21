@@ -5,6 +5,7 @@ import com.example.gympool.entity.CustomerMembership;
 import com.example.gympool.service.CustomerMembershipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,6 +37,24 @@ public class CustomerMembershipController {
                                      @RequestBody CustomerMembership CustomerMembership) {
         customerMembershipService.updateMembership(id, CustomerMembership);
     }
+
+    // API Gia hạn gói
+    @PostMapping("/{id}/renew")
+    public ResponseEntity<CustomerMembership> renewMembership(
+            @PathVariable Long id,
+            @RequestParam Long newPlanId) {
+        CustomerMembership updated = customerMembershipService.renewMembership(id, newPlanId);
+        return ResponseEntity.ok(updated);
     }
+
+    // API Đổi gói / Nâng cấp gói
+    @PostMapping("/{id}/upgrade")
+    public ResponseEntity<CustomerMembership> upgradeMembership(
+            @PathVariable Long id,
+            @RequestParam Long newPlanId) {
+        CustomerMembership upgraded = customerMembershipService.upgradeMembership(id, newPlanId);
+        return ResponseEntity.ok(upgraded);
+    }
+}
 
 

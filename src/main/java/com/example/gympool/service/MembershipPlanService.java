@@ -9,4 +9,7 @@ public interface MembershipPlanService {
     MembershipPlan getMembershipPlanById(Long id);
     MembershipPlan addMembershipPlan(MembershipPlan MembershipPlan);
     MembershipPlan updateMembershipPlan(Long id, MembershipPlan membershipPlan);
+    MembershipPlan deleteMembershipPlan(Long id);
+    MembershipPlan changeStatusMembershipPlan(Long id, String status);
+    List<MembershipPlan> getAllActiveMembershipPlans();
 }

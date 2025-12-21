@@ -28,11 +28,9 @@ public class StudentClassAttendanceServiceImpl implements StudentClassAttendance
     private TeacherRepository teacherRepository;
 
 
-    // --- 1. Điểm danh Thủ công (PRESENT) ---
     @Override
     @Transactional
     public StudentClassAttendance checkInStudent(AttendanceCheckInRequest request) {
-        // Giả định: Đã load ClassSchedule, Member, Teacher từ ID (cần các Repository tương ứng)
         ClassSchedule classSchedule = classScheduleRepository.findById(request.getClassScheduleId())
                 .orElseThrow(() -> new RuntimeException("Class Schedule not found"));
         Member member = memberRepository.findById(request.getMemberId())
@@ -40,12 +38,10 @@ public class StudentClassAttendanceServiceImpl implements StudentClassAttendance
         Teacher checker = teacherRepository.findById(request.getCheckedInById())
                 .orElseThrow(() -> new RuntimeException("Teacher/Checker not found"));
 
-        // 1. Check Đăng ký: Xác nhận học viên đã đăng ký lớp này
         if (registrationRepository.findByMemberAndClassSchedule(member, classSchedule).isEmpty()) {
             throw new RuntimeException("Member is not registered for this class schedule.");
         }
 
-        // 2. Check Đã điểm danh: Kiểm tra xem học viên đã có bản ghi điểm danh chưa
         Optional<StudentClassAttendance> existingAttendanceOpt = attendanceRepository.findByClassScheduleIdAndMemberId(classSchedule.getId(), member.getId());
 
         if (existingAttendanceOpt.isPresent()) {
@@ -62,7 +58,6 @@ public class StudentClassAttendanceServiceImpl implements StudentClassAttendance
             }
         }
 
-        // 3. Tạo bản ghi điểm danh mới (PRESENT)
         StudentClassAttendance attendance = new StudentClassAttendance();
         attendance.setClassSchedule(classSchedule);
         attendance.setMember(member);
@@ -73,7 +68,6 @@ public class StudentClassAttendanceServiceImpl implements StudentClassAttendance
         return attendanceRepository.save(attendance);
     }
 
-    // --- 2. Lấy danh sách điểm danh ---
     @Override
     public List<StudentClassAttendance> getAttendanceByClassSchedule(Long classScheduleId) {
         return attendanceRepository.findAll().stream()
@@ -81,20 +75,16 @@ public class StudentClassAttendanceServiceImpl implements StudentClassAttendance
                 .collect(Collectors.toList());
     }
 
-    // --- 3. Điểm danh Tự động (ABSENT) ---
     @Override
     @Transactional
     public int processAutoAbsent(Long classScheduleId) {
         ClassSchedule classSchedule = classScheduleRepository.findById(classScheduleId)
                 .orElseThrow(() -> new RuntimeException("Class Schedule not found"));
 
-        // A. Lấy tất cả học viên Đã Đăng Ký
         List<MemberRegistration> registeredMembers = registrationRepository.findByClassSchedule(classSchedule);
 
-        // B. Lấy tất cả học viên Đã Có Bản Ghi Điểm Danh
         List<StudentClassAttendance> existingAttendance = attendanceRepository.findAllByClassScheduleId(classScheduleId); // Giả định phương thức này tồn tại
 
-        // C. Tìm học viên Vắng mặt (Registered NOT in ExistingAttendance)
         List<Long> attendedMemberIds = existingAttendance.stream()
                 .map(a -> a.getMember().getId())
                 .collect(Collectors.toList());
@@ -103,10 +93,8 @@ public class StudentClassAttendanceServiceImpl implements StudentClassAttendance
                 .filter(reg -> !attendedMemberIds.contains(reg.getMember().getId()))
                 .collect(Collectors.toList());
 
-        // D. Tạo bản ghi ABSENT hàng loạt
         int absentCount = 0;
         for (MemberRegistration reg : absentRegistrations) {
-            // Check lại lần nữa để đảm bảo không tạo bản ghi trùng
             Optional<StudentClassAttendance> existing = attendanceRepository.findByClassScheduleIdAndMemberId(classScheduleId, reg.getMember().getId());
             if (existing.isEmpty()) {
                 StudentClassAttendance attendance = new StudentClassAttendance();
@@ -128,12 +116,10 @@ public class StudentClassAttendanceServiceImpl implements StudentClassAttendance
     @Override
     @Transactional
     public StudentClassAttendance updateAttendanceStatus(Long classScheduleId, Long memberId, Long teacherId, String newStatus) {
-        // 1. Tìm bản ghi điểm danh hiện có
         StudentClassAttendance existingAttendance = attendanceRepository
                 .findByClassScheduleIdAndMemberId(classScheduleId, memberId)
                 .orElseThrow(() -> new RuntimeException("Attendance record not found for this member and class."));
 
-        // 2. Load Teacher/Checker
         Teacher updater = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher/Updater not found"));
 
