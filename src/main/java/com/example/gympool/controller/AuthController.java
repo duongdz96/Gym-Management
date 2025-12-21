@@ -73,7 +73,8 @@ public class AuthController {
 
         String newAccessToken = jwtTokenProvider.generateToken(
                 refreshToken.getUser().getEmail(),
-                refreshToken.getUser().getRole()
+                refreshToken.getUser().getRole(),
+                refreshToken.getUser().getId()
         );
 
         return ResponseEntity.ok(Map.of(

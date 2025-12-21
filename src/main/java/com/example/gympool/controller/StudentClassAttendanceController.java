@@ -15,12 +15,7 @@ import java.util.List;
 public class StudentClassAttendanceController {
     @Autowired
     private StudentClassAttendanceService attendanceService;
-    /**
-     * API 1: Điểm danh thủ công (Mark PRESENT)
-     * Thường được gọi khi giáo viên ấn "Có mặt" cho một học viên.
-     * Hoặc cập nhật từ ABSENT sang PRESENT (như đã sửa trong Service).
-     * POST /api/attendance/students/checkin
-     */
+
     @PostMapping("/checkin")
     public ResponseEntity<StudentClassAttendance> checkInStudent(
             @RequestBody AttendanceCheckInRequest request) {
@@ -31,11 +26,7 @@ public class StudentClassAttendanceController {
             return ResponseEntity.badRequest().body(null);
         }
     }
-    /**
-     * API 2: Cập nhật trạng thái điểm danh (Chỉnh sửa/Hủy điểm danh)
-     * Được sử dụng khi giáo viên sửa lỗi hoặc đánh dấu Vắng mặt sau khi đã check-in.
-     * PUT /api/attendance/students/update
-     */
+
     @PutMapping("/update")
     public ResponseEntity<StudentClassAttendance> updateAttendance(
             @RequestParam Long scheduleId,
@@ -50,10 +41,7 @@ public class StudentClassAttendanceController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-    /**
-     * API 3: Lấy danh sách điểm danh cho một buổi học
-     * GET /api/attendance/students/{scheduleId}
-     */
+
     @GetMapping("/{scheduleId}")
     public ResponseEntity<List<StudentClassAttendance>> getAttendanceByClass(
             @PathVariable Long scheduleId) {

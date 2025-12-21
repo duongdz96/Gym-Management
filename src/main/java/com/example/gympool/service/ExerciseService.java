@@ -12,4 +12,6 @@ public interface ExerciseService {
     Exercise updateExercise(Long id, Exercise Exercise);
     void deleteExercise(Long id);
     Optional<Exercise> getExerciseByName(String name);
+    List<Exercise> getMyExercises(Long userId);
+
 }

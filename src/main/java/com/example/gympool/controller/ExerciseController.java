@@ -4,6 +4,7 @@ import com.example.gympool.entity.Exercise;
 import com.example.gympool.service.ExerciseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -63,5 +64,11 @@ public class ExerciseController {
         return exerciseService.getExerciseByName(name)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Exercise>> getMyExercises(@PathVariable Long userId) {
+        List<Exercise> exercises = exerciseService.getMyExercises(userId);
+        return ResponseEntity.ok(exercises);
     }
 }

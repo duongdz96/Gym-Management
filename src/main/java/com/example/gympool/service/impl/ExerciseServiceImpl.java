@@ -2,6 +2,7 @@ package com.example.gympool.service.impl;
 
 import com.example.gympool.entity.Exercise;
 import com.example.gympool.repository.ExerciseRepository;
+import com.example.gympool.repository.UserRepository;
 import com.example.gympool.service.ExerciseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,8 @@ import java.util.Optional;
 public class ExerciseServiceImpl implements ExerciseService {
     @Autowired
     private ExerciseRepository exerciseRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public List<Exercise> getAllExercises() {
@@ -51,5 +54,16 @@ public class ExerciseServiceImpl implements ExerciseService {
     @Override
     public Optional<Exercise> getExerciseByName(String name) {
         return exerciseRepository.findByName(name);
+    }
+
+    @Override
+    public List<Exercise> getMyExercises(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("User not found with id: " + userId);
+        }
+        return exerciseRepository.findAllPersonalAndSystemExercises(userId);
     }
 }

@@ -20,13 +20,14 @@ public class JwtTokenProvider {
     }
 
     // Tạo token mới
-    public String generateToken(String email, String role) {
+    public String generateToken(String email, String role, Long userId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
         return Jwts.builder()
                 .setSubject(email)               // subject = email
                 .claim("role", role)             // thêm role
+                .claim("userId", userId)
                 .setIssuedAt(now)                // ngày phát hành
                 .setExpiration(expiryDate)       // ngày hết hạn
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
