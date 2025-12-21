@@ -1,32 +1,31 @@
 # Test Cases - Import Bill Service (Nhập Hàng)
 
-| No | Function/ Use Case | Controller Class | Method | ID Test case | Test Cases | Input | Expected Output | Note | Pass/Fail | Evidence |
-|----|-------------------|------------------|---------|--------------|------------|-------|-----------------|------|-----------|----------|
-| 1 | Tạo phiếu nhập | ImportBillServiceImpl | createImportBill | UNH1 | Tạo phiếu nhập thành công và tăng tồn kho | ImportBill với provider, manager, products hợp lệ | Phiếu nhập được tạo, tồn kho tăng, tổng tiền được tính | | Pending | |
-| 2 | Tạo phiếu nhập | ImportBillServiceImpl | createImportBill | UNH2 | Tạo phiếu nhập với cập nhật giá bán | ImportBill với importedProduct có price mới | Phiếu nhập được tạo, giá bán sản phẩm được cập nhật | | Pending | |
-| 3 | Tạo phiếu nhập | ImportBillServiceImpl | createImportBill | UNH3 | Tạo phiếu nhập không cập nhật giá bán | ImportBill với importedProduct.price = null | Phiếu nhập được tạo, giá bán giữ nguyên | | Pending | |
-| 4 | Tạo phiếu nhập | ImportBillServiceImpl | createImportBill | UNH4 | Tạo phiếu nhập với giá bằng 0 (giữ nguyên giá cũ) | ImportBill với importedProduct.price = 0 | Phiếu nhập được tạo, giá bán giữ nguyên | | Pending | |
-| 5 | Tạo phiếu nhập | ImportBillServiceImpl | createImportBill | UNH5 | Tạo phiếu nhập với nhiều sản phẩm | ImportBill với nhiều importedProducts | Phiếu nhập được tạo, tồn kho tất cả sản phẩm tăng | | Pending | |
-| 6 | Tạo phiếu nhập | ImportBillServiceImpl | createImportBill | UNH6 | Tạo phiếu nhập - tính tổng tiền chính xác | ImportBill với quantity và importPrice | Tổng tiền = sum(quantity * importPrice) | | Pending | |
-| 7 | Tạo phiếu nhập | ImportBillServiceImpl | createImportBill | UNH7 | Tạo phiếu nhập với sản phẩm không tồn tại | ImportBill với product ID không tồn tại | Throw RuntimeException | | Pending | |
-| 8 | Tạo phiếu nhập | ImportBillServiceImpl | createImportBill | UNH8 | Tạo phiếu nhập với danh sách sản phẩm rỗng | ImportBill với importedProducts = [] | Throw Exception | | Pending | |
-| 9 | Cập nhật phiếu nhập | ImportBillServiceImpl | updateImportBill | UNH9 | Cập nhật phiếu nhập - hoàn tồn kho cũ và cộng tồn kho mới | ImportBill ID và bill details mới | Phiếu nhập được cập nhật, tồn kho cũ giảm, tồn kho mới tăng | | Pending | |
-| 10 | Cập nhật phiếu nhập | ImportBillServiceImpl | updateImportBill | UNH10 | Cập nhật phiếu nhập - thay đổi sản phẩm | ImportBill ID với products khác | Tồn kho sản phẩm cũ giảm, tồn kho sản phẩm mới tăng | | Pending | |
-| 11 | Cập nhật phiếu nhập | ImportBillServiceImpl | updateImportBill | UNH11 | Cập nhật phiếu nhập - cập nhật giá | ImportBill ID với price mới | Giá bán sản phẩm được cập nhật | | Pending | |
-| 12 | Cập nhật phiếu nhập | ImportBillServiceImpl | updateImportBill | UNH12 | Cập nhật phiếu nhập - tính lại tổng tiền | ImportBill ID với quantity và importPrice mới | Tổng tiền được tính lại chính xác | | Pending | |
-| 13 | Cập nhật phiếu nhập | ImportBillServiceImpl | updateImportBill | UNH13 | Cập nhật phiếu nhập - thay đổi nhà cung cấp | ImportBill ID với provider mới | Provider được cập nhật | | Pending | |
-| 14 | Cập nhật phiếu nhập | ImportBillServiceImpl | updateImportBill | UNH14 | Cập nhật phiếu nhập - thay đổi quản lý | ImportBill ID với manager mới | Manager được cập nhật | | Pending | |
-| 15 | Cập nhật phiếu nhập | ImportBillServiceImpl | updateImportBill | UNH15 | Cập nhật phiếu nhập không tồn tại | ImportBill ID không tồn tại | Throw RuntimeException | | Pending | |
-| 16 | Cập nhật phiếu nhập | ImportBillServiceImpl | updateImportBill | UNH16 | Cập nhật phiếu nhập với sản phẩm không tồn tại | ImportBill details với product ID không tồn tại | Throw RuntimeException | | Pending | |
-| 17 | Xóa phiếu nhập | ImportBillServiceImpl | deleteImportBill | UNH17 | Xóa phiếu nhập thành công | ImportBill ID hợp lệ | Phiếu nhập được xóa | | Pending | |
-| 18 | Lấy danh sách phiếu nhập | ImportBillServiceImpl | getAllImportBills | UNH18 | Lấy tất cả phiếu nhập | Không có input | Danh sách tất cả phiếu nhập | | Pending | |
-| 19 | Lấy phiếu nhập theo ID | ImportBillServiceImpl | getImportBillById | UNH19 | Lấy phiếu nhập theo ID hợp lệ | ImportBill ID hợp lệ | Phiếu nhập tương ứng | | Pending | |
-| 20 | Lấy phiếu nhập theo ID | ImportBillServiceImpl | getImportBillById | UNH20 | Lấy phiếu nhập theo ID không hợp lệ | ImportBill ID không tồn tại | Throw RuntimeException | | Pending | |
-| 21 | Nhập từ CSV | ImportBillServiceImpl | importFromCsv | UNH21 | Nhập từ CSV thành công | CSV file hợp lệ, provider ID, manager ID | Phiếu nhập được tạo, tồn kho tăng | | Pending | |
-| 22 | Nhập từ CSV | ImportBillServiceImpl | importFromCsv | UNH22 | Nhập từ CSV với nhiều sản phẩm | CSV file với nhiều dòng sản phẩm | Phiếu nhập được tạo, tồn kho tất cả sản phẩm tăng | | Pending | |
-| 23 | Nhập từ CSV | ImportBillServiceImpl | importFromCsv | UNH23 | Nhập từ CSV - cập nhật tồn kho chính xác | CSV file với quantity | Tồn kho tăng đúng số lượng trong CSV | | Pending | |
-| 24 | Nhập từ CSV | ImportBillServiceImpl | importFromCsv | UNH24 | Nhập từ CSV với định dạng không hợp lệ | CSV file với dữ liệu không hợp lệ (quantity = "abc") | Throw RuntimeException | | Pending | |
-| 25 | Nhập từ CSV | ImportBillServiceImpl | importFromCsv | UNH25 | Nhập từ CSV với sản phẩm không tồn tại | CSV file với product ID không tồn tại | Throw RuntimeException | | Pending | |
-| 26 | Nhập từ CSV | ImportBillServiceImpl | importFromCsv | UNH26 | Nhập từ CSV với nhà cung cấp không tồn tại | CSV file, provider ID không tồn tại | Throw RuntimeException | | Pending | |
-| 27 | Nhập từ CSV | ImportBillServiceImpl | importFromCsv | UNH27 | Nhập từ CSV với quản lý không tồn tại | CSV file, manager ID không tồn tại | Throw RuntimeException | | Pending | |
-| 28 | Nhập từ CSV | ImportBillServiceImpl | importFromCsv | UNH28 | Nhập từ CSV với file rỗng | CSV file chỉ có header, không có data | Phiếu nhập được tạo nhưng không có sản phẩm | | Pending | |
+No,Function/ Use Case,Class,Method,ID Test case,Test Cases,Input,Expected Output,Note,Pass/Fail,Evidence
+1,Tạo phiếu nhập,ImportBillServiceImpl,createImportBill,UNH1,Tạo phiếu nhập thành công và tăng tồn kho,"ImportBill với provider, manager, products hợp lệ","Phiếu nhập được tạo, tồn kho tăng, tổng tiền được tính",,Pending,
+2,Tạo phiếu nhập,ImportBillServiceImpl,createImportBill,UNH2,Tạo phiếu nhập với cập nhật giá bán,ImportBill với importedProduct có price mới,"Phiếu nhập được tạo, giá bán sản phẩm được cập nhật",,Pending,
+3,Tạo phiếu nhập,ImportBillServiceImpl,createImportBill,UNH3,Tạo phiếu nhập không cập nhật giá bán,ImportBill với importedProduct.price = null,"Phiếu nhập được tạo, giá bán giữ nguyên",,Pending,
+4,Tạo phiếu nhập,ImportBillServiceImpl,createImportBill,UNH4,Tạo phiếu nhập với giá bằng 0 (giữ nguyên giá cũ),ImportBill với importedProduct.price = 0,"Phiếu nhập được tạo, giá bán giữ nguyên",,Pending,
+5,Tạo phiếu nhập,ImportBillServiceImpl,createImportBill,UNH5,Tạo phiếu nhập với nhiều sản phẩm,ImportBill với nhiều importedProducts,"Phiếu nhập được tạo, tồn kho tất cả sản phẩm tăng",,Pending,
+6,Tạo phiếu nhập,ImportBillServiceImpl,createImportBill,UNH6,Tạo phiếu nhập - tính tổng tiền chính xác,ImportBill với quantity và importPrice,Tổng tiền = sum(quantity * importPrice),,Pending,
+7,Tạo phiếu nhập,ImportBillServiceImpl,createImportBill,UNH7,Tạo phiếu nhập với sản phẩm không tồn tại,ImportBill với product ID không tồn tại,Throw RuntimeException,,Pending,
+8,Tạo phiếu nhập,ImportBillServiceImpl,createImportBill,UNH8,Tạo phiếu nhập với danh sách sản phẩm rỗng,ImportBill với importedProducts = [],Throw Exception,,Pending,
+9,Cập nhật phiếu nhập,ImportBillServiceImpl,updateImportBill,UNH9,Cập nhật phiếu nhập - hoàn tồn kho cũ và cộng tồn kho mới,ImportBill ID và bill details mới,"Phiếu nhập được cập nhật, tồn kho cũ giảm, tồn kho mới tăng",,Pending,
+10,Cập nhật phiếu nhập,ImportBillServiceImpl,updateImportBill,UNH10,Cập nhật phiếu nhập - thay đổi sản phẩm,ImportBill ID với products khác,"Tồn kho sản phẩm cũ giảm, tồn kho sản phẩm mới tăng",,Pending,
+11,Cập nhật phiếu nhập,ImportBillServiceImpl,updateImportBill,UNH11,Cập nhật phiếu nhập - cập nhật giá,ImportBill ID với price mới,Giá bán sản phẩm được cập nhật,,Pending,
+12,Cập nhật phiếu nhập,ImportBillServiceImpl,updateImportBill,UNH12,Cập nhật phiếu nhập - tính lại tổng tiền,ImportBill ID với quantity và importPrice mới,Tổng tiền được tính lại chính xác,,Pending,
+13,Cập nhật phiếu nhập,ImportBillServiceImpl,updateImportBill,UNH13,Cập nhật phiếu nhập - thay đổi nhà cung cấp,ImportBill ID với provider mới,Provider được cập nhật,,Pending,
+14,Cập nhật phiếu nhập,ImportBillServiceImpl,updateImportBill,UNH14,Cập nhật phiếu nhập - thay đổi quản lý,ImportBill ID với manager mới,Manager được cập nhật,,Pending,
+15,Cập nhật phiếu nhập,ImportBillServiceImpl,updateImportBill,UNH15,Cập nhật phiếu nhập không tồn tại,ImportBill ID không tồn tại,Throw RuntimeException,,Pending,
+16,Cập nhật phiếu nhập,ImportBillServiceImpl,updateImportBill,UNH16,Cập nhật phiếu nhập với sản phẩm không tồn tại,ImportBill details với product ID không tồn tại,Throw RuntimeException,,Pending,
+17,Xóa phiếu nhập,ImportBillServiceImpl,deleteImportBill,UNH17,Xóa phiếu nhập thành công,ImportBill ID hợp lệ,Phiếu nhập được xóa,,Pending,
+18,Lấy danh sách phiếu nhập,ImportBillServiceImpl,getAllImportBills,UNH18,Lấy tất cả phiếu nhập,Không có input,Danh sách tất cả phiếu nhập,,Pending,
+19,Lấy phiếu nhập theo ID,ImportBillServiceImpl,getImportBillById,UNH19,Lấy phiếu nhập theo ID hợp lệ,ImportBill ID hợp lệ,Phiếu nhập tương ứng,,Pending,
+20,Lấy phiếu nhập theo ID,ImportBillServiceImpl,getImportBillById,UNH20,Lấy phiếu nhập theo ID không hợp lệ,ImportBill ID không tồn tại,Throw RuntimeException,,Pending,
+21,Nhập từ CSV,ImportBillServiceImpl,importFromCsv,UNH21,Nhập từ CSV thành công,"CSV file hợp lệ, provider ID, manager ID","Phiếu nhập được tạo, tồn kho tăng",,Pending,
+22,Nhập từ CSV,ImportBillServiceImpl,importFromCsv,UNH22,Nhập từ CSV với nhiều sản phẩm,CSV file với nhiều dòng sản phẩm,"Phiếu nhập được tạo, tồn kho tất cả sản phẩm tăng",,Pending,
+23,Nhập từ CSV,ImportBillServiceImpl,importFromCsv,UNH23,Nhập từ CSV - cập nhật tồn kho chính xác,CSV file với quantity,Tồn kho tăng đúng số lượng trong CSV,,Pending,
+24,Nhập từ CSV,ImportBillServiceImpl,importFromCsv,UNH24,Nhập từ CSV với định dạng không hợp lệ,"CSV file với dữ liệu không hợp lệ (quantity = ""abc"")",Throw RuntimeException,,Pending,
+25,Nhập từ CSV,ImportBillServiceImpl,importFromCsv,UNH25,Nhập từ CSV với sản phẩm không tồn tại,CSV file với product ID không tồn tại,Throw RuntimeException,,Pending,
+26,Nhập từ CSV,ImportBillServiceImpl,importFromCsv,UNH26,Nhập từ CSV với nhà cung cấp không tồn tại,"CSV file, provider ID không tồn tại",Throw RuntimeException,,Pending,
+27,Nhập từ CSV,ImportBillServiceImpl,importFromCsv,UNH27,Nhập từ CSV với quản lý không tồn tại,"CSV file, manager ID không tồn tại",Throw RuntimeException,,Pending,
+28,Nhập từ CSV,ImportBillServiceImpl,importFromCsv,UNH28,Nhập từ CSV với file rỗng,"CSV file chỉ có header, không có data",Phiếu nhập được tạo nhưng không có sản phẩm,,Pending,

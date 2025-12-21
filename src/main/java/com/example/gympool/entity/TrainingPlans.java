@@ -30,7 +30,7 @@ public class TrainingPlans {
     private String muscleGroupFocus;
 
     @Column(name = "status", nullable = false)
-    private String status;
+    private String status;  //pending   
 
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
