@@ -6,9 +6,12 @@ import com.example.gympool.entity.Member;
 import com.example.gympool.entity.MembershipPlan;
 import com.example.gympool.entity.MembershipTier;
 import com.example.gympool.repository.CustomerMembershipRepository;
+import com.example.gympool.repository.MembershipPlanRepository;
 import com.example.gympool.repository.MembershipTierRepository;
 import com.example.gympool.service.CustomerMembershipService;
+import com.example.gympool.service.MemberService;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
@@ -16,17 +19,13 @@ import java.util.Date;
 import java.util.List;
 @Service
 public class CustomerMembershipServiceImpl implements CustomerMembershipService {
-    private final CustomerMembershipRepository customerMembershipRepository;
-    private final com.example.gympool.service.MemberService memberService;
-    private final com.example.gympool.repository.MembershipPlanRepository membershipPlanRepository;
+    @Autowired
+    private CustomerMembershipRepository customerMembershipRepository;
+    @Autowired
+    private MemberService memberService;
+    @Autowired
+    private MembershipPlanRepository membershipPlanRepository;
 
-    public CustomerMembershipServiceImpl(CustomerMembershipRepository customerMembershipRepository, 
-                                         com.example.gympool.service.MemberService memberService,
-                                         com.example.gympool.repository.MembershipPlanRepository membershipPlanRepository) {
-        this.customerMembershipRepository = customerMembershipRepository;
-        this.memberService = memberService;
-        this.membershipPlanRepository = membershipPlanRepository;
-    }
     @Override
     public List<CustomerMembership> getAllCustomerMembership(){
         return customerMembershipRepository.findAll();
@@ -119,8 +118,8 @@ public class CustomerMembershipServiceImpl implements CustomerMembershipService 
     //Tuyetzz
     //cái này sẽ lấy cái cũ chia cho số tiền
     //ví du
-    //gói silver còn 2 ngày, đơn giá 2k/ngày => Dư 4k
-    //gói gold mới đơn giá 3k/ngày
+    //gói silver (1 thang 60k) còn 2 ngày, đơn giá 2k/ngày => Dư 4k
+    //gói gold mới (1 thang 90k) => đơn giá 3k/ngày
     //lấy 4k / 3k = 1.33 ngày
     //enddate += 1.33 ngày
     @Override
