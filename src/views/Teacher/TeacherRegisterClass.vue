@@ -323,9 +323,17 @@ const getSessionStatus = (session) => {
 
 // Computed
 const availableClasses = computed(() => {
-  // Show ALL classes - multiple teachers can apply for the same class
-  // Manager will approve one of them
-  return classes.value;
+  return classes.value.filter(cls => {
+    const approvedApp = applications.value.find(app => 
+      app.classId === cls.id && app.status === 'approved'
+    );
+
+    if (approvedApp) {
+      return approvedApp.teacherId === currentTeacherId.value;
+    }
+
+    return true;
+  });
 });
 
 const filteredClasses = computed(() => {

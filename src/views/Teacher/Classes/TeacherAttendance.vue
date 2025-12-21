@@ -8,20 +8,21 @@
           Điểm Danh
         </h1>
       </div>
-      <button 
-        @click="goBack"
-        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors flex items-center gap-2"
-      >
+      <button @click="goBack"
+        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors flex items-center gap-2">
         <ArrowLeft class="w-5 h-5" />
         Quay lại
       </button>
     </div>
 
     <!-- Class Info -->
-    <div v-if="selectedClass" class="mb-6 p-6 bg-gradient-to-r from-green-600 to-green-700 rounded-2xl shadow-md text-white">
+    <div v-if="selectedClass"
+      class="mb-6 p-6 bg-gradient-to-r from-green-600 to-green-700 rounded-2xl shadow-md text-white">
       <div class="flex items-center gap-3 mb-2">
         <Dumbbell class="w-6 h-6" />
-        <h2 class="text-2xl font-bold">{{ selectedClass.name }}</h2>
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
+          Lịch Dạy & Điểm Danh
+        </h1>
       </div>
       <p class="text-green-100">{{ selectedClass.description }}</p>
     </div>
@@ -35,25 +36,23 @@
 
       <!-- Sessions List -->
       <div v-if="upcomingSessions.length > 0" class="grid gap-3">
-        <div 
-          v-for="session in upcomingSessions" 
-          :key="session.id"
-          @click="selectSession(session)"
-          class="flex items-center gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md"
-          :class="session.id === selectedSession?.id 
-            ? 'border-green-600 bg-green-50' 
-            : 'border-gray-200 hover:border-green-300'"
-        >
+        <div v-for="session in upcomingSessions" :key="session.id" @click="selectSession(session)"
+          class="flex items-center gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md" :class="session.id === selectedSession?.id
+            ? 'border-green-600 bg-green-50'
+            : 'border-gray-200 hover:border-green-300'">
           <!-- Date Badge -->
           <div class="flex flex-col items-center justify-center w-20 rounded-lg font-bold shrink-0 p-3"
-            :class="isToday(session.date) ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'"
-          >
+            :class="isToday(session.date) ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'">
             <span class="text-2xl">{{ new Date(session.date).getDate() }}</span>
             <span class="text-xs">Tháng {{ new Date(session.date).getMonth() + 1 }}</span>
           </div>
-          
+
           <!-- Session Info -->
           <div class="flex-1">
+            <div class="text-sm font-bold text-green-700 uppercase mb-1">
+              {{ session.className }}
+            </div>
+
             <div class="font-bold text-gray-800 flex items-center gap-2">
               <CalendarIcon class="w-4 h-4 text-green-500" />
               {{ formatDate(session.date) }}
@@ -63,14 +62,15 @@
             </div>
             <div class="text-sm text-gray-500 mt-1 flex items-center gap-4">
               <span class="flex items-center gap-1">
-                <Clock class="w-3 h-3" /> {{ formatScheduleTime(session.startTime) }} - {{ formatScheduleTime(session.endTime) }}
+                <Clock class="w-3 h-3" /> {{ formatScheduleTime(session.startTime) }} - {{
+                  formatScheduleTime(session.endTime) }}
               </span>
               <span class="flex items-center gap-1">
                 <MapPin class="w-3 h-3" /> {{ getRoomName(session.roomId) }}
               </span>
             </div>
           </div>
-          
+
           <!-- Attendance Stats -->
           <div class="text-right">
             <div class="text-sm text-gray-500">Đã điểm danh</div>
@@ -104,10 +104,8 @@
               {{ formatScheduleTime(selectedSession.startTime) }} - {{ formatScheduleTime(selectedSession.endTime) }}
             </p>
           </div>
-          <button 
-            @click="selectedSession = null"
-            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
-          >
+          <button @click="selectedSession = null"
+            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
             Đổi buổi học
           </button>
         </div>
@@ -133,13 +131,12 @@
       <div class="bg-white rounded-2xl shadow-md p-6">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-bold text-gray-800">Danh sách học viên</h3>
-          <button 
-            @click="finalizeSession"
-            :disabled="finalizing || sessionFinalized"
-            class="px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
+
+          <button @click="finalizeSession" :disabled="finalizing || sessionFinalized"
+            class="px-4 py-2 bg-gradient-to-r text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            :class="sessionFinalized ? 'from-gray-500 to-gray-600' : 'from-orange-600 to-orange-700'">
             <Lock class="w-4 h-4" />
-            {{ sessionFinalized ? 'Đã khóa' : 'Khóa buổi học' }}
+            {{ sessionFinalized ? 'Đã chốt sổ' : 'Chốt sổ & Auto Vắng' }}
           </button>
         </div>
 
@@ -151,19 +148,16 @@
 
         <!-- Students -->
         <div v-else-if="registeredStudents.length > 0" class="space-y-3">
-          <div 
-            v-for="student in registeredStudents" 
-            :key="student.id"
-            class="p-4 border-2 rounded-xl transition-all"
-            :class="getStudentAttendance(student.id)?.status === 'PRESENT' 
-              ? 'border-green-300 bg-green-50' 
+          <div v-for="student in registeredStudents" :key="student.id" class="p-4 border-2 rounded-xl transition-all"
+            :class="getStudentAttendance(student.id)?.status === 'PRESENT'
+              ? 'border-green-300 bg-green-50'
               : getStudentAttendance(student.id)?.status === 'ABSENT'
                 ? 'border-red-300 bg-red-50'
-                : 'border-gray-200'"
-          >
+                : 'border-gray-200'">
             <div class="flex items-center gap-4">
               <!-- Avatar -->
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
+              <div
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
                 {{ student.name.charAt(0) }}
               </div>
 
@@ -175,24 +169,18 @@
 
               <!-- Attendance Toggle -->
               <div class="flex items-center gap-2">
-                <button 
-                  @click="markPresent(student)"
-                  :disabled="sessionFinalized"
+                <button @click="markPresent(student)" :disabled="sessionFinalized"
                   class="px-4 py-2 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   :class="getStudentAttendance(student.id)?.status === 'PRESENT'
                     ? 'bg-green-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-green-100'"
-                >
+                    : 'bg-gray-200 text-gray-700 hover:bg-green-100'">
                   <Check class="w-5 h-5" />
                 </button>
-                <button 
-                  @click="markAbsent(student)"
-                  :disabled="sessionFinalized"
+                <button @click="markAbsent(student)" :disabled="sessionFinalized"
                   class="px-4 py-2 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   :class="getStudentAttendance(student.id)?.status === 'ABSENT'
                     ? 'bg-red-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-red-100'"
-                >
+                    : 'bg-gray-200 text-gray-700 hover:bg-red-100'">
                   <X class="w-5 h-5" />
                 </button>
               </div>
@@ -200,14 +188,10 @@
 
             <!-- Notes -->
             <div v-if="getStudentAttendance(student.id)" class="mt-3">
-              <textarea 
-                v-model="getStudentAttendance(student.id).notes"
-                @blur="updateNotes(student)"
-                :disabled="sessionFinalized"
-                placeholder="Ghi chú..."
+              <textarea v-model="getStudentAttendance(student.id).notes" @blur="updateNotes(student)"
+                :disabled="sessionFinalized" placeholder="Ghi chú..."
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
-                rows="2"
-              ></textarea>
+                rows="2"></textarea>
             </div>
           </div>
         </div>
@@ -229,7 +213,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import unifiedApi from '@/services/unifiedClassApi.js';
 import api from '@/services/api.js';
 import { formatDate } from '@/views/Test/dateUtils.js';
-import { 
+import {
   ClipboardCheck,
   ArrowLeft,
   Dumbbell,
@@ -249,7 +233,7 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 
-const classId = ref(route.params.classId);
+const classId = ref(null);
 const selectedClass = ref(null);
 const selectedSession = ref(null);
 const upcomingSessions = ref([]);
@@ -259,6 +243,7 @@ const loadingStudents = ref(false);
 const finalizing = ref(false);
 const sessionFinalized = ref(false);
 const roomsData = ref([]);
+const sessionStats = ref({});
 
 const currentTeacherId = computed(() => {
   const user = authStore.user;
@@ -275,23 +260,85 @@ const absentCount = computed(() => {
 
 const loadClassData = async () => {
   try {
-    const cls = await unifiedApi.getClass(classId.value);
-    selectedClass.value = cls;
-    
-    const sessions = await unifiedApi.getSessions(classId.value);
-    roomsData.value = await unifiedApi.getRooms();
-    
-    // Filter upcoming sessions
+    if (!currentTeacherId.value) {
+      alert("Bạn chưa đăng nhập hoặc không phải giáo viên.");
+      return;
+    }
+
+    const regResponse = await api.get(`/class-registrations/teacher/${currentTeacherId.value}`);
+    const allRegistrations = regResponse.data;
+
+    const approvedClasses = allRegistrations
+      .filter(reg => reg.status === 'APPROVED')
+      .map(reg => reg.fitnessClass);
+
+    if (approvedClasses.length === 0) {
+      upcomingSessions.value = [];
+      return;
+    }
+
+    let allSessionsList = [];
     const now = new Date();
-    upcomingSessions.value = sessions
-      .filter(s => {
-        const sessionDate = new Date(s.date || s.startTime);
-        return sessionDate >= new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      })
-      .sort((a, b) => new Date(a.date || a.startTime) - new Date(b.date || b.startTime));
+    now.setHours(0, 0, 0, 0);
+
+    const schedulePromises = approvedClasses.map(async (fClass) => {
+      try {
+        const scheduleResponse = await api.get(`/classschedule/by-fitness_class/${fClass.id}`);
+        let schedules = scheduleResponse.data || [];
+
+        if (!Array.isArray(schedules)) {
+          schedules = schedules && typeof schedules === 'object' ? [schedules] : [];
+        }
+
+        const statsPromises = schedules.map(async (s) => {
+          try {
+            const [regRes, attRes] = await Promise.all([
+              api.get(`/member-registrations/schedule/${s.id}`),
+              api.get(`/class-attendance/students/${s.id}`).catch(err => {
+                if (err.response && err.response.status === 404) {
+                  return { data: [] };
+                }
+                throw err; // Nếu lỗi khác (500, mạng...) thì vẫn báo lỗi
+              })
+            ]);
+
+            sessionStats.value[s.id] = {
+              registered: regRes.data.length,
+              attended: attRes.data.filter(a => a.status === 'PRESENT').length
+            };
+          } catch (e) {
+            sessionStats.value[s.id] = { registered: 0, attended: 0 };
+          }
+        });
+        await Promise.all(statsPromises);
+        // ---------------------------------
+
+        const mappedSchedules = schedules.map(s => ({
+          id: s.id,
+          classId: fClass.id,
+          className: fClass.name,
+          date: s.startTime ? s.startTime.split('T')[0] : '',
+          startTime: s.startTime,
+          endTime: s.endTime,
+          roomId: s.room?.id,
+          roomName: s.room?.name || 'Chưa xếp phòng',
+          capacity: s.capacity,
+          status: s.status
+        }));
+
+        allSessionsList.push(...mappedSchedules.filter(s => new Date(s.date) >= now));
+      } catch (err) {
+        console.warn(`Lỗi lớp ${fClass.name}:`, err);
+      }
+    });
+
+    await Promise.all(schedulePromises);
+    upcomingSessions.value = allSessionsList.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+    roomsData.value = await unifiedApi.getRooms();
+
   } catch (error) {
-    console.error('Error loading class data:', error);
-    alert('❌ Lỗi khi tải thông tin lớp học');
+    console.error('Error:', error);
+    alert('❌ Lỗi hệ thống: ' + error.message);
   }
 };
 
@@ -300,12 +347,15 @@ const selectSession = async (session) => {
   await loadSessionData();
 };
 
+const getStudentAttendance = (memberId) => {
+  return attendanceRecords.value.find(a => a.memberId === memberId);
+};
+
 const loadSessionData = async () => {
   if (!selectedSession.value) return;
-  
+
   loadingStudents.value = true;
   try {
-    // Get registered students for this session
     const registrations = await api.get(`/member-registrations/schedule/${selectedSession.value.id}`);
     registeredStudents.value = registrations.data.map(r => ({
       id: r.member.id,
@@ -313,40 +363,46 @@ const loadSessionData = async () => {
       email: r.member.email
     }));
 
-    // Get attendance records
-    const attendance = await api.get(`/attendance/students/${selectedSession.value.id}`);
-    attendanceRecords.value = attendance.data.map(a => ({
-      id: a.id,
-      memberId: a.member.id,
-      status: a.status,
-      notes: a.notes || '',
-      checkedInAt: a.checkedInAt
-    }));
-
-    // Check if session is finalized (all students have attendance records)
-    sessionFinalized.value = registeredStudents.value.length > 0 && 
-                             attendanceRecords.value.length === registeredStudents.value.length;
-  } catch (error) {
-    console.error('Error loading session data:', error);
-    if (error.response?.status !== 404) {
-      alert('❌ Lỗi khi tải dữ liệu buổi học');
+    try {
+      const attendance = await api.get(`/class-attendance/students/${selectedSession.value.id}`);
+      attendanceRecords.value = attendance.data.map(a => ({
+        id: a.id,
+        memberId: a.member.id,
+        status: a.status,
+        notes: a.notes || '',
+        checkedInAt: a.checkedInAt
+      }));
+    } catch (err) {
+      if (err.response?.status === 404) {
+        attendanceRecords.value = [];
+      } else {
+        throw err;
+      }
     }
+
+    if (sessionStats.value[selectedSession.value.id]) {
+      sessionStats.value[selectedSession.value.id].registered = registeredStudents.value.length;
+      sessionStats.value[selectedSession.value.id].attended = presentCount.value;
+    }
+
+    sessionFinalized.value = selectedSession.value.status === 'CLOSED';
+
+  } catch (error) {
+    console.error('Error:', error);
+    if (error.response?.status !== 404) alert('❌ Lỗi: ' + error.message);
   } finally {
     loadingStudents.value = false;
   }
 };
 
-const getStudentAttendance = (memberId) => {
-  return attendanceRecords.value.find(a => a.memberId === memberId);
-};
-
+// --- 2. SỬA HÀM ĐIỂM DANH (POST/PUT) ---
 const markPresent = async (student) => {
   const existing = getStudentAttendance(student.id);
-  
+
   try {
     if (existing) {
-      // Update existing record
-      await api.put('/attendance/students/update', null, {
+      // Logic UPDATE (PUT) giữ nguyên vì dùng @RequestParam
+      await api.put('/class-attendance/students/update', null, {
         params: {
           scheduleId: selectedSession.value.id,
           memberId: student.id,
@@ -356,35 +412,38 @@ const markPresent = async (student) => {
       });
       existing.status = 'PRESENT';
     } else {
-      // Create new record
-      const response = await api.post('/attendance/students/checkin', {
-        classSchedule: { id: selectedSession.value.id },
-        member: { id: student.id },
-        checkedInBy: { id: currentTeacherId.value },
+      // Logic CREATE (POST) - CẦN SỬA ĐOẠN NÀY
+      const payload = {
+        classScheduleId: selectedSession.value.id, // Sửa từ scheduleId -> classScheduleId
+        memberId: student.id,                      // Giữ nguyên
+        checkedInById: currentTeacherId.value,     // Sửa từ teacherId -> checkedInById
         status: 'PRESENT',
         notes: ''
-      });
+      };
+
+      const response = await api.post('/class-attendance/students/checkin', payload);
+
       attendanceRecords.value.push({
         id: response.data.id,
-        memberId: student.id,
+        memberId: response.data.member.id,
         status: 'PRESENT',
-        notes: '',
+        notes: response.data.notes,
         checkedInAt: response.data.checkedInAt
       });
     }
   } catch (error) {
     console.error('Error marking present:', error);
-    alert('❌ Lỗi khi điểm danh: ' + (error.response?.data?.message || error.message));
+    alert('❌ Lỗi: ' + (error.response?.data?.message || error.message));
   }
 };
 
 const markAbsent = async (student) => {
   const existing = getStudentAttendance(student.id);
-  
+
   try {
     if (existing) {
-      // Update existing record
-      await api.put('/attendance/students/update', null, {
+      // UPDATE
+      await api.put('/class-attendance/students/update', null, {
         params: {
           scheduleId: selectedSession.value.id,
           memberId: student.id,
@@ -394,25 +453,28 @@ const markAbsent = async (student) => {
       });
       existing.status = 'ABSENT';
     } else {
-      // Create new record
-      const response = await api.post('/attendance/students/checkin', {
-        classSchedule: { id: selectedSession.value.id },
-        member: { id: student.id },
-        checkedInBy: { id: currentTeacherId.value },
+      // CREATE (POST) - CẦN SỬA ĐOẠN NÀY
+      const payload = {
+        classScheduleId: selectedSession.value.id, // Sửa tên
+        memberId: student.id,
+        checkedInById: currentTeacherId.value,     // Sửa tên
         status: 'ABSENT',
         notes: ''
-      });
+      };
+
+      const response = await api.post('/class-attendance/students/checkin', payload);
+
       attendanceRecords.value.push({
         id: response.data.id,
-        memberId: student.id,
+        memberId: response.data.member.id,
         status: 'ABSENT',
-        notes: '',
+        notes: response.data.notes,
         checkedInAt: response.data.checkedInAt
       });
     }
   } catch (error) {
     console.error('Error marking absent:', error);
-    alert('❌ Lỗi khi đánh dấu vắng: ' + (error.response?.data?.message || error.message));
+    alert('❌ Lỗi: ' + (error.response?.data?.message || error.message));
   }
 };
 
@@ -421,7 +483,7 @@ const updateNotes = async (student) => {
   if (!attendance) return;
 
   try {
-    await api.put('/attendance/students/update', null, {
+    await api.put('/class-attendance/students/update', null, {
       params: {
         scheduleId: selectedSession.value.id,
         memberId: student.id,
@@ -435,32 +497,38 @@ const updateNotes = async (student) => {
 };
 
 const finalizeSession = async () => {
-  if (!confirm('Bạn có chắc muốn khóa buổi học này? Các học viên chưa điểm danh sẽ được đánh dấu vắng.')) {
+  // Cảnh báo rõ ràng hơn
+  if (!confirm('Hành động này sẽ:\n1. Đánh dấu VẮNG (Absent) cho tất cả học viên chưa được điểm danh.\n2. KHÓA sổ buổi học này (không thể sửa đổi nữa).\n\nBạn chắc chắn chứ?')) {
     return;
   }
 
   finalizing.value = true;
   try {
-    await api.post(`/attendance/students/auto-absent/${selectedSession.value.id}`);
-    alert('✅ Đã khóa buổi học thành công!');
+    const response = await api.post(`/class-attendance/students/auto-absent/${selectedSession.value.id}`);
+
+    alert('✅ ' + response.data);
+
+    // Cập nhật trạng thái ngay lập tức để giao diện khóa lại
     sessionFinalized.value = true;
-    await loadSessionData(); // Reload to get updated attendance
+    if (selectedSession.value) {
+      selectedSession.value.status = 'CLOSED'; // Cập nhật local để ko cần load lại cả trang
+    }
+
+    await loadSessionData(); // Tải lại để thấy danh sách những người vừa bị đánh vắng
   } catch (error) {
     console.error('Error finalizing session:', error);
-    alert('❌ Lỗi khi khóa buổi học: ' + (error.response?.data || error.message));
+    alert('❌ Lỗi khóa sổ: ' + (error.response?.data || error.message));
   } finally {
     finalizing.value = false;
   }
 };
 
 const getAttendanceCount = (sessionId) => {
-  // This would need to be fetched from API in real implementation
-  return 0;
+  return sessionStats.value[sessionId]?.attended || 0;
 };
 
 const getRegisteredCount = (sessionId) => {
-  // This would need to be fetched from API in real implementation
-  return 0;
+  return sessionStats.value[sessionId]?.registered || 0;
 };
 
 const getRoomName = (roomId) => {
@@ -486,8 +554,8 @@ const isToday = (dateStr) => {
   const today = new Date();
   const date = new Date(dateStr);
   return date.getDate() === today.getDate() &&
-         date.getMonth() === today.getMonth() &&
-         date.getFullYear() === today.getFullYear();
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear();
 };
 
 const goBack = () => {

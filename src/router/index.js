@@ -63,6 +63,7 @@ import TeacherPersonalCalendar from "@/views/Teacher/TeacherPersonalCalendar.vue
 import RoomManagement from "@/views/Manager/Classes/RoomManagement.vue";
 import TeacherApprovalList from "@/views/Manager/Classes/TeacherApprovalList.vue";
 import ManagerLeaveApproval from "@/views/Manager/Classes/ManagerLeaveApproval.vue";
+import TeacherAttendance from "@/views/Teacher/Classes/TeacherAttendance.vue";
 
 const routes = [
     {
@@ -181,6 +182,8 @@ const routes = [
         children: [
             { path: "/teacher/registerclass", name: "teacher.register", component: TeacherRegister },
             { path: "/teacher/calendar", name: "teacher.calendar", component: TeacherPersonalCalendar },
+            { path: "/teacher/attendance", name: "teacher.attendance", component: TeacherAttendance },
+            
         ],
     },
 ]
