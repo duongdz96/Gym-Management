@@ -132,6 +132,53 @@ const routes = [
             { path: "profile", name: "customer.profile", component: CustomerProfile },
             { path: "setting", name: "customer.setting", component: CustomerSetting },
             { path: "billhistory", name: "customer.billhistory", component: CustomerBillHistory },
+
+            // Workout Management Routes
+            {
+                path: "workout/exercises",
+                name: "customer.workout.exercises",
+                component: () => import("@/views/Shared/Workout/Exercise/ExerciseList.vue")
+            },
+            {
+                path: "workout/exercise/create",
+                name: "customer.workout.exercise.create",
+                component: () => import("@/views/Shared/Workout/Exercise/ExerciseCreate.vue")
+            },
+            {
+                path: "workout/exercise/:id",
+                name: "customer.workout.exercise.detail",
+                component: () => import("@/views/Shared/Workout/Exercise/ExerciseDetail.vue")
+            },
+            {
+                path: "workout/exercise/edit/:id",
+                name: "customer.workout.exercise.edit",
+                component: () => import("@/views/Shared/Workout/Exercise/ExerciseCreate.vue")
+            },
+            {
+                path: "workout/routines",
+                name: "customer.workout.routines",
+                component: () => import("@/views/Shared/Workout/WorkoutRoutine/WorkoutRoutineList.vue")
+            },
+            {
+                path: "workout/routine/create",
+                name: "customer.workout.routine.create",
+                component: () => import("@/views/Shared/Workout/WorkoutRoutine/WorkoutRoutineCreate.vue")
+            },
+            {
+                path: "workout/routine/edit/:id",
+                name: "customer.workout.routine.edit",
+                component: () => import("@/views/Shared/Workout/WorkoutRoutine/WorkoutRoutineCreate.vue")
+            },
+            {
+                path: "workout/training-plans",
+                name: "customer.workout.training-plans",
+                component: () => import("@/views/Customer/Workout/CustomerTrainingPlanList.vue")
+            },
+            {
+                path: "workout/training-plan/start/:id",
+                name: "customer.workout.training-plan.start",
+                component: () => import("@/views/Customer/Workout/CustomerTrainingPlanStart.vue")
+            },
         ],
     },
 
@@ -173,6 +220,43 @@ const routes = [
                 name: 'pt.members',
                 component: PTMembers
             },
+
+            // Workout Management Routes
+            {
+                path: '/pt/workout/exercises',
+                name: 'pt.workout.exercises',
+                component: () => import("@/views/Shared/Workout/Exercise/ExerciseList.vue")
+            },
+            {
+                path: '/pt/workout/exercise/create',
+                name: 'pt.workout.exercise.create',
+                component: () => import("@/views/Shared/Workout/Exercise/ExerciseCreate.vue")
+            },
+            {
+                path: '/pt/workout/exercise/:id',
+                name: 'pt.workout.exercise.detail',
+                component: () => import("@/views/Shared/Workout/Exercise/ExerciseDetail.vue")
+            },
+            {
+                path: '/pt/workout/exercise/edit/:id',
+                name: 'pt.workout.exercise.edit',
+                component: () => import("@/views/Shared/Workout/Exercise/ExerciseCreate.vue")
+            },
+            {
+                path: '/pt/workout/routines',
+                name: 'pt.workout.routines',
+                component: () => import("@/views/Shared/Workout/WorkoutRoutine/WorkoutRoutineList.vue")
+            },
+            {
+                path: '/pt/workout/routine/create',
+                name: 'pt.workout.routine.create',
+                component: () => import("@/views/Shared/Workout/WorkoutRoutine/WorkoutRoutineCreate.vue")
+            },
+            {
+                path: '/pt/workout/routine/edit/:id',
+                name: 'pt.workout.routine.edit',
+                component: () => import("@/views/Shared/Workout/WorkoutRoutine/WorkoutRoutineCreate.vue")
+            },
         ]
     },
     {
@@ -183,7 +267,7 @@ const routes = [
             { path: "/teacher/registerclass", name: "teacher.register", component: TeacherRegister },
             { path: "/teacher/calendar", name: "teacher.calendar", component: TeacherPersonalCalendar },
             { path: "/teacher/attendance", name: "teacher.attendance", component: TeacherAttendance },
-            
+
         ],
     },
 ]

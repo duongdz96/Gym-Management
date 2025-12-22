@@ -2,16 +2,19 @@
 import { ref } from "vue";
 import { useRoute, RouterLink, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { UserIcon } from "lucide-vue-next";
+import { UserIcon, ChevronDown, Dumbbell, Users, Target } from "lucide-vue-next";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
 const isAccountOpen = ref(false);
+const isWorkoutOpen = ref(false);
 
 const openAccountMenu = () => (isAccountOpen.value = true);
 const closeAccountMenu = () => (isAccountOpen.value = false);
+const openWorkoutMenu = () => (isWorkoutOpen.value = true);
+const closeWorkoutMenu = () => (isWorkoutOpen.value = false);
 
 const handleLogout = () => {
   authStore.logout(); // Xóa thông tin user + token khỏi Pinia/localStorage
@@ -65,6 +68,52 @@ const handleLogout = () => {
         >
           Calendar
         </RouterLink>
+
+        <!-- Workout Dropdown -->
+        <div
+          class="relative"
+          @mouseenter="openWorkoutMenu"
+          @mouseleave="closeWorkoutMenu"
+        >
+          <button
+            class="flex items-center gap-1 uppercase tracking-wider hover:text-red-600 transition"
+            :class="route.path.includes('/customer/workout')
+              ? 'text-red-600 border-b-2 border-red-600 pb-1'
+              : 'text-white'"
+          >
+            <span>Workout</span>
+            <ChevronDown class="w-4 h-4" />
+          </button>
+
+          <transition name="fade">
+            <div
+              v-if="isWorkoutOpen"
+              class="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50"
+            >
+              <RouterLink
+                to="/customer/workout/exercises"
+                class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-600 transition"
+              >
+                <Dumbbell class="w-4 h-4" />
+                Bài Tập
+              </RouterLink>
+              <RouterLink
+                to="/customer/workout/routines"
+                class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-600 transition"
+              >
+                <Users class="w-4 h-4" />
+                Cộng Đồng
+              </RouterLink>
+              <RouterLink
+                to="/customer/workout/training-plans"
+                class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-600 transition"
+              >
+                <Target class="w-4 h-4" />
+                Lịch Tập Của Tôi
+              </RouterLink>
+            </div>
+          </transition>
+        </div>
 
         <RouterLink
           to="/customer/billhistory"

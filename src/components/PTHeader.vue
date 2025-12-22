@@ -3,15 +3,19 @@ import { ref } from "vue";
 import { useRoute, useRouter, RouterLink } from "vue-router";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useToast } from "vue-toastification";
+import { ChevronDown, Dumbbell, Users } from "lucide-vue-next";
 
 const route = useRoute();
 const isMenuOpen = ref(false);
 const isAccountOpen = ref(false);
+const isWorkoutOpen = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
 const toast = useToast();
 const openAccountMenu = () => (isAccountOpen.value = true);
 const closeAccountMenu = () => (isAccountOpen.value = false);
+const openWorkoutMenu = () => (isWorkoutOpen.value = true);
+const closeWorkoutMenu = () => (isWorkoutOpen.value = false);
 
 const handleLogout = () => {
   authStore.logout();
@@ -56,6 +60,47 @@ const handleLogout = () => {
           "
           >Profile</RouterLink
         >
+
+        <!-- Workout Dropdown -->
+        <div
+          class="relative"
+          @mouseenter="openWorkoutMenu"
+          @mouseleave="closeWorkoutMenu"
+        >
+          <button
+            class="flex items-center gap-1 uppercase tracking-wider hover:text-red-600"
+            :class="
+              route.path.includes('/pt/workout')
+                ? 'text-red-600 border-b-2 border-red-600 pb-1'
+                : 'text-white'
+            "
+          >
+            <span>Workout</span>
+            <ChevronDown class="w-4 h-4" />
+          </button>
+
+          <transition name="fade">
+            <div
+              v-if="isWorkoutOpen"
+              class="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50"
+            >
+              <RouterLink
+                to="/pt/workout/exercises"
+                class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition"
+              >
+                <Dumbbell class="w-4 h-4" />
+                Bài Tập
+              </RouterLink>
+              <RouterLink
+                to="/pt/workout/routines"
+                class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition"
+              >
+                <Users class="w-4 h-4" />
+                Cộng Đồng
+              </RouterLink>
+            </div>
+          </transition>
+        </div>
 
         <RouterLink
           to="/pt/members"
