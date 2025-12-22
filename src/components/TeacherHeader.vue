@@ -56,6 +56,16 @@ const handleLogout = () => {
           "
           >Calendar</RouterLink
         >
+        <RouterLink
+          to="/teacher/attendance"
+          class="uppercase tracking-wider hover:text-red-600"
+          :class="
+            route.path === '/teacher/attendance'
+              ? 'text-red-600 border-b-2 border-red-600 pb-1'
+              : 'text-white'
+          "
+          >Attendance</RouterLink
+        >
       </nav>
 
       <!-- Account dropdown (desktop) -->

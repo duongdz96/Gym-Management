@@ -19,7 +19,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         try {
             await Promise.all([
                 fetchSuppliers(),
-                fetchProducts(),
+                fetchOnlyProducts(),
                 fetchImportReceipts()
             ]);
         } catch (error) {
@@ -77,6 +77,15 @@ export const useInventoryStore = defineStore('inventory', () => {
     const fetchProducts = async () => {
         try {
             const response = await api.get('/products');
+            products.value = response.data;
+        } catch (error) {
+            console.error("Error fetching products:", error);
+        }
+    };
+
+    const fetchOnlyProducts = async () => {
+        try {
+            const response = await api.get('/products/exclude-types?types=PT&types=Membership');
             products.value = response.data;
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -190,6 +199,7 @@ export const useInventoryStore = defineStore('inventory', () => {
         updateSupplier,
         deleteSupplier,
         fetchProducts,
+        fetchOnlyProducts,
         addProduct,
         updateProduct,
         deleteProduct,
