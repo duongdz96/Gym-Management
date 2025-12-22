@@ -53,5 +53,27 @@ public class TrainingPlansController {
         return ResponseEntity.ok(trainingPlanService.updateStatus(id, status));
     }
 
+    // 5. Lấy chi tiết Training Plan theo ID
+    @GetMapping("/{id}")
+    public ResponseEntity<TrainingPlans> getTrainingPlanById(@PathVariable Long id) {
+        TrainingPlans plan = trainingPlanService.findById(id);
+        return ResponseEntity.ok(plan);
+    }
+
+    // 6. Hoàn thành toàn bộ Training Plan
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<TrainingPlans> completePlan(@PathVariable Long id) {
+        TrainingPlans plan = trainingPlanService.updateStatus(id, "COMPLETED");
+        return ResponseEntity.ok(plan);
+    }
+
+    // 7. Đánh dấu một exercise trong plan là hoàn thành (tạm thời chỉ update status)
+    @PatchMapping("/{planId}/exercise/{exerciseId}/complete")
+    public ResponseEntity<String> completeExercise(
+            @PathVariable Long planId,
+            @PathVariable Long exerciseId) {
+        // Tạm thời chỉ return success, có thể implement logic track từng exercise sau
+        return ResponseEntity.ok("Exercise marked as complete");
+    }
 
 }

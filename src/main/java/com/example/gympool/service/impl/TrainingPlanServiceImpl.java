@@ -82,4 +82,10 @@ public class TrainingPlanServiceImpl implements TrainingPlanService {
         plan.setStatus(status);
         return trainingPlanRepository.save(plan);
     }
+
+    @Override
+    public TrainingPlans findById(Long planId) {
+        return trainingPlanRepository.findById(planId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Training Plan với ID: " + planId));
+    }
 }

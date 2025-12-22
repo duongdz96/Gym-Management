@@ -14,4 +14,6 @@ public interface TrainingPlanService {
     TrainingPlans getTodayPlan(Long memberId);
 
     TrainingPlans updateStatus(Long planId, String status);
+    
+    TrainingPlans findById(Long planId);
 }
