@@ -50,6 +50,9 @@ import SalesCheckout from "@/views/Reception/Sale/SalesCheckout.vue";
 import ReceptionClassRegistration from "@/views/Reception/Classes/ReceptionClassRegistration.vue";
 import ReceptionCustomerManagement from "@/views/Reception/Customer/ReceptionCustomerManagement.vue";
 import ReceptionCustomerDetail from "@/views/Reception/Customer/ReceptionCustomerDetail.vue";
+import ReceptionTeacherManagement from "@/views/Reception/Teacher/ReceptionTeacherManagement.vue";
+import ReceptionTeacherDetail from "@/views/Reception/Teacher/ReceptionTeacherDetail.vue";
+import ReceptionClasses from "@/views/Reception/ReceptionClasses.vue";
 import ReceptionAttendanceHistory from "@/views/Reception/ReceptionAttendanceHistory.vue";
 
 import PTLayout from "@/layout/PTLayout.vue";
@@ -57,7 +60,6 @@ import PTHome from "@/views/PT/PTHome.vue";
 import PTSchedule from "@/views/PT/PTSchedule.vue";
 import PTProfile from "@/views/PT/PTProfile.vue";
 import PTMembers from "@/views/PT/PTMembers.vue";
-import PTRegisterClass from "@/views/PT/PTRegisterClass.vue";
 import PTAttendenceHistory from "@/views/PT/PTAttendenceHistory.vue";
 import PTSessions from "@/views/PT/PTSessions.vue";
 
@@ -203,6 +205,9 @@ const routes = [
             { path: "class-registration", name: "reception.class-registration", component: ReceptionClassRegistration },
             { path: "customer-management", name: "reception.customer-management", component: ReceptionCustomerManagement },
             { path: "customer/:id", name: "reception.customer-detail", component: ReceptionCustomerDetail },
+            { path: "teachers", name: "reception.teachers", component: ReceptionTeacherManagement },
+            { path: "teacher/:id", name: "reception.teacher-detail", component: ReceptionTeacherDetail },
+            { path: "classes", name: "reception.classes", component: ReceptionClasses },
             { path: "attendance-history", name: "reception.attendance-history", component: ReceptionAttendanceHistory },
             { path: "salesselect", name: "salesselect", component: SalesSelect },
             { path: "salescheckout", name: "salesCheckout", component: SalesCheckout },
@@ -233,11 +238,7 @@ const routes = [
                 name: 'pt.members',
                 component: PTMembers
             },
-            {
-                path: 'register-class',
-                name: 'pt.register-class',
-                component: PTRegisterClass
-            },
+
             {
                 path: 'attendance-history',
                 name: 'pt.attendance-history',

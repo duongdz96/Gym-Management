@@ -167,7 +167,7 @@ const getCheckinMethod = (record: CheckinRecord) => {
       </div>
 
       <div class="flex gap-2">
-        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-semibold">
+        <span class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm font-semibold">
           {{ filteredRecords.length }} bản ghi
         </span>
       </div>
@@ -182,14 +182,14 @@ const getCheckinMethod = (record: CheckinRecord) => {
             v-model="searchQuery"
             type="text"
             placeholder="Tìm kiếm học viên..."
-            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
           />
         </div>
 
         <div class="relative">
           <select
             v-model="statusFilter"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white pr-10"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 appearance-none bg-white pr-10"
           >
             <option value="">Tất cả trạng thái</option>
             <option value="success">Thành công</option>
@@ -203,7 +203,7 @@ const getCheckinMethod = (record: CheckinRecord) => {
           <input
             v-model="dateFilter"
             type="date"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
           />
         </div>
 
@@ -242,7 +242,7 @@ const getCheckinMethod = (record: CheckinRecord) => {
             <tr v-for="record in filteredRecords" :key="record.id" class="hover:bg-gray-50 transition">
               <td class="px-6 py-4">
                 <div class="flex items-center">
-                  <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm mr-3">
+                  <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm mr-3">
                     {{ record.member.fullName.charAt(0).toUpperCase() }}
                   </div>
                   <div>
@@ -253,7 +253,7 @@ const getCheckinMethod = (record: CheckinRecord) => {
               </td>
 
               <td class="px-6 py-4">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                   {{ record.member.membership }}
                 </span>
               </td>

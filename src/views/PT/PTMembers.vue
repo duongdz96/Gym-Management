@@ -14,7 +14,7 @@ const selectedMember = ref(null);
 const isEditingWeight = ref(false);
 const tempCurrentWeight = ref(0);
 const upcomingSessions = ref([]);
-const recentSessions = ref([]);
+const memberPackages = ref([]);
 
 const filteredMembers = computed(() => {
   if (!searchQuery.value) {
@@ -30,7 +30,7 @@ const selectMember = (member) => {
   isEditingWeight.value = false;
   tempCurrentWeight.value = member.weight;
   fetchUpcomingSessions(member.memberId);
-  fetchRecentSessions(member.memberId);
+  fetchMemberPackages(member.memberId);
 };
 
 const startEditingWeight = () => {
@@ -89,46 +89,27 @@ const fetchUpcomingSessions = async (memberId) => {
   }
 };
 
-const fetchRecentSessions = async (memberId) => {
+const fetchMemberPackages = async (memberId) => {
   try {
-    // Mock data for recent 3 sessions
-    const mockSessions = [
+    // Mock data for member packages - only basic package
+    const mockPackages = [
       {
         id: 1,
-        date: "2024-12-10",
-        startTime: "08:00",
-        endTime: "09:00",
-        duration: 60,
-        status: "completed",
-        notes: "Buổi tập cardio và sức mạnh - Hoàn thành tốt"
-      },
-      {
-        id: 2,
-        date: "2024-12-08",
-        startTime: "14:00",
-        endTime: "15:30",
-        duration: 90,
-        status: "completed",
-        notes: "Buổi tập sức mạnh toàn diện - Tiến bộ tốt"
-      },
-      {
-        id: 3,
-        date: "2024-12-06",
-        startTime: "10:00",
-        endTime: "11:00",
-        duration: 60,
-        status: "completed",
-        notes: "Buổi tập yoga và giãn cơ - Tập trung tốt"
+        name: "Gói PT Cơ Bản",
+        totalSessions: 20,
+        usedSessions: 10,
+        status: "active",
+        expiryDate: "2025-03-15"
       }
     ];
 
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 300));
 
-    recentSessions.value = mockSessions;
+    memberPackages.value = mockPackages;
   } catch (error) {
-    console.error("Error fetching recent sessions:", error);
-    recentSessions.value = [];
+    console.error("Error fetching member packages:", error);
+    memberPackages.value = [];
   }
 };
 
@@ -143,10 +124,11 @@ watch(filteredMembers, (newFilteredMembers) => {
         selectedMember.value = newFilteredMembers[0];
         tempCurrentWeight.value = newFilteredMembers[0].weight;
         fetchUpcomingSessions(newFilteredMembers[0].memberId);
-        fetchRecentSessions(newFilteredMembers[0].memberId);
+        fetchMemberPackages(newFilteredMembers[0].memberId);
       } else {
         selectedMember.value = null;
         upcomingSessions.value = [];
+        memberPackages.value = [];
       }
     }
   } else if (newFilteredMembers.length > 0) {
@@ -154,7 +136,7 @@ watch(filteredMembers, (newFilteredMembers) => {
     selectedMember.value = newFilteredMembers[0];
     tempCurrentWeight.value = newFilteredMembers[0].weight;
     fetchUpcomingSessions(newFilteredMembers[0].memberId);
-    fetchRecentSessions(newFilteredMembers[0].memberId);
+    fetchMemberPackages(newFilteredMembers[0].memberId);
   }
 });
 
@@ -185,7 +167,7 @@ onMounted(async () => {
     selectedMember.value = members.value[0];
     tempCurrentWeight.value = members.value[0].weight;
     fetchUpcomingSessions(members.value[0].memberId);
-    fetchRecentSessions(members.value[0].memberId);
+    fetchMemberPackages(members.value[0].memberId);
   }
 });
 </script>
@@ -316,6 +298,34 @@ onMounted(async () => {
             </p>
           </div>
           <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Gói tập đã đăng ký</label
+            >
+            <div v-if="memberPackages.length === 0" class="text-gray-500">Chưa đăng ký gói nào</div>
+            <div v-else class="space-y-2">
+              <div v-for="pkg in memberPackages" :key="pkg.id" class="border rounded-lg p-3 bg-blue-50">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{{ pkg.name }}</p>
+                    <p class="text-xs text-gray-600">Hết hạn: {{ new Date(pkg.expiryDate).toLocaleDateString('vi-VN') }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold text-blue-600">{{ pkg.usedSessions }}/{{ pkg.totalSessions }} buổi</p>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      {{ pkg.status === 'active' ? 'Đang hoạt động' : 'Hết hạn' }}
+                    </span>
+                  </div>
+                </div>
+                <div class="mt-2 bg-gray-200 rounded-full h-2">
+                  <div
+                    class="bg-blue-600 h-2 rounded-full"
+                    :style="{ width: `${(pkg.usedSessions / pkg.totalSessions) * 100}%` }"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
             <label class="block text-sm font-medium text-gray-700"
               >Upcoming Sessions</label
             >
@@ -325,38 +335,6 @@ onMounted(async () => {
                 <p class="text-sm font-medium">{{ new Date(session.startTime).toLocaleDateString() }}</p>
                 <p class="text-sm text-gray-600">{{ formatTimeRange(session.startTime, session.endTime) }}</p>
                 <p class="text-sm text-gray-600">{{ session.ptPackageIssued?.ptPackage?.name || 'Session' }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Lịch sử tập gần nhất </label
-            >
-            <div v-if="recentSessions.length === 0" class="text-gray-500">Chưa có lịch sử tập</div>
-            <div v-else class="space-y-3">
-              <div v-for="session in recentSessions" :key="session.id" class="border rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20,6 9,17 4,12"></polyline>
-                      </svg>
-                    </div>
-                    <div>
-                      <p class="text-sm font-medium text-gray-900">{{ new Date(session.date).toLocaleDateString('vi-VN') }}</p>
-                      <p class="text-xs text-gray-600">{{ session.startTime }} - {{ session.endTime }} ({{ session.duration }} phút)</p>
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {{ session.status === 'completed' ? 'Hoàn thành' : 'Đã hủy' }}
-                    </span>
-                  </div>
-                </div>
-                <div v-if="session.notes" class="mt-2 text-xs text-gray-600">
-                  {{ session.notes }}
-                </div>
               </div>
             </div>
           </div>

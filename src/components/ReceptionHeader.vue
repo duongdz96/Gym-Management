@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { UserIcon } from "lucide-vue-next";
+import { UserIcon, ShoppingCart, UserPlus, Calendar, Dumbbell } from "lucide-vue-next";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -20,56 +20,45 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <header class="w-full bg-stone-900 shadow-md relative z-50">
-    <div class="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
+  <header class="w-full bg-gradient-to-r from-gray-900 to-stone-800 shadow-lg relative z-50">
+    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
       <!-- Logo -->
       <div class="flex items-center gap-3">
         <RouterLink
           to="/reception"
           class="inline-flex items-center gap-2 hover:opacity-90 transition"
         >
-          <span class="h-8 w-8 rounded-full bg-red-600 inline-block"></span>
+          <Dumbbell class="h-8 w-8 text-emerald-500" />
           <span class="font-bold text-white tracking-wider uppercase">
-            Gym Management
+            Quản lý Gym
           </span>
         </RouterLink>
       </div>
 
       <!-- Navigation -->
-      <nav class="flex items-center gap-6 text-sm font-medium">
+      <nav class="flex items-center gap-8 text-sm font-medium">
         <RouterLink
           :to="{ name: 'salesselect' }"
-          class="text-white uppercase tracking-wider hover:text-red-500 transition"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:bg-emerald-600/20 hover:text-emerald-400 transition rounded-md"
         >
-          Products Sales
+          <ShoppingCart class="h-4 w-4" />
+          Bán hàng
         </RouterLink>
 
         <RouterLink
           :to="{ name: 'add-membership' }"
-          class="text-white uppercase tracking-wider hover:text-red-500 transition"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:bg-emerald-600/20 hover:text-emerald-400 transition rounded-md"
         >
-          Add Membership
+          <UserPlus class="h-4 w-4" />
+          Thêm thành viên
         </RouterLink>
 
         <RouterLink
           to="/reception/class-registration"
-          class="text-white uppercase tracking-wider hover:text-red-500 transition"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:bg-emerald-600/20 hover:text-emerald-400 transition rounded-md"
         >
-          Class Registration
-        </RouterLink>
-
-        <RouterLink
-          :to="{ name: 'reception.customer-management' }"
-          class="text-white uppercase tracking-wider hover:text-red-500 transition"
-        >
-          Customer Management
-        </RouterLink>
-
-        <RouterLink
-          :to="{ name: 'reception.attendance-history' }"
-          class="text-white uppercase tracking-wider hover:text-red-500 transition"
-        >
-          Attendance History
+          <Calendar class="h-4 w-4" />
+          Đăng ký PT
         </RouterLink>
 
         <!-- Account -->
@@ -81,11 +70,11 @@ const handleLogout = () => {
         @mouseleave="isAccountMenuOpen = false"
       >
         <button
-          class="flex items-center gap-2 text-white hover:text-red-500 transition"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:bg-emerald-600/20 hover:text-emerald-400 transition rounded-md"
           @click="toggleAccountMenu"
         >
           <UserIcon class="w-5 h-5" />
-          <span class="uppercase tracking-wider">Account</span>
+          <span>Tài khoản</span>
         </button>
 
         <transition name="fade">
@@ -98,20 +87,27 @@ const handleLogout = () => {
               class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
               @click="isAccountMenuOpen = false"
             >
-              Change Profile
+              Thay đổi hồ sơ
+            </RouterLink>
+            <RouterLink
+              :to="{ name: 'reception.attendance-history' }"
+              class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+              @click="isAccountMenuOpen = false"
+            >
+              Lịch sử điểm danh
             </RouterLink>
             <RouterLink
               to="/change-password"
               class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
               @click="isAccountMenuOpen = false"
             >
-              Change Password
+              Thay đổi mật khẩu
             </RouterLink>
             <button
               class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
               @click="handleLogout"
             >
-              Logout
+              Đăng xuất
             </button>
           </div>
         </transition>

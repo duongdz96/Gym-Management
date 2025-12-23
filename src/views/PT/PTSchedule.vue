@@ -14,6 +14,15 @@ const showTodayModal = ref(false);
 const selectedTodayEvent = ref(null);
 const searchQuery = ref("");
 
+// New class registration modal
+const showRegisterModal = ref(false);
+const registerDate = ref(null);
+const memberSearchQuery = ref("");
+const selectedMember = ref(null);
+const selectedStartTime = ref("");
+const selectedEndTime = ref("");
+const availableMembers = ref([]);
+
 // Schedule data - will be fetched from backend
 const schedule = ref([]);
 
@@ -95,6 +104,31 @@ async function searchSchedule() {
   await fetchSchedule(searchQuery.value);
 }
 
+// Function to load available members for registration
+async function loadAvailableMembers() {
+  try {
+    const res = await api.get("/studentprofile");
+    const data = Array.isArray(res.data) ? res.data : [];
+    // Filter profiles for the current PT
+    const ptProfiles = data.filter(profile => profile.pt && profile.pt.id === authStore.user.id);
+    // Map to member objects
+    availableMembers.value = ptProfiles.map(profile => ({
+      id: profile.id,
+      memberId: profile.member.id,
+      name: profile.member.fullName,
+      email: profile.member.email,
+      height: profile.height,
+      weight: profile.weight,
+      trainingPlan: profile.trainingPlan,
+    }));
+    console.log("Available members loaded:", availableMembers.value);
+  } catch (error) {
+    console.error('Failed to load available members:', error);
+    availableMembers.value = [];
+    toast.error("Failed to load members. Please try again.");
+  }
+}
+
 // Function to start a class
 function startClass(eventId) {
   // Update status locally for UI testing (no backend API yet)
@@ -150,6 +184,16 @@ const todayEvents = computed(() => {
   return getEventsForDate(new Date()).filter(event => event.status !== 'ended');
 });
 
+const filteredMembers = computed(() => {
+  if (!memberSearchQuery.value) {
+    return availableMembers.value;
+  }
+  return availableMembers.value.filter(member =>
+    member.name.toLowerCase().includes(memberSearchQuery.value.toLowerCase()) ||
+    member.email.toLowerCase().includes(memberSearchQuery.value.toLowerCase())
+  );
+});
+
 // Functions
 function getEventsForDate(date) {
   const dateStr =
@@ -171,7 +215,16 @@ function nextMonth() {
 
 function selectDate(dayData) {
   selectedDate.value = dayData.date;
-  showModal.value = true;
+  if (dayData.events.length > 0) {
+    // Show existing events modal
+    showModal.value = true;
+  } else {
+    // Show register new class modal
+    registerDate.value = dayData.date;
+    showRegisterModal.value = true;
+    // Load available members
+    loadAvailableMembers();
+  }
 }
 
 function closeModal() {
@@ -189,6 +242,43 @@ function closeTodayModal() {
   selectedTodayEvent.value = null;
 }
 
+// Register modal functions
+function openRegisterModalForDate() {
+  registerDate.value = selectedDate.value;
+  showRegisterModal.value = true;
+  showModal.value = false; // Close the current modal
+  // Load available members
+  loadAvailableMembers();
+}
+
+function closeRegisterModal() {
+  showRegisterModal.value = false;
+  registerDate.value = null;
+  memberSearchQuery.value = "";
+  selectedMember.value = null;
+  selectedStartTime.value = "";
+  selectedEndTime.value = "";
+}
+
+function selectMemberForRegistration(member) {
+  selectedMember.value = member;
+}
+
+function registerNewClass() {
+  if (!selectedMember.value || !selectedStartTime.value || !selectedEndTime.value) {
+    toast.error("Vui lòng điền đầy đủ thông tin!");
+    return;
+  }
+
+  // Here you would call the API to register the new class
+  // For now, we'll just show a success message and close the modal
+  toast.success(`Đã đăng ký lớp cho ${selectedMember.value.name} vào ${registerDate.value.toLocaleDateString('vi-VN')} từ ${selectedStartTime.value} đến ${selectedEndTime.value}`);
+
+  // Close modal and refresh schedule
+  closeRegisterModal();
+  fetchSchedule();
+}
+
 onMounted(async () => {
   console.log("PT Schedule loaded");
   await fetchSchedule();
@@ -199,7 +289,7 @@ onMounted(async () => {
   <div class="p-6 space-y-8">
     <!-- Title and Search -->
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-      <h1 class="text-xl sm:text-2xl font-bold text-stone-800">Lịch PT</h1>
+      <h1 class="text-xl sm:text-2xl font-bold text-stone-800">Lịch trình & Đăng ký lớp</h1>
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
         <input
           v-model="searchQuery"
@@ -321,7 +411,7 @@ onMounted(async () => {
               dayData.isToday ? 'ring-2 ring-blue-500 ring-offset-1' : '',
               dayData.events.length > 0 ? '' : ''
             ]"
-            @click="dayData.events.length > 0 && selectDate(dayData)"
+            @click="selectDate(dayData)"
           >
             <template v-if="dayData.isCurrentMonth">
               <span
@@ -343,6 +433,10 @@ onMounted(async () => {
                 </div>
                 <div v-if="dayData.events.length > 3" class="text-xs text-gray-500">
                   +{{ dayData.events.length - 3 }} more
+                </div>
+                <!-- Empty day indicator -->
+                <div v-if="dayData.events.length === 0" class="text-xs text-center text-gray-400 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  + Đăng ký lớp
                 </div>
               </div>
             </template>
@@ -373,14 +467,22 @@ onMounted(async () => {
               </svg>
               Lịch trình ngày {{ selectedDate ? selectedDate.toLocaleDateString("vi-VN") : "" }}
             </h3>
-            <button
-              @click="closeModal"
-              class="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
+            <div class="flex gap-2">
+              <button
+                @click="openRegisterModalForDate"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                + Đăng ký lớp mới
+              </button>
+              <button
+                @click="closeModal"
+                class="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div class="p-4 sm:p-6 max-h-[60vh] overflow-y-auto">
@@ -421,6 +523,145 @@ onMounted(async () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Register New Class Modal -->
+    <transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-0 scale-95"
+      leave-to-class="opacity-100 scale-100"
+    >
+      <div
+        v-if="showRegisterModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+        @click.self="closeRegisterModal"
+      >
+        <div class="bg-white rounded-2xl w-full max-w-2xl mx-4 shadow-2xl overflow-hidden">
+          <div class="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+            <h3 class="text-lg sm:text-xl font-bold flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Đăng ký lớp mới - {{ registerDate ? registerDate.toLocaleDateString("vi-VN") : "" }}
+            </h3>
+            <button
+              @click="closeRegisterModal"
+              class="text-white/70 hover:text-white transition-colors"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="p-4 sm:p-6 max-h-[70vh] overflow-y-auto">
+            <!-- Member Search -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm học viên</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </div>
+                <input
+                  v-model="memberSearchQuery"
+                  type="text"
+                  placeholder="Nhập tên hoặc email học viên..."
+                  class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            <!-- Member Selection -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Chọn học viên</label>
+              <div class="max-h-40 overflow-y-auto border border-gray-200 rounded-xl">
+                <div v-if="filteredMembers.length === 0" class="p-4 text-center text-gray-500">
+                  Không tìm thấy học viên nào
+                </div>
+                <div v-else class="divide-y divide-gray-100">
+                  <div
+                    v-for="member in filteredMembers"
+                    :key="member.id"
+                    @click="selectMemberForRegistration(member)"
+                    :class="[
+                      'p-3 cursor-pointer transition-colors hover:bg-blue-50',
+                      selectedMember?.id === member.id ? 'bg-blue-100 border-l-4 border-blue-500' : ''
+                    ]"
+                  >
+                    <div class="font-medium text-gray-900">{{ member.name }}</div>
+                    <div class="text-sm text-gray-500">{{ member.email }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Time Selection -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Giờ bắt đầu</label>
+                <input
+                  v-model="selectedStartTime"
+                  type="time"
+                  class="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Giờ kết thúc</label>
+                <input
+                  v-model="selectedEndTime"
+                  type="time"
+                  class="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            <!-- Selected Member Info -->
+            <div v-if="selectedMember" class="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+              <h4 class="font-medium text-blue-900 mb-2">Thông tin học viên đã chọn:</h4>
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span class="text-gray-600">Họ tên:</span>
+                  <span class="font-medium text-gray-900 ml-2">{{ selectedMember.name }}</span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Email:</span>
+                  <span class="font-medium text-gray-900 ml-2">{{ selectedMember.email }}</span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Chiều cao:</span>
+                  <span class="font-medium text-gray-900 ml-2">{{ selectedMember.height }} cm</span>
+                </div>
+                <div>
+                  <span class="text-gray-600">Cân nặng:</span>
+                  <span class="font-medium text-gray-900 ml-2">{{ selectedMember.weight }} kg</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 pt-4 border-t border-gray-200">
+              <button
+                @click="closeRegisterModal"
+                class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                @click="registerNewClass"
+                :disabled="!selectedMember || !selectedStartTime || !selectedEndTime"
+                class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Đăng ký lớp
+              </button>
             </div>
           </div>
         </div>

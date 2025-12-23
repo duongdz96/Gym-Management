@@ -144,7 +144,7 @@ const getStatusColor = (status: string) => {
 
       <div class="lg:col-span-4 space-y-6">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div class="bg-gradient-to-r from-blue-600 to-indigo-700 h-24"></div>
+          <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 h-24"></div>
           <div class="px-6 pb-6">
             <div class="relative flex justify-between items-end -mt-10 mb-4">
               <div class="w-20 h-20 rounded-full border-4 border-white bg-gray-200 flex items-center justify-center text-xl font-bold text-gray-500 shadow-md">
@@ -205,7 +205,7 @@ const getStatusColor = (status: string) => {
                  <p class="text-xs text-gray-500 uppercase font-semibold">Cân nặng</p>
                  <p class="text-2xl font-bold text-gray-800 mt-1">{{ profile.weight }} <span class="text-sm font-normal text-gray-400">kg</span></p>
               </div>
-              <div class="bg-blue-50 p-2 rounded-lg text-blue-600">
+              <div class="bg-emerald-50 p-2 rounded-lg text-emerald-600">
                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.30.42-8.42z"/></svg>
               </div>
            </div>
@@ -231,14 +231,14 @@ const getStatusColor = (status: string) => {
                    <input
                       v-model="dateFilter"
                       type="date"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                       placeholder="Chọn ngày"
                    />
                 </div>
                 <div class="flex-1">
                    <select
                       v-model="statusFilter"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                    >
                       <option value="">Tất cả trạng thái</option>
                       <option value="Thành công">Thành công</option>

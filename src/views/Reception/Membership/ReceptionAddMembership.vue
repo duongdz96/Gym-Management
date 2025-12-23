@@ -148,11 +148,11 @@ onMounted(async () => {
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Customer Type</label>
         <div class="flex gap-4">
           <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" v-model="isExistingMember" :value="false" class="form-radio text-blue-600" />
+            <input type="radio" v-model="isExistingMember" :value="false" class="form-radio text-emerald-600" />
             <span>New Customer</span>
           </label>
           <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" v-model="isExistingMember" :value="true" class="form-radio text-blue-600" />
+            <input type="radio" v-model="isExistingMember" :value="true" class="form-radio text-emerald-600" />
             <span>Existing Customer</span>
           </label>
         </div>
@@ -166,7 +166,7 @@ onMounted(async () => {
         >
         <select
           v-model="selectedMemberId"
-          class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           required
         >
           <option value="" disabled>Select a member</option>
@@ -311,7 +311,7 @@ onMounted(async () => {
       <div class="md:col-span-2 flex items-center gap-2">
         <button
           type="submit"
-          class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+          class="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white"
         >
           Add Membership
         </button>
