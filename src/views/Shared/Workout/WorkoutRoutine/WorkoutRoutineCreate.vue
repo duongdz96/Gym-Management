@@ -181,11 +181,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 py-8">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50 py-8">
     <div class="mx-auto max-w-5xl px-6">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
           {{ pageTitle }}
         </h1>
         <p class="text-gray-600 mt-2">{{ pageSubtitle }}</p>
@@ -193,7 +193,7 @@ onMounted(async () => {
 
       <!-- Loading State -->
       <div v-if="isLoading" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
 
       <!-- Form -->
@@ -206,13 +206,13 @@ onMounted(async () => {
             <!-- Routine Name -->
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
-                Tên Mẫu Lịch Tập <span class="text-red-500">*</span>
+                Tên Mẫu Lịch Tập <span class="text-emerald-500">*</span>
               </label>
               <input
                 v-model="formData.name"
                 type="text"
                 placeholder="VD: Full Body Workout, Leg Day, Upper Body..."
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
                 required
               />
             </div>
@@ -220,11 +220,11 @@ onMounted(async () => {
             <!-- Muscle Group -->
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">
-                Nhóm Cơ Chính <span class="text-red-500">*</span>
+                Nhóm Cơ Chính <span class="text-emerald-500">*</span>
               </label>
               <select
                 v-model="formData.muscleGroupFocus"
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none appearance-none bg-white"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none appearance-none bg-white"
                 required
               >
                 <option value="" disabled>Chọn nhóm cơ</option>
@@ -243,7 +243,7 @@ onMounted(async () => {
                 v-model="formData.description"
                 rows="3"
                 placeholder="Mô tả về mẫu lịch tập này..."
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none resize-none"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none resize-none"
               ></textarea>
             </div>
 
@@ -253,7 +253,7 @@ onMounted(async () => {
                 v-model="formData.isPublic"
                 type="checkbox"
                 id="isPublic"
-                class="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                class="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
               />
               <label for="isPublic" class="flex items-center gap-2 cursor-pointer">
                 <component :is="formData.isPublic ? Globe : Lock" class="w-5 h-5" :class="formData.isPublic ? 'text-green-600' : 'text-gray-400'" />
@@ -271,7 +271,7 @@ onMounted(async () => {
               <button
                 type="button"
                 @click="addExerciseDetail"
-                class="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                class="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
               >
                 <Plus class="w-4 h-4" />
                 Thêm Bài Tập
@@ -280,7 +280,7 @@ onMounted(async () => {
 
             <!-- Loading Exercises -->
             <div v-if="isLoadingExercises" class="text-center py-8">
-              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
               <p class="text-gray-600 mt-2">Đang tải danh sách bài tập...</p>
             </div>
 
@@ -289,10 +289,10 @@ onMounted(async () => {
               <div
                 v-for="(detail, index) in formData.routineDetails"
                 :key="index"
-                class="p-4 border-2 border-gray-200 rounded-xl hover:border-red-300 transition-colors"
+                class="p-4 border-2 border-gray-200 rounded-xl hover:border-emerald-300 transition-colors"
               >
                 <div class="flex items-start gap-4">
-                  <div class="flex-shrink-0 w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center font-bold">
+                  <div class="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">
                     {{ index + 1 }}
                   </div>
 
@@ -300,7 +300,7 @@ onMounted(async () => {
                     <!-- Exercise Selection -->
                     <div class="md:col-span-2">
                       <label class="block text-xs font-semibold text-gray-600 mb-1">
-                        Bài Tập <span class="text-red-500">*</span>
+                        Bài Tập <span class="text-emerald-500">*</span>
                       </label>
                       <select
                         v-model="detail.exercise.id"
@@ -317,7 +317,7 @@ onMounted(async () => {
                     <!-- Set Count -->
                     <div>
                       <label class="block text-xs font-semibold text-gray-600 mb-1">
-                        Số Set <span class="text-red-500">*</span>
+                        Số Set <span class="text-emerald-500">*</span>
                       </label>
                       <input
                         v-model.number="detail.defaultSetCount"
@@ -377,12 +377,12 @@ onMounted(async () => {
             <div class="bg-white rounded-lg p-4">
               <div class="flex items-start justify-between mb-3">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
                     <ListChecks class="w-5 h-5 text-white" />
                   </div>
                   <div>
                     <h4 class="font-bold text-gray-900">{{ formData.name || 'Tên mẫu lịch tập' }}</h4>
-                    <span class="text-sm text-red-600 font-medium">{{ formData.muscleGroupFocus || 'Nhóm cơ' }}</span>
+                    <span class="text-sm text-emerald-600 font-medium">{{ formData.muscleGroupFocus || 'Nhóm cơ' }}</span>
                   </div>
                 </div>
                 <component :is="formData.isPublic ? Globe : Lock" class="w-5 h-5" :class="formData.isPublic ? 'text-green-600' : 'text-gray-400'" />
@@ -408,7 +408,7 @@ onMounted(async () => {
             <button
               type="submit"
               :disabled="isSubmitting"
-              class="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save class="w-5 h-5" />
               {{ submitButtonText }}

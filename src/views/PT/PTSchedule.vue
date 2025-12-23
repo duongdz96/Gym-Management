@@ -295,11 +295,11 @@ onMounted(async () => {
           v-model="searchQuery"
           type="text"
           placeholder="Tìm kiếm theo tên học viên"
-          class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
         />
         <button
           @click="searchSchedule"
-          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
         >
           Tìm kiếm
         </button>
@@ -327,12 +327,12 @@ onMounted(async () => {
             v-for="event in todayEvents"
             :key="event.id"
             @click="selectTodayEvent(event)"
-            class="flex-shrink-0 w-64 p-3 bg-blue-50 rounded-lg border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors"
+            class="flex-shrink-0 w-64 p-3 bg-emerald-50 rounded-lg border border-emerald-200 cursor-pointer hover:bg-emerald-100 transition-colors"
           >
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center">
                 <svg
-                  class="w-4 h-4 mr-2 text-blue-500"
+                  class="w-4 h-4 mr-2 text-emerald-500"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -362,7 +362,7 @@ onMounted(async () => {
       <!-- Header -->
       <div class="p-4 sm:p-6 bg-white border-b border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 class="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-          <svg class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
           </svg>
           Lịch Dạy - Tháng {{ currentMonth + 1 }}/{{ currentYear }}
@@ -407,8 +407,8 @@ onMounted(async () => {
             :key="dayData.date.toISOString()"
             class="min-h-[100px] border rounded-xl p-2 transition-all relative group"
             :class="[
-              !dayData.isCurrentMonth ? 'bg-gray-50/50 border-transparent' : 'bg-white border-gray-100 hover:border-blue-300 hover:shadow-md cursor-pointer',
-              dayData.isToday ? 'ring-2 ring-blue-500 ring-offset-1' : '',
+              !dayData.isCurrentMonth ? 'bg-gray-50/50 border-transparent' : 'bg-white border-gray-100 hover:border-emerald-300 hover:shadow-md cursor-pointer',
+              dayData.isToday ? 'ring-2 ring-emerald-500 ring-offset-1' : '',
               dayData.events.length > 0 ? '' : ''
             ]"
             @click="selectDate(dayData)"
@@ -416,7 +416,7 @@ onMounted(async () => {
             <template v-if="dayData.isCurrentMonth">
               <span
                 class="text-sm font-medium block mb-1"
-                :class="dayData.isToday ? 'text-blue-600 font-bold' : 'text-gray-700'"
+                :class="dayData.isToday ? 'text-emerald-600 font-bold' : 'text-gray-700'"
               >
                 {{ dayData.day }}
               </span>
@@ -426,7 +426,7 @@ onMounted(async () => {
                 <div
                   v-for="event in dayData.events.slice(0, 3)"
                   :key="event.id"
-                  class="text-xs truncate px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100"
+                  class="text-xs truncate px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100"
                   :title="`${event.time} - ${event.name}`"
                 >
                   {{ event.time }} {{ event.name }}

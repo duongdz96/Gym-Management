@@ -89,7 +89,7 @@ const getStatusColor = (status: string) => {
   switch (status) {
     case 'Present': return 'text-green-600 bg-green-50'
     case 'Late': return 'text-orange-600 bg-orange-50'
-    case 'Absent': return 'text-red-600 bg-red-50'
+    case 'Absent': return 'text-emerald-600 bg-emerald-50'
     default: return 'text-gray-600 bg-gray-50'
   }
 }
@@ -195,10 +195,10 @@ onMounted(() => {
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-600">Ngày vắng mặt</p>
-            <p class="text-2xl font-bold text-red-600">{{ attendanceRecords.filter(r => r.status === 'Absent').length }}</p>
+            <p class="text-2xl font-bold text-emerald-600">{{ attendanceRecords.filter(r => r.status === 'Absent').length }}</p>
           </div>
-          <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-600">
+          <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -239,7 +239,7 @@ onMounted(() => {
               </td>
               <td class="px-6 py-4 text-sm text-gray-600">
                 <span v-if="record.checkOut" class="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500">
                     <polyline points="20,6 9,17 4,12"></polyline>
                   </svg>
                   {{ record.checkOut }}
@@ -261,7 +261,7 @@ onMounted(() => {
                     :class="[
                       'w-2 h-2 rounded-full',
                       record.status === 'Present' ? 'bg-green-500' :
-                      record.status === 'Late' ? 'bg-orange-500' : 'bg-red-500'
+                      record.status === 'Late' ? 'bg-orange-500' : 'bg-emerald-500'
                     ]"
                   ></span>
                   {{ record.status === 'Present' ? 'Có mặt' : record.status === 'Late' ? 'Đến muộn' : 'Vắng mặt' }}

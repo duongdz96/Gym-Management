@@ -49,12 +49,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 py-8">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50 py-8">
     <div class="mx-auto max-w-4xl px-6">
       <!-- Back Button -->
       <button
         @click="goBack"
-        class="flex items-center gap-2 text-gray-600 hover:text-red-600 mb-6 transition-colors"
+        class="flex items-center gap-2 text-gray-600 hover:text-emerald-600 mb-6 transition-colors"
       >
         <ArrowLeft class="w-5 h-5" />
         <span class="font-medium">Quay lại danh sách</span>
@@ -62,13 +62,13 @@ onMounted(() => {
 
       <!-- Loading State -->
       <div v-if="isLoading" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
 
       <!-- Exercise Detail -->
       <div v-else-if="exercise" class="bg-white rounded-2xl shadow-lg overflow-hidden">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-red-500 to-orange-500 p-8 text-white">
+        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 p-8 text-white">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-4">
               <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -90,7 +90,7 @@ onMounted(() => {
             <button
               v-if="isMyExercise()"
               @click="goToEdit"
-              class="flex items-center gap-2 bg-white text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition-colors"
+              class="flex items-center gap-2 bg-white text-emerald-600 px-4 py-2 rounded-lg font-semibold hover:bg-emerald-50 transition-colors"
             >
               <Edit class="w-4 h-4" />
               Sửa
@@ -122,22 +122,22 @@ onMounted(() => {
           </div>
 
           <!-- Tips Section (Optional Enhancement) -->
-          <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
-            <h3 class="text-lg font-bold text-blue-900 mb-3 flex items-center gap-2">
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-6">
+            <h3 class="text-lg font-bold text-emerald-900 mb-3 flex items-center gap-2">
               <Lightbulb class="w-5 h-5" />
               Lưu Ý
             </h3>
-            <ul class="space-y-2 text-blue-800">
+            <ul class="space-y-2 text-emerald-800">
               <li class="flex items-start gap-2">
-                <span class="text-blue-600 mt-1">•</span>
+                <span class="text-emerald-600 mt-1">•</span>
                 <span>Khởi động kỹ trước khi thực hiện bài tập</span>
               </li>
               <li class="flex items-start gap-2">
-                <span class="text-blue-600 mt-1">•</span>
+                <span class="text-emerald-600 mt-1">•</span>
                 <span>Tập trung vào kỹ thuật đúng hơn là tăng trọng lượng</span>
               </li>
               <li class="flex items-start gap-2">
-                <span class="text-blue-600 mt-1">•</span>
+                <span class="text-emerald-600 mt-1">•</span>
                 <span>Nghỉ ngơi đầy đủ giữa các set</span>
               </li>
             </ul>

@@ -195,7 +195,7 @@ onMounted(async () => {
               v-model="searchQuery"
               type="text"
               placeholder="Tìm kiếm học viên theo tên..."
-              class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
             />
           </div>
         </div>
@@ -208,7 +208,7 @@ onMounted(async () => {
             :class="[
               'p-4 rounded-lg cursor-pointer transition-colors border',
               selectedMember?.id === member.id
-                ? 'bg-blue-100 border-blue-300'
+                ? 'bg-emerald-100 border-emerald-300'
                 : 'bg-gray-50 hover:bg-gray-100',
             ]"
           >
@@ -260,7 +260,7 @@ onMounted(async () => {
                 <button
                   v-if="!isEditingWeight"
                   @click="startEditingWeight"
-                  class="text-blue-600 hover:text-blue-800 text-sm"
+                  class="text-emerald-600 hover:text-emerald-800 text-sm"
                 >
                   Chỉnh sửa
                 </button>
@@ -303,14 +303,14 @@ onMounted(async () => {
             >
             <div v-if="memberPackages.length === 0" class="text-gray-500">Chưa đăng ký gói nào</div>
             <div v-else class="space-y-2">
-              <div v-for="pkg in memberPackages" :key="pkg.id" class="border rounded-lg p-3 bg-blue-50">
+              <div v-for="pkg in memberPackages" :key="pkg.id" class="border rounded-lg p-3 bg-emerald-50">
                 <div class="flex items-center justify-between">
                   <div>
                     <p class="text-sm font-medium text-gray-900">{{ pkg.name }}</p>
                     <p class="text-xs text-gray-600">Hết hạn: {{ new Date(pkg.expiryDate).toLocaleDateString('vi-VN') }}</p>
                   </div>
                   <div class="text-right">
-                    <p class="text-sm font-semibold text-blue-600">{{ pkg.usedSessions }}/{{ pkg.totalSessions }} buổi</p>
+                    <p class="text-sm font-semibold text-emerald-600">{{ pkg.usedSessions }}/{{ pkg.totalSessions }} buổi</p>
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       {{ pkg.status === 'active' ? 'Đang hoạt động' : 'Hết hạn' }}
                     </span>
@@ -318,7 +318,7 @@ onMounted(async () => {
                 </div>
                 <div class="mt-2 bg-gray-200 rounded-full h-2">
                   <div
-                    class="bg-blue-600 h-2 rounded-full"
+                    class="bg-emerald-600 h-2 rounded-full"
                     :style="{ width: `${(pkg.usedSessions / pkg.totalSessions) * 100}%` }"
                   ></div>
                 </div>

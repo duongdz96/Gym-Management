@@ -198,19 +198,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 py-8">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50 py-8">
     <div class="mx-auto max-w-7xl px-6">
       <!-- Header -->
       <div class="mb-8 flex items-center justify-between">
         <div>
-          <h1 class="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+          <h1 class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
             Cộng Đồng Workout
           </h1>
           <p class="text-gray-600 mt-2">Khám phá và chia sẻ các mẫu lịch tập</p>
         </div>
         <button
           @click="goToCreate"
-          class="flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105"
+          class="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105"
         >
           <Plus class="w-5 h-5" />
           Tạo Mẫu Mới
@@ -227,7 +227,7 @@ onMounted(() => {
               v-model="searchQuery"
               type="text"
               placeholder="Tìm kiếm mẫu lịch tập..."
-              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none"
+              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
             />
           </div>
 
@@ -235,21 +235,21 @@ onMounted(() => {
           <div class="flex gap-2">
             <button
               @click="filterType = 'all'"
-              :class="filterType === 'all' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+              :class="filterType === 'all' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
               class="px-4 py-2 rounded-lg font-semibold transition-colors"
             >
               Tất cả
             </button>
             <button
               @click="filterType = 'mine'"
-              :class="filterType === 'mine' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+              :class="filterType === 'mine' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
               class="px-4 py-2 rounded-lg font-semibold transition-colors"
             >
               Của tôi
             </button>
             <button
               @click="filterType = 'public'"
-              :class="filterType === 'public' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
+              :class="filterType === 'public' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
               class="px-4 py-2 rounded-lg font-semibold transition-colors"
             >
               Công khai
@@ -260,31 +260,31 @@ onMounted(() => {
 
       <!-- Loading State -->
       <div v-if="isLoading" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
 
       <div v-else class="space-y-8">
         <!-- My Routines Section -->
         <div v-if="myRoutines.length > 0 && (filterType === 'all' || filterType === 'mine')">
           <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <ListChecks class="w-6 h-6 text-red-600" />
+            <ListChecks class="w-6 h-6 text-emerald-600" />
             Mẫu Của Tôi ({{ myRoutines.length }})
           </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div
               v-for="routine in myRoutines"
               :key="routine.id"
-              class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-red-100"
+              class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-emerald-100"
             >
               <!-- Routine Header -->
               <div class="flex items-start justify-between mb-4">
                 <div class="flex items-center gap-3 flex-1">
-                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
                     <ListChecks class="w-6 h-6 text-white" />
                   </div>
                   <div class="flex-1 min-w-0">
                     <h3 class="text-lg font-bold text-gray-900 truncate">{{ routine.name }}</h3>
-                    <span class="text-sm text-red-600 font-medium">{{ routine.muscleGroupFocus }}</span>
+                    <span class="text-sm text-emerald-600 font-medium">{{ routine.muscleGroupFocus }}</span>
                   </div>
                 </div>
                 <component
@@ -310,7 +310,7 @@ onMounted(() => {
               <div class="grid grid-cols-2 gap-2">
                 <button
                   @click="viewRoutine(routine)"
-                  class="flex items-center justify-center gap-2 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors text-sm"
+                  class="flex items-center justify-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-2 rounded-lg hover:bg-emerald-100 transition-colors text-sm"
                 >
                   <Eye class="w-4 h-4" />
                   Xem
@@ -424,7 +424,7 @@ onMounted(() => {
           <p class="text-gray-500 mb-6">Thử tìm kiếm với từ khóa khác hoặc tạo mẫu mới</p>
           <button
             @click="goToCreate"
-            class="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+            class="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
           >
             <Plus class="w-5 h-5" />
             Tạo Mẫu Mới

@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { UserIcon, ShoppingCart, UserPlus, Calendar, Dumbbell } from "lucide-vue-next";
+import { UserIcon, ShoppingCart, UserPlus, Calendar, Dumbbell, Clock, Settings, LogOut } from "lucide-vue-next";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -20,7 +20,7 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <header class="w-full bg-gradient-to-r from-gray-900 to-stone-800 shadow-lg relative z-50">
+  <header class="w-full bg-gradient-to-r from-emerald-700 to-emerald-800 shadow-lg relative z-50">
     <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
       <!-- Logo -->
       <div class="flex items-center gap-3">
@@ -84,29 +84,33 @@ const handleLogout = () => {
           >
             <RouterLink
               to="/profile"
-              class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+              class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100"
               @click="isAccountMenuOpen = false"
             >
+              <UserIcon class="w-4 h-4" />
               Thay đổi hồ sơ
             </RouterLink>
             <RouterLink
               :to="{ name: 'reception.attendance-history' }"
-              class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+              class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100"
               @click="isAccountMenuOpen = false"
             >
+              <Clock class="w-4 h-4" />
               Lịch sử điểm danh
             </RouterLink>
             <RouterLink
               to="/change-password"
-              class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+              class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100"
               @click="isAccountMenuOpen = false"
             >
+              <Settings class="w-4 h-4" />
               Thay đổi mật khẩu
             </RouterLink>
             <button
-              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+              class="flex items-center gap-2 w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
               @click="handleLogout"
             >
+              <LogOut class="w-4 h-4" />
               Đăng xuất
             </button>
           </div>

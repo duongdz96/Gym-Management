@@ -92,7 +92,7 @@ const getStatusText = (status: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'completed': return 'text-green-600 bg-green-50'
-    case 'ongoing': return 'text-blue-600 bg-blue-50'
+    case 'ongoing': return 'text-emerald-600 bg-emerald-50'
     case 'upcoming': return 'text-orange-600 bg-orange-50'
     default: return 'text-gray-600 bg-gray-50'
   }
@@ -178,10 +178,10 @@ onMounted(() => {
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-600">Đang diễn ra</p>
-            <p class="text-2xl font-bold text-blue-600">{{ filteredSessions.filter(s => s.status === 'ongoing').length }}</p>
+            <p class="text-2xl font-bold text-emerald-600">{{ filteredSessions.filter(s => s.status === 'ongoing').length }}</p>
           </div>
-          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            <span class="text-blue-600 text-lg">🔄</span>
+          <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+            <span class="text-emerald-600 text-lg">🔄</span>
           </div>
         </div>
       </div>
