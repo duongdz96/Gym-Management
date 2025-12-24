@@ -94,7 +94,7 @@ export const trainingPlanApi = {
     // Gán lịch tập cho member khác
     assignPlanToMember(data) {
         // data: { routineId, memberId, date, assignedBy }
-        return api.post('/training-plans/assign', data)
+        return api.post('/training-plans/generate', data)
     },
 
     // Lấy lịch tập của mình

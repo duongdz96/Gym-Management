@@ -179,6 +179,12 @@ const routes = [
                 name: "customer.workout.training-plan.start",
                 component: () => import("@/views/Customer/Workout/CustomerTrainingPlanStart.vue")
             },
+            {
+                path: "workout/routine/:id",
+                name: "customer.workout.routine-detail",
+                component: () => import("@/views/Shared/Workout/WorkoutRoutine/WorkoutRoutineDetail.vue"),
+                props: true
+            }
         ],
     },
 
