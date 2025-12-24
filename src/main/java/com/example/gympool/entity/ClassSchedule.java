@@ -1,6 +1,7 @@
 package com.example.gympool.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,7 +29,7 @@ public class ClassSchedule {
 
     @ManyToOne
     @JoinColumn(name = "fitness_class_id", nullable = true)
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"schedules", "registrations"})
+    @JsonIgnoreProperties({"schedules", "registrations"})
     private FitnessClass fitnessClass;
 
     @ManyToOne

@@ -30,4 +30,6 @@ public class TrainingPlanDetails {
 
     @Column(name = "rep_count")
     private String repCount;
+
+    private String status;
 }

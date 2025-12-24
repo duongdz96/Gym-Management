@@ -24,9 +24,9 @@ public class ClassRegistrationController {
     }
 
     // Lấy danh sách giáo viên đã đăng ký cho class template
-    @GetMapping("/fitness_class/{templateId}")
-    public ResponseEntity<List<ClassRegistration>> getByFitnessClass(@PathVariable Long templateId) {
-        return ResponseEntity.ok(classRegistrationService.getByFitnessClass(templateId));
+    @GetMapping("/fitness_class/{fitnessClassId}")
+    public ResponseEntity<List<ClassRegistration>> getByFitnessClass(@PathVariable Long fitnessClassId) {
+        return ResponseEntity.ok(classRegistrationService.getByFitnessClass(fitnessClassId));
     }
 
     // Staff đăng ký dạy 1 lớp

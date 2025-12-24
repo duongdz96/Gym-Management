@@ -1,5 +1,6 @@
 package com.example.gympool.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -33,6 +34,6 @@ public class FitnessClass {
     private String status;
 
     @OneToMany(mappedBy = "fitnessClass", cascade = CascadeType.ALL, orphanRemoval = true)
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonIgnore
     private List<ClassSchedule> classSchedule;
 }
