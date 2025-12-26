@@ -3,10 +3,12 @@ package com.example.gympool.repository;
 import com.example.gympool.dto.MembershipDistributionDTO;
 import com.example.gympool.entity.CustomerMembership;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,4 +27,8 @@ public interface CustomerMembershipRepository extends JpaRepository<CustomerMemb
     List<MembershipDistributionDTO> getMembershipDistribution();
 
     Optional<CustomerMembership> findFirstByMemberIdOrderByIdDesc(Long memberId);
+
+    @Modifying
+    @Query("UPDATE CustomerMembership c SET c.status = 'Expired' WHERE c.status = 'Active' AND c.endDate < :now")
+    void updateExpiredMemberships(@Param("now") Date now);
 }

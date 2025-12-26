@@ -19,4 +19,5 @@ public interface CustomerMembershipService {
     CustomerMembership upgradeMembership(Long currentMembershipId, Long newPlanId);
     //theo id cua user
     CustomerMembership getLatestMembership(Long memberId);
+    void scanAndExpireMemberships();
 }

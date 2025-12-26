@@ -226,4 +226,10 @@ public class CustomerMembershipServiceImpl implements CustomerMembershipService 
 
         return membership;
     }
+
+    @Override
+    @Transactional
+    public void scanAndExpireMemberships() {
+        customerMembershipRepository.updateExpiredMemberships(new Date());
+    }
 }
