@@ -4,6 +4,7 @@ import com.example.gympool.dto.MembershipDistributionDTO;
 import com.example.gympool.entity.CustomerMembership;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,10 +17,12 @@ public interface CustomerMembershipRepository extends JpaRepository<CustomerMemb
     
     List<CustomerMembership> findByMembershipPlan_MembershipTier_Name(String tiername);
 
-    @Query("SELECT new com.example.gympool.dto.MembershipDistributionDTO(" +
+    @Query("SELECT MembershipDistributionDTO(" +
            "cm.membershipPlan.membershipTier.name, COUNT(cm), 0.0) " +
            "FROM CustomerMembership cm " +
            "WHERE cm.status = 'Active' " +
            "GROUP BY cm.membershipPlan.membershipTier.name")
     List<MembershipDistributionDTO> getMembershipDistribution();
+
+    Optional<CustomerMembership> findFirstByMemberIdOrderByIdDesc(Long memberId);
 }

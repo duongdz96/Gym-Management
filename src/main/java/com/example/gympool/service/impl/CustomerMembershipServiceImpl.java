@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
 @Service
 public class CustomerMembershipServiceImpl implements CustomerMembershipService {
     @Autowired
@@ -130,44 +133,55 @@ public class CustomerMembershipServiceImpl implements CustomerMembershipService 
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
 
         Date today = new Date();
-        //ngày còn lại
-        long diffInMillies = oldMem.getEndDate().getTime() - today.getTime();
-        long daysRemaining = Math.max(0, diffInMillies / (1000 * 60 * 60 * 24));
 
-        if (daysRemaining > 0) {
-            long totalDaysOld = getDurationInDays(oldMem.getMembershipPlan().getDuration());    //lay so ngay con lai
-            double pricePerDayOld = oldMem.getMembershipPlan().getPrice() / totalDaysOld;  //gia cu (1 ngày)
-            double refundValue = daysRemaining * pricePerDayOld;    //tinh tien con du (2 ngay * 2k = 4k)
+        // 1. Tính ngày kết thúc tiêu chuẩn (Hôm nay + Thời hạn gói mới)
+        Date standardEndDate = addDuration(today, newPlan.getDuration());
+        Date finalEndDate = standardEndDate;
 
-            long totalDaysNew = getDurationInDays(newPlan.getDuration());   //lay so ngay moi
-            double pricePerDayNew =  newPlan.getPrice() / totalDaysNew; //gia moi (1 ngày)
-            double extraDays = refundValue / pricePerDayNew;   // 4/3 -> 1.333
+        // 2. Tính toán quy đổi nếu gói cũ còn hạn
+        if (oldMem.getEndDate().after(today)) {
+            // Tính số ngày còn lại của gói cũ
+            long diffInMillies = oldMem.getEndDate().getTime() - today.getTime();
+            long oldDaysRemaining = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
 
-            long extraMillis = (long) (extraDays * 24 * 60 * 60 * 1000);
+            // Tính đơn giá ngày của gói cũ
+            long oldDurationDays = getDurationInDays(oldMem.getMembershipPlan().getDuration());
+            double oldPricePerDay = oldMem.getMembershipPlan().getPrice() / oldDurationDays;
 
-            Date standardEndDate = addDuration(today, newPlan.getDuration());
-            Date finalEndDate = new Date(standardEndDate.getTime() + extraMillis);
+            // Tính tổng tiền dư (Remaining Value)
+            double residualValue = oldDaysRemaining * oldPricePerDay;
 
-            oldMem.setStatus("Upgraded");
-            customerMembershipRepository.save(oldMem);
+            // Tính đơn giá ngày của gói mới
+            long newDurationDays = getDurationInDays(newPlan.getDuration());
+            double newPricePerDay = newPlan.getPrice() / newDurationDays;
 
-            CustomerMembership newMem = new CustomerMembership();
-            newMem.setMember(oldMem.getMember());
-            newMem.setMembershipPlan(newPlan);
-            newMem.setStartDate(today);
-            newMem.setEndDate(finalEndDate);
-            newMem.setStatus("Active"); //để im cái cũ mà ko xoa, se tao cai moi
+            // Tính số ngày được cộng thêm (Extra Days)
+            double extraDays = residualValue / newPricePerDay;
 
-            Member m = oldMem.getMember();
-            if (m != null) {
-                m.setMembership(newPlan.getMembershipTier().getName());
-                memberService.updateMember(m.getId(), m);
-            }
-
-            return customerMembershipRepository.save(newMem);
+            // Cộng thêm số ngày này vào hạn chuẩn (đổi ra milliseconds để chính xác cả số lẻ như 1.33 ngày)
+            long extraTimeInMillis = (long) (extraDays * 24 * 60 * 60 * 1000);
+            finalEndDate = new Date(standardEndDate.getTime() + extraTimeInMillis);
         }
 
-        return renewMembership(currentMembershipId, newPlanId);
+        // 3. Cập nhật gói cũ
+        oldMem.setStatus("Upgraded");
+        customerMembershipRepository.save(oldMem);
+
+        // 4. Tạo gói mới
+        CustomerMembership newMem = new CustomerMembership();
+        newMem.setMember(oldMem.getMember());
+        newMem.setMembershipPlan(newPlan);
+        newMem.setStartDate(today);
+        newMem.setEndDate(finalEndDate);
+        newMem.setStatus("Active");
+
+        Member m = oldMem.getMember();
+        if (m != null) {
+            m.setMembership(newPlan.getMembershipTier().getName());
+            memberService.updateMember(m.getId(), m);
+        }
+
+        return customerMembershipRepository.save(newMem);
     }
 
     private Date addDuration(Date startDate, String duration) {
@@ -190,5 +204,26 @@ public class CustomerMembershipServiceImpl implements CustomerMembershipService 
         Date now = new Date();
         Date end = addDuration(now, duration);
         return (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    }
+
+    @Override
+    public CustomerMembership getLatestMembership(Long memberId) {
+        Optional<CustomerMembership> lastMemOpt = customerMembershipRepository.findFirstByMemberIdOrderByIdDesc(memberId);
+
+        if (lastMemOpt.isEmpty()) {
+            return null;
+        }
+
+        CustomerMembership membership = lastMemOpt.get();
+
+        if ("Active".equalsIgnoreCase(membership.getStatus())) {
+            Date now = new Date();
+            if (membership.getEndDate().before(now)) {
+                membership.setStatus("Expired");
+                return customerMembershipRepository.save(membership);
+            }
+        }
+
+        return membership;
     }
 }

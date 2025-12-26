@@ -55,6 +55,17 @@ public class CustomerMembershipController {
         CustomerMembership upgraded = customerMembershipService.upgradeMembership(id, newPlanId);
         return ResponseEntity.ok(upgraded);
     }
+
+    @GetMapping("/member/{memberId}/current")
+    public ResponseEntity<CustomerMembership> getCurrentMembership(@PathVariable Long memberId) {
+        CustomerMembership currentMem = customerMembershipService.getLatestMembership(memberId);
+
+        if (currentMem == null) {
+            return ResponseEntity.noContent().build(); // Trả về 204 No Content
+        }
+
+        return ResponseEntity.ok(currentMem);
+    }
 }
 
 
