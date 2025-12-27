@@ -20,6 +20,8 @@ import ImportReceiptList from "@/views/Manager/Product/ImportReceiptList.vue";
 import ImportReceiptDetail from "@/views/Manager/Product/ImportReceiptDetail.vue";
 import Staff from "@/views/Manager/Staff/Staff.vue";
 import Customer from "@/views/Manager/Customer/Customer.vue";
+import ManagerCustomerDetail from "@/views/Manager/Customer/ManagerCustomerDetail.vue";
+import ManagerCustomerCheckinHistory from "@/views/Manager/Customer/ManagerCustomerCheckinHistory.vue";
 import Attendance from "@/views/Manager/Attendance/Attendance.vue";
 import ManagerClassList from "@/views/Manager/Classes/ManagerClassList.vue";
 import Banner from "@/views/Manager/Config/Banner.vue";
@@ -46,12 +48,20 @@ import ReceptionMemberships from "@/views/Reception/Membership/ReceptionMembersh
 import SalesSelect from "@/views/Reception/Sale/SalesSelect.vue";
 import SalesCheckout from "@/views/Reception/Sale/SalesCheckout.vue";
 import ReceptionClassRegistration from "@/views/Reception/Classes/ReceptionClassRegistration.vue";
+import ReceptionCustomerManagement from "@/views/Reception/Customer/ReceptionCustomerManagement.vue";
+import ReceptionCustomerDetail from "@/views/Reception/Customer/ReceptionCustomerDetail.vue";
+import ReceptionTeacherManagement from "@/views/Reception/Teacher/ReceptionTeacherManagement.vue";
+import ReceptionTeacherDetail from "@/views/Reception/Teacher/ReceptionTeacherDetail.vue";
+import ReceptionClasses from "@/views/Reception/ReceptionClasses.vue";
+import ReceptionAttendanceHistory from "@/views/Reception/ReceptionAttendanceHistory.vue";
 
 import PTLayout from "@/layout/PTLayout.vue";
 import PTHome from "@/views/PT/PTHome.vue";
 import PTSchedule from "@/views/PT/PTSchedule.vue";
 import PTProfile from "@/views/PT/PTProfile.vue";
 import PTMembers from "@/views/PT/PTMembers.vue";
+import PTAttendenceHistory from "@/views/PT/PTAttendenceHistory.vue";
+import PTSessions from "@/views/PT/PTSessions.vue";
 
 import TestIndex from "@/views/Test/index.vue";
 import Test from "@/views/Test.vue";
@@ -93,6 +103,8 @@ const routes = [
             { path: "staff", name: "staff", component: Staff },
             { path: "staff/add", name: "staff.add", component: AddStaff },
             { path: "customer", name: "customer", component: Customer },
+            { path: "customer/:id", name: "manager.customer-detail", component: ManagerCustomerDetail },
+            { path: "customer-checkin-history", name: "manager.customer-checkin-history", component: ManagerCustomerCheckinHistory },
             { path: "attendance", name: "attendance", component: Attendance },
             { path: "coupon", name: "coupon", component: Coupon },
             { path: "coupon/:id", name: "CouponDetail", component: CouponDetail },
@@ -197,6 +209,12 @@ const routes = [
             { path: "memberships", name: "reception.memberships", component: ReceptionMemberships },
             { path: "add-membership", name: "add-membership", component: ReceptionAddMembership },
             { path: "class-registration", name: "reception.class-registration", component: ReceptionClassRegistration },
+            { path: "customer-management", name: "reception.customer-management", component: ReceptionCustomerManagement },
+            { path: "customer/:id", name: "reception.customer-detail", component: ReceptionCustomerDetail },
+            { path: "teachers", name: "reception.teachers", component: ReceptionTeacherManagement },
+            { path: "teacher/:id", name: "reception.teacher-detail", component: ReceptionTeacherDetail },
+            { path: "classes", name: "reception.classes", component: ReceptionClasses },
+            { path: "attendance-history", name: "reception.attendance-history", component: ReceptionAttendanceHistory },
             { path: "salesselect", name: "salesselect", component: SalesSelect },
             { path: "salescheckout", name: "salesCheckout", component: SalesCheckout },
         ],
@@ -207,24 +225,35 @@ const routes = [
         meta: { requiresAuth: true, roles: ["PT"] },
         children: [
             {
-                path: '/pt/',
+                path: '',
                 name: 'pt.home',
                 component: PTHome
             },
             {
-                path: '/pt/schedule',
+                path: 'schedule',
                 name: 'pt.schedule',
                 component: PTSchedule
             },
             {
-                path: '/pt/profile',
+                path: 'profile',
                 name: 'pt.profile',
                 component: PTProfile
             },
             {
-                path: '/pt/members',
+                path: 'members',
                 name: 'pt.members',
                 component: PTMembers
+            },
+
+            {
+                path: 'attendance-history',
+                name: 'pt.attendance-history',
+                component: PTAttendenceHistory
+            },
+            {
+                path: 'sessions',
+                name: 'pt.sessions',
+                component: PTSessions
             },
 
             // Workout Management Routes

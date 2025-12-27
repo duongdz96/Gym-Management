@@ -79,7 +79,7 @@ const getStatusColor = (status: string) => {
 }
 
 const getMembershipColor = (membership: string) => {
-  return 'bg-blue-100 text-blue-800'
+  return 'bg-emerald-100 text-emerald-800'
 }
 
 // --- Actions ---
@@ -111,21 +111,21 @@ const deleteMember = async (membership: Membership) => {
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <div class="flex items-center gap-3">
-        <button
-          @click="$router.back()"
+        <button 
+          @click="$router.back()" 
           class="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 text-gray-600 transition shadow-sm"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <div>
-          <h1 class="text-xl font-bold text-gray-800">Quản Lý Khách Hàng</h1>
-          <p class="text-xs text-gray-500">Quản lý thông tin và gói tập của khách hàng</p>
+          <h1 class="text-xl font-bold text-gray-800">Quản Lý Học Viên</h1>
+          <p class="text-xs text-gray-500">Quản lý thông tin và gói tập của học viên</p>
         </div>
       </div>
 
       <div class="flex gap-2">
-        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-semibold">
-          {{ filteredMemberships.length }} khách hàng
+        <span class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm font-semibold">
+          {{ filteredMemberships.length }} học viên
         </span>
       </div>
     </div>
@@ -139,14 +139,14 @@ const deleteMember = async (membership: Membership) => {
             v-model="searchQuery"
             type="text"
             placeholder="Tìm kiếm theo tên, email, số điện thoại..."
-            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
           />
         </div>
 
         <div class="relative">
           <select
             v-model="statusFilter"
-            class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white pr-10"
+            class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 appearance-none bg-white pr-10"
           >
             <option value="">Tất cả trạng thái</option>
             <option value="Active">Đang hoạt động</option>
@@ -171,7 +171,7 @@ const deleteMember = async (membership: Membership) => {
         <table class="w-full">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Khách Hàng</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Học Viên</th>
               <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Liên Hệ</th>
               <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Gói Tập</th>
               <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Trạng Thái</th>
@@ -183,7 +183,7 @@ const deleteMember = async (membership: Membership) => {
             <tr v-for="membership in filteredMemberships" :key="membership.id" class="hover:bg-gray-50 transition">
               <td class="px-6 py-4">
                 <div class="flex items-center">
-                  <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm mr-3">
+                  <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm mr-3">
                     {{ membership.member.fullName.charAt(0).toUpperCase() }}
                   </div>
                   <div>
@@ -220,8 +220,8 @@ const deleteMember = async (membership: Membership) => {
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                   <RouterLink
-                    :to="{ name: 'manager.customer-detail', params: { id: membership.member.id } }"
-                    class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition"
+                    :to="{ name: 'reception.customer-detail', params: { id: membership.member.id } }"
+                    class="inline-flex items-center px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-100 transition"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     Xem
@@ -241,7 +241,7 @@ const deleteMember = async (membership: Membership) => {
             <tr v-if="filteredMemberships.length === 0">
               <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-4 text-gray-300"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                <p>Không tìm thấy khách hàng nào phù hợp</p>
+                <p>Không tìm thấy học viên nào phù hợp</p>
               </td>
             </tr>
           </tbody>

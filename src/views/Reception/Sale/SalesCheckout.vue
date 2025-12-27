@@ -310,14 +310,14 @@ const handlePrint = () => {
                 <button 
                     @click="activeTab = 'product'"
                     class="flex-1 text-center font-medium text-sm transition-colors border-b-2 h-full flex items-center justify-center"
-                    :class="activeTab === 'product' ? 'border-blue-600 text-blue-600 bg-blue-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+                    :class="activeTab === 'product' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                 >
                     Sản phẩm <span v-if="productsList.length" class="ml-1 bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ productsList.length }}</span>
                 </button>
                 <button 
                     @click="activeTab = 'service'"
                     class="flex-1 text-center font-medium text-sm transition-colors border-b-2 h-full flex items-center justify-center"
-                    :class="activeTab === 'service' ? 'border-blue-600 text-blue-600 bg-blue-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
+                    :class="activeTab === 'service' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                 >
                     Dịch vụ <span v-if="servicesList.length" class="ml-1 bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ servicesList.length }}</span>
                 </button>

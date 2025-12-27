@@ -116,19 +116,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 py-8">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50 py-8">
     <div class="mx-auto max-w-7xl px-6">
       <!-- Header -->
       <div class="mb-8 flex items-center justify-between">
         <div>
-          <h1 class="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+          <h1 class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
             Danh Sách Bài Tập
           </h1>
           <p class="text-gray-600 mt-2">Quản lý và tìm kiếm các bài tập</p>
         </div>
         <button
           @click="goToCreate"
-          class="flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105"
+          class="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105"
         >
           <Plus class="w-5 h-5" />
           Tạo Bài Tập Mới
@@ -145,7 +145,7 @@ onMounted(() => {
               v-model="searchQuery"
               type="text"
               placeholder="Tìm kiếm bài tập..."
-              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none"
+              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
             />
           </div>
 
@@ -154,7 +154,7 @@ onMounted(() => {
             <Filter class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <select
               v-model="selectedMuscleGroup"
-              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none appearance-none bg-white"
+              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none appearance-none bg-white"
             >
               <option v-for="group in muscleGroups" :key="group" :value="group">
                 {{ group }}
@@ -166,7 +166,7 @@ onMounted(() => {
 
       <!-- Loading State -->
       <div v-if="isLoading" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
 
       <!-- Exercise Grid -->
@@ -179,12 +179,12 @@ onMounted(() => {
           <!-- Exercise Header -->
           <div class="flex items-start justify-between mb-4">
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
                 <Dumbbell class="w-6 h-6 text-white" />
               </div>
               <div>
                 <h3 class="text-lg font-bold text-gray-900">{{ exercise.name }}</h3>
-                <span class="text-sm text-red-600 font-medium">{{ exercise.muscleGroup }}</span>
+                <span class="text-sm text-emerald-600 font-medium">{{ exercise.muscleGroup }}</span>
               </div>
             </div>
           </div>
@@ -196,7 +196,7 @@ onMounted(() => {
 
           <!-- Creator Info -->
           <div class="text-xs text-gray-500 mb-4 pb-4 border-b border-gray-200">
-            <span v-if="isMyExercise(exercise)" class="text-red-600 font-semibold">
+            <span v-if="isMyExercise(exercise)" class="text-emerald-600 font-semibold">
               Của tôi
             </span>
             <span v-else>
@@ -208,7 +208,7 @@ onMounted(() => {
           <div class="flex gap-2">
             <button
               @click="viewExercise(exercise)"
-              class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors"
+              class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-100 transition-colors"
             >
               <Eye class="w-4 h-4" />
               Xem
@@ -239,7 +239,7 @@ onMounted(() => {
         <p class="text-gray-500 mb-6">Thử tìm kiếm với từ khóa khác hoặc tạo bài tập mới</p>
         <button
           @click="goToCreate"
-          class="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+          class="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
         >
           <Plus class="w-5 h-5" />
           Tạo Bài Tập Mới

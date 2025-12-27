@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <div class="flex items-center gap-3">
-        <UserPlus class="w-10 h-10 text-blue-600" />
-        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+        <UserPlus class="w-10 h-10 text-emerald-600" />
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
           Đăng Ký Lớp Học (Lễ Tân)
         </h1>
       </div>
@@ -27,17 +27,17 @@
           class="flex-1 flex items-center"
         >
           <div class="flex flex-col items-center flex-1">
-            <div 
+            <div
               class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all"
-              :class="currentStep >= step.number 
-                ? 'bg-blue-600 text-white' 
+              :class="currentStep >= step.number
+                ? 'bg-emerald-600 text-white'
                 : 'bg-gray-200 text-gray-500'"
             >
               {{ step.number }}
             </div>
-            <span 
+            <span
               class="text-xs mt-2 font-semibold text-center"
-              :class="currentStep >= step.number ? 'text-blue-600' : 'text-gray-500'"
+              :class="currentStep >= step.number ? 'text-emerald-600' : 'text-gray-500'"
             >
               {{ step.label }}
             </span>
@@ -45,7 +45,7 @@
           <div 
             v-if="step.number < steps.length"
             class="flex-1 h-1 mx-2"
-            :class="currentStep > step.number ? 'bg-blue-600' : 'bg-gray-200'"
+            :class="currentStep > step.number ? 'bg-emerald-600' : 'bg-gray-200'"
           ></div>
         </div>
       </div>
@@ -55,7 +55,7 @@
     <div v-if="currentStep === 1" class="space-y-6">
       <div class="bg-white rounded-2xl shadow-md p-6">
         <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <Dumbbell class="w-6 h-6 text-blue-600" />
+          <Dumbbell class="w-6 h-6 text-emerald-600" />
           Chọn Lớp Học
         </h2>
 
@@ -65,7 +65,7 @@
             <Filter class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <select 
               v-model="filterDifficulty"
-              class="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all appearance-none bg-white"
+              class="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 outline-none transition-all appearance-none bg-white"
             >
               <option value="">Tất cả độ khó</option>
               <option value="Beginner">Beginner</option>
@@ -76,11 +76,11 @@
           
           <div class="relative flex-1">
             <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input 
-              v-model="searchQuery" 
-              type="text" 
-              placeholder="Tìm kiếm lớp học..." 
-              class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Tìm kiếm lớp học..."
+              class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 outline-none transition-all"
             />
           </div>
         </div>
@@ -92,10 +92,10 @@
             :key="cls.id"
             @click="selectClass(cls)"
             class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden cursor-pointer border-2"
-            :class="selectedClass?.id === cls.id ? 'border-blue-600' : 'border-transparent'"
+            :class="selectedClass?.id === cls.id ? 'border-emerald-600' : 'border-transparent'"
           >
             <!-- Card Header -->
-            <div class="p-5 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+            <div class="p-5 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white">
               <div class="flex justify-between items-start">
                 <h3 class="text-xl font-bold">{{ cls.name }}</h3>
                 <span 
@@ -143,10 +143,10 @@
       </div>
 
       <div class="flex justify-end">
-        <button 
+        <button
           @click="currentStep = 2"
           :disabled="!selectedClass"
-          class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          class="px-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           Tiếp theo
           <ArrowRight class="w-5 h-5" />
@@ -158,14 +158,14 @@
     <div v-if="currentStep === 2" class="space-y-6">
       <div class="bg-white rounded-2xl shadow-md p-6">
         <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <Search class="w-6 h-6 text-blue-600" />
+          <Search class="w-6 h-6 text-emerald-600" />
           Tìm Học Viên
         </h2>
 
         <!-- Selected Class Info -->
-        <div class="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+        <div class="mb-6 p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl">
           <div class="flex items-center gap-3">
-            <Dumbbell class="w-6 h-6 text-blue-600" />
+            <Dumbbell class="w-6 h-6 text-emerald-600" />
             <div>
               <div class="font-bold text-gray-800">{{ selectedClass.name }}</div>
               <div class="text-sm text-gray-600">{{ selectedClass.startTime }} - {{ selectedClass.endTime }}</div>
