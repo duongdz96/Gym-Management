@@ -48,10 +48,10 @@ const saveCurrentWeight = async () => {
       await api.put(`/studentprofile/${selectedMember.value.id}`, payload);
       selectedMember.value.weight = tempCurrentWeight.value;
       isEditingWeight.value = false;
-      toast.success("Weight updated successfully!");
+      toast.success("Cập nhật cân nặng thành công!");
     } catch (error) {
       console.error("Error updating weight:", error);
-      toast.error("Failed to update weight. Please try again.");
+      toast.error("Không thể cập nhật cân nặng. Vui lòng thử lại.");
     }
   }
 };
@@ -91,22 +91,28 @@ const fetchUpcomingSessions = async (memberId) => {
 
 const fetchMemberPackages = async (memberId) => {
   try {
-    // Mock data for member packages - only basic package
-    const mockPackages = [
-      {
-        id: 1,
-        name: "Gói PT Cơ Bản",
-        totalSessions: 20,
-        usedSessions: 10,
-        status: "active",
-        expiryDate: "2025-03-15"
-      }
-    ];
-
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    memberPackages.value = mockPackages;
+    const res = await api.get("/packageissued");
+    const data = Array.isArray(res.data) ? res.data : [];
+    
+    // Filter packages for the selected member
+    const memberIssuedPackages = data.filter(pkg => pkg.member?.id === memberId);
+    
+    // Map to the expected format
+    memberPackages.value = memberIssuedPackages.map(pkg => {
+      const totalSessions = pkg.ptPackage?.sessions || 0;
+      const remainingSessions = pkg.remainingSessions || 0;
+      const usedSessions = totalSessions - remainingSessions;
+      
+      return {
+        id: pkg.id,
+        name: pkg.ptPackage?.name || 'Gói PT',
+        totalSessions: totalSessions,
+        usedSessions: usedSessions,
+        remainingSessions: remainingSessions,
+        status: pkg.ptPackage?.status === 'Active' ? 'active' : 'expired',
+        expiryDate: null // API doesn't provide expiry date
+      };
+    });
   } catch (error) {
     console.error("Error fetching member packages:", error);
     memberPackages.value = [];
@@ -159,7 +165,7 @@ onMounted(async () => {
     console.log("PT Members loaded:", members.value);
   } catch (error) {
     console.error('Failed to load PT members:', error);
-    toast.error("Failed to load members. Please try again.");
+    toast.error("Không thể tải danh sách học viên. Vui lòng thử lại.");
   }
 
   // Auto select first member
@@ -175,7 +181,7 @@ onMounted(async () => {
 <template>
   <div class="p-6 space-y-8">
     <!-- Title -->
-    <h1 class="text-2xl font-bold text-stone-800">Member List</h1>
+    <h1 class="text-2xl font-bold text-stone-800">Danh sách học viên</h1>
 
     <!-- Layout chính -->
     <div class="flex gap-6 h-screen">
@@ -214,8 +220,8 @@ onMounted(async () => {
           >
             <div class="font-medium text-gray-900">{{ member.name }}</div>
             <div class="text-sm text-gray-500">{{ member.email }}</div>
-            <div class="text-sm text-gray-500">Height: {{ member.height }} cm</div>
-            <div class="text-sm text-gray-500">Weight: {{ member.weight }} kg</div>
+            <div class="text-sm text-gray-500">Chiều cao: {{ member.height }} cm</div>
+            <div class="text-sm text-gray-500">Cân nặng: {{ member.weight }} kg</div>
           </div>
         </div>
       </div>
@@ -282,7 +288,7 @@ onMounted(async () => {
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Height</label
+                >Chiều cao</label
               >
               <p class="mt-1 text-lg text-gray-900">
                 {{ selectedMember.height }} cm
@@ -291,7 +297,7 @@ onMounted(async () => {
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >Training Plan</label
+              >Kế hoạch tập luyện</label
             >
             <p class="mt-1 text-lg text-gray-900">
               {{ selectedMember.trainingPlan }}
@@ -307,7 +313,7 @@ onMounted(async () => {
                 <div class="flex items-center justify-between">
                   <div>
                     <p class="text-sm font-medium text-gray-900">{{ pkg.name }}</p>
-                    <p class="text-xs text-gray-600">Hết hạn: {{ new Date(pkg.expiryDate).toLocaleDateString('vi-VN') }}</p>
+                    <p class="text-xs text-gray-600">Còn lại: {{ pkg.remainingSessions }} buổi</p>
                   </div>
                   <div class="text-right">
                     <p class="text-sm font-semibold text-emerald-600">{{ pkg.usedSessions }}/{{ pkg.totalSessions }} buổi</p>
@@ -327,9 +333,9 @@ onMounted(async () => {
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >Upcoming Sessions</label
+              >Buổi tập sắp tới</label
             >
-            <div v-if="upcomingSessions.length === 0" class="mt-1 text-gray-500">No upcoming sessions</div>
+            <div v-if="upcomingSessions.length === 0" class="mt-1 text-gray-500">Không có buổi tập sắp tới</div>
             <div v-else class="mt-1 space-y-2">
               <div v-for="session in upcomingSessions" :key="session.id" class="border rounded p-2 bg-gray-50">
                 <p class="text-sm font-medium">{{ new Date(session.startTime).toLocaleDateString() }}</p>
@@ -341,7 +347,7 @@ onMounted(async () => {
 
         </div>
         <div v-else class="text-center text-gray-500">
-          Select a member to view detailed information
+          Chọn một học viên để xem thông tin chi tiết
                     </div>
           </div>
         </div>
@@ -351,8 +357,8 @@ onMounted(async () => {
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No members found</h3>
-          <p class="mt-1 text-sm text-gray-500">Try adjusting your search terms.</p>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Không tìm thấy học viên</h3>
+          <p class="mt-1 text-sm text-gray-500">Thử điều chỉnh từ khóa tìm kiếm.</p>
         </div>
       </div>
 </template>

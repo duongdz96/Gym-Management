@@ -145,6 +145,9 @@ const fetchPTData = async () => {
     const appointmentsRes = await api.get('/appointment');
     const appointments = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : [];
 
+    const packageIssuedRes = await api.get('/packageissued');
+    const packageIssued = Array.isArray(packageIssuedRes.data) ? packageIssuedRes.data : [];
+
     // Filter profiles for the current PT
     const ptStudents = studentProfiles.filter(profile => profile.pt && profile.pt.id === authStore.user.id);
 
@@ -158,13 +161,20 @@ const fetchPTData = async () => {
       // Calculate completed sessions
       const completedSessions = memberAppointments.filter(appt => appt.status === 'Completed').length;
 
-      // Get package info from the most recent appointment
-      const latestAppointment = memberAppointments
-        .filter(appt => appt.ptPackageIssued)
-        .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))[0];
-
-      const totalSessions = latestAppointment?.ptPackageIssued?.ptPackage?.sessions || 12;
-      const remainingSessions = latestAppointment?.ptPackageIssued?.remainingSessions || totalSessions;
+      // Get package info for this member
+      const memberPackages = packageIssued.filter(pkg => pkg.member?.id === profile.member.id);
+      
+      let totalSessions = 0;
+      let remainingSessions = 0;
+      
+      if (memberPackages.length > 0) {
+        // Sum up all packages for this member
+        totalSessions = memberPackages.reduce((sum, pkg) => sum + (pkg.ptPackage?.sessions || 0), 0);
+        remainingSessions = memberPackages.reduce((sum, pkg) => sum + (pkg.remainingSessions || 0), 0);
+      } else {
+        totalSessions = 12; // Default fallback
+        remainingSessions = 12;
+      }
 
       // Calculate progress based on used sessions
       const usedSessions = totalSessions - remainingSessions;
@@ -211,13 +221,58 @@ const fetchPTData = async () => {
     ];
   }
 
-  // Mock data for upcoming appointments
-  upcomingAppointments.value = [
-    { student: 'Hoàng Văn E', time: '09:00', type: 'Tập cá nhân', date: 'Hôm nay' },
-    { student: 'Đặng Thị F', time: '14:00', type: 'Tư vấn dinh dưỡng', date: 'Hôm nay' },
-    { student: 'Vũ Văn G', time: '10:00', type: 'Tập cá nhân', date: 'Ngày mai' },
-    { student: 'Bùi Thị H', time: '15:30', type: 'Đánh giá tiến độ', date: 'Ngày mai' }
-  ];
+  // Fetch upcoming appointments from API
+  try {
+    const appointmentsRes = await api.get('/appointment');
+    const appointments = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : [];
+    
+    // Filter for this PT's upcoming appointments
+    const now = new Date();
+    const ptUpcomingAppointments = appointments
+      .filter(appt => 
+        appt.pt?.id === authStore.user.id && 
+        appt.status === 'Scheduled' &&
+        new Date(appt.startTime) > now
+      )
+      .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
+      .slice(0, 4); // Limit to 4 appointments
+
+    upcomingAppointments.value = ptUpcomingAppointments.map(appt => {
+      const startTime = new Date(appt.startTime);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const apptDay = new Date(startTime);
+      apptDay.setHours(0, 0, 0, 0);
+
+      let dateLabel = '';
+      if (apptDay.getTime() === today.getTime()) {
+        dateLabel = 'Hôm nay';
+      } else if (apptDay.getTime() === tomorrow.getTime()) {
+        dateLabel = 'Ngày mai';
+      } else {
+        dateLabel = startTime.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+      }
+
+      return {
+        student: appt.ptPackageIssued?.member?.fullName || 'Unknown',
+        time: startTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+        type: appt.ptPackageIssued?.ptPackage?.name || 'Tập cá nhân',
+        date: dateLabel
+      };
+    });
+
+  } catch (error) {
+    console.error('Error fetching upcoming appointments:', error);
+    // Fallback to mock data
+    upcomingAppointments.value = [
+      { student: 'Hoàng Văn E', time: '09:00', type: 'Tập cá nhân', date: 'Hôm nay' },
+      { student: 'Đặng Thị F', time: '14:00', type: 'Tư vấn dinh dưỡng', date: 'Hôm nay' },
+      { student: 'Vũ Văn G', time: '10:00', type: 'Tập cá nhân', date: 'Ngày mai' },
+      { student: 'Bùi Thị H', time: '15:30', type: 'Đánh giá tiến độ', date: 'Ngày mai' }
+    ];
+  }
   
   isLoading.value = false
   
