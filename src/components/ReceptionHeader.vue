@@ -57,10 +57,10 @@ const handleLogout = () => {
         </RouterLink>
 
         <RouterLink
-          to="/reception/class-registration"
+          :to="{ name: 'reception.pt-registration' }"
           class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-pink-300 transition-colors duration-300 rounded-md"
         >
-          <Calendar class="h-4 w-4" />
+          <Dumbbell class="h-4 w-4" />
           Đăng ký PT
         </RouterLink>
 

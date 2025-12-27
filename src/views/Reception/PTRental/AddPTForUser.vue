@@ -8,52 +8,53 @@ type Member = {
   fullName: string;
   email: string;
   phone?: string;
+  membership?: string;
 };
 
-// Định nghĩa Product cho Gói PT
-type ProductPT = {
-  id: number;
-  name: string;
-  type: string;
-  price: number;
-  importPrice: number | null;
-  brand: string | null;
-  quantity: number | null;
-  status: boolean;
-};
-
-// Định nghĩa Staff (PT)
-type Staff = {
+// Định nghĩa PT
+type PT = {
   id: number;
   fullName: string;
+  email: string;
+  phone?: string;
   role?: string;
 };
 
+// Định nghĩa Student Profile
+type StudentProfile = {
+  id: number;
+  height?: number;
+  weight?: number;
+  trainingPlan?: string;
+  member: Member;
+  pt: PT;
+};
+
 const members = ref<Member[]>([]);
-const ptProducts = ref<ProductPT[]>([]);
-const ptStaffs = ref<Staff[]>([]);
+const pts = ref<PT[]>([]);
+const studentProfiles = ref<StudentProfile[]>([]);
 const selectedMember = ref<Member | null>(null);
 const searchMember = ref("");
 
 // Form fields
-const selectedPTProduct = ref<ProductPT | null>(null);
-const startDate = ref("");
-const numberOfSessions = ref(1);
-const selectedPTStaff = ref<Staff | null>(null);
+const selectedPT = ref<PT | null>(null);
+const height = ref<number | null>(null);
+const weight = ref<number | null>(null);
+const trainingPlan = ref("");
 
 onMounted(async () => {
   try {
     // Load members
-    const memberRes = await api.get("/member");
+    const memberRes = await api.get("/members");
     members.value = memberRes.data;
 
-    // Load PT products
-    const productRes = await api.get("/product");
-    ptProducts.value = productRes.data.filter((p: ProductPT) => p.type === "PT");
+    // Load PTs
+    const ptsRes = await api.get("/pts");
+    pts.value = ptsRes.data;
 
-    // Load PT staffs
-    const staffRes = await api.get("/staff");
-    ptStaffs.value = staffRes.data; // Assuming all staffs, or filter if needed
+    // Load existing student profiles
+    const profilesRes = await api.get("/studentprofile");
+    studentProfiles.value = profilesRes.data;
   } catch (err) {
     console.error("Error fetching data:", err);
   }
@@ -67,39 +68,71 @@ const filteredMembers = computed(() => {
   );
 });
 
+// Check if member already has a PT assigned
+const getMemberProfile = (memberId: number) => {
+  return studentProfiles.value.find(profile => profile.member.id === memberId);
+};
+
 // Functions
 const selectMember = (member: Member) => {
   selectedMember.value = member;
-  // Reset form
-  selectedPTProduct.value = null;
-  startDate.value = "";
-  numberOfSessions.value = 1;
-  selectedPTStaff.value = null;
+  
+  // Check if member already has a profile and pre-fill the form
+  const existingProfile = getMemberProfile(member.id);
+  if (existingProfile) {
+    selectedPT.value = existingProfile.pt;
+    height.value = existingProfile.height || null;
+    weight.value = existingProfile.weight || null;
+    trainingPlan.value = existingProfile.trainingPlan || "";
+  } else {
+    // Reset form
+    selectedPT.value = null;
+    height.value = null;
+    weight.value = null;
+    trainingPlan.value = "";
+  }
 };
 
 const submitPTAssignment = async () => {
-  if (!selectedMember.value || !selectedPTProduct.value || !startDate.value || !selectedPTStaff.value) {
-    alert("Please fill all required fields!");
+  if (!selectedMember.value || !selectedPT.value) {
+    alert("Vui lòng chọn member và PT!");
     return;
   }
 
   try {
+    const existingProfile = getMemberProfile(selectedMember.value.id);
+    
     const payload = {
       member: { id: selectedMember.value.id },
-      ptPackage: { id: selectedPTProduct.value.id },
-      staff: { id: selectedPTStaff.value.id },
-      startDate: startDate.value,
-      numberOfSessions: numberOfSessions.value,
-      status: "active"
+      pt: { id: selectedPT.value.id },
+      height: height.value,
+      weight: weight.value,
+      trainingPlan: trainingPlan.value
     };
 
-    await api.post("/ptPackageIssued", payload);
-    alert("PT package assigned successfully!");
+    if (existingProfile) {
+      // Update existing profile
+      await api.put(`/api/studentprofile/${existingProfile.id}`, payload);
+      alert("Cập nhật PT cho member thành công!");
+    } else {
+      // Create new profile
+      await api.post("/api/studentprofile", payload);
+      alert("Đăng ký PT cho member thành công!");
+    }
+    
+    // Reload student profiles
+    const profilesRes = await api.get("/studentprofile");
+    studentProfiles.value = profilesRes.data;
+    
     // Reset
     selectedMember.value = null;
+    selectedPT.value = null;
+    height.value = null;
+    weight.value = null;
+    trainingPlan.value = "";
   } catch (err) {
     console.error("Error assigning PT:", err);
-    alert("Failed to assign PT package.");
+    alert("Đăng ký PT thất bại!");
   }
 };
 </script>
@@ -110,12 +143,12 @@ const submitPTAssignment = async () => {
       <!-- Bên trái: Danh sách Members -->
       <div class="lg:w-1/2 bg-white rounded-xl shadow-lg overflow-hidden">
         <div class="p-6 border-b border-gray-200">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">Select a Member</h2>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">Chọn Member</h2>
           <div class="relative">
             <input
               type="text"
               v-model="searchMember"
-              placeholder="Search member by name or email..."
+              placeholder="Tìm kiếm member theo tên hoặc email..."
               class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800
                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                      transition duration-200 ease-in-out"
@@ -145,75 +178,75 @@ const submitPTAssignment = async () => {
             </div>
           </div>
           <div v-else class="text-center text-gray-500 py-10">
-            No members found.
+            Không tìm thấy member nào.
           </div>
         </div>
       </div>
 
       <!-- Bên phải: Form thêm PT -->
       <div class="lg:w-1/2 bg-white rounded-xl shadow-lg flex flex-col">
-        <h2 class="text-2xl font-bold text-gray-800 p-6 border-b border-gray-200">Assign PT Package</h2>
+        <h2 class="text-2xl font-bold text-gray-800 p-6 border-b border-gray-200">Đăng ký PT cho Member</h2>
 
         <div class="flex-1 p-6">
           <div v-if="selectedMember" class="space-y-6">
             <div class="bg-blue-50 p-4 rounded-lg">
-              <h3 class="text-lg font-semibold text-gray-900">Selected Member</h3>
+              <h3 class="text-lg font-semibold text-gray-900">Member đã chọn</h3>
               <p class="text-gray-700">{{ selectedMember.fullName }}</p>
               <p class="text-gray-600">{{ selectedMember.email }}</p>
+              <p v-if="selectedMember.membership" class="text-xs text-blue-600 font-medium mt-1">
+                Gói: {{ selectedMember.membership }}
+              </p>
             </div>
 
             <form @submit.prevent="submitPTAssignment" class="space-y-4">
-              <!-- PT Package -->
+              <!-- Assigned PT -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">PT Package</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Chọn PT</label>
                 <select
-                  v-model="selectedPTProduct"
+                  v-model="selectedPT"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 >
-                  <option value="">Select a PT Package</option>
-                  <option v-for="pt in ptProducts" :key="pt.id" :value="pt">
-                    {{ pt.name }} - {{ pt.price.toLocaleString() }} đ
+                  <option :value="null">Chọn PT</option>
+                  <option v-for="pt in pts" :key="pt.id" :value="pt">
+                    {{ pt.fullName }} ({{ pt.email }})
                   </option>
                 </select>
               </div>
 
-              <!-- Start Date -->
+              <!-- Height -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                <input
-                  type="date"
-                  v-model="startDate"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <!-- Number of Sessions -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Sessions</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Chiều cao (m) - Tùy chọn</label>
                 <input
                   type="number"
-                  v-model.number="numberOfSessions"
-                  min="1"
+                  step="0.01"
+                  v-model.number="height"
+                  placeholder="Ví dụ: 1.75"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
                 />
               </div>
 
-              <!-- Assigned PT Staff -->
+              <!-- Weight -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Assigned PT Staff</label>
-                <select
-                  v-model="selectedPTStaff"
+                <label class="block text-sm font-medium text-gray-700 mb-2">Cân nặng (kg) - Tùy chọn</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  v-model.number="weight"
+                  placeholder="Ví dụ: 70.5"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Select PT Staff</option>
-                  <option v-for="staff in ptStaffs" :key="staff.id" :value="staff">
-                    {{ staff.fullName }}
-                  </option>
-                </select>
+                />
+              </div>
+
+              <!-- Training Plan -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Kế hoạch tập luyện - Tùy chọn</label>
+                <textarea
+                  v-model="trainingPlan"
+                  rows="4"
+                  placeholder="Ví dụ: Tập luyện tăng cơ 4 buổi/tuần, dinh dưỡng Calo thặng dư"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                ></textarea>
               </div>
 
               <!-- Submit Button -->
@@ -221,12 +254,12 @@ const submitPTAssignment = async () => {
                 type="submit"
                 class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
               >
-                Assign PT Package
+                {{ getMemberProfile(selectedMember.id) ? 'Cập nhật PT' : 'Đăng ký PT' }}
               </button>
             </form>
           </div>
           <div v-else class="text-center text-gray-500 py-10">
-            Select a member to assign a PT package.
+            Chọn member để đăng ký PT
           </div>
         </div>
       </div>
