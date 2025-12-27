@@ -34,9 +34,30 @@
         Chọn Buổi Học
       </h2>
 
+      <!-- Search & Filter -->
+      <div class="mb-4 flex gap-3">
+        <div class="relative flex-1">
+          <input 
+            v-model="sessionSearchQuery"
+            type="text" 
+            placeholder="Tìm kiếm lớp học..." 
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm"
+          />
+          <Search class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        </div>
+        <select 
+          v-model="sessionFilterStatus"
+          class="px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm bg-white focus:border-green-500"
+        >
+          <option value="all">Tất cả buổi học</option>
+          <option value="upcoming">Sắp tới</option>
+          <option value="today">Hôm nay</option>
+        </select>
+      </div>
+
       <!-- Sessions List -->
-      <div v-if="upcomingSessions.length > 0" class="grid gap-3">
-        <div v-for="session in upcomingSessions" :key="session.id" @click="selectSession(session)"
+      <div v-if="filteredSessions.length > 0" class="grid gap-3">
+        <div v-for="session in filteredSessions" :key="session.id" @click="selectSession(session)"
           class="flex items-center gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md" :class="session.id === selectedSession?.id
             ? 'border-green-600 bg-green-50'
             : 'border-gray-200 hover:border-green-300'">
@@ -104,7 +125,7 @@
               {{ formatScheduleTime(selectedSession.startTime) }} - {{ formatScheduleTime(selectedSession.endTime) }}
             </p>
           </div>
-          <button @click="selectedSession = null"
+          <button @click="handleBackToList"
             class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
             Đổi buổi học
           </button>
@@ -132,12 +153,24 @@
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-bold text-gray-800">Danh sách học viên</h3>
 
-          <button @click="finalizeSession" :disabled="finalizing || sessionFinalized"
-            class="px-4 py-2 bg-gradient-to-r text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            :class="sessionFinalized ? 'from-gray-500 to-gray-600' : 'from-orange-600 to-orange-700'">
-            <Lock class="w-4 h-4" />
-            {{ sessionFinalized ? 'Đã chốt sổ' : 'Chốt sổ & Auto Vắng' }}
+          <button @click="autoAbsent" :disabled="finalizing"
+            class="px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <AlertTriangle class="w-4 h-4" />
+            Auto Vắng
           </button>
+        </div>
+
+        <!-- Search Student -->
+        <div class="mb-4">
+          <div class="relative">
+            <input 
+              v-model="studentSearchQuery"
+              type="text" 
+              placeholder="Tìm kiếm học viên..." 
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm"
+            />
+            <Search class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          </div>
         </div>
 
         <!-- Loading -->
@@ -147,8 +180,8 @@
         </div>
 
         <!-- Students -->
-        <div v-else-if="registeredStudents.length > 0" class="space-y-3">
-          <div v-for="student in registeredStudents" :key="student.id" class="p-4 border-2 rounded-xl transition-all"
+        <div v-else-if="filteredStudents.length > 0" class="space-y-3">
+          <div v-for="student in filteredStudents" :key="student.id" class="p-4 border-2 rounded-xl transition-all"
             :class="getStudentAttendance(student.id)?.status === 'PRESENT'
               ? 'border-green-300 bg-green-50'
               : getStudentAttendance(student.id)?.status === 'ABSENT'
@@ -169,15 +202,15 @@
 
               <!-- Attendance Toggle -->
               <div class="flex items-center gap-2">
-                <button @click="markPresent(student)" :disabled="sessionFinalized"
-                  class="px-4 py-2 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                <button @click="markPresent(student)"
+                  class="px-4 py-2 rounded-lg font-semibold transition-all"
                   :class="getStudentAttendance(student.id)?.status === 'PRESENT'
                     ? 'bg-green-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-green-100'">
                   <Check class="w-5 h-5" />
                 </button>
-                <button @click="markAbsent(student)" :disabled="sessionFinalized"
-                  class="px-4 py-2 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                <button @click="markAbsent(student)"
+                  class="px-4 py-2 rounded-lg font-semibold transition-all"
                   :class="getStudentAttendance(student.id)?.status === 'ABSENT'
                     ? 'bg-red-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-red-100'">
@@ -189,17 +222,23 @@
             <!-- Notes -->
             <div v-if="getStudentAttendance(student.id)" class="mt-3">
               <textarea v-model="getStudentAttendance(student.id).notes" @blur="updateNotes(student)"
-                :disabled="sessionFinalized" placeholder="Ghi chú..."
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
+                placeholder="Ghi chú..."
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none transition-all"
                 rows="2"></textarea>
             </div>
           </div>
         </div>
 
         <!-- No Students -->
-        <div v-else class="text-center py-8 text-gray-500">
+        <div v-else-if="registeredStudents.length === 0" class="text-center py-8 text-gray-500">
           <Users class="w-12 h-12 text-gray-400 mx-auto mb-2" />
           <p>Chưa có học viên đăng ký</p>
+        </div>
+
+        <!-- No Search Results -->
+        <div v-else class="text-center py-8 text-gray-500">
+          <Search class="w-12 h-12 text-gray-400 mx-auto mb-2" />
+          <p>Không tìm thấy học viên nào</p>
         </div>
       </div>
     </div>
@@ -226,7 +265,9 @@ import {
   Check,
   X,
   Lock,
-  Users
+  Users,
+  Search,
+  AlertTriangle
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -244,6 +285,9 @@ const finalizing = ref(false);
 const sessionFinalized = ref(false);
 const roomsData = ref([]);
 const sessionStats = ref({});
+const sessionSearchQuery = ref('');
+const sessionFilterStatus = ref('all');
+const studentSearchQuery = ref('');
 
 const currentTeacherId = computed(() => {
   const user = authStore.user;
@@ -256,6 +300,45 @@ const presentCount = computed(() => {
 
 const absentCount = computed(() => {
   return attendanceRecords.value.filter(a => a.status === 'ABSENT').length;
+});
+
+const filteredSessions = computed(() => {
+  let result = [...upcomingSessions.value];
+
+  // Search filter
+  if (sessionSearchQuery.value) {
+    const query = sessionSearchQuery.value.toLowerCase();
+    result = result.filter(s => 
+      s.className.toLowerCase().includes(query) ||
+      s.roomName.toLowerCase().includes(query)
+    );
+  }
+
+  // Status filter
+  if (sessionFilterStatus.value === 'today') {
+    result = result.filter(s => isToday(s.date));
+  } else if (sessionFilterStatus.value === 'upcoming') {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    result = result.filter(s => new Date(s.date) > today);
+  }
+
+  // Sort by time (gần nhất trước)
+  result.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+
+  return result;
+});
+
+const filteredStudents = computed(() => {
+  if (!studentSearchQuery.value) {
+    return registeredStudents.value;
+  }
+
+  const query = studentSearchQuery.value.toLowerCase();
+  return registeredStudents.value.filter(s => 
+    s.name.toLowerCase().includes(query) ||
+    s.email.toLowerCase().includes(query)
+  );
 });
 
 const loadClassData = async () => {
@@ -385,7 +468,8 @@ const loadSessionData = async () => {
       sessionStats.value[selectedSession.value.id].attended = presentCount.value;
     }
 
-    sessionFinalized.value = selectedSession.value.status === 'CLOSED';
+    // Bỏ check sessionFinalized
+    // sessionFinalized.value = selectedSession.value.status === 'CLOSED';
 
   } catch (error) {
     console.error('Error:', error);
@@ -496,9 +580,8 @@ const updateNotes = async (student) => {
   }
 };
 
-const finalizeSession = async () => {
-  // Cảnh báo rõ ràng hơn
-  if (!confirm('Hành động này sẽ:\n1. Đánh dấu VẮNG (Absent) cho tất cả học viên chưa được điểm danh.\n2. KHÓA sổ buổi học này (không thể sửa đổi nữa).\n\nBạn chắc chắn chứ?')) {
+const autoAbsent = async () => {
+  if (!confirm('Đánh dấu VẮNG (Absent) cho tất cả học viên chưa được điểm danh?\n\nBạn chắc chắn chứ?')) {
     return;
   }
 
@@ -508,16 +591,10 @@ const finalizeSession = async () => {
 
     alert('✅ ' + response.data);
 
-    // Cập nhật trạng thái ngay lập tức để giao diện khóa lại
-    sessionFinalized.value = true;
-    if (selectedSession.value) {
-      selectedSession.value.status = 'CLOSED'; // Cập nhật local để ko cần load lại cả trang
-    }
-
     await loadSessionData(); // Tải lại để thấy danh sách những người vừa bị đánh vắng
   } catch (error) {
-    console.error('Error finalizing session:', error);
-    alert('❌ Lỗi khóa sổ: ' + (error.response?.data || error.message));
+    console.error('Error auto absent:', error);
+    alert('❌ Lỗi: ' + (error.response?.data || error.message));
   } finally {
     finalizing.value = false;
   }
@@ -560,6 +637,11 @@ const isToday = (dateStr) => {
 
 const goBack = () => {
   router.back();
+};
+
+const handleBackToList = async () => {
+  selectedSession.value = null; 
+  await loadClassData();
 };
 
 onMounted(() => {

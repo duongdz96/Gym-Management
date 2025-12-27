@@ -330,19 +330,19 @@ onMounted(() => {
                   Chọn tập
                 </button>
                 <button
-                  @click="openAssignModal(routine)"
+                  @click="confirmDelete(routine)"
                   class="flex items-center justify-center gap-2 bg-purple-50 text-purple-600 px-3 py-2 rounded-lg hover:bg-purple-100 transition-colors text-sm"
                 >
-                  <Users class="w-4 h-4" />
-                  Gán
+                  <Trash2 class="w-4 h-4" />
+                  Xóa
                 </button>
-                <button
+                <!-- <button
                   @click="confirmDelete(routine)"
                   class="col-span-2 flex items-center justify-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition-colors text-sm"
                 >
                   <Trash2 class="w-4 h-4" />
                   Xóa
-                </button>
+                </button> --> 
               </div>
             </div>
           </div>

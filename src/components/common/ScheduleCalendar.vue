@@ -22,6 +22,49 @@
       </div>
     </div>
 
+  </div> 
+
+<div v-if="upcomingSessions.length > 0" class="p-4 bg-blue-50/50 border-b border-blue-100">
+  <h3 class="text-sm font-bold text-blue-800 uppercase tracking-wide mb-3 flex items-center gap-2">
+    <Clock class="w-4 h-4" />
+    Sắp diễn ra ({{ currentMonth + 1 }}/{{ currentYear }})
+  </h3>
+  
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div 
+      v-for="session in upcomingSessions" 
+      :key="session.id"
+      class="bg-white p-3 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+      @click="openDayDetails(new Date(session.date))"
+    >
+      <div class="flex justify-between items-start mb-2">
+        <div class="flex flex-col">
+          <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md w-fit">
+            {{ formatDate(new Date(session.date)) }}
+          </span>
+          <span class="text-lg font-bold text-gray-800 mt-1">
+            {{ session.startTime }}
+          </span>
+        </div>
+        <div class="p-1.5 bg-gray-50 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors">
+          <ArrowRight class="w-4 h-4 text-gray-400 group-hover:text-white" />
+        </div>
+      </div>
+
+      <div>
+        <div class="font-semibold text-gray-700 truncate" :title="session.className">
+          {{ session.className }}
+        </div>
+        <div class="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
+          <MapPin class="w-3 h-3" />
+          <span class="truncate">{{ session.roomName || 'Chưa xếp phòng' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="p-4">
+
     <!-- Calendar Grid -->
     <div class="p-4">
       <!-- Days Header -->
@@ -157,6 +200,7 @@ import {
 import { getCalendarWeeks, formatDate as formatDisplayDate } from '@/views/Test/dateUtils.js';
 import unifiedApi from '@/services/unifiedClassApi.js';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { ArrowRight } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 
@@ -312,4 +356,25 @@ const formatDate = (date) => {
   // SỬA: Hiển thị tiêu đề modal đúng ngày local
   return formatDisplayDate(toLocalISOString(date)); 
 };
+
+const upcomingSessions = computed(() => {
+  const now = new Date();
+  
+  // 1. Lọc các buổi học có thời gian trong tương lai
+  const futureSessions = sessions.value.filter(s => {
+    // Tạo object Date từ date string và time string của session
+    const sessionTime = new Date(`${s.date}T${s.startTime}`);
+    return sessionTime > now;
+  });
+
+  // 2. Sắp xếp theo thời gian gần nhất trước
+  futureSessions.sort((a, b) => {
+    const timeA = new Date(`${a.date}T${a.startTime}`);
+    const timeB = new Date(`${b.date}T${b.startTime}`);
+    return timeA - timeB;
+  });
+
+  // 3. Chỉ lấy 3 buổi gần nhất
+  return futureSessions.slice(0, 3);
+});
 </script>

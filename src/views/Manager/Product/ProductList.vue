@@ -130,20 +130,33 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Loại sản phẩm</label>
-                <select v-model="form.type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white">
+                <select 
+                  v-model="form.type" 
+                  :disabled="isEditingMembership"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white"
+                  :class="{ 'bg-gray-100 cursor-not-allowed opacity-60': isEditingMembership }"
+                >
                   <option value="" disabled>Chọn loại</option>
-                  <option v-for="type in productTypes" :key="type" :value="type">{{ type }}</option>
+                  <option v-for="type in availableProductTypes" :key="type" :value="type">{{ type }}</option>
                 </select>
+                <p v-if="isEditingMembership" class="mt-1 text-xs text-gray-500 italic">
+                  Không thể thay đổi loại sản phẩm Membership
+                </p>
               </div>
-              <div>
+              <div v-if="form.type !== 'Membership'">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính</label>
                 <select v-model="form.unit" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white">
                   <option v-for="u in unitOptions" :key="u" :value="u">{{ u }}</option>
                 </select>
               </div>
-              <div>
+              <div v-if="form.type !== 'Membership'">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Thương hiệu</label>
                 <input v-model="form.brand" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+              </div>
+              <div v-if="form.type === 'Membership'" class="col-span-2">
+                <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+                  <span class="font-semibold">Lưu ý:</span> Membership là gói thành viên, không cần nhập thương hiệu và đơn vị tính.
+                </div>
               </div>
                <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Giá bán (VND)</label>
@@ -193,12 +206,21 @@
             <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
               <Trash2Icon class="h-6 w-6 text-red-600" />
             </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Xác nhận xóa</h3>
-            <p class="text-sm text-gray-500">Bạn có chắc chắn muốn xóa sản phẩm <span class="font-bold text-gray-800">"{{ productToDelete?.name }}"</span> không? Hành động này không thể hoàn tác.</p>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">{{ productToDelete?.type === 'Membership' ? 'Xác nhận vô hiệu hóa' : 'Xác nhận xóa' }}</h3>
+            <p class="text-sm text-gray-500">
+              <span v-if="productToDelete?.type === 'Membership'">
+                Bạn có chắc chắn muốn vô hiệu hóa sản phẩm Membership <span class="font-bold text-gray-800">"{{ productToDelete?.name }}"</span> không? Sản phẩm sẽ được đánh dấu là Inactive.
+              </span>
+              <span v-else>
+                Bạn có chắc chắn muốn xóa sản phẩm <span class="font-bold text-gray-800">"{{ productToDelete?.name }}"</span> không? Hành động này không thể hoàn tác.
+              </span>
+            </p>
           </div>
           <div class="bg-gray-50 px-6 py-4 flex justify-center gap-3">
             <button @click="closeDeleteModal" class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors">Hủy bỏ</button>
-            <button @click="handleDelete" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors shadow-sm">Xóa bỏ</button>
+            <button @click="handleDelete" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors shadow-sm">
+              {{ productToDelete?.type === 'Membership' ? 'Vô hiệu hóa' : 'Xóa bỏ' }}
+            </button>
           </div>
         </div>
       </div>
@@ -268,6 +290,21 @@ const filteredProducts = computed(() => {
 
 const productTypes = ['Thực phẩm bổ sung', 'Phụ kiện', 'Quần áo', 'Thiết bị', 'PT', 'Membership', 'Khác'];
 const unitOptions = ['Cái', 'Hộp', 'Đôi', 'Bộ', 'Gói', 'Khác'];
+
+// Computed: Loại bỏ Membership khi tạo mới
+const availableProductTypes = computed(() => {
+  if (isEditing.value && form.type === 'Membership') {
+    // Khi edit Membership, vẫn hiển thị tất cả nhưng sẽ disable
+    return productTypes;
+  }
+  // Khi tạo mới, loại bỏ Membership
+  return productTypes.filter(type => type !== 'Membership');
+});
+
+// Computed: Kiểm tra có phải đang edit Membership không
+const isEditingMembership = computed(() => {
+  return isEditing.value && form.type === 'Membership';
+});
 
 const form = reactive({
   id: null,
@@ -345,10 +382,24 @@ const handleSubmit = async () => {
     return;
   }
 
+  // Validation: Không cho tạo mới với type = Membership
+  if (!isEditing.value && form.type === 'Membership') {
+    toast.error("Không thể tạo sản phẩm với loại Membership!");
+    return;
+  }
+
   try {
       if (isEditing.value) {
-        // Pass boolean status
-        await inventoryStore.updateProduct({ ...form });
+        // Khi edit Membership, giữ nguyên type (không cho đổi)
+        const updateData = { ...form };
+        if (isEditingMembership.value) {
+          // Đảm bảo type không bị thay đổi
+          const originalProduct = inventoryStore.products.find(p => p.id === form.id);
+          if (originalProduct) {
+            updateData.type = originalProduct.type;
+          }
+        }
+        await inventoryStore.updateProduct(updateData);
         toast.success("Cập nhật thành công!");
       } else {
         await inventoryStore.addProduct({ ...form, imageFile: imageFile.value });
@@ -371,11 +422,27 @@ const closeDeleteModal = () => {
   productToDelete.value = null;
 };
 
-const handleDelete = () => {
-  if (productToDelete.value) {
-    inventoryStore.deleteProduct(productToDelete.value.id);
-    toast.success("Xóa sản phẩm thành công!");
+const handleDelete = async () => {
+  if (!productToDelete.value) return;
+
+  try {
+    // Nếu là Membership, chỉ update status (soft delete)
+    if (productToDelete.value.type === 'Membership') {
+      await inventoryStore.updateProduct({
+        ...productToDelete.value,
+        status: true // Set inactive (soft delete)
+      });
+      toast.success("Đã vô hiệu hóa sản phẩm Membership!");
+    } else {
+      // Các loại khác xóa bình thường
+      await inventoryStore.deleteProduct(productToDelete.value.id);
+      toast.success("Xóa sản phẩm thành công!");
+    }
     closeDeleteModal();
+    inventoryStore.fetchProducts();
+  } catch (error) {
+    console.error(error);
+    toast.error("Có lỗi xảy ra khi xóa sản phẩm!");
   }
 };
 

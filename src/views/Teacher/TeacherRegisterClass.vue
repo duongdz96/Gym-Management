@@ -111,7 +111,7 @@
           </div>
 
           <!-- Application Status -->
-          <!-- <div 
+          <div 
             v-if="getApplicationStatus(cls.id)" 
             class="p-3 border-2 rounded-xl font-semibold text-sm text-center flex items-center justify-center gap-2 relative group cursor-help transition-all"
             :class="{
@@ -137,7 +137,7 @@
               {{ getRejectionReason(cls.id) }}
               <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-800"></div>
             </div>
-          </div> -->
+          </div>
         </div>
         
         <!-- Card Footer -->

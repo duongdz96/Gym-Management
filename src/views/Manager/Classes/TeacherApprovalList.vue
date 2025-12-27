@@ -151,22 +151,39 @@
                 </div>
 
                 <!-- Conflict Check -->
-                <div v-if="app.status === 'pending'">
-                  <div v-if="!conflictMap[app.id] || conflictMap[app.id].length === 0" class="p-2 bg-green-100 border border-green-300 rounded-lg text-green-700 text-sm font-semibold flex items-center gap-2">
-                    <CheckCircle class="w-4 h-4" />
-                    Không có xung đột lịch
+                <div v-if="app.status === 'pending'" class="mb-3">
+                  <div v-if="!conflictMap[app.id] || conflictMap[app.id].length === 0" 
+                       class="p-2.5 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm font-medium flex items-center gap-2">
+                    <CheckCircle class="w-4 h-4 text-green-600" />
+                    <span>Không có xung đột lịch</span>
                   </div>
-                  <div v-else class="p-2 bg-orange-100 border border-orange-300 rounded-lg text-orange-700 text-sm">
-                    <div class="flex items-center gap-2 font-semibold mb-1">
+
+                  <div v-else class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <div class="flex items-center gap-2 text-orange-800 font-semibold mb-2 text-sm">
                       <AlertCircle class="w-4 h-4" />
-                      Giáo viên có lịch trùng:
+                      <span>Giáo viên đang vướng lịch:</span>
                     </div>
-                    <div class="mt-1 space-y-1 text-xs ml-6">
-                      <div v-for="(conflict, idx) in conflictMap[app.id]" :key="idx" class="flex items-center gap-1">
-                        <Calendar class="w-3 h-3" />
-                        {{ conflict.date }}: {{ conflict.time }} - {{ conflict.className }}
-                      </div>
-                    </div>
+                    
+                    <ul class="space-y-2">
+                      <li v-for="(conflict, idx) in conflictMap[app.id]" :key="idx" 
+                          class="bg-white/60 p-2 rounded border border-orange-100 text-xs text-gray-700">
+                        <div class="font-bold text-orange-900 mb-1 flex items-center gap-1">
+                          <BookOpen class="w-3 h-3" />
+                          {{ conflict.className }}
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-3 pl-1">
+                          <span class="flex items-center gap-1 bg-orange-100 px-1.5 py-0.5 rounded text-orange-800 font-medium">
+                            <Clock class="w-3 h-3" />
+                            {{ conflict.time }}
+                          </span>
+                          <span class="flex items-center gap-1 text-gray-600">
+                            <Calendar class="w-3 h-3" />
+                            {{ conflict.date }}
+                          </span>
+                        </div>
+                      </li>
+                    </ul>
                   </div>
                 </div>
 
@@ -452,25 +469,28 @@ const checkTeacherConflict = async (app) => {
 };
 
 const schedulesOverlap = (class1, class2) => {
-  // Check time overlap
+  const start1 = new Date(class1.startDate);
+  const end1 = new Date(class1.endDate);
+  const start2 = new Date(class2.startDate);
+  const end2 = new Date(class2.endDate);
+
+  const isDateOverlap = start1 <= end2 && end1 >= start2;
+  if (!isDateOverlap) return false;
+
   const time1Start = class1.startTime;
   const time1End = class1.endTime;
   const time2Start = class2.startTime;
   const time2End = class2.endTime;
   
-  const timeOverlap = time1Start < time2End && time1End > time2Start;
-  if (!timeOverlap) return false;
-  
-  // Check day overlap based on pattern type
+  const isTimeOverlap = time1Start < time2End && time1End > time2Start;
+  if (!isTimeOverlap) return false;
+
   if (class1.patternType === 'weekly' && class2.patternType === 'weekly') {
-    // Check if any days overlap
     const days1 = class1.daysOfWeek || [];
     const days2 = class2.daysOfWeek || [];
     return days1.some(d => days2.includes(d));
   }
-  
-  // For other patterns, would need more complex logic
-  // For now, assume they might conflict
+
   return true;
 };
 

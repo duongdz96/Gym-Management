@@ -74,6 +74,7 @@ import RoomManagement from "@/views/Manager/Classes/RoomManagement.vue";
 import TeacherApprovalList from "@/views/Manager/Classes/TeacherApprovalList.vue";
 import ManagerLeaveApproval from "@/views/Manager/Classes/ManagerLeaveApproval.vue";
 import TeacherAttendance from "@/views/Teacher/Classes/TeacherAttendance.vue";
+import StaffInformation from "@/views/Manager/Staff/StaffInformation.vue";
 
 const routes = [
     {
@@ -102,6 +103,7 @@ const routes = [
             { path: "dashboard", name: "manager.dashboard.full", component: ManagerDashboard },
             { path: "staff", name: "staff", component: Staff },
             { path: "staff/add", name: "staff.add", component: AddStaff },
+            { path: "staff/:id", name: "staff.information", component: StaffInformation },
             { path: "customer", name: "customer", component: Customer },
             { path: "customer/:id", name: "manager.customer-detail", component: ManagerCustomerDetail },
             { path: "customer-checkin-history", name: "manager.customer-checkin-history", component: ManagerCustomerCheckinHistory },
