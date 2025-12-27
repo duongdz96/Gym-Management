@@ -820,13 +820,26 @@ const selectedClassStudents = computed(() => {
   if (!selectedClass.value) return [];
   // Get all student registrations and filter by class
   const registrations = registrationsData.value.filter(r => r.classId === selectedClass.value.id && r.status === 'active');
-  return registrations.map(r => {
-    const student = studentsData.value.find(s => s.id === r.studentId);
-    return {
-      ...student,
-      registeredAt: r.registeredAt
-    };
+  
+  // Dùng Map để loại bỏ học viên trùng lặp (vì 1 học viên có thể đăng ký nhiều buổi)
+  const uniqueStudentsMap = new Map();
+  
+  registrations.forEach(r => {
+    // Chỉ thêm vào Map nếu chưa có, hoặc nếu registeredAt mới hơn
+    if (!uniqueStudentsMap.has(r.studentId) || 
+        new Date(r.registeredAt) < new Date(uniqueStudentsMap.get(r.studentId).registeredAt)) {
+      const student = studentsData.value.find(s => s.id === r.studentId);
+      if (student) {
+        uniqueStudentsMap.set(r.studentId, {
+          ...student,
+          registeredAt: r.registeredAt
+        });
+      }
+    }
   });
+  
+  // Chuyển Map thành Array
+  return Array.from(uniqueStudentsMap.values());
 });
 
 // Methods
@@ -935,7 +948,15 @@ const getTeacherName = (teacherId) => {
 };
 
 const getEnrolledCount = (classId) => {
-  return registrationsData.value.filter(r => r.classId === classId && r.status === 'active').length;
+  const classRegistrations = registrationsData.value.filter(r => 
+    r.classId === classId && r.status === 'active'
+  );
+  
+  const studentIds = classRegistrations.map(r => r.studentId);
+
+  const uniqueStudents = new Set(studentIds);
+  
+  return uniqueStudents.size;
 };
 
 const getScheduleText = (cls) => {

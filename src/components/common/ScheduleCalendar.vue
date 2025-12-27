@@ -297,6 +297,46 @@ const loadSchedule = async () => {
         isRegistered: registeredScheduleIds.value.has(s.id)
       };
     });
+    
+    // Fetch thông tin teacher cho student schedule (vì MemberRegistration không có teacher)
+    if (props.role === 'student' && sessions.value.length > 0) {
+      console.log('🔍 Fetching teacher info for student schedule...');
+      
+      // Lấy danh sách unique fitnessClassId
+      const uniqueFitnessClassIds = [...new Set(sessions.value.map(s => s.fitnessClassId || s.classId).filter(Boolean))];
+      console.log('Unique fitness class IDs:', uniqueFitnessClassIds);
+      
+      // Tạo map để lưu teacher theo fitnessClassId
+      const teacherMap = new Map();
+      
+      // Fetch teacher info cho từng fitness class
+      for (const fitnessClassId of uniqueFitnessClassIds) {
+        try {
+          const classRegistrations = await unifiedApi.getTeachersByFitnessClass(fitnessClassId);
+          console.log(`Class ${fitnessClassId} teachers:`, classRegistrations);
+          
+          // Lấy teacher đầu tiên (hoặc teacher có status APPROVED)
+          const approvedReg = classRegistrations.find(r => r.status === 'APPROVED') || classRegistrations[0];
+          if (approvedReg && approvedReg.teacher) {
+            teacherMap.set(fitnessClassId, approvedReg.teacher.fullName || approvedReg.teacher.name);
+          }
+        } catch (error) {
+          console.error(`Error fetching teacher for class ${fitnessClassId}:`, error);
+        }
+      }
+      
+      // Merge teacher info vào sessions
+      sessions.value = sessions.value.map(s => {
+        const fitnessClassId = s.fitnessClassId || s.classId;
+        const teacherName = teacherMap.get(fitnessClassId);
+        return {
+          ...s,
+          teacherName: teacherName || s.teacherName || 'Chưa có giáo viên'
+        };
+      });
+      
+      console.log('✅ Teacher info merged:', sessions.value.slice(0, 3));
+    }
   } catch (error) {
     console.error('Error loading schedule:', error);
     sessions.value = [];

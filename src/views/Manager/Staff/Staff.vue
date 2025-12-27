@@ -60,7 +60,8 @@ const formatDate = (dateString: string) => {
         />
         <select v-model="roleFilter" class="px-3 py-2 border rounded-lg mr-2">
           <option value="">All Roles</option>
-          <option value="STAFF">Staff</option>
+          <option value="PT">PT</option>
+          <option value="TEACHER">Teacher</option>
           <option value="MANAGER">Manager</option>
           <option value="RECEPTIONIST">Receptionist</option>
         </select>

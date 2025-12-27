@@ -657,6 +657,31 @@ export const unifiedApi = {
     }
   },
 
+  // Get teachers by fitness class ID (from ClassRegistration)
+  getTeachersByFitnessClass: async (fitnessClassId) => {
+    if (USE_REAL_API) {
+      try {
+        const registrations = await apiService.classRegistration.getByFitnessClass(fitnessClassId);
+        return registrations;
+      } catch (error) {
+        console.error(`Error getting teachers for fitness class ${fitnessClassId}:`, error);
+        return [];
+      }
+    } else {
+      // Mock data version
+      const registrations = classRegistrationsData.filter(cr => cr.fitnessClassId === fitnessClassId);
+      return registrations.map(reg => {
+        const teacher = getTeacher(reg.staffId);
+        return {
+          id: reg.id,
+          teacher: teacher,
+          status: reg.status,
+          fitnessClass: { id: fitnessClassId }
+        };
+      });
+    }
+  },
+
   getStudents: async () => {
     if (USE_REAL_API) {
       const data = await apiService.member.getAll();

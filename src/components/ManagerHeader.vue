@@ -154,12 +154,12 @@ const handleLogout = () => {
               >
                 Duyệt giáo viên
               </RouterLink>
-              <RouterLink
+              <!-- <RouterLink
                 to="/manager/leave-approval"
                 class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
               >
                 Duyệt nghỉ phép
-              </RouterLink>
+              </RouterLink> -->
             </div>
           </transition>
         </div>
