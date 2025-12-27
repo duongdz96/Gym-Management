@@ -91,7 +91,7 @@ const formatTime = (timeString: string) => {
               v-model="searchStaff"
               placeholder="Search staff by name or email..."
               class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                     focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
                      transition duration-200 ease-in-out"
             />
             <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
@@ -109,7 +109,7 @@ const formatTime = (timeString: string) => {
               :class="[
                 'p-4 rounded-lg cursor-pointer transition-colors border',
                 selectedStaff?.id === staff.id
-                  ? 'bg-blue-100 border-blue-300'
+                  ? 'bg-emerald-100 border-emerald-300'
                   : 'bg-gray-50 hover:bg-gray-100',
               ]"
             >
@@ -130,7 +130,7 @@ const formatTime = (timeString: string) => {
 
         <div class="flex-1 p-6">
           <div v-if="selectedStaff" class="space-y-6">
-            <div class="bg-blue-50 p-4 rounded-lg">
+            <div class="bg-emerald-50 p-4 rounded-lg">
               <h3 class="text-lg font-semibold text-gray-900">Selected Staff</h3>
               <p class="text-gray-700">{{ selectedStaff.fullName }}</p>
               <p class="text-gray-600">{{ selectedStaff.email }}</p>
@@ -143,7 +143,7 @@ const formatTime = (timeString: string) => {
                 <select
                   v-model="selectedMonth"
                   @change="fetchAttendanceHistory"
-                  class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option v-for="m in 12" :key="m" :value="m">{{ m }}</option>
                 </select>
@@ -153,7 +153,7 @@ const formatTime = (timeString: string) => {
                 <select
                   v-model="selectedYear"
                   @change="fetchAttendanceHistory"
-                  class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option v-for="y in 10" :key="y" :value="new Date().getFullYear() - 10 + y">{{ new Date().getFullYear() - 10 + y }}</option>
                 </select>

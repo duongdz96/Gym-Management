@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import api from '@/services/api'
+import { useToast } from 'vue-toastification'
 
 
 type User = {
@@ -40,9 +41,29 @@ const formatDate = (dateString: string) => {
   if (!dateString) return 'N/A'
   try {
     const date = new Date(dateString)
-    return date.toLocaleDateString('vi-VN') 
+    return date.toLocaleDateString('vi-VN')
   } catch (error) {
-    return dateString 
+    return dateString
+  }
+}
+
+const deleteStaff = async (user: User) => {
+  if (!confirm(`Bạn có chắc chắn muốn xóa nhân viên "${user.fullName}"?`)) {
+    return
+  }
+
+  try {
+    await api.delete(`/users/${user.id}`)
+    // Remove from local state
+    const index = users.value.findIndex(u => u.id === user.id)
+    if (index > -1) {
+      users.value.splice(index, 1)
+    }
+
+    useToast().success('Xóa nhân viên thành công')
+  } catch (err) {
+    console.error('Error deleting staff:', err)
+    useToast().error('Không thể xóa nhân viên. Vui lòng thử lại.')
   }
 }
 </script>
@@ -50,25 +71,25 @@ const formatDate = (dateString: string) => {
 <template>
   <div class="space-y-4 p-4">
     <div class="flex justify-between items-center">
-      <h1 class="text-xl font-semibold">Staff</h1>
+      <h1 class="text-xl font-semibold">Quản Lý Nhân Viên</h1>
       <div>
         <input
           v-model="search"
           type="text"
-          placeholder="Search by staff name"
+          placeholder="Tìm kiếm theo tên nhân viên"
           class="px-3 py-2 border rounded-lg mr-2"
         />
         <select v-model="roleFilter" class="px-3 py-2 border rounded-lg mr-2">
-          <option value="">All Roles</option>
-          <option value="STAFF">Staff</option>
-          <option value="MANAGER">Manager</option>
-          <option value="RECEPTIONIST">Receptionist</option>
+          <option value="">Tất cả vai trò</option>
+          <option value="STAFF">Nhân viên</option>
+          <option value="MANAGER">Quản lý</option>
+          <option value="RECEPTIONIST">Lễ tân</option>
         </select>
         <RouterLink
           :to= "{name: 'staff.add'}"
-          class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:opacity-90"
+          class="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:opacity-90"
         >
-          Add
+          Thêm mới
         </RouterLink>
       </div>
     </div>
@@ -78,34 +99,34 @@ const formatDate = (dateString: string) => {
         <thead class="bg-gray-50">
           <tr>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Họ tên</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date of Birth</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số điện thoại</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giới tính</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày sinh</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vai trò</th>
+            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 bg-white">
           <tr v-if="filteredUsers.length === 0">
-            <td colspan="8" class="px-4 py-3 text-center text-sm text-gray-500">No staff found</td>
+            <td colspan="8" class="px-4 py-3 text-center text-sm text-gray-500">Không tìm thấy nhân viên nào</td>
           </tr>
           <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50">
             <td class="px-4 py-3 text-sm text-gray-600">{{ user.id }}</td>
-            <td class="px-4 py-3 text-sm text-blue-600 hover:underline hover:cursor-pointer">{{ user.fullName }}</td>
+            <td class="px-4 py-3 text-sm text-emerald-600 hover:underline hover:cursor-pointer">{{ user.fullName }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ user.email }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ user.phone }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ user.gender }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ formatDate(user.dob) }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">
-              <span 
+              <span
                 :class="[
                   'px-2 py-0.5 rounded-full text-xs font-medium',
-                  user.role === 'MANAGER' ? 'bg-red-100 text-red-800' :
-                  user.role === 'RECEPTIONIST' ? 'bg-blue-100 text-blue-800' :
-                  user.role === 'PT' ? 'bg-green-100 text-green-500' :
-                  user.role === 'TEACHER' ? 'bg-yellow-100 text-yellow-400' :
+                  user.role === 'MANAGER' ? 'bg-blue-100 text-blue-800' :
+                  user.role === 'RECEPTIONIST' ? 'bg-purple-100 text-purple-800' :
+                  user.role === 'PT' ? 'bg-emerald-100 text-emerald-800' :
+                  user.role === 'TEACHER' ? 'bg-amber-100 text-amber-800' :
                   'bg-gray-100 text-gray-800'
                 ]"
               >
@@ -113,15 +134,31 @@ const formatDate = (dateString: string) => {
               </span>
             </td>
             <td class="px-4 py-3 text-sm text-center">
-              <RouterLink 
-                :to="`staff/${user.id}`" 
-                class="px-2 py-1 rounded bg-green-600 text-white mr-2 hover:bg-green-700 hover:cursor-pointer"
-              >
-                Select
-              </RouterLink>
-              <button class="px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700 hover:cursor-pointer">
-                Delete
-              </button>
+              <div class="flex items-center justify-center gap-2">
+                <RouterLink
+                  :to="`staff/${user.id}/edit`"
+                  class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                  title="Chỉnh sửa"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </RouterLink>
+
+                <RouterLink
+                  :to="`staff/${user.id}`"
+                  class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                  title="Xem chi tiết"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </RouterLink>
+
+                <button
+                  @click="deleteStaff(user)"
+                  class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                  title="Xóa"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>

@@ -87,32 +87,32 @@ const handleCancel = () => {
         
         <div>
           <label class="block text-sm font-medium text-gray-700">Full Name</label>
-          <input v-model="fullName" type="text" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+          <input v-model="fullName" type="text" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700">Email</label>
-          <input v-model="email" type="email" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+          <input v-model="email" type="email" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700">Password</label>
-          <input v-model="password" type="password" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+          <input v-model="password" type="password" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700">Phone</label>
-          <input v-model="phone" type="tel" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+          <input v-model="phone" type="tel" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
-          <input v-model="dob" type="date" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+          <input v-model="dob" type="date" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700">Gender</label>
-          <select v-model="gender" class="mt-1 p-2 w-full border rounded-md shadow-sm bg-white focus:ring-blue-500 focus:border-blue-500">
+          <select v-model="gender" class="mt-1 p-2 w-full border rounded-md shadow-sm bg-white focus:ring-emerald-500 focus:border-emerald-500">
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
@@ -121,7 +121,7 @@ const handleCancel = () => {
 
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-700">Role</label>
-          <select v-model="role" class="mt-1 p-2 w-full border rounded-md shadow-sm bg-white focus:ring-blue-500 focus:border-blue-500">
+          <select v-model="role" class="mt-1 p-2 w-full border rounded-md shadow-sm bg-white focus:ring-emerald-500 focus:border-emerald-500">
             <option value="TEACHER">Teacher</option>
             <option value="PT">PT</option>
             <option value="RECEPTIONIST">Receptionist</option>
@@ -157,10 +157,10 @@ const handleCancel = () => {
         >
           Cancel
         </button>
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           :disabled="isLoading"
-          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition"
+          class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 transition"
         >
           {{ isLoading ? 'Saving...' : 'Add Employee' }}
         </button>

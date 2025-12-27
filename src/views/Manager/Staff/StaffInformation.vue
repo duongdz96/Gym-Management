@@ -138,8 +138,8 @@ const goBack = () => {
 .form-input:focus {
   outline: 2px solid transparent;
   outline-offset: 2px;
-  border-color: #2563EB; /* blue-600 */
-  box-shadow: 0 0 0 2px #BFDBFE; /* ring-blue-200 */
+  border-color: #059669; /* emerald-600 */
+  box-shadow: 0 0 0 2px #A7F3D0; /* ring-emerald-200 */
 }
 </style>
 
@@ -159,8 +159,8 @@ const goBack = () => {
           <span 
             :class="[
               'px-3 py-0.5 rounded-full text-sm font-medium mt-1 inline-block',
-              (isEditing ? editData.role : user.role) === 'MANAGER' ? 'bg-yellow-100 text-yellow-800' :
-              (isEditing ? editData.role : user.role) === 'STAFF' ? 'bg-blue-100 text-blue-800' :
+              (isEditing ? editData.role : user.role) === 'MANAGER' ? 'bg-emerald-100 text-emerald-800' :
+              (isEditing ? editData.role : user.role) === 'STAFF' ? 'bg-emerald-200 text-emerald-700' :
               (isEditing ? editData.role : user.role) === 'RECEPTIONIST' ? 'bg-green-100 text-green-800' :
               'bg-gray-100 text-gray-800'
             ]"
@@ -179,7 +179,7 @@ const goBack = () => {
             </button>
             <button
               @click="startEditing"
-              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+              class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition"
             >
               Edit
             </button>
@@ -272,7 +272,7 @@ const goBack = () => {
 
             <div class="md:col-span-2">
               <dt class="text-sm font-medium text-gray-500 mb-1">Hire Price</dt>
-              <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900 font-semibold text-blue-600">{{ formatPrice(user.hirePrice) }}</dd>
+              <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900 font-semibold text-emerald-600">{{ formatPrice(user.hirePrice) }}</dd>
               <input v-else v-model.number="editData.hirePrice" type="number" min="0" class="form-input" />
             </div>
 

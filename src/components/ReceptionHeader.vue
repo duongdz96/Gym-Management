@@ -20,15 +20,18 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <header class="w-full bg-gradient-to-r from-emerald-700 to-emerald-800 shadow-lg relative z-50">
-    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+  <header class="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 shadow-lg relative z-50">
+    <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-transparent to-cyan-500/20"></div>
+    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between relative z-10">
       <!-- Logo -->
       <div class="flex items-center gap-3">
         <RouterLink
           to="/reception"
           class="inline-flex items-center gap-2 hover:opacity-90 transition"
         >
-          <Dumbbell class="h-8 w-8 text-emerald-500" />
+          <div class="h-8 w-8 rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-500 flex items-center justify-center shadow-lg">
+            <Dumbbell class="h-5 w-5 text-white" />
+          </div>
           <span class="font-bold text-white tracking-wider uppercase">
             Quản lý Gym
           </span>
@@ -39,7 +42,7 @@ const handleLogout = () => {
       <nav class="flex items-center gap-8 text-sm font-medium">
         <RouterLink
           :to="{ name: 'salesselect' }"
-          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:bg-emerald-600/20 hover:text-emerald-400 transition rounded-md"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-yellow-300 transition-colors duration-300 rounded-md"
         >
           <ShoppingCart class="h-4 w-4" />
           Bán hàng
@@ -47,7 +50,7 @@ const handleLogout = () => {
 
         <RouterLink
           :to="{ name: 'add-membership' }"
-          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:bg-emerald-600/20 hover:text-emerald-400 transition rounded-md"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-orange-300 transition-colors duration-300 rounded-md"
         >
           <UserPlus class="h-4 w-4" />
           Thêm thành viên
@@ -55,7 +58,7 @@ const handleLogout = () => {
 
         <RouterLink
           to="/reception/class-registration"
-          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:bg-emerald-600/20 hover:text-emerald-400 transition rounded-md"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-pink-300 transition-colors duration-300 rounded-md"
         >
           <Calendar class="h-4 w-4" />
           Đăng ký PT
@@ -70,11 +73,11 @@ const handleLogout = () => {
         @mouseleave="isAccountMenuOpen = false"
       >
         <button
-          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:bg-emerald-600/20 hover:text-emerald-400 transition rounded-md"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-cyan-300 transition-colors duration-300 rounded-md"
           @click="toggleAccountMenu"
         >
           <UserIcon class="w-5 h-5" />
-          <span>Tài khoản</span>
+          <span>{{ authStore.user?.fullName || 'Tài khoản' }}</span>
         </button>
 
         <transition name="fade">

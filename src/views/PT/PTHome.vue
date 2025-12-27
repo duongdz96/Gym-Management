@@ -148,7 +148,7 @@ const fetchPTData = async () => {
     // Filter profiles for the current PT
     const ptStudents = studentProfiles.filter(profile => profile.pt && profile.pt.id === authStore.user.id);
 
-    studentProgress.value = ptStudents.slice(0, 4).map(profile => {
+    studentProgress.value = ptStudents.slice(0, 2).map(profile => {
       // Find appointments for this member
       const memberAppointments = appointments.filter(appt =>
         appt.ptPackageIssued?.member?.id === profile.member.id &&
@@ -261,7 +261,7 @@ onMounted(() => {
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
-          Bảng điều khiển PT 💪
+          Xin chào, {{ authStore.user?.fullName }} 💪
         </h1>
         <p class="text-gray-600 mt-2">Quản lý học viên và buổi tập của bạn</p>
       </div>
@@ -376,6 +376,14 @@ onMounted(() => {
                   </div>
                 </div>
               </div>
+              
+              <!-- View All Members Button -->
+              <RouterLink
+                to="/pt/members"
+                class="block w-full mt-4 p-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-center font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-300"
+              >
+                Xem chi tiết học viên
+              </RouterLink>
             </div>
 
             <!-- Upcoming Appointments -->

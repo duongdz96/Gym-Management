@@ -2,8 +2,10 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import { useAuthStore } from '@/stores/useAuthStore';
 
 const router = useRouter();
+const authStore = useAuthStore();
 const API_BASE_URL = "http://localhost:8080/api/v1/stats";
 
 // ===================== STATE =====================
@@ -95,7 +97,7 @@ onMounted(() => {
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">Dashboard Quản lý</h1>
+        <h1 class="text-3xl font-bold text-gray-900">Xin chào, {{ authStore.user?.fullName }}</h1>
         <p class="text-gray-600 mt-1">Tổng quan hoạt động phòng gym</p>
       </div>
       <div class="text-right">
@@ -106,19 +108,19 @@ onMounted(() => {
 
     <!-- Loading State -->
     <div v-if="isLoading" class="flex justify-center items-center h-64">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
     </div>
 
     <div v-else class="space-y-6">
       <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Revenue Card -->
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition">
+        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-blue-100 text-sm font-medium">Doanh thu tháng này</p>
+              <p class="text-emerald-100 text-sm font-medium">Doanh thu tháng này</p>
               <p class="text-3xl font-bold mt-2">{{ formatCurrency(stats.totalRevenue) }}</p>
-              <p class="text-blue-100 text-xs mt-2">
+              <p class="text-emerald-100 text-xs mt-2">
                 <span v-if="stats.revenueGrowthRate > 0">↗ +{{ stats.revenueGrowthRate }}%</span>
                 <span v-else-if="stats.revenueGrowthRate < 0">↘ {{ stats.revenueGrowthRate }}%</span>
                 <span v-else>- 0%</span>
@@ -127,19 +129,19 @@ onMounted(() => {
             </div>
             <div class="bg-white bg-opacity-20 rounded-full p-4">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
             </div>
           </div>
         </div>
 
         <!-- Members Card -->
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-green-100 text-sm font-medium">Tổng hội viên</p>
+              <p class="text-blue-100 text-sm font-medium">Tổng hội viên</p>
               <p class="text-3xl font-bold mt-2">{{ stats.totalMembers }}</p>
-              <p class="text-green-100 text-xs mt-2">{{ stats.activeMembers }} đang hoạt động</p>
+              <p class="text-blue-100 text-xs mt-2">{{ stats.activeMembers }} đang hoạt động</p>
             </div>
             <div class="bg-white bg-opacity-20 rounded-full p-4">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,23 +161,7 @@ onMounted(() => {
             </div>
             <div class="bg-white bg-opacity-20 rounded-full p-4">
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bills Card -->
-        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-orange-100 text-sm font-medium">Hóa đơn</p>
-              <p class="text-3xl font-bold mt-2">{{ stats.completedBills }}</p>
-              <p class="text-orange-100 text-xs mt-2">{{ stats.pendingBills }} đang chờ xử lý</p>
-            </div>
-            <div class="bg-white bg-opacity-20 rounded-full p-4">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
               </svg>
             </div>
           </div>
@@ -312,20 +298,9 @@ onMounted(() => {
               class="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-lg transition"
             >
               <div
-                class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                :class="{
-                  'bg-green-100': activity.type === 'member',
-                  'bg-blue-100': activity.type === 'bill',
-                  'bg-purple-100': activity.type === 'class',
-                  'bg-orange-100': activity.type === 'product',
-                }"
+                class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-emerald-100"
               >
-                <svg class="w-5 h-5" :class="{
-                  'text-green-600': activity.type === 'member',
-                  'text-blue-600': activity.type === 'bill',
-                  'text-purple-600': activity.type === 'class',
-                  'text-orange-600': activity.type === 'product',
-                }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path v-if="activity.type === 'member'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   <path v-else-if="activity.type === 'bill'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   <path v-else-if="activity.type === 'class'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
