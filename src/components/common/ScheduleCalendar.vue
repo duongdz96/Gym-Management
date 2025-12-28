@@ -177,6 +177,16 @@
                     <User class="w-4 h-4 text-gray-400" />
                     {{ session.teacherName }}
                   </div>
+                  <!-- Note Display -->
+                  <div v-if="session.note" class="mt-2 p-2 bg-orange-50 border border-orange-200 rounded-lg">
+                    <div class="flex items-start gap-2 text-sm">
+                      <AlertTriangle class="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
+                      <div>
+                        <div class="font-semibold text-orange-800">Thông báo thay đổi:</div>
+                        <div class="text-orange-700">{{ session.note }}</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -195,12 +205,13 @@ import {
   X, 
   Clock, 
   MapPin, 
-  User 
+  User,
+  ArrowRight,
+  AlertTriangle
 } from 'lucide-vue-next';
 import { getCalendarWeeks, formatDate as formatDisplayDate } from '@/views/Test/dateUtils.js';
 import unifiedApi from '@/services/unifiedClassApi.js';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { ArrowRight } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 

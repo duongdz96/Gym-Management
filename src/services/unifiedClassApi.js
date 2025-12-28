@@ -338,7 +338,10 @@ export const unifiedApi = {
           capacity: cs.capacity,
           className: cs.fitnessClass?.name || 'Unknown',
           roomName: cs.room?.name || 'Unknown',
-          teacherName: 'Unknown'
+          teacherName: 'Unknown',
+          note: cs.note || null,
+          fitnessClass: cs.fitnessClass,
+          schedulePattern: cs.schedulePattern
         };
       });
     } else {

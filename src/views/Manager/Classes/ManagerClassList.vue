@@ -107,6 +107,12 @@
             <Eye class="w-4 h-4" /> Chi tiết
           </button>
           <button 
+            @click="openEditClass(cls)" 
+            class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold transition-all flex items-center justify-center gap-2"
+          >
+            <Edit class="w-4 h-4" /> Sửa
+          </button>
+          <button 
             v-if="cls.status === 'waiting_approval'" 
             @click="approveTeacher(cls)" 
             class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-semibold transition-all flex items-center justify-center gap-2"
@@ -629,7 +635,7 @@
               <div 
                 v-for="(session, idx) in selectedClassSessions" 
                 :key="session.id"
-                class="flex items-center gap-4 p-3 rounded-xl border border-gray-200 hover:border-red-300 hover:bg-red-50 transition-all"
+                class="flex items-center gap-4 p-3 rounded-xl border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all"
               >
                 <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold text-sm shrink-0">
                   {{ idx + 1 }}
@@ -637,12 +643,25 @@
                 <div class="flex-1">
                   <div class="font-bold text-gray-800">{{ formatDate(session.date) }}</div>
                   <div class="text-sm text-gray-500">{{ formatScheduleTime(session.startTime) }} - {{ formatScheduleTime(session.endTime) }}</div>
+                  <div v-if="session.note" class="text-xs text-orange-600 mt-1 flex items-center gap-1">
+                    <Info class="w-3 h-3" /> {{ session.note }}
+                  </div>
                 </div>
-                <div class="text-xs font-semibold px-2 py-1 rounded" :class="{
-                  'bg-green-100 text-green-700': session.status === 'OPEN',
-                  'bg-gray-100 text-gray-500': session.status === 'CLOSED'
-                }">
-                  {{ session.status === 'OPEN' ? 'Mở' : 'Đóng' }}
+                <div class="flex items-center gap-2">
+                  <div class="text-xs font-semibold px-2 py-1 rounded" :class="{
+                    'bg-green-100 text-green-700': session.status === 'OPEN',
+                    'bg-gray-100 text-gray-500': session.status === 'CLOSED',
+                    'bg-red-100 text-red-700': session.status === 'CANCELLED'
+                  }">
+                    {{ session.status === 'OPEN' ? 'Mở' : session.status === 'CANCELLED' ? 'Đã hủy' : 'Đóng' }}
+                  </div>
+                  <button 
+                    @click="openEditSession(session)" 
+                    class="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-all"
+                    title="Sửa buổi học"
+                  >
+                    <Edit class="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -697,6 +716,21 @@
         </div>
       </div>
     </div>
+
+    <!-- Edit Modals -->
+    <EditClassModal 
+      :show="showEditClassModal" 
+      :fitness-class="editingClass"
+      @close="showEditClassModal = false"
+      @updated="handleClassUpdated"
+    />
+    
+    <EditSessionModal 
+      :show="showEditSessionModal" 
+      :session="editingSession"
+      @close="showEditSessionModal = false"
+      @updated="handleSessionUpdated"
+    />
   </div>
 </template>
 
@@ -726,8 +760,11 @@ import {
   Info, 
   CheckSquare, 
   AlertTriangle,
-  Filter
+  Filter,
+  Edit
 } from 'lucide-vue-next';
+import EditClassModal from './EditClassModal.vue';
+import EditSessionModal from './EditSessionModal.vue';
 
 const router = useRouter();
 
@@ -750,6 +787,12 @@ const roomConflicts = ref({});
 const tempDate = ref('');
 const loadingSessionsDetails = ref(false);
 const selectedClassSessions = ref([]);
+
+// Edit modals state
+const showEditClassModal = ref(false);
+const showEditSessionModal = ref(false);
+const editingClass = ref(null);
+const editingSession = ref(null);
 
 
 const getEmptyClass = () => ({
@@ -920,7 +963,9 @@ const getStatusText = (status) => {
     pending_teacher: 'Chờ giáo viên',
     waiting_approval: 'Chờ duyệt',
     ready_for_students: 'Sẵn sàng',
-    cancelled: 'Đã hủy'
+    cancelled: 'Đã hủy',
+    ACTIVE: 'Hoạt động',
+    INACTIVE: 'Đã vô hiệu hóa'
   };
   return statusMap[status] || status;
 };
@@ -931,7 +976,9 @@ const getStatusIcon = (status) => {
     pending_teacher: UserPlus,
     waiting_approval: Clock,
     ready_for_students: CheckCircle,
-    cancelled: XCircle
+    cancelled: XCircle,
+    ACTIVE: CheckCircle,
+    INACTIVE: XCircle
   };
   return iconMap[status] || FileText;
 };
@@ -1231,6 +1278,48 @@ const viewDetails = async (cls) => {
   }
 };
 
+// Edit handlers
+const openEditClass = (cls) => {
+  editingClass.value = cls;
+  showEditClassModal.value = true;
+};
+
+const openEditSession = (session) => {
+  // Enrich session with additional info for editing
+  editingSession.value = {
+    ...session,
+    className: selectedClass.value?.name,
+    fitnessClassId: selectedClass.value?.id
+  };
+  showEditSessionModal.value = true;
+};
+
+const handleClassUpdated = async (updatedClass) => {
+  console.log('Class updated:', updatedClass);
+  // Update local data
+  const index = classes.value.findIndex(c => c.id === updatedClass.id);
+  if (index !== -1) {
+    classes.value[index] = { ...classes.value[index], ...updatedClass };
+  }
+  // If currently viewing this class, update selectedClass
+  if (selectedClass.value?.id === updatedClass.id) {
+    selectedClass.value = { ...selectedClass.value, ...updatedClass };
+  }
+  // Reload data to ensure consistency
+  await loadData();
+  alert('✅ Cập nhật lớp học thành công!');
+};
+
+const handleSessionUpdated = async (updatedSession) => {
+  console.log('Session updated:', updatedSession);
+  // Update in selectedClassSessions
+  const index = selectedClassSessions.value.findIndex(s => s.id === updatedSession.id);
+  if (index !== -1) {
+    selectedClassSessions.value[index] = { ...selectedClassSessions.value[index], ...updatedSession };
+  }
+  alert('✅ Cập nhật buổi học thành công!');
+};
+
 const formatScheduleTime = (dateTime) => {
   if (!dateTime) return '';
   try {
@@ -1251,14 +1340,35 @@ const approveTeacher = async (cls) => {
 
 const deleteClass = async (classId) => {
   const cls = classes.value.find(c => c.id === classId);
-  if (cls && cls.status === 'ready_for_students') {
-    alert('❌ Không thể xóa lớp học đã sẵn sàng (đã có giáo viên và có thể có học viên)!');
+  if (!cls) return;
+  
+  // Check if already inactive
+  if (cls.status === 'INACTIVE') {
+    alert('⚠️ Lớp học này đã bị vô hiệu hóa trước đó.');
     return;
   }
   
-  if (confirm('Bạn có chắc muốn xóa lớp học này?')) {
-    await unifiedApi.deleteClass(classId);
-    await loadData();
+  if (confirm('⚠️ Bạn có chắc muốn vô hiệu hóa lớp học này?\n\nLưu ý: Đây là soft delete, lớp học sẽ chuyển sang trạng thái INACTIVE.')) {
+    try {
+      // Call API delete (backend will set status to INACTIVE)
+      await api.delete(`/fitness_class/${classId}`);
+      
+      // Update local state - set status to INACTIVE instead of removing
+      const index = classes.value.findIndex(c => c.id === classId);
+      if (index !== -1) {
+        classes.value[index].status = 'INACTIVE';
+      }
+      
+      // If viewing this class, update selectedClass
+      if (selectedClass.value?.id === classId) {
+        selectedClass.value.status = 'INACTIVE';
+      }
+      
+      alert('✅ Đã vô hiệu hóa lớp học thành công!');
+    } catch (error) {
+      console.error('Error deleting class:', error);
+      alert('❌ Lỗi khi vô hiệu hóa lớp học: ' + (error.response?.data?.message || error.message));
+    }
   }
 };
 
