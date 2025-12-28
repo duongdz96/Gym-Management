@@ -17,7 +17,7 @@ public class MembershipPlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String duration;
+    private Integer duration;
     private String status;
     private String benefits;
     private Long price;

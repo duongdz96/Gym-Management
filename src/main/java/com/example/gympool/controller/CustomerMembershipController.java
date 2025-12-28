@@ -1,15 +1,17 @@
 package com.example.gympool.controller;
 
-import com.example.gympool.entity.CustomerMembership;
+import com.example.gympool.entity.MembershipRegister;
 import com.example.gympool.entity.CustomerMembership;
 import com.example.gympool.service.CustomerMembershipService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/membership")
+@RequestMapping("/api/membership")
 @RequiredArgsConstructor
 public class CustomerMembershipController {
     private CustomerMembershipService customerMembershipService;
@@ -26,8 +28,11 @@ public class CustomerMembershipController {
         return customerMembershipService.getMembershipByCustomerName(name);
     }
     @PostMapping()
-    public void RegisterMembership(@RequestBody CustomerMembership CustomerMembership) {
-        customerMembershipService.RegisterMembership(CustomerMembership);
+    public void RegisterMembership(@RequestBody MembershipRegister membershipRegister) {
+       try{ customerMembershipService.RegisterMembership(membershipRegister);}
+       catch (IllegalArgumentException e){
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+       }
     }
 
     @PutMapping("/{id}")

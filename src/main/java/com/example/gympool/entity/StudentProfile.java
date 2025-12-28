@@ -28,4 +28,8 @@ public class StudentProfile {
     @JoinColumn(name = "staff_id", nullable = false)
     private Staff staff;
 
+    @ManyToOne
+    @JoinColumn(name = "package_id", nullable = false)
+    private PTPackageIssued ptPackageIssued;
+
 }
