@@ -15,7 +15,7 @@
         class="border rounded-xl shadow-sm p-4 bg-white hover:shadow-md transition"
       >
         <div class="flex justify-between items-center mb-2">
-          <h2 class="text-lg font-bold text-indigo-600">{{ coupon.code }}</h2>
+          <h2 class="text-lg font-bold text-emerald-600">{{ coupon.code }}</h2>
           <span
             class="text-sm px-2 py-1 rounded-full"
             :class="{

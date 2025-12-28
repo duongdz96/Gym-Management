@@ -106,7 +106,7 @@ onMounted(() => {
         <h2 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-2">🧾 Transaction History</h2>
 
         <div v-if="isLoading" class="text-center p-8">
-            <p class="text-lg text-blue-500">Loading data...</p>
+            <p class="text-lg text-emerald-500">Loading data...</p>
         </div>
 
         <div v-else-if="error" class="text-center p-8 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -152,7 +152,7 @@ onMounted(() => {
                                 {{ bill.paymentStatus }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-emerald-600">
                             {{ bill.issuedCoupon?.coupon.code || 'N/A' }}
                         </td>
                     </tr>

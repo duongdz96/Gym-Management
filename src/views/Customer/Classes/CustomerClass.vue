@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
       <div class="flex items-center gap-3">
-        <Dumbbell class="w-10 h-10 text-red-600" />
-        <h1 class="text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
+        <Dumbbell class="w-10 h-10 text-emerald-600" />
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
           Đăng Ký Lớp Học
         </h1>
       </div>
@@ -13,7 +13,7 @@
         class="px-6 py-3 rounded-full font-bold text-white flex items-center gap-2"
         :class="{
           'bg-gradient-to-r from-yellow-400 to-orange-500': currentStudent.membershipTier === 'VIP',
-          'bg-gradient-to-r from-red-400 to-red-500': currentStudent.membershipTier === 'PREMIUM',
+          'bg-gradient-to-r from-emerald-400 to-teal-500': currentStudent.membershipTier === 'PREMIUM',
           'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-800': currentStudent.membershipTier === 'BASIC'
         }"
       >
@@ -28,7 +28,7 @@
         <Filter class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <select 
           v-model="filterDifficulty"
-          class="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all appearance-none bg-white"
+          class="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 outline-none transition-all appearance-none bg-white"
         >
           <option value="">Tất cả độ khó</option>
           <option value="Beginner">Beginner</option>
@@ -43,7 +43,7 @@
           v-model="searchQuery" 
           type="text" 
           placeholder="Tìm kiếm lớp học..." 
-          class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
+          class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 outline-none transition-all"
         />
       </div>
     </div>
@@ -56,7 +56,7 @@
         class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
       >
         <!-- Card Header -->
-        <div class="p-5 bg-gradient-to-r from-red-600 to-red-700 text-white">
+        <div class="p-5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
           <div class="flex justify-between items-start">
             <h3 class="text-xl font-bold">{{ cls.name }}</h3>
             <span 
@@ -64,7 +64,7 @@
               :class="{
                 'bg-green-500': cls.difficulty === 'Beginner',
                 'bg-orange-500': cls.difficulty === 'Intermediate',
-                'bg-red-500': cls.difficulty === 'Advanced'
+                'bg-purple-500': cls.difficulty === 'Advanced'
               }"
             >
               {{ cls.difficulty }}
@@ -78,7 +78,7 @@
           
           <!-- Teacher Info -->
           <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+            <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
               <User class="w-6 h-6" />
             </div>
             <div>
@@ -92,7 +92,7 @@
               <span class="text-gray-500 font-semibold block flex items-center gap-1"><Users class="w-4 h-4" /> Chỗ trống:</span>
               <span 
                 class="font-bold"
-                :class="getAvailableSlots(cls) < 5 ? 'text-red-600' : 'text-gray-800'"
+                :class="getAvailableSlots(cls) < 5 ? 'text-orange-600' : 'text-gray-800'"
               >
                 {{ getAvailableSlots(cls) }}/{{ cls.maxStudents }}
               </span>
@@ -111,7 +111,7 @@
                 <span class="text-gray-800">{{ getScheduleText(cls) }}</span>
                 <button 
                   @click.stop="viewSessions(cls)" 
-                  class="text-red-600 hover:text-red-800 text-xs font-bold underline flex items-center gap-1"
+                  class="text-emerald-600 hover:text-emerald-800 text-xs font-bold underline flex items-center gap-1"
                 >
                   <Eye class="w-3 h-3" /> Chi tiết
                 </button>
@@ -128,7 +128,7 @@
           </div>
 
           <!-- VIP Early Registration Notice -->
-          <div v-if="isVIPEarlyAccess(cls)" class="p-3 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-xl text-orange-700 font-semibold text-sm flex items-start gap-2">
+          <div v-if="isVIPEarlyAccess(cls)" class="p-3 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-400 rounded-xl text-amber-700 font-semibold text-sm flex items-start gap-2">
             <Crown class="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
               <div class="font-bold mb-1">Đăng ký sớm VIP (còn {{ getWeeksUntilStart(cls.startDate) }} tuần)</div>
@@ -149,7 +149,7 @@
           <button 
             v-if="isRegistered(cls.id)"
             @click="cancelRegistration(cls)" 
-            class="w-full px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+            class="w-full px-4 py-3 bg-gradient-to-r from-rose-500 to-red-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
           >
             <XCircle class="w-5 h-5" />
             Hủy đăng ký
@@ -170,7 +170,7 @@
             v-else
             @click="openScheduleSelection(cls)" 
             :disabled="getAvailableSlots(cls) <= 0"
-            class="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            class="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <component 
               :is="getRegisterButtonIcon(cls)" 
@@ -204,13 +204,13 @@
       >
         <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col">
           <!-- Modal Header -->
-          <div class="p-6 bg-gradient-to-r from-red-600 to-red-700 text-white flex justify-between items-center shrink-0">
+          <div class="p-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white flex justify-between items-center shrink-0">
             <div>
               <h3 class="text-xl font-bold flex items-center gap-2">
                 <CalendarIcon class="w-6 h-6" />
                 Chi tiết lịch học
               </h3>
-              <p class="text-red-100 text-sm mt-1">{{ selectedClass?.name }}</p>
+              <p class="text-emerald-100 text-sm mt-1">{{ selectedClass?.name }}</p>
             </div>
             <button 
               @click="showSessionsModal = false"
@@ -230,11 +230,11 @@
               <div 
                 v-for="(session, idx) in selectedClassSessions" 
                 :key="session.id"
-                class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-red-200 hover:bg-red-50/50 transition-all"
-                :class="session.isRegistered ? 'border-red-300 bg-red-50' : ''"
+                class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-all"
+                :class="session.isRegistered ? 'border-emerald-300 bg-emerald-50' : ''"
               >
                 <!-- Index -->
-                <div class="w-8 h-8 rounded-full" :class="session.isRegistered ? 'bg-red-100 text-red-600' : 'bg-red-100 text-red-600'" >
+                <div class="w-8 h-8 rounded-full" :class="session.isRegistered ? 'bg-emerald-100 text-emerald-600' : 'bg-emerald-100 text-emerald-600'" >
                   <div class="flex items-center justify-center font-bold text-sm shrink-0">
                     {{ idx + 1 }}
                   </div>
@@ -243,7 +243,7 @@
                 <!-- Date Info -->
                 <div class="flex-1">
                   <div class="font-bold text-gray-800 flex items-center gap-2">
-                    <CalendarIcon class="w-4 h-4 text-red-500" />
+                    <CalendarIcon class="w-4 h-4 text-emerald-500" />
                     {{ formatDate(session.date) }}
                   </div>
                   <div class="text-sm text-gray-500 mt-1 flex items-center gap-4">
@@ -296,13 +296,13 @@
       >
         <div class="bg-white rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
           <!-- Modal Header -->
-          <div class="p-6 bg-gradient-to-r from-red-600 to-red-700 text-white flex justify-between items-center shrink-0">
+          <div class="p-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white flex justify-between items-center shrink-0">
             <div>
               <h3 class="text-xl font-bold flex items-center gap-2">
                 <CalendarIcon class="w-6 h-6" />
                 Chọn lịch học
               </h3>
-              <p class="text-red-100 text-sm mt-1">{{ selectedFitnessClass?.name }}</p>
+              <p class="text-emerald-100 text-sm mt-1">{{ selectedFitnessClass?.name }}</p>
             </div>
             <button 
               @click="closeScheduleModal"
@@ -315,7 +315,7 @@
           <!-- Modal Body -->
           <div class="p-6 overflow-y-auto flex-1">
             <div v-if="loadingSchedules" class="text-center py-8 text-gray-500">
-              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
               Đang tải lịch học...
             </div>
             
@@ -326,8 +326,8 @@
             </div>
             
             <div v-else>
-              <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-sm text-red-800">
+              <div class="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <p class="text-sm text-emerald-800">
                   <strong>Hướng dẫn:</strong> Chọn các buổi học bạn muốn đăng ký bằng cách click vào từng dòng. 
                   Bạn có thể chọn nhiều buổi cùng lúc.
                 </p>
@@ -343,7 +343,7 @@
                           type="checkbox" 
                           :checked="selectedScheduleIds.length === availableSchedules.filter(s => canSelectSchedule(s)).length && availableSchedules.filter(s => canSelectSchedule(s)).length > 0"
                           @change="toggleAllSchedules"
-                          class="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                          class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
                         />
                       </th>
                       <th class="p-3 text-left font-bold text-gray-700">Ngày</th>
@@ -358,11 +358,11 @@
                       v-for="schedule in availableSchedules" 
                       :key="schedule.id"
                       @click="toggleSchedule(schedule)"
-                      class="border-b border-gray-200 hover:bg-red-50 cursor-pointer transition-colors"
+                      class="border-b border-gray-200 hover:bg-emerald-50 cursor-pointer transition-colors"
                       :class="{
-                        'bg-red-100': selectedScheduleIds.includes(schedule.id),
+                        'bg-emerald-100': selectedScheduleIds.includes(schedule.id),
                         'opacity-50 cursor-not-allowed': !canSelectSchedule(schedule),
-                        'bg-red-50 border-red-200': schedule.isRegistered
+                        'bg-emerald-50 border-emerald-200': schedule.isRegistered
                       }"
                     >
                       <td class="p-3">
@@ -371,7 +371,7 @@
                           :checked="selectedScheduleIds.includes(schedule.id)"
                           :disabled="!canSelectSchedule(schedule)"
                           @click.stop="toggleSchedule(schedule)"
-                          class="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                          class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
                         />
                       </td>
                       <td class="p-3 font-medium text-gray-800">
@@ -389,11 +389,11 @@
                         <span 
                           class="px-2 py-1 rounded text-xs font-semibold"
                           :class="schedule.isRegistered
-                            ? 'bg-red-100 text-red-700'
+                            ? 'bg-emerald-100 text-emerald-700'
                             : schedule.status === 'OPEN'
                               ? 'bg-green-100 text-green-700'
                               : schedule.status === 'CLOSED' || schedule.status === 'CANCELLED'
-                                ? 'bg-red-100 text-red-700'
+                                ? 'bg-orange-100 text-orange-700'
                                 : 'bg-gray-100 text-gray-700'"
                         >
                           <template v-if="schedule.isRegistered">Đã đăng ký</template>
@@ -438,7 +438,7 @@
             <button 
               @click="registerSelectedSchedules"
               :disabled="selectedScheduleIds.length === 0 || loadingSchedules"
-              class="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              class="px-6 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <CheckCircle class="w-5 h-5" />
               Đăng ký ({{ selectedScheduleIds.length }})
@@ -527,7 +527,7 @@ const getSessionStatus = (session) => {
     return { text: 'Đã diễn ra', class: 'bg-gray-100 text-gray-500' };
   } else if (sDate.getTime() === today.getTime()) {
     // Check time if needed, for simplicity assume 'Today' is Active/Upcoming
-    return { text: 'Hôm nay', class: 'bg-red-100 text-red-700' };
+    return { text: 'Hôm nay', class: 'bg-emerald-100 text-emerald-700' };
   } else {
     return { text: 'Sắp diễn ra', class: 'bg-green-100 text-green-700' };
   }

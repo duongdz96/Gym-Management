@@ -231,19 +231,19 @@ onMounted(() => {
         </div>
 
         <!-- Motivation Card -->
-        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
-          <h3 class="text-lg font-bold text-blue-900 mb-3">💪 Động lực</h3>
-          <ul class="space-y-2 text-blue-800">
+        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-6">
+          <h3 class="text-lg font-bold text-emerald-900 mb-3">💪 Động lực</h3>
+          <ul class="space-y-2 text-emerald-800">
             <li class="flex items-start gap-2">
-              <span class="text-blue-600 mt-1">•</span>
+              <span class="text-emerald-600 mt-1">•</span>
               <span>Tập trung vào kỹ thuật đúng</span>
             </li>
             <li class="flex items-start gap-2">
-              <span class="text-blue-600 mt-1">•</span>
+              <span class="text-emerald-600 mt-1">•</span>
               <span>Nghỉ ngơi 60-90 giây giữa các set</span>
             </li>
             <li class="flex items-start gap-2">
-              <span class="text-blue-600 mt-1">•</span>
+              <span class="text-emerald-600 mt-1">•</span>
               <span>Uống nước đầy đủ trong quá trình tập</span>
             </li>
           </ul>

@@ -2,8 +2,8 @@
   <div class="p-6">
     <!-- Header -->
     <div class="flex items-center gap-3 mb-8">
-      <Calendar class="w-10 h-10 text-red-600" />
-      <h1 class="text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
+      <Calendar class="w-10 h-10 text-emerald-600" />
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
         Lịch Học Của Tôi
       </h1>
     </div>
