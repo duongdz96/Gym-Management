@@ -23,7 +23,7 @@ public class ClassRegistrationController {
         return ResponseEntity.ok(classRegistrationService.getByTeacher(staffId));
     }
 
-    // Lấy danh sách giáo viên đã đăng ký cho class template
+    // Lấy danh sách đã đăng ký cho fitness class
     @GetMapping("/fitness_class/{fitnessClassId}")
     public ResponseEntity<List<ClassRegistration>> getByFitnessClass(@PathVariable Long fitnessClassId) {
         return ResponseEntity.ok(classRegistrationService.getByFitnessClass(fitnessClassId));

@@ -113,7 +113,7 @@ public class MemberRegistrationServiceImpl implements MemberRegistrationService 
         if (!registration.getMember().getId().equals(memberId)) {
             throw new RuntimeException("Bạn không có quyền hủy lịch học của người khác!");
         }
-        
+
         // Get the fitness class of this registration
         FitnessClass fitnessClass = registration.getClassSchedule().getFitnessClass();
         if (fitnessClass == null) {
@@ -121,13 +121,13 @@ public class MemberRegistrationServiceImpl implements MemberRegistrationService 
             memberRegistrationRepository.delete(registration);
             return;
         }
-        
+
         // Find and delete ALL registrations of this member for this fitness class
         Member member = registration.getMember();
         List<MemberRegistration> allRegistrations = memberRegistrationRepository.findByMember(member);
-        
+
         for (MemberRegistration reg : allRegistrations) {
-            if (reg.getClassSchedule() != null && 
+            if (reg.getClassSchedule() != null &&
                 reg.getClassSchedule().getFitnessClass() != null &&
                 reg.getClassSchedule().getFitnessClass().getId().equals(fitnessClass.getId())) {
                 memberRegistrationRepository.delete(reg);

@@ -46,6 +46,7 @@ public class TrainingPlanServiceImpl implements TrainingPlanService {
                 tpd.setExercise(rd.getExercise());
                 tpd.setSetCount(rd.getDefaultSetCount());
                 tpd.setRepCount(rd.getDefaultRepCount());
+                tpd.setStatus("PENDING");
                 tpd.setTrainingPlan(plan);
                 details.add(tpd);
             }

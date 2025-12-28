@@ -12,6 +12,10 @@ import lombok.*;
 @AllArgsConstructor
 @Table(name = "training_plan_details")
 public class TrainingPlanDetails {
+
+    public static final String STATUS_PENDING = "PENDING";     // Chưa tập
+    public static final String STATUS_COMPLETED = "COMPLETED";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
