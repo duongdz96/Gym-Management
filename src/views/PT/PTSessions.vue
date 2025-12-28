@@ -113,9 +113,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-6 space-y-6">
-    <div class="flex items-center gap-3 mb-8">
-      <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+  <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6 sm:mb-8">
+      <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600">
           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
           <circle cx="9" cy="7" r="4"></circle>
@@ -124,27 +124,27 @@ onMounted(() => {
         </svg>
       </div>
       <div>
-        <h1 class="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
+        <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
           Buổi Tập Hôm Nay
         </h1>
-        <p class="text-gray-600 text-sm">Danh sách học viên và lịch tập trong ngày</p>
+        <p class="text-gray-600 text-xs sm:text-sm">Danh sách học viên và lịch tập trong ngày</p>
       </div>
     </div>
 
     <!-- Date Filter -->
-    <div class="flex gap-4 mb-6">
-      <div class="relative">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Chọn ngày</label>
+    <div class="flex gap-4 mb-4 sm:mb-6">
+      <div class="relative w-full sm:w-auto">
+        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Chọn ngày</label>
         <input
           v-model="selectedDate"
           type="date"
-          class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
         />
       </div>
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
       <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
         <div class="flex items-center justify-between">
           <div>
@@ -210,23 +210,23 @@ onMounted(() => {
         <div
           v-for="session in filteredSessions"
           :key="session.id"
-          class="px-6 py-4 hover:bg-gray-50 transition"
+          class="px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 transition"
         >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+            <div class="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
               <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-sm">
                 {{ session.studentName.charAt(0).toUpperCase() }}
               </div>
 
               <div>
-                <h4 class="text-lg font-semibold text-gray-900">{{ session.studentName }}</h4>
-                <p class="text-sm text-gray-600">{{ formatDate(session.date) }}</p>
+                <h4 class="text-base sm:text-lg font-semibold text-gray-900">{{ session.studentName }}</h4>
+                <p class="text-xs sm:text-sm text-gray-600">{{ formatDate(session.date) }}</p>
               </div>
             </div>
 
-            <div class="flex items-center gap-6">
-              <div class="text-right">
-                <div class="text-sm font-medium text-gray-900">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 w-full sm:w-auto">
+              <div class="text-left sm:text-right">
+                <div class="text-xs sm:text-sm font-medium text-gray-900">
                   {{ session.startTime }} - {{ session.endTime }}
                 </div>
                 <div class="text-xs text-gray-500">
@@ -235,10 +235,10 @@ onMounted(() => {
               </div>
 
               <div class="flex items-center gap-2">
-                <span class="text-lg">{{ getStatusIcon(session.status) }}</span>
+                <span class="text-base sm:text-lg">{{ getStatusIcon(session.status) }}</span>
                 <span
                   :class="[
-                    'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
+                    'inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium',
                     getStatusColor(session.status)
                   ]"
                 >

@@ -311,14 +311,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-emerald-50 to-emerald-50 py-8">
-    <div class="mx-auto max-w-7xl px-6">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-emerald-50 to-emerald-50 py-4 sm:py-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
       <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
+      <div class="mb-4 sm:mb-8">
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
           Xin chào, {{ authStore.user?.fullName }} 💪
         </h1>
-        <p class="text-gray-600 mt-2">Quản lý học viên và buổi tập của bạn</p>
+        <p class="text-sm sm:text-base text-gray-600 mt-2">Quản lý học viên và buổi tập của bạn</p>
       </div>
 
       <!-- Loading State -->
@@ -326,9 +326,9 @@ onMounted(() => {
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
 
-      <div v-else class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div v-else class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         <!-- Left Sidebar - Stats -->
-        <div class="lg:col-span-1 space-y-6">
+        <div class="lg:col-span-1 space-y-4 sm:space-y-6">
           <!-- Stats Cards -->
           <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100">
             <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center mb-4">
@@ -368,10 +368,10 @@ onMounted(() => {
             </div>
 
             <!-- Week Days -->
-            <div class="grid grid-cols-7 gap-2">
+            <div class="grid grid-cols-7 gap-1 sm:gap-2">
               <div v-for="day in currentWeek" :key="day.dayNumber" 
                    :class="[
-                     'p-4 rounded-xl text-center transition-all cursor-pointer',
+                     'p-2 sm:p-4 rounded-lg sm:rounded-xl text-center transition-all cursor-pointer',
                      day.isToday
                        ? 'bg-gradient-to-br from-emerald-500 to-emerald-500 text-white shadow-lg scale-105'
                        : 'bg-gray-50 hover:bg-gray-100'
@@ -389,7 +389,7 @@ onMounted(() => {
               </div>
               <div v-else class="space-y-3">
                 <div v-for="session in todaySessions" :key="session.id"
-                     class="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-emerald-50 rounded-xl border border-emerald-100">
+                     class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-emerald-50 to-emerald-50 rounded-lg sm:rounded-xl border border-emerald-100 gap-2 sm:gap-0">
                   <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center">
                       <Dumbbell class="w-5 h-5 text-white" />
@@ -409,7 +409,7 @@ onMounted(() => {
           </div>
 
           <!-- Student Progress & Upcoming Appointments -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <!-- Student Progress -->
             <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100">
               <div class="flex items-center gap-2 mb-6">

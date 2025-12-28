@@ -179,14 +179,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="p-6 space-y-8">
+  <div class="p-4 sm:p-6 space-y-4 sm:space-y-8">
     <!-- Title -->
-    <h1 class="text-2xl font-bold text-stone-800">Danh sách học viên</h1>
+    <h1 class="text-xl sm:text-2xl font-bold text-stone-800">Danh sách học viên</h1>
 
     <!-- Layout chính -->
-    <div class="flex gap-6 h-screen">
+    <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
       <!-- Bên trái: Danh sách học viên -->
-      <div class="w-1/3 bg-white rounded-xl shadow p-5 overflow-y-auto">
+      <div class="w-full lg:w-1/3 bg-white rounded-xl shadow p-4 sm:p-5 max-h-[400px] lg:max-h-screen overflow-y-auto">
         <h2 class="text-xl font-semibold mb-4">Học viên của tôi</h2>
 
         <!-- Search Bar -->
@@ -227,10 +227,10 @@ onMounted(async () => {
       </div>
 
       <!-- Bên phải: Thông tin chi tiết -->
-      <div class="w-2/3 bg-white rounded-xl shadow p-5">
+      <div class="w-full lg:w-2/3 bg-white rounded-xl shadow p-4 sm:p-5 max-h-[600px] lg:max-h-screen overflow-y-auto">
         <h2 class="text-xl font-semibold mb-4">Thông tin chi tiết</h2>
         <div v-if="selectedMember" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700"
                 >Họ và tên</label
@@ -251,35 +251,35 @@ onMounted(async () => {
               <label class="block text-sm font-medium text-gray-700"
                 >Cân nặng</label
               >
-              <div class="mt-1 flex items-center space-x-2">
+              <div class="mt-1 flex flex-wrap items-center gap-2">
                 <input
                   v-if="isEditingWeight"
                   v-model.number="tempCurrentWeight"
                   type="number"
-                  class="text-lg text-gray-900 border border-gray-300 rounded px-2 py-1 w-20"
+                  class="text-base sm:text-lg text-gray-900 border border-gray-300 rounded px-2 py-1 w-20"
                   min="0"
                   step="0.1"
                 />
-                <span v-else class="text-lg text-gray-900"
+                <span v-else class="text-base sm:text-lg text-gray-900"
                   >{{ selectedMember.weight }} kg</span
                 >
                 <button
                   v-if="!isEditingWeight"
                   @click="startEditingWeight"
-                  class="text-emerald-600 hover:text-emerald-800 text-sm"
+                  class="text-emerald-600 hover:text-emerald-800 text-xs sm:text-sm"
                 >
                   Chỉnh sửa
                 </button>
-                <div v-if="isEditingWeight" class="flex space-x-1">
+                <div v-if="isEditingWeight" class="flex gap-2">
                   <button
                     @click="saveCurrentWeight"
-                    class="text-green-600 hover:text-green-800 text-sm"
+                    class="text-green-600 hover:text-green-800 text-xs sm:text-sm px-2 py-1 border border-green-600 rounded"
                   >
                     Lưu
                   </button>
                   <button
                     @click="cancelEditingWeight"
-                    class="text-red-600 hover:text-red-800 text-sm"
+                    class="text-red-600 hover:text-red-800 text-xs sm:text-sm px-2 py-1 border border-red-600 rounded"
                   >
                     Hủy
                   </button>
@@ -310,7 +310,7 @@ onMounted(async () => {
             <div v-if="memberPackages.length === 0" class="text-gray-500">Chưa đăng ký gói nào</div>
             <div v-else class="space-y-2">
               <div v-for="pkg in memberPackages" :key="pkg.id" class="border rounded-lg p-3 bg-emerald-50">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div>
                     <p class="text-sm font-medium text-gray-900">{{ pkg.name }}</p>
                     <p class="text-xs text-gray-600">Còn lại: {{ pkg.remainingSessions }} buổi</p>
@@ -337,10 +337,10 @@ onMounted(async () => {
             >
             <div v-if="upcomingSessions.length === 0" class="mt-1 text-gray-500">Không có buổi tập sắp tới</div>
             <div v-else class="mt-1 space-y-2">
-              <div v-for="session in upcomingSessions" :key="session.id" class="border rounded p-2 bg-gray-50">
-                <p class="text-sm font-medium">{{ new Date(session.startTime).toLocaleDateString() }}</p>
-                <p class="text-sm text-gray-600">{{ formatTimeRange(session.startTime, session.endTime) }}</p>
-                <p class="text-sm text-gray-600">{{ session.ptPackageIssued?.ptPackage?.name || 'Session' }}</p>
+              <div v-for="session in upcomingSessions" :key="session.id" class="border rounded p-2 sm:p-3 bg-gray-50">
+                <p class="text-xs sm:text-sm font-medium">{{ new Date(session.startTime).toLocaleDateString() }}</p>
+                <p class="text-xs sm:text-sm text-gray-600">{{ formatTimeRange(session.startTime, session.endTime) }}</p>
+                <p class="text-xs sm:text-sm text-gray-600">{{ session.ptPackageIssued?.ptPackage?.name || 'Session' }}</p>
               </div>
             </div>
           </div>

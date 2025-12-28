@@ -1,9 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
 import api from "@/services/api";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useToast } from "vue-toastification";
 
+const router = useRouter();
 const authStore = useAuthStore();
 const toast = useToast();
 
@@ -22,6 +24,10 @@ const selectedMember = ref(null);
 const selectedStartTime = ref("");
 const selectedEndTime = ref("");
 const availableMembers = ref([]);
+const memberPackages = ref([]);
+const selectedPackage = ref(null);
+const startTimeError = ref("");
+const endTimeError = ref("");
 
 // Schedule data - will be fetched from backend
 const schedule = ref([]);
@@ -36,6 +42,16 @@ function toDateStr(iso) {
     "-" +
     String(d.getDate()).padStart(2, "0")
   );
+}
+
+function getStatusText(status) {
+  const statusMap = {
+    'Scheduled': 'Đã đặt lịch',
+    'In Progress': 'Đang tập',
+    'Completed': 'Hoàn thành',
+    'Cancelled': 'Đã hủy'
+  };
+  return statusMap[status] || status;
 }
 
 function formatTimeRange(startIso, endIso) {
@@ -129,21 +145,124 @@ async function loadAvailableMembers() {
   }
 }
 
+// Function to load member's PT packages
+async function loadMemberPackages(memberId) {
+  try {
+    const res = await api.get("/packageissued");
+    const data = Array.isArray(res.data) ? res.data : [];
+    
+    // Filter packages for the selected member and current PT
+    memberPackages.value = data.filter(pkg => 
+      pkg.member?.id === memberId && 
+      pkg.pt?.id === authStore.user.id &&
+      pkg.remainingSessions > 0 &&
+      pkg.ptPackage?.status === 'Active'
+    );
+    
+    // Auto-select first package if available
+    if (memberPackages.value.length > 0) {
+      selectedPackage.value = memberPackages.value[0];
+    } else {
+      selectedPackage.value = null;
+      toast.warning("Học viên này không có gói PT khả dụng!");
+    }
+    
+    console.log("Member packages loaded:", memberPackages.value);
+  } catch (error) {
+    console.error('Failed to load member packages:', error);
+    memberPackages.value = [];
+    selectedPackage.value = null;
+    toast.error("Không thể tải gói PT của học viên.");
+  }
+}
+
 // Function to start a class
-function startClass(eventId) {
-  // Update status locally for UI testing (no backend API yet)
-  const event = schedule.value.find(e => e.id === eventId);
-  if (event) {
-    event.status = 'started';
+async function startClass(eventId) {
+  try {
+    const event = schedule.value.find(e => e.id === eventId);
+    if (!event) return;
+    
+    const payload = {
+      id: event.id,
+      startTime: event.raw.startTime,
+      endTime: event.raw.endTime,
+      status: "In Progress",
+      notificationSent: false,
+      ptPackageIssued: {
+        id: event.raw.ptPackageIssued.id
+      },
+      pt: {
+        id: authStore.user.id
+      }
+    };
+    
+    await api.put(`/appointment/${eventId}`, payload);
+    event.status = 'In Progress';
+    toast.success("Đã bắt đầu buổi tập!");
+    await fetchSchedule();
+  } catch (error) {
+    console.error('Error starting class:', error);
+    toast.error("Không thể bắt đầu buổi tập. Vui lòng thử lại!");
   }
 }
 
 // Function to end a class
-function endClass(eventId) {
-  // Update status locally for UI testing (no backend API yet)
-  const event = schedule.value.find(e => e.id === eventId);
-  if (event) {
-    event.status = 'ended';
+async function endClass(eventId) {
+  try {
+    const event = schedule.value.find(e => e.id === eventId);
+    if (!event) return;
+    
+    const payload = {
+      id: event.id,
+      startTime: event.raw.startTime,
+      endTime: event.raw.endTime,
+      status: "Completed",
+      notificationSent: false,
+      ptPackageIssued: {
+        id: event.raw.ptPackageIssued.id
+      },
+      pt: {
+        id: authStore.user.id
+      }
+    };
+    
+    await api.put(`/appointment/${eventId}`, payload);
+    event.status = 'Completed';
+    toast.success("Đã kết thúc buổi tập!");
+    await fetchSchedule();
+  } catch (error) {
+    console.error('Error ending class:', error);
+    toast.error("Không thể kết thúc buổi tập. Vui lòng thử lại!");
+  }
+}
+
+// Function to cancel a class
+async function cancelClass(eventId) {
+  try {
+    const event = schedule.value.find(e => e.id === eventId);
+    if (!event) return;
+    
+    const payload = {
+      id: event.id,
+      startTime: event.raw.startTime,
+      endTime: event.raw.endTime,
+      status: "Cancelled",
+      notificationSent: false,
+      ptPackageIssued: {
+        id: event.raw.ptPackageIssued.id
+      },
+      pt: {
+        id: authStore.user.id
+      }
+    };
+    
+    await api.put(`/appointment/${eventId}`, payload);
+    event.status = 'Cancelled';
+    toast.success("Đã hủy buổi tập!");
+    await fetchSchedule();
+  } catch (error) {
+    console.error('Error cancelling class:', error);
+    toast.error("Không thể hủy buổi tập. Vui lòng thử lại!");
   }
 }
 
@@ -194,6 +313,98 @@ const filteredMembers = computed(() => {
   );
 });
 
+const minTime = computed(() => {
+  if (!registerDate.value) return '';
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selectedDateOnly = new Date(registerDate.value);
+  selectedDateOnly.setHours(0, 0, 0, 0);
+  
+  // If selected date is today, minimum time is current time
+  if (selectedDateOnly.getTime() === today.getTime()) {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+  
+  // If selected date is in the future, no minimum time restriction
+  return '';
+});
+
+const isButtonDisabled = computed(() => {
+  const disabled = !selectedMember.value || !selectedPackage.value || !selectedStartTime.value || !selectedEndTime.value || !!startTimeError.value || !!endTimeError.value;
+  console.log('Button disabled check:', {
+    selectedMember: !!selectedMember.value,
+    selectedPackage: !!selectedPackage.value,
+    selectedStartTime: !!selectedStartTime.value,
+    selectedEndTime: !!selectedEndTime.value,
+    startTimeError: startTimeError.value,
+    endTimeError: endTimeError.value,
+    disabled
+  });
+  return disabled;
+});
+
+const isSelectedDatePast = computed(() => {
+  if (!selectedDate.value) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selectedDateOnly = new Date(selectedDate.value);
+  selectedDateOnly.setHours(0, 0, 0, 0);
+  return selectedDateOnly < today;
+});
+
+// Watch for time changes to validate
+watch([selectedStartTime, registerDate], () => {
+  startTimeError.value = '';
+  
+  if (!selectedStartTime.value || !registerDate.value) return;
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selectedDateOnly = new Date(registerDate.value);
+  selectedDateOnly.setHours(0, 0, 0, 0);
+  
+  // If selected date is today, check if start time is after current time
+  if (selectedDateOnly.getTime() === today.getTime()) {
+    const now = new Date();
+    const [startHours, startMinutes] = selectedStartTime.value.split(':').map(Number);
+    const startDateTime = new Date();
+    startDateTime.setHours(startHours, startMinutes, 0, 0);
+    
+    // Add 1 minute buffer to avoid edge case issues
+    if (startDateTime.getTime() <= now.getTime()) {
+      startTimeError.value = 'Giờ bắt đầu phải sau thời điểm hiện tại!';
+      console.log('Start time error:', {
+        now: now.toLocaleTimeString(),
+        selected: startDateTime.toLocaleTimeString(),
+        nowTimestamp: now.getTime(),
+        selectedTimestamp: startDateTime.getTime()
+      });
+    } else {
+      console.log('Start time OK:', {
+        now: now.toLocaleTimeString(),
+        selected: startDateTime.toLocaleTimeString()
+      });
+    }
+  }
+}, { immediate: true });
+
+watch([selectedStartTime, selectedEndTime], () => {
+  endTimeError.value = '';
+  
+  if (!selectedStartTime.value || !selectedEndTime.value) return;
+  
+  const [startHours, startMinutes] = selectedStartTime.value.split(':').map(Number);
+  const [endHours, endMinutes] = selectedEndTime.value.split(':').map(Number);
+  
+  if (endHours < startHours || (endHours === startHours && endMinutes <= startMinutes)) {
+    endTimeError.value = 'Giờ kết thúc phải sau giờ bắt đầu!';
+  }
+});
+
 // Functions
 function getEventsForDate(date) {
   const dateStr =
@@ -215,10 +426,22 @@ function nextMonth() {
 
 function selectDate(dayData) {
   selectedDate.value = dayData.date;
+  
+  // Check if the selected date is in the past
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selectedDateOnly = new Date(dayData.date);
+  selectedDateOnly.setHours(0, 0, 0, 0);
+  
   if (dayData.events.length > 0) {
-    // Show existing events modal
+    // Show existing events modal (allow viewing for any date)
     showModal.value = true;
   } else {
+    // For empty dates, only allow registration for current/future dates
+    if (selectedDateOnly < today) {
+      toast.error("Không thể đăng ký lớp cho ngày trong quá khứ!");
+      return;
+    }
     // Show register new class modal
     registerDate.value = dayData.date;
     showRegisterModal.value = true;
@@ -242,8 +465,27 @@ function closeTodayModal() {
   selectedTodayEvent.value = null;
 }
 
+// Function to navigate to member details
+function viewMemberDetails(event) {
+  if (event.member) {
+    // Navigate to PTMembers page - the page will handle selecting the correct member
+    router.push({ name: 'PTMembers', state: { selectedMemberId: event.member.id } });
+  }
+}
+
 // Register modal functions
 function openRegisterModalForDate() {
+  // Check if the selected date is in the past
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selectedDateOnly = new Date(selectedDate.value);
+  selectedDateOnly.setHours(0, 0, 0, 0);
+  
+  if (selectedDateOnly < today) {
+    toast.error("Không thể đăng ký lớp cho ngày trong quá khứ!");
+    return;
+  }
+  
   registerDate.value = selectedDate.value;
   showRegisterModal.value = true;
   showModal.value = false; // Close the current modal
@@ -258,25 +500,89 @@ function closeRegisterModal() {
   selectedMember.value = null;
   selectedStartTime.value = "";
   selectedEndTime.value = "";
+  memberPackages.value = [];
+  selectedPackage.value = null;
+  startTimeError.value = "";
+  endTimeError.value = "";
 }
 
 function selectMemberForRegistration(member) {
   selectedMember.value = member;
+  loadMemberPackages(member.memberId);
 }
 
-function registerNewClass() {
+async function registerNewClass() {
   if (!selectedMember.value || !selectedStartTime.value || !selectedEndTime.value) {
     toast.error("Vui lòng điền đầy đủ thông tin!");
     return;
   }
+  
+  if (!selectedPackage.value) {
+    toast.error("Vui lòng chọn gói PT!");
+    return;
+  }
 
-  // Here you would call the API to register the new class
-  // For now, we'll just show a success message and close the modal
-  toast.success(`Đã đăng ký lớp cho ${selectedMember.value.name} vào ${registerDate.value.toLocaleDateString('vi-VN')} từ ${selectedStartTime.value} đến ${selectedEndTime.value}`);
+  // Validate time constraints
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selectedDateOnly = new Date(registerDate.value);
+  selectedDateOnly.setHours(0, 0, 0, 0);
+  
+  // If selected date is today, check if start time is after current time
+  if (selectedDateOnly.getTime() === today.getTime()) {
+    const now = new Date();
+    const [startHours, startMinutes] = selectedStartTime.value.split(':').map(Number);
+    const startDateTime = new Date();
+    startDateTime.setHours(startHours, startMinutes, 0, 0);
+    
+    if (startDateTime <= now) {
+      toast.error("Giờ bắt đầu phải sau thời điểm hiện tại!");
+      return;
+    }
+  }
+  
+  // Check if end time is after start time
+  const [startHours, startMinutes] = selectedStartTime.value.split(':').map(Number);
+  const [endHours, endMinutes] = selectedEndTime.value.split(':').map(Number);
+  
+  if (endHours < startHours || (endHours === startHours && endMinutes <= startMinutes)) {
+    toast.error("Giờ kết thúc phải sau giờ bắt đầu!");
+    return;
+  }
 
-  // Close modal and refresh schedule
-  closeRegisterModal();
-  fetchSchedule();
+  try {
+    // Format datetime to ISO string
+    const startDateTime = new Date(registerDate.value);
+    startDateTime.setHours(startHours, startMinutes, 0, 0);
+    
+    const endDateTime = new Date(registerDate.value);
+    endDateTime.setHours(endHours, endMinutes, 0, 0);
+    
+    // Prepare payload - try without ptId first (backend may get it from token)
+    const payload = {
+      packageIssuedId: selectedPackage.value.id,
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime.toISOString(),
+      status: "Scheduled"
+    };
+    
+    console.log("Creating appointment (without ptId):", payload);
+    console.log("Auth user:", authStore.user);
+    console.log("Selected package:", selectedPackage.value);
+    
+    // Call API
+    const response = await api.post("/appointment", payload);
+    console.log("Appointment created successfully:", response.data);
+    
+    toast.success(`Đã đăng ký lớp cho ${selectedMember.value.name} vào ${registerDate.value.toLocaleDateString('vi-VN')} từ ${selectedStartTime.value} đến ${selectedEndTime.value}`);
+    
+    // Close modal and refresh schedule
+    closeRegisterModal();
+    await fetchSchedule();
+  } catch (error) {
+    console.error('Error creating appointment:', error);
+    toast.error("Không thể đăng ký lớp. Vui lòng thử lại!");
+  }
 }
 
 onMounted(async () => {
@@ -286,31 +592,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="p-6 space-y-8">
-    <!-- Title and Search -->
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-      <h1 class="text-xl sm:text-2xl font-bold text-stone-800">Lịch trình & Đăng ký lớp</h1>
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Tìm kiếm theo tên học viên"
-          class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        />
-        <button
-          @click="searchSchedule"
-          class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
-        >
-          Tìm kiếm
-        </button>
-        <button
-          @click="fetchSchedule"
-          class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-        >
-          Đặt lại
-        </button>
-      </div>
-    </div>
+  <div class="p-4 sm:p-6 space-y-4 sm:space-y-8">
+    <!-- Title -->
+    <h1 class="text-xl sm:text-2xl font-bold text-stone-800">Lịch trình & Đăng ký lớp</h1>
 
     <!-- Lịch dạy hôm nay -->
     <section class="bg-white rounded-xl shadow p-4">
@@ -348,9 +632,9 @@ onMounted(async () => {
               </div>
             </div>
             <div class="text-xs text-gray-600">
-              <p>Time: {{ event.time }}</p>
-              <p>Number of members: {{ event.members }}</p>
-              <p>Status: {{ event.status }}</p>
+              <p>Thời gian: {{ event.time }}</p>
+              <p>Số học viên: {{ event.members }}</p>
+              <p>Trạng thái: {{ getStatusText(event.status) }}</p>
             </div>
           </div>
         </div>
@@ -407,7 +691,7 @@ onMounted(async () => {
             :key="dayData.date.toISOString()"
             class="min-h-[100px] border rounded-xl p-2 transition-all relative group"
             :class="[
-              !dayData.isCurrentMonth ? 'bg-gray-50/50 border-transparent' : 'bg-white border-gray-100 hover:border-emerald-300 hover:shadow-md cursor-pointer',
+              !dayData.isCurrentMonth ? 'bg-gray-50/50 border-transparent' : dayData.date.setHours(0,0,0,0) < new Date().setHours(0,0,0,0) ? 'bg-gray-100/70 border-gray-200 opacity-60 cursor-not-allowed' : 'bg-white border-gray-100 hover:border-emerald-300 hover:shadow-md cursor-pointer',
               dayData.isToday ? 'ring-2 ring-emerald-500 ring-offset-1' : '',
               dayData.events.length > 0 ? '' : ''
             ]"
@@ -434,8 +718,8 @@ onMounted(async () => {
                 <div v-if="dayData.events.length > 3" class="text-xs text-gray-500">
                   +{{ dayData.events.length - 3 }} more
                 </div>
-                <!-- Empty day indicator -->
-                <div v-if="dayData.events.length === 0" class="text-xs text-center text-gray-400 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <!-- Empty day indicator - only show for current or future dates -->
+                <div v-if="dayData.events.length === 0 && new Date(dayData.date).setHours(0,0,0,0) >= new Date().setHours(0,0,0,0)" class="text-xs text-center text-gray-400 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   + Đăng ký lớp
                 </div>
               </div>
@@ -470,7 +754,14 @@ onMounted(async () => {
             <div class="flex gap-2">
               <button
                 @click="openRegisterModalForDate"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                :disabled="isSelectedDatePast"
+                :class="[
+                  'px-4 py-2 rounded-lg transition-colors text-sm font-medium',
+                  isSelectedDatePast 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                ]"
+                :title="isSelectedDatePast ? 'Không thể đăng ký lớp cho ngày trong quá khứ' : ''"
               >
                 + Đăng ký lớp mới
               </button>
@@ -506,7 +797,10 @@ onMounted(async () => {
 
                 <!-- Info Column -->
                 <div class="flex-1">
-                  <h4 class="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors">
+                  <h4 
+                    @click="viewMemberDetails(event)"
+                    class="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors cursor-pointer hover:underline"
+                  >
                     {{ event.name }}
                   </h4>
                   <div class="flex items-center gap-2 text-sm text-gray-600 mt-1">
@@ -519,7 +813,7 @@ onMounted(async () => {
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    Trạng thái: {{ event.status }}
+                    Trạng thái: {{ getStatusText(event.status) }}
                   </div>
                 </div>
               </div>
@@ -604,6 +898,37 @@ onMounted(async () => {
               </div>
             </div>
 
+            <!-- Package Selection -->
+            <div v-if="selectedMember" class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Chọn gói PT</label>
+              <div v-if="memberPackages.length === 0" class="p-4 text-center text-gray-500 border border-gray-200 rounded-xl">
+                Học viên này không có gói PT khả dụng
+              </div>
+              <div v-else class="space-y-2">
+                <div
+                  v-for="pkg in memberPackages"
+                  :key="pkg.id"
+                  @click="selectedPackage = pkg"
+                  :class="[
+                    'p-4 border-2 rounded-xl cursor-pointer transition-all',
+                    selectedPackage?.id === pkg.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
+                  ]"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="font-medium text-gray-900">{{ pkg.ptPackage?.name }}</p>
+                      <p class="text-sm text-gray-600">Còn lại: {{ pkg.remainingSessions }} / {{ pkg.ptPackage?.sessions }} buổi</p>
+                    </div>
+                    <div v-if="selectedPackage?.id === pkg.id" class="text-blue-600">
+                      <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Time Selection -->
             <div class="grid grid-cols-2 gap-4 mb-6">
               <div>
@@ -611,16 +936,36 @@ onMounted(async () => {
                 <input
                   v-model="selectedStartTime"
                   type="time"
-                  class="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  :min="minTime"
+                  :class="[
+                    'w-full px-3 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500',
+                    startTimeError ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                  ]"
                 />
+                <p v-if="startTimeError" class="mt-1 text-sm text-red-600 flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  </svg>
+                  {{ startTimeError }}
+                </p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Giờ kết thúc</label>
                 <input
                   v-model="selectedEndTime"
                   type="time"
-                  class="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  :min="selectedStartTime || minTime"
+                  :class="[
+                    'w-full px-3 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500',
+                    endTimeError ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+                  ]"
                 />
+                <p v-if="endTimeError" class="mt-1 text-sm text-red-600 flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  </svg>
+                  {{ endTimeError }}
+                </p>
               </div>
             </div>
 
@@ -657,7 +1002,7 @@ onMounted(async () => {
               </button>
               <button
                 @click="registerNewClass"
-                :disabled="!selectedMember || !selectedStartTime || !selectedEndTime"
+                :disabled="isButtonDisabled"
                 class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Đăng ký lớp
@@ -683,7 +1028,7 @@ onMounted(async () => {
         <div class="p-6" v-if="selectedTodayEvent">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-900">
-              Class Details
+              Chi tiết lớp học
             </h3>
             <button
               @click="closeTodayModal"
@@ -709,7 +1054,10 @@ onMounted(async () => {
             <div class="border border-gray-200 rounded-lg p-4 bg-blue-50 shadow-sm">
               <div class="flex items-start">
                 <div class="flex-1">
-                  <h4 class="font-medium text-gray-900 flex items-center mb-2">
+                  <h4 
+                    @click="viewMemberDetails(selectedTodayEvent); closeTodayModal();"
+                    class="font-medium text-gray-900 flex items-center mb-2 cursor-pointer hover:text-blue-600 hover:underline transition-colors"
+                  >
                     <svg
                       class="w-4 h-4 mr-2 text-blue-500"
                       fill="currentColor"
@@ -754,11 +1102,11 @@ onMounted(async () => {
                           d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                         ></path>
                       </svg>
-                      {{ selectedTodayEvent.members }} members
+                      {{ selectedTodayEvent.members }} học viên
                     </div>
                   </div>
                   <div class="mt-2 text-sm text-gray-600">
-                    <p>Status: <span class="font-medium">{{ selectedTodayEvent.status }}</span></p>
+                    <p>Trạng thái: <span class="font-medium">{{ getStatusText(selectedTodayEvent.status) }}</span></p>
                   </div>
                 </div>
               </div>
@@ -766,18 +1114,25 @@ onMounted(async () => {
 
             <div class="flex space-x-2">
               <button
-                v-if="selectedTodayEvent.status !== 'started' && selectedTodayEvent.status !== 'ended'"
+                v-if="selectedTodayEvent.status !== 'In Progress' && selectedTodayEvent.status !== 'Completed' && selectedTodayEvent.status !== 'Cancelled'"
                 @click="startClass(selectedTodayEvent.id); closeTodayModal()"
-                class="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                class="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
               >
-                Start Class
+                Bắt đầu lớp
               </button>
               <button
-                v-if="selectedTodayEvent.status === 'started'"
+                v-if="selectedTodayEvent.status === 'In Progress'"
                 @click="endClass(selectedTodayEvent.id); closeTodayModal()"
-                class="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
-                End Class
+                Kết thúc lớp
+              </button>
+              <button
+                v-if="selectedTodayEvent.status !== 'Completed' && selectedTodayEvent.status !== 'Cancelled'"
+                @click="cancelClass(selectedTodayEvent.id); closeTodayModal()"
+                class="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                Hủy buổi tập
               </button>
             </div>
           </div>
