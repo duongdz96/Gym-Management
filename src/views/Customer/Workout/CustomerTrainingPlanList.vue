@@ -66,7 +66,7 @@ const startWorkout = (plan) => {
 }
 
 const viewPlanDetail = (plan) => {
-  router.push(`/customer/workout/training-plan/${plan.id}`)
+  router.push(`/customer/workout/training-plan/start/${plan.id}`)
 }
 
 const formatDate = (dateString) => {

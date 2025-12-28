@@ -125,6 +125,10 @@ export const trainingPlanApi = {
     // Cập nhật trạng thái
     updateStatus(planId, status) {
         return api.patch(`/training-plans/${planId}/status`, null, { params: { status } })
+    },
+
+    toggleDetailStatus(detailId) {
+        return api.put(`/training-plan-details/${detailId}/toggle-status`);
     }
 }
 

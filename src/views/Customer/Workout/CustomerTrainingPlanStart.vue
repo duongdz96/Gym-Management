@@ -30,30 +30,42 @@ const allCompleted = computed(() => {
 const fetchTrainingPlan = async () => {
   isLoading.value = true
   try {
-    console.log('Fetching training plan with ID:', route.params.id)
     const response = await trainingPlanApi.getPlanById(route.params.id)
-    console.log('Training plan response:', response.data)
     trainingPlan.value = response.data
+    
+    if (trainingPlan.value.details) {
+      trainingPlan.value.details.forEach(detail => {
+        // Giả sử backend trả về string "COMPLETED"
+        if (detail.status === 'COMPLETED') {
+          completedExercises.value.add(detail.id) // Lưu detail.id, KHÔNG PHẢI exercise.id
+        }
+      })
+    }
+
   } catch (error) {
-    console.error('Lỗi khi tải lịch tập:', error)
-    console.error('Error details:', error.response?.data)
-    alert(`Không thể tải lịch tập. Lỗi: ${error.response?.data?.message || error.message}`)
-    goBack()
+    console.error(error)
   } finally {
     isLoading.value = false
   }
 }
 
-const toggleExercise = async (exerciseId) => {
-  if (completedExercises.value.has(exerciseId)) {
-    completedExercises.value.delete(exerciseId)
+const toggleExercise = async (detailId) => {
+  if (completedExercises.value.has(detailId)) {
+    completedExercises.value.delete(detailId)
   } else {
-    completedExercises.value.add(exerciseId)
-    try {
-      await trainingPlanApi.completeExercise(route.params.id, exerciseId)
-    } catch (error) {
-      console.error('Lỗi khi đánh dấu bài tập:', error)
+    completedExercises.value.add(detailId)
+  }
+
+  try {
+    await trainingPlanApi.toggleDetailStatus(detailId)
+  } catch (error) {
+    console.error('Lỗi khi đánh dấu bài tập:', error)
+    if (completedExercises.value.has(detailId)) {
+      completedExercises.value.delete(detailId)
+    } else {
+      completedExercises.value.add(detailId)
     }
+    alert('Có lỗi xảy ra, vui lòng thử lại')
   }
 }
 
@@ -99,7 +111,6 @@ onMounted(() => {
 <template>
   <div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 py-8">
     <div class="mx-auto max-w-4xl px-6">
-      <!-- Back Button -->
       <button
         @click="goBack"
         class="flex items-center gap-2 text-gray-600 hover:text-red-600 mb-6 transition-colors"
@@ -108,14 +119,11 @@ onMounted(() => {
         <span class="font-medium">Quay lại</span>
       </button>
 
-      <!-- Loading State -->
       <div v-if="isLoading" class="flex justify-center items-center h-64">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
       </div>
 
-      <!-- Training Plan Content -->
       <div v-else-if="trainingPlan" class="space-y-6">
-        <!-- Header Card -->
         <div class="bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-8 text-white shadow-lg">
           <div class="flex items-start justify-between mb-4">
             <div>
@@ -128,13 +136,11 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Muscle Group -->
           <div class="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 inline-flex">
             <Dumbbell class="w-5 h-5" />
             <span class="font-semibold">{{ trainingPlan.muscleGroupFocus }}</span>
           </div>
 
-          <!-- Progress Bar -->
           <div class="mt-6">
             <div class="bg-white/20 rounded-full h-3 overflow-hidden">
               <div 
@@ -148,7 +154,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Exercise List -->
         <div class="bg-white rounded-2xl shadow-lg p-6">
           <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
             <Dumbbell class="w-6 h-6 text-red-600" />
@@ -159,31 +164,29 @@ onMounted(() => {
             <div
               v-for="(detail, index) in trainingPlan.details"
               :key="detail.id"
-              @click="toggleExercise(detail.exercise.id)"
+              @click="toggleExercise(detail.id)" 
               :class="[
                 'p-4 rounded-xl border-2 cursor-pointer transition-all',
-                completedExercises.has(detail.exercise.id)
+                completedExercises.has(detail.id) 
                   ? 'border-green-500 bg-green-50'
                   : 'border-gray-200 hover:border-red-300 hover:bg-red-50'
               ]"
             >
               <div class="flex items-start gap-4">
-                <!-- Checkbox Icon -->
                 <div class="flex-shrink-0 mt-1">
                   <component
-                    :is="completedExercises.has(detail.exercise.id) ? CheckCircle : Circle"
-                    :class="completedExercises.has(detail.exercise.id) ? 'text-green-600' : 'text-gray-400'"
+                    :is="completedExercises.has(detail.id) ? CheckCircle : Circle"
+                    :class="completedExercises.has(detail.id) ? 'text-green-600' : 'text-gray-400'"
                     class="w-6 h-6"
                   />
                 </div>
 
-                <!-- Exercise Info -->
                 <div class="flex-1">
                   <div class="flex items-start justify-between">
                     <div>
                       <h3 :class="[
                         'font-bold text-lg',
-                        completedExercises.has(detail.exercise.id) ? 'text-green-900 line-through' : 'text-gray-900'
+                        completedExercises.has(detail.id) ? 'text-green-900 line-through' : 'text-gray-900'
                       ]">
                         {{ index + 1 }}. {{ detail.exercise.name }}
                       </h3>
@@ -199,7 +202,6 @@ onMounted(() => {
                     </div>
                   </div>
 
-                  <!-- Description Preview -->
                   <p class="text-sm text-gray-500 mt-2 line-clamp-2">
                     {{ detail.exercise.description }}
                   </p>
@@ -209,7 +211,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Complete Button -->
         <div class="bg-white rounded-2xl shadow-lg p-6">
           <button
             @click="completePlan"
@@ -230,23 +231,22 @@ onMounted(() => {
           </p>
         </div>
 
-        <!-- Motivation Card -->
         <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
-          <h3 class="text-lg font-bold text-blue-900 mb-3">💪 Động lực</h3>
-          <ul class="space-y-2 text-blue-800">
-            <li class="flex items-start gap-2">
-              <span class="text-blue-600 mt-1">•</span>
-              <span>Tập trung vào kỹ thuật đúng</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <span class="text-blue-600 mt-1">•</span>
-              <span>Nghỉ ngơi 60-90 giây giữa các set</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <span class="text-blue-600 mt-1">•</span>
-              <span>Uống nước đầy đủ trong quá trình tập</span>
-            </li>
-          </ul>
+            <h3 class="text-lg font-bold text-blue-900 mb-3">💪 Động lực</h3>
+            <ul class="space-y-2 text-blue-800">
+              <li class="flex items-start gap-2">
+                <span class="text-blue-600 mt-1">•</span>
+                <span>Tập trung vào kỹ thuật đúng</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-blue-600 mt-1">•</span>
+                <span>Nghỉ ngơi 60-90 giây giữa các set</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-blue-600 mt-1">•</span>
+                <span>Uống nước đầy đủ trong quá trình tập</span>
+              </li>
+            </ul>
         </div>
       </div>
     </div>
