@@ -47,9 +47,11 @@ public class FitnessClassServiceImpl implements FitnessClassService {
 
     @Override
     public void delete(Long id) {
-        if (!fitnessClassRepository.existsById(id)) {
-            throw new RuntimeException("ClassType not found with id " + id);
-        }
-        fitnessClassRepository.deleteById(id);
+        FitnessClass fitnessClass = fitnessClassRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("FitnessClass not found with id " + id));
+
+        fitnessClass.setStatus("INACTIVE");
+
+        fitnessClassRepository.save(fitnessClass);
     }
 }

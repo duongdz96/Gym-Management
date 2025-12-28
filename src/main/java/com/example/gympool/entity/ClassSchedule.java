@@ -39,4 +39,6 @@ public class ClassSchedule {
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = true)
     private Room room;
+
+    private String note;
 }

@@ -58,7 +58,10 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
 
     @Override
     public void delete(Long id) {
-        classScheduleRepository.deleteById(id);
+        ClassSchedule classSchedule = classScheduleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("ClassSchedule not found with id " + id));
+        classSchedule.setStatus("CANCELLED");
+        classScheduleRepository.save(classSchedule);
     }
 
     @Override
