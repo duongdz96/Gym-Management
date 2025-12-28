@@ -40,6 +40,8 @@ import CustomerCoupon from "@/views/Customer/CustomerCoupon.vue";
 import CustomerPlan from "@/views/Customer/CustomerPlan.vue";
 import CustomerProfile from "@/views/Customer/CustomerProfile.vue";
 import CustomerSetting from "@/views/Customer/CustomerSetting.vue";
+import CustomerActivityHistory from "@/views/Customer/CustomerActivityHistory.vue";
+import CustomerNotifications from "@/views/Customer/CustomerNotifications.vue";
 
 import ReceptionLayout from "@/layout/ReceptionLayout.vue";
 import ReceptionHome from "@/views/Reception/ReceptionHome.vue";
@@ -144,6 +146,8 @@ const routes = [
             { path: "profile", name: "customer.profile", component: CustomerProfile },
             { path: "setting", name: "customer.setting", component: CustomerSetting },
             { path: "billhistory", name: "customer.billhistory", component: CustomerBillHistory },
+            { path: "activity-history", name: "customer.activity-history", component: CustomerActivityHistory },
+            { path: "notifications", name: "customer.notifications", component: CustomerNotifications },
 
             // Workout Management Routes
             {

@@ -1,8 +1,8 @@
 <template>
   <div class="p-6">
     <div class="flex items-center gap-3 mb-8">
-      <BookOpen class="w-10 h-10 text-red-600" />
-      <h1 class="text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
+      <BookOpen class="w-10 h-10 text-teal-600" />
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
         Đăng Ký Dạy Lớp
       </h1>
     </div>
@@ -13,7 +13,7 @@
         <Filter class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <select 
           v-model="filterDifficulty"
-          class="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all appearance-none bg-white"
+          class="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 outline-none transition-all appearance-none bg-white"
         >
           <option value="">Tất cả độ khó</option>
           <option value="Beginner">Beginner</option>
@@ -28,7 +28,7 @@
           v-model="searchQuery" 
           type="text" 
           placeholder="Tìm kiếm lớp học..." 
-          class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all"
+          class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 outline-none transition-all"
         />
       </div>
     </div>
@@ -41,15 +41,15 @@
         class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
       >
         <!-- Card Header -->
-        <div class="p-5 bg-gradient-to-r from-red-600 to-red-700 text-white">
+        <div class="p-5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
           <div class="flex justify-between items-start">
             <h3 class="text-xl font-bold">{{ cls.name }}</h3>
             <span 
               class="px-3 py-1 rounded-full text-xs font-semibold"
               :class="{
-                'bg-green-500': cls.difficulty === 'Beginner',
+                'bg-cyan-500': cls.difficulty === 'Beginner',
                 'bg-orange-500': cls.difficulty === 'Intermediate',
-                'bg-red-500': cls.difficulty === 'Advanced'
+                'bg-purple-500': cls.difficulty === 'Advanced'
               }"
             >
               {{ cls.difficulty }}
@@ -80,7 +80,7 @@
                 <span class="text-gray-800">{{ getScheduleText(cls) }}</span>
                 <button 
                   @click.stop="viewSessions(cls)" 
-                  class="text-red-600 hover:text-red-800 text-xs font-bold underline flex items-center gap-1"
+                  class="text-teal-600 hover:text-teal-800 text-xs font-bold underline flex items-center gap-1"
                 >
                   <Eye class="w-3 h-3" /> Chi tiết
                 </button>
@@ -145,7 +145,7 @@
           <button 
             @click="applyToTeach(cls)" 
             :disabled="conflictMap[cls.id] || getApplicationStatus(cls.id)"
-            class="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            class="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <component 
               :is="getApplicationStatus(cls.id) ? CheckCircle : Hand" 
@@ -179,13 +179,13 @@
       >
         <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col">
           <!-- Modal Header -->
-          <div class="p-6 bg-gradient-to-r from-red-600 to-red-700 text-white flex justify-between items-center shrink-0">
+          <div class="p-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white flex justify-between items-center shrink-0">
             <div>
               <h3 class="text-xl font-bold flex items-center gap-2">
                 <CalendarIcon class="w-6 h-6" />
                 Chi tiết lịch dạy
               </h3>
-              <p class="text-red-100 text-sm mt-1">{{ selectedClass?.name }}</p>
+              <p class="text-cyan-100 text-sm mt-1">{{ selectedClass?.name }}</p>
             </div>
             <button 
               @click="showSessionsModal = false"
@@ -205,17 +205,17 @@
               <div 
                 v-for="(session, idx) in selectedClassSessions" 
                 :key="session.id"
-                class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-red-200 hover:bg-red-50/50 transition-all"
+                class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-teal-200 hover:bg-teal-50/50 transition-all"
               >
                 <!-- Index -->
-                <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold text-sm shrink-0">
+                <div class="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-sm shrink-0">
                   {{ idx + 1 }}
                 </div>
                 
                 <!-- Date Info -->
                 <div class="flex-1">
                   <div class="font-bold text-gray-800 flex items-center gap-2">
-                    <CalendarIcon class="w-4 h-4 text-red-500" />
+                    <CalendarIcon class="w-4 h-4 text-teal-600" />
                     {{ formatDate(session.date) }}
                   </div>
                   <div class="text-sm text-gray-500 mt-1 flex items-center gap-4">
@@ -315,9 +315,9 @@ const getSessionStatus = (session) => {
   if (sDate < today) {
     return { text: 'Đã diễn ra', class: 'bg-gray-100 text-gray-500' };
   } else if (sDate.getTime() === today.getTime()) {
-    return { text: 'Hôm nay', class: 'bg-red-100 text-red-700' };
+    return { text: 'Hôm nay', class: 'bg-cyan-100 text-cyan-700' };
   } else {
-    return { text: 'Sắp diễn ra', class: 'bg-green-100 text-green-700' };
+    return { text: 'Sắp diễn ra', class: 'bg-teal-100 text-teal-700' };
   }
 };
 

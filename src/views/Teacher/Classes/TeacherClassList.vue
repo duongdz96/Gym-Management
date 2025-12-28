@@ -2,15 +2,15 @@
   <div class="p-6">
     <!-- Header -->
     <div class="flex items-center gap-3 mb-8">
-      <BookOpen class="w-10 h-10 text-green-600" />
-      <h1 class="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
+      <BookOpen class="w-10 h-10 text-emerald-600" />
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
         Lớp Học Của Tôi
       </h1>
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-16">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
       <p class="text-gray-500">Đang tải danh sách lớp...</p>
     </div>
 
@@ -22,15 +22,15 @@
         class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
       >
         <!-- Card Header -->
-        <div class="p-5 bg-gradient-to-r from-green-600 to-green-700 text-white">
+        <div class="p-5 bg-gradient-to-r from-emerald-500 to-emerald-500 text-white">
           <div class="flex justify-between items-start">
             <h3 class="text-xl font-bold">{{ cls.name }}</h3>
             <span 
               class="px-3 py-1 rounded-full text-xs font-semibold"
               :class="{
-                'bg-green-500': cls.difficulty === 'Beginner',
+                'bg-emerald-500': cls.difficulty === 'Beginner',
                 'bg-orange-500': cls.difficulty === 'Intermediate',
-                'bg-blue-500': cls.difficulty === 'Advanced'
+                'bg-purple-500': cls.difficulty === 'Advanced'
               }"
             >
               {{ cls.difficulty }}
@@ -74,14 +74,14 @@
         <div class="p-4 bg-gray-50 border-t grid grid-cols-2 gap-2">
           <button 
             @click="viewSchedule(cls)"
-            class="px-4 py-2 bg-blue-100 text-blue-700 rounded-xl font-semibold hover:bg-blue-200 transition-all flex items-center justify-center gap-2"
+            class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl font-semibold hover:bg-emerald-200 transition-all flex items-center justify-center gap-2"
           >
             <CalendarIcon class="w-4 h-4" />
             Xem lịch
           </button>
           <button 
             @click="goToAttendance(cls)"
-            class="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+            class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
           >
             <CheckSquare class="w-4 h-4" />
             Điểm danh
@@ -112,13 +112,13 @@
       >
         <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col">
           <!-- Modal Header -->
-          <div class="p-6 bg-gradient-to-r from-green-600 to-green-700 text-white flex justify-between items-center shrink-0">
+          <div class="p-6 bg-gradient-to-r from-emerald-500 to-emerald-500 text-white flex justify-between items-center shrink-0">
             <div>
               <h3 class="text-xl font-bold flex items-center gap-2">
                 <CalendarIcon class="w-6 h-6" />
                 Lịch học
               </h3>
-              <p class="text-green-100 text-sm mt-1">{{ selectedClass?.name }}</p>
+              <p class="text-emerald-100 text-sm mt-1">{{ selectedClass?.name }}</p>
             </div>
             <button 
               @click="showScheduleModal = false"
@@ -138,17 +138,17 @@
               <div 
                 v-for="(session, idx) in selectedClassSessions" 
                 :key="session.id"
-                class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-green-200 hover:bg-green-50/50 transition-all"
+                class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-all"
               >
                 <!-- Index -->
-                <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-sm shrink-0">
+                <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm shrink-0">
                   {{ idx + 1 }}
                 </div>
                 
                 <!-- Date Info -->
                 <div class="flex-1">
                   <div class="font-bold text-gray-800 flex items-center gap-2">
-                    <CalendarIcon class="w-4 h-4 text-green-500" />
+                    <CalendarIcon class="w-4 h-4 text-emerald-500" />
                     {{ formatDate(session.date) }}
                   </div>
                   <div class="text-sm text-gray-500 mt-1 flex items-center gap-4">
@@ -277,9 +277,9 @@ const getSessionStatus = (session) => {
   if (sDate < today) {
     return { text: 'Đã diễn ra', class: 'bg-gray-100 text-gray-500' };
   } else if (sDate.getTime() === today.getTime()) {
-    return { text: 'Hôm nay', class: 'bg-green-100 text-green-700' };
+    return { text: 'Hôm nay', class: 'bg-emerald-100 text-emerald-700' };
   } else {
-    return { text: 'Sắp diễn ra', class: 'bg-blue-100 text-blue-700' };
+    return { text: 'Sắp diễn ra', class: 'bg-emerald-100 text-emerald-700' };
   }
 };
 

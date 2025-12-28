@@ -20,27 +20,35 @@ type PT = {
   role?: string;
 };
 
-// Định nghĩa Student Profile
-type StudentProfile = {
+// Định nghĩa PT Package
+type PTPackage = {
   id: number;
-  height?: number;
-  weight?: number;
-  trainingPlan?: string;
+  name: string;
+  sessions: number;
+  status: string;
+};
+
+// Định nghĩa Package Issued
+type PackageIssued = {
+  id: number;
   member: Member;
   pt: PT;
+  ptPackage: PTPackage;
+  remainingSessions: number;
+  issueDate?: string;
 };
 
 const members = ref<Member[]>([]);
 const pts = ref<PT[]>([]);
-const studentProfiles = ref<StudentProfile[]>([]);
+const ptPackages = ref<PTPackage[]>([]);
+const packageIssued = ref<PackageIssued[]>([]);
 const selectedMember = ref<Member | null>(null);
 const searchMember = ref("");
 
 // Form fields
 const selectedPT = ref<PT | null>(null);
-const height = ref<number | null>(null);
-const weight = ref<number | null>(null);
-const trainingPlan = ref("");
+const selectedPackage = ref<PTPackage | null>(null);
+const remainingSessions = ref<number | null>(null);
 
 onMounted(async () => {
   try {
@@ -52,9 +60,13 @@ onMounted(async () => {
     const ptsRes = await api.get("/pts");
     pts.value = ptsRes.data;
 
-    // Load existing student profiles
-    const profilesRes = await api.get("/studentprofile");
-    studentProfiles.value = profilesRes.data;
+    // Load PT packages
+    const packagesRes = await api.get("/ptpackage");
+    ptPackages.value = packagesRes.data;
+
+    // Load existing package issued
+    const issuedRes = await api.get("/packageissued");
+    packageIssued.value = issuedRes.data;
   } catch (err) {
     console.error("Error fetching data:", err);
   }
@@ -68,71 +80,72 @@ const filteredMembers = computed(() => {
   );
 });
 
-// Check if member already has a PT assigned
-const getMemberProfile = (memberId: number) => {
-  return studentProfiles.value.find(profile => profile.member.id === memberId);
+// Check if member already has a PT package assigned
+const getMemberPackage = (memberId: number) => {
+  return packageIssued.value.find(pkg => pkg.member.id === memberId);
 };
 
 // Functions
 const selectMember = (member: Member) => {
   selectedMember.value = member;
   
-  // Check if member already has a profile and pre-fill the form
-  const existingProfile = getMemberProfile(member.id);
-  if (existingProfile) {
-    selectedPT.value = existingProfile.pt;
-    height.value = existingProfile.height || null;
-    weight.value = existingProfile.weight || null;
-    trainingPlan.value = existingProfile.trainingPlan || "";
+  // Check if member already has a package and pre-fill the form
+  const existingPackage = getMemberPackage(member.id);
+  if (existingPackage) {
+    selectedPT.value = existingPackage.pt;
+    selectedPackage.value = existingPackage.ptPackage;
+    remainingSessions.value = existingPackage.remainingSessions;
   } else {
     // Reset form
     selectedPT.value = null;
-    height.value = null;
-    weight.value = null;
-    trainingPlan.value = "";
+    selectedPackage.value = null;
+    remainingSessions.value = null;
   }
 };
 
 const submitPTAssignment = async () => {
-  if (!selectedMember.value || !selectedPT.value) {
-    alert("Vui lòng chọn member và PT!");
+  if (!selectedMember.value || !selectedPT.value || !selectedPackage.value) {
+    alert("Vui lòng chọn member, PT và gói PT!");
+    return;
+  }
+
+  if (!remainingSessions.value || remainingSessions.value <= 0) {
+    alert("Vui lòng nhập số buổi còn lại hợp lệ!");
     return;
   }
 
   try {
-    const existingProfile = getMemberProfile(selectedMember.value.id);
+    const existingPackage = getMemberPackage(selectedMember.value.id);
     
     const payload = {
-      member: { id: selectedMember.value.id },
-      pt: { id: selectedPT.value.id },
-      height: height.value,
-      weight: weight.value,
-      trainingPlan: trainingPlan.value
+      memberId: selectedMember.value.id,
+      ptId: selectedPT.value.id,
+      packageId: selectedPackage.value.id,
+      remainingSessions: remainingSessions.value
     };
 
-    if (existingProfile) {
-      // Update existing profile
-      await api.put(`/api/studentprofile/${existingProfile.id}`, payload);
-      alert("Cập nhật PT cho member thành công!");
+    if (existingPackage) {
+      // Update existing package
+      await api.put(`/packageissued/${existingPackage.id}`, payload);
+      alert("Cập nhật gói PT cho member thành công!");
     } else {
-      // Create new profile
-      await api.post("/api/studentprofile", payload);
-      alert("Đăng ký PT cho member thành công!");
+      // Create new package issued
+      await api.post("/packageissued", payload);
+      alert("Đăng ký gói PT cho member thành công!");
     }
     
-    // Reload student profiles
-    const profilesRes = await api.get("/studentprofile");
-    studentProfiles.value = profilesRes.data;
+    // Reload package issued
+    const issuedRes = await api.get("/packageissued");
+    packageIssued.value = issuedRes.data;
     
     // Reset
     selectedMember.value = null;
     selectedPT.value = null;
-    height.value = null;
-    weight.value = null;
-    trainingPlan.value = "";
+    selectedPackage.value = null;
+    remainingSessions.value = null;
   } catch (err) {
     console.error("Error assigning PT:", err);
-    alert("Đăng ký PT thất bại!");
+    alert("Đăng ký gói PT thất bại!");
   }
 };
 </script>
@@ -150,7 +163,7 @@ const submitPTAssignment = async () => {
               v-model="searchMember"
               placeholder="Tìm kiếm member theo tên hoặc email..."
               class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                     focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
                      transition duration-200 ease-in-out"
             />
             <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
@@ -168,7 +181,7 @@ const submitPTAssignment = async () => {
               :class="[
                 'p-4 rounded-lg cursor-pointer transition-colors border',
                 selectedMember?.id === member.id
-                  ? 'bg-blue-100 border-blue-300'
+                  ? 'bg-emerald-100 border-emerald-300'
                   : 'bg-gray-50 hover:bg-gray-100',
               ]"
             >
@@ -189,11 +202,11 @@ const submitPTAssignment = async () => {
 
         <div class="flex-1 p-6">
           <div v-if="selectedMember" class="space-y-6">
-            <div class="bg-blue-50 p-4 rounded-lg">
+            <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
               <h3 class="text-lg font-semibold text-gray-900">Member đã chọn</h3>
               <p class="text-gray-700">{{ selectedMember.fullName }}</p>
               <p class="text-gray-600">{{ selectedMember.email }}</p>
-              <p v-if="selectedMember.membership" class="text-xs text-blue-600 font-medium mt-1">
+              <p v-if="selectedMember.membership" class="text-xs text-emerald-600 font-medium mt-1">
                 Gói: {{ selectedMember.membership }}
               </p>
             </div>
@@ -204,7 +217,7 @@ const submitPTAssignment = async () => {
                 <label class="block text-sm font-medium text-gray-700 mb-2">Chọn PT</label>
                 <select
                   v-model="selectedPT"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   required
                 >
                   <option :value="null">Chọn PT</option>
@@ -214,47 +227,42 @@ const submitPTAssignment = async () => {
                 </select>
               </div>
 
-              <!-- Height -->
+              <!-- PT Package -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Chiều cao (m) - Tùy chọn</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  v-model.number="height"
-                  placeholder="Ví dụ: 1.75"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <label class="block text-sm font-medium text-gray-700 mb-2">Chọn Gói PT</label>
+                <select
+                  v-model="selectedPackage"
+                  @change="remainingSessions = selectedPackage?.sessions || null"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  required
+                >
+                  <option :value="null">Chọn gói PT</option>
+                  <option v-for="pkg in ptPackages" :key="pkg.id" :value="pkg">
+                    {{ pkg.name }}
+                  </option>
+                </select>
               </div>
 
-              <!-- Weight -->
+              <!-- Remaining Sessions -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Cân nặng (kg) - Tùy chọn</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Số buổi còn lại</label>
                 <input
                   type="number"
-                  step="0.1"
-                  v-model.number="weight"
-                  placeholder="Ví dụ: 70.5"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  v-model.number="remainingSessions"
+                  min="1"
+                  placeholder="Ví dụ: 12"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  required
                 />
-              </div>
-
-              <!-- Training Plan -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Kế hoạch tập luyện - Tùy chọn</label>
-                <textarea
-                  v-model="trainingPlan"
-                  rows="4"
-                  placeholder="Ví dụ: Tập luyện tăng cơ 4 buổi/tuần, dinh dưỡng Calo thặng dư"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                ></textarea>
+                <p class="text-xs text-gray-500 mt-1">Thường bằng số buổi của gói đã chọn</p>
               </div>
 
               <!-- Submit Button -->
               <button
                 type="submit"
-                class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                class="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
               >
-                {{ getMemberProfile(selectedMember.id) ? 'Cập nhật PT' : 'Đăng ký PT' }}
+                {{ getMemberPackage(selectedMember.id) ? 'Cập nhật Gói PT' : 'Đăng ký Gói PT' }}
               </button>
             </form>
           </div>
