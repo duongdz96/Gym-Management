@@ -257,7 +257,7 @@ const loadLeaveRequests = async () => {
     */
     leaveRequests.value = []; // Placeholder
   } catch (error) {
-    toast.error('Lỗi: ' + error.message);
+    toast.error('Có lỗi xảy ra');
   } finally {
     loading.value = false;
   }
@@ -270,7 +270,7 @@ const approveLeave = async (request) => {
       toast.success('Đã duyệt đơn xin nghỉ! Bạn có thể hủy buổi học hoặc thêm ghi chú.');
       await loadLeaveRequests();
     } catch (error) {
-      toast.error('Lỗi: ' + error.message);
+      toast.error('Có lỗi xảy ra');
     }
   }
 };
@@ -282,7 +282,7 @@ const rejectLeave = async (request) => {
       toast.success('Đã từ chối đơn xin nghỉ!');
       await loadLeaveRequests();
     } catch (error) {
-      toast.error('Lỗi: ' + error.message);
+      toast.error('Có lỗi xảy ra');
     }
   }
 };
@@ -310,7 +310,7 @@ const submitCancellation = async () => {
     showCancelModal.value = false;
     await loadLeaveRequests();
   } catch (error) {
-    toast.error('Lỗi: ' + error.message);
+    toast.error('Có lỗi xảy ra');
   }
 };
 
@@ -332,7 +332,7 @@ const submitNote = async () => {
     showNoteModal.value = false;
     await loadLeaveRequests();
   } catch (error) {
-    toast.error('Lỗi: ' + error.message);
+    toast.error('Có lỗi xảy ra');
   }
 };
 

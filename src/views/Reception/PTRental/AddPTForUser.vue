@@ -81,7 +81,7 @@ const selectMember = (member: Member) => {
 
 const submitPTAssignment = async () => {
   if (!selectedMember.value || !selectedPTProduct.value || !startDate.value || !selectedPTStaff.value) {
-    toast.warning("Please fill all required fields!");
+    toast.warning("Vui lòng điền vào tất cả các trường!");
     return;
   }
 
@@ -96,12 +96,12 @@ const submitPTAssignment = async () => {
     };
 
     await api.post("/ptPackageIssued", payload);
-    toast.success("PT package assigned successfully!");
+    toast.success("Thêm gói PT thành công!");
     // Reset
     selectedMember.value = null;
   } catch (err) {
     console.error("Error assigning PT:", err);
-    toast.error("Failed to assign PT package.");
+    toast.error("Thêm gói PT thất bại.");
   }
 };
 </script>

@@ -75,7 +75,7 @@ const generateQR = () => {
   qrUrl.value = `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact.png?amount=${amount.value}&addInfo=${encodeURIComponent(addInfo.value)}&accountName=${encodeURIComponent(accountName)}`;
   status.value = "Pending";
 
-  toast.info("QR created. Waiting for payment...");
+  toast.info("Mã QR đã tạo. Đang đợi thanh toán...");
 
   startPolling();
 };

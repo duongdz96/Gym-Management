@@ -1249,7 +1249,7 @@ const createClass = async () => {
     await loadData();
   } catch (error) {
     const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra';
-    toast.error('Lỗi: ' + errorMessage);
+    toast.error('Có lỗi xảy ra');
   }
 };
 

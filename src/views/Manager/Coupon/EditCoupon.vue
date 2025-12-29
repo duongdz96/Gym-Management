@@ -197,7 +197,7 @@ const loadTiers = async () => {
     const res = await api.get("/membershiptier");
     tiers.value = res.data;
   } catch (err) {
-    toast.error("Error loading membership tiers");
+    toast.error("Lỗi khi tải bậc thành viên");
   }
 };
 
@@ -217,14 +217,14 @@ const loadCoupon = async () => {
       totalUses: coupon.totalUses || 3,
     };
   } catch (err) {
-    toast.error("Failed to load coupon data");
+    toast.error("Lỗi khi tải dữ liệu mã giảm giá");
   }
 };
 
 const submit = async () => {
   // Validate percentage value
   if (form.value.discountType === 'PERCENTAGE' && form.value.discountValue > 100) {
-      toast.error("Percentage discount cannot exceed 100%");
+      toast.error("Phần trăm giảm giá không được quá 100%");
       return;
   }
   

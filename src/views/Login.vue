@@ -130,7 +130,6 @@ const loginUser = async () => {
   } catch (err) {
     console.error("Login error:", err);
     const msg =
-      err.response?.data?.message ||
       "Sai thông tin đăng nhập hoặc lỗi máy chủ!";
     toast.error(msg);
   }

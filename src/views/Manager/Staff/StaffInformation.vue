@@ -43,7 +43,7 @@ onMounted(async () => {
     user.value = response.data
   } catch (err: any) {
     console.error("Lỗi khi tải thông tin:", err)
-    toast.error(err.response?.data?.message || "Không thể tải thông tin.")
+    toast.error("Không thể tải thông tin.")
     router.push('/staff')
   } finally {
     isLoading.value = false
@@ -114,7 +114,7 @@ const handleSave = async () => {
 
   } catch (err: any) {
     console.error("Lỗi khi cập nhật:", err);
-    toast.error(err.response?.data?.message || "Cập nhật thất bại.");
+    toast.error("Cập nhật thất bại.");
   } finally {
     isSaving.value = false;
   }

@@ -20,7 +20,7 @@ const loadCheckinHistory = async () => {
     checkinHistory.value = res.data;
   } catch (error) {
     console.error("Failed to load checkin history:", error);
-    toast.error("Failed to load checkin history. Please try again.");
+    toast.error("Lỗi khi tải lịch sử checkin. Vui lòng thử lại sau!");
   } finally {
     loadingCheckin.value = false;
   }
@@ -48,7 +48,7 @@ const loadTeachingHistory = async () => {
     }));
   } catch (error) {
     console.error("Failed to load teaching history:", error);
-    toast.error("Failed to load teaching history. Please try again.");
+    toast.error("Lỗi khi tải lịch sử giảng dạy. Vui lòng thử lại sau!");
   } finally {
     loadingTeaching.value = false;
   }

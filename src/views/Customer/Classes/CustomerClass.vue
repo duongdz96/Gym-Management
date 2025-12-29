@@ -848,7 +848,7 @@ const registerSelectedSchedules = async () => {
       closeScheduleModal();
       await loadData();
     } catch (error) {
-      toast.error('Lỗi: ' + (error.response?.data?.message || error.message));
+      toast.error('Có lỗi xảy ra');
     }
   }
 };
@@ -870,7 +870,7 @@ const cancelRegistration = async (cls) => {
       toast.success('Đã hủy đăng ký!');
       await loadData();
     } catch (error) {
-      toast.error('Lỗi: ' + (error.response?.data?.message || error.message));
+      toast.error('Có lỗi xảy ra');
     }
   }
 };

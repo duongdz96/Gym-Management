@@ -423,7 +423,7 @@ const loadClassData = async () => {
 
   } catch (error) {
     console.error('Error:', error);
-    toast.error('Lỗi hệ thống: ' + error.message);
+    toast.error('Lỗi hệ thống');
   }
 };
 
@@ -475,7 +475,7 @@ const loadSessionData = async () => {
 
   } catch (error) {
     console.error('Error:', error);
-    if (error.response?.status !== 404) toast.error('Lỗi: ' + error.message);
+    if (error.response?.status !== 404) toast.error('Có lỗi xảy ra');
   } finally {
     loadingStudents.value = false;
   }
@@ -519,7 +519,7 @@ const markPresent = async (student) => {
     }
   } catch (error) {
     console.error('Error marking present:', error);
-    toast.error('Lỗi: ' + (error.response?.data?.message || error.message));
+    toast.error('Có lỗi xảy ra');
   }
 };
 
@@ -560,7 +560,7 @@ const markAbsent = async (student) => {
     }
   } catch (error) {
     console.error('Error marking absent:', error);
-    toast.error('Lỗi: ' + (error.response?.data?.message || error.message));
+    toast.error('Có lỗi xảy ra');
   }
 };
 
@@ -591,12 +591,12 @@ const autoAbsent = async () => {
   try {
     const response = await api.post(`/class-attendance/students/auto-absent/${selectedSession.value.id}`);
 
-    toast.success(response.data);
+    toast.success('Đánh dấu thành công');
 
     await loadSessionData(); // Tải lại để thấy danh sách những người vừa bị đánh vắng
   } catch (error) {
     console.error('Error auto absent:', error);
-    toast.error('Lỗi: ' + (error.response?.data || error.message));
+    toast.error('Có lỗi xảy ra');
   } finally {
     finalizing.value = false;
   }

@@ -653,7 +653,7 @@ const registerMember = async () => {
       memberSearchResults.value = [];
       memberSearchAttempted.value = false;
     } catch (error) {
-      toast.error('Lỗi: ' + (error.response?.data?.message || error.message));
+      toast.error('Có lỗi xảy ra');
     } finally {
       registering.value = false;
     }

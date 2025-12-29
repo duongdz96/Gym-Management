@@ -522,7 +522,7 @@ const autoReject = async (app) => {
       toast.success('Đã từ chối đơn đăng ký');
       await loadData();
     } catch (error) {
-      toast.error('Lỗi: ' + error.message);
+      toast.error('Có lỗi xảy ra');
     }
   }
 };
@@ -542,7 +542,7 @@ const approve = async (app) => {
     } catch (error) {
       // Show detailed error message from backend
       const errorMsg = error.response?.data?.message || error.response?.data || error.message;
-      toast.error('Lỗi: ' + errorMsg);
+      toast.error('Có lỗi xảy ra');
     }
   }
 };
@@ -564,7 +564,7 @@ const reject = async () => {
     rejectModalApp.value = null;
     await loadData();
   } catch (error) {
-    toast.error('Lỗi: ' + error.message);
+    toast.error('Có lỗi xảy ra');
   }
 };
 

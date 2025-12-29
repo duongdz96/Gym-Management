@@ -48,10 +48,10 @@ const saveCurrentWeight = async () => {
       await api.put(`/studentprofile/${selectedMember.value.id}`, payload);
       selectedMember.value.weight = tempCurrentWeight.value;
       isEditingWeight.value = false;
-      toast.success("Weight updated successfully!");
+      toast.success("Cân nặng cập nhật thành công!");
     } catch (error) {
-      console.error("Error updating weight:", error);
-      toast.error("Failed to update weight. Please try again.");
+      console.error("Cân nặng cập nhật thất bại. Vui lòng thử lại sau!", error);
+      toast.error("Cân nặng cập nhật thất bại. Vui lòng thử lại sau!");
     }
   }
 };
@@ -159,7 +159,7 @@ onMounted(async () => {
     console.log("PT Members loaded:", members.value);
   } catch (error) {
     console.error('Failed to load PT members:', error);
-    toast.error("Failed to load members. Please try again.");
+    toast.error("Không thể tải thành viên. Vui lòng thử lại sau");
   }
 
   // Auto select first member

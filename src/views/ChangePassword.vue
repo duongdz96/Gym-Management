@@ -46,7 +46,7 @@ const handleChangePassword = async () => {
   } catch (error: any) {
     console.error(error);
     if (error.response?.data) {
-      toast.error(error.response.data.message);
+      toast.error('Có lỗi xảy ra');
     } else {
       toast.error("Đổi mật khẩu thất bại");
     }

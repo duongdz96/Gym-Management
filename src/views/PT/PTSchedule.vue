@@ -95,7 +95,7 @@ async function fetchSchedule(query = "") {
   } catch (error) {
     console.error("Failed to fetch PT schedule:", error);
     schedule.value = [];
-    toast.error("Failed to load schedule. Please try again.");
+    toast.error("Không thể tải lịch. Vui lòng thử lại sau");
   }
 }
 
@@ -125,7 +125,7 @@ async function loadAvailableMembers() {
   } catch (error) {
     console.error('Failed to load available members:', error);
     availableMembers.value = [];
-    toast.error("Failed to load members. Please try again.");
+    toast.error("Không thể tải thành viên. Vui lòng thử lại sau!");
   }
 }
 

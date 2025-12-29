@@ -65,7 +65,7 @@ const handleSubmit = async () => {
 
   } catch (err: any) {
     console.error('Lỗi khi đăng ký nhân viên:', err)
-    const errorMessage = err.response?.data?.message || 'Lỗi khi đăng ký nhân viên!';
+    const errorMessage = 'Lỗi khi đăng ký nhân viên!';
     toast.error(errorMessage);
     
   } finally {

@@ -44,7 +44,7 @@ const fetchCoupons = async () => {
         const res = await api.get("/coupons");
         coupons.value = res.data;
     } catch (error) {
-        toast.error('Failed to load coupons');
+        toast.error('Tải mã giảm giá thất bại');
     } finally {
         loading.value = false;
     }
@@ -133,7 +133,7 @@ function onFileChange(e) {
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     ]
     if (!allowed.includes(file.type) && !/\.(csv|xlsx)$/i.test(file.name)) {
-        toast.warning('Please select .csv or .xlsx file')
+        toast.warning('Vui lòng chọn file .csv hoặc .xlsx')
         input.value = ''
         return
     }

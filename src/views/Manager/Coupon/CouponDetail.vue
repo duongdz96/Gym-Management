@@ -41,7 +41,7 @@ const fetchCouponDetail = async () => {
     coupon.value = res.data.coupon;
     issuedCoupons.value = res.data.issuedCoupons || [];
   } catch (error) {
-    toast.error("Error fetching coupon details");
+    toast.error("Lỗi khi lấy thông tin chi tiết mã giảm giá");
   } finally {
     loading.value = false
   }
