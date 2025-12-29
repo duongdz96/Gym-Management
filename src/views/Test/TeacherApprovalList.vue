@@ -310,9 +310,11 @@ import {
   Target,
   X
 } from 'lucide-vue-next';
+import { useToast } from 'vue-toastification';
 
 // State
 const applications = ref([]);
+const toast = useToast();
 const teachersData = ref([]);
 const classesData = ref([]);
 const activeTab = ref('pending');
@@ -443,10 +445,10 @@ const autoReject = async (app) => {
   if (confirm('Từ chối giáo viên này vì lớp đã có giáo viên được duyệt?')) {
     try {
       await unifiedApi.rejectTeacher(app.id, 'manager', 'Đã chọn giáo viên khác');
-      alert('❌ Đã từ chối đơn đăng ký');
+      toast.success('Đã từ chối đơn đăng ký');
       await loadData();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      toast.error('Có lỗi xảy ra');
     }
   }
 };
@@ -455,10 +457,10 @@ const approve = async (app) => {
   if (confirm('Bạn có chắc muốn duyệt giáo viên này?')) {
     try {
       await unifiedApi.approveTeacher(app.id, 'manager');
-      alert('✅ Đã duyệt giáo viên thành công!');
+      toast.success('Đã duyệt giáo viên thành công!');
       await loadData();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      toast.error('Có lỗi xảy ra');
     }
   }
 };
@@ -476,11 +478,11 @@ const reject = async () => {
   
   try {
     await unifiedApi.rejectTeacher(rejectModalApp.value.id, 'manager', reason);
-    alert('❌ Đã từ chối đơn đăng ký');
+    toast.success('Đã từ chối đơn đăng ký');
     rejectModalApp.value = null;
     await loadData();
   } catch (error) {
-    alert('❌ Lỗi: ' + error.message);
+    toast.error('Có lỗi xảy ra');
   }
 };
 

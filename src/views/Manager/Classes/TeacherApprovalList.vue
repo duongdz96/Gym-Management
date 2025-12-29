@@ -312,6 +312,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useToast } from 'vue-toastification';
 import unifiedApi from '@/services/unifiedClassApi.js';
 import { formatDateTime } from '@/views/Test/dateUtils.js';
 import { 
@@ -328,6 +329,8 @@ import {
   Target,
   X
 } from 'lucide-vue-next';
+
+const toast = useToast();
 
 // State
 const applications = ref([]);
@@ -403,7 +406,7 @@ const loadData = async () => {
           conflictMap.value[app.id] = conflicts;
         }
       } catch (error) {
-        console.error('Error checking conflicts:', error);
+        // Error checking conflicts
       }
     }
   }
@@ -516,10 +519,10 @@ const autoReject = async (app) => {
   if (confirm('Từ chối giáo viên này vì lớp đã có giáo viên được duyệt?')) {
     try {
       await unifiedApi.rejectTeacher(app.id, 'manager', 'Đã chọn giáo viên khác');
-      alert('❌ Đã từ chối đơn đăng ký');
+      toast.success('Đã từ chối đơn đăng ký');
       await loadData();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      toast.error('Lỗi: ' + error.message);
     }
   }
 };
@@ -527,19 +530,19 @@ const autoReject = async (app) => {
 const approve = async (app) => {
   // Check for conflicts before confirming
   if (conflictMap.value[app.id] && conflictMap.value[app.id].length > 0) {
-    alert('❌ Không thể duyệt! Giáo viên có lịch trùng với lớp khác.');
+    toast.error('Không thể duyệt! Giáo viên có lịch trùng với lớp khác.');
     return;
   }
   
   if (confirm('Bạn có chắc muốn duyệt giáo viên này?')) {
     try {
       await unifiedApi.approveTeacher(app.id, 'manager');
-      alert('✅ Đã duyệt giáo viên thành công!');
+      toast.success('Đã duyệt giáo viên thành công!');
       await loadData();
     } catch (error) {
       // Show detailed error message from backend
       const errorMsg = error.response?.data?.message || error.response?.data || error.message;
-      alert('❌ Lỗi: ' + errorMsg);
+      toast.error('Lỗi: ' + errorMsg);
     }
   }
 };
@@ -557,11 +560,11 @@ const reject = async () => {
   
   try {
     await unifiedApi.rejectTeacher(rejectModalApp.value.id, 'manager', reason);
-    alert('❌ Đã từ chối đơn đăng ký');
+    toast.success('Đã từ chối đơn đăng ký');
     rejectModalApp.value = null;
     await loadData();
   } catch (error) {
-    alert('❌ Lỗi: ' + error.message);
+    toast.error('Lỗi: ' + error.message);
   }
 };
 

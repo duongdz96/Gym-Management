@@ -2,8 +2,10 @@
 import { ref } from "vue"
 import { useRouter } from "vue-router"
 import api from "@/services/api"
+import { useToast } from "vue-toastification"
 
 const router = useRouter()
+const toast = useToast();
 
 // form data
 const form = ref({
@@ -14,7 +16,7 @@ const form = ref({
 
 const submit = async () => {
   if (!form.value.name) {
-    alert("Please fill in all required fields.")
+    toast.warning("Please fill in all required fields.")
     return
   }
 
@@ -30,14 +32,14 @@ const submit = async () => {
     const res = await api.post("/membershiptier", payload)
 
     if (res.status === 200 || res.status === 201) {
-      alert("Membership tier has been added successfully!")
+      toast.success("Membership tier has been added successfully!")
 
       form.value = { name: "", priority: 1, description: "" }
       router.push({ name: "membership" })
     }
   } catch (err: any) {
     console.error("Error adding membership tier:", err)
-    alert("Failed to add membership tier. Please try again.")
+    toast.error("Failed to add membership tier. Please try again.")
   }
 }
 </script>

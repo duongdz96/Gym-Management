@@ -253,8 +253,10 @@ import {
   Inbox,
   X
 } from 'lucide-vue-next';
+import { useToast } from 'vue-toastification';
 
 // State
+const toast = useToast();
 const classes = ref([]);
 const roomsData = ref([]);
 const studentsData = ref([]);
@@ -366,33 +368,33 @@ const isStudentRegistered = (studentId) => {
 
 const registerEarly = async (student) => {
   if (!selectedClass.value) {
-    alert('❌ Vui lòng chọn lớp học!');
+    toast.warning('Vui lòng chọn lớp học!');
     return;
   }
 
   if (student.membershipTier !== 'VIP') {
-    alert('❌ Chỉ VIP mới được đăng ký sớm!');
+    toast.error('Chỉ thành viên VIP mới được đăng ký sớm!');
     return;
   }
 
   if (isStudentRegistered(student.id)) {
-    alert('❌ Học viên đã đăng ký lớp này rồi!');
+    toast.warning('Học viên đã đăng ký lớp này rồi!');
     return;
   }
 
   if (getAvailableSlots(selectedClass.value) <= 0) {
-    alert('❌ Lớp đã đầy!');
+    toast.error('Lớp đã đầy!');
     return;
   }
   
   if (confirm(`Xác nhận đăng ký sớm lớp "${selectedClass.value.name}" cho ${student.name}?`)) {
     try {
       await unifiedApi.registerStudent(selectedClass.value.id, student.id);
-      alert('✅ Đăng ký sớm thành công!');
+      toast.success('Đăng ký sớm thành công!');
       // Refresh search results to update button states
       searchStudent();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      toast.error('Có lỗi xảy ra');
     }
   }
 };

@@ -421,6 +421,7 @@ import {
   MapPin,
   Clock
 } from 'lucide-vue-next';
+import { useToast } from 'vue-toastification';
 
 const USE_REAL_API = true;
 
@@ -432,6 +433,7 @@ const steps = [
   { number: 3, label: 'Chọn lịch' }
 ];
 
+const toast = useToast();
 // Step 1: Class selection
 const classes = ref([]);
 const roomsData = ref([]);
@@ -547,7 +549,7 @@ const loadSchedules = async () => {
       return dateA - dateB;
     });
   } catch (error) {
-    alert('❌ Lỗi khi tải lịch học: ' + error.message);
+    toast.error('Lỗi khi tải lịch học: ' + error.message);
   } finally {
     loadingSchedules.value = false;
   }
@@ -632,7 +634,7 @@ const formatScheduleTime = (dateTime) => {
 
 const registerMember = async () => {
   if (!selectedMember.value || selectedScheduleIds.value.length === 0) {
-    alert('❌ Vui lòng chọn học viên và ít nhất một buổi học!');
+    toast.warning('Vui lòng chọn học viên và ít nhất một buổi học!');
     return;
   }
 
@@ -640,7 +642,7 @@ const registerMember = async () => {
     registering.value = true;
     try {
       await unifiedApi.registerBulkSchedules(selectedMember.value.id, selectedScheduleIds.value);
-      alert(`✅ Đã đăng ký thành công ${selectedScheduleIds.value.length} buổi học cho ${selectedMember.value.name}!`);
+      toast.success(`Đã đăng ký thành công ${selectedScheduleIds.value.length} buổi học cho ${selectedMember.value.name}!`);
       
       // Reset form
       currentStep.value = 1;
@@ -651,7 +653,7 @@ const registerMember = async () => {
       memberSearchResults.value = [];
       memberSearchAttempted.value = false;
     } catch (error) {
-      alert('❌ Lỗi: ' + (error.response?.data?.message || error.message));
+      toast.error('Lỗi: ' + (error.response?.data?.message || error.message));
     } finally {
       registering.value = false;
     }

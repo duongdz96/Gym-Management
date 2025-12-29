@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import api from "../../../services/api";
+import { useToast } from "vue-toastification";
 
 // Định nghĩa Member
 type Member = {
@@ -34,6 +35,7 @@ const ptProducts = ref<ProductPT[]>([]);
 const ptStaffs = ref<Staff[]>([]);
 const selectedMember = ref<Member | null>(null);
 const searchMember = ref("");
+const toast = useToast();
 
 // Form fields
 const selectedPTProduct = ref<ProductPT | null>(null);
@@ -79,7 +81,7 @@ const selectMember = (member: Member) => {
 
 const submitPTAssignment = async () => {
   if (!selectedMember.value || !selectedPTProduct.value || !startDate.value || !selectedPTStaff.value) {
-    alert("Please fill all required fields!");
+    toast.warning("Please fill all required fields!");
     return;
   }
 
@@ -94,12 +96,12 @@ const submitPTAssignment = async () => {
     };
 
     await api.post("/ptPackageIssued", payload);
-    alert("PT package assigned successfully!");
+    toast.success("PT package assigned successfully!");
     // Reset
     selectedMember.value = null;
   } catch (err) {
     console.error("Error assigning PT:", err);
-    alert("Failed to assign PT package.");
+    toast.error("Failed to assign PT package.");
   }
 };
 </script>

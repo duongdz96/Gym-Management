@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import api from "@/services/api"
+import { useToast } from "vue-toastification"
 
 type MembershipTier = {
     id: number,
@@ -11,6 +12,7 @@ type MembershipTier = {
 }
 
 const router = useRouter()
+const toast = useToast();
 
 // form data
 const form = ref({
@@ -25,13 +27,13 @@ const selectedTierId = ref<number | null>(null)
 
 const submit = async () => {
   if (!form.value.name || !form.value.duration || !form.value.price || !selectedTierId.value) {
-    alert("Please fill in all required fields.")
+    toast.warning("Vui lòng điền vào các trường.")
     return
   }
 
   const selectedTier = membershipTiers.value.find(tier => tier.id === selectedTierId.value)
   if (!selectedTier) {
-    alert("Selected tier not found.")
+    toast.error("Vui lòng chọn bậc phù hợp.")
     return
   }
 
@@ -49,7 +51,7 @@ const submit = async () => {
     const res = await api.post("/membershipplan", payload)
 
     if (res.status === 200 || res.status === 201) {
-            alert("Membership plan has been added successfully!")
+            toast.success("Gói thành viên đã được thêm vào!")
 
       form.value = { name: "", duration: 1, price: 0, description: "" }
       selectedTierId.value = null
@@ -57,7 +59,7 @@ const submit = async () => {
     }
   } catch (err: any) {
         console.error("Error adding membership plan:", err)
-        alert("Failed to add membership plan. Please try again.")
+        toast.error("Thêm gói thành viên thất bại. Vui lòng thử lại sau")
   }
 }
 
@@ -68,7 +70,7 @@ onMounted(async () => {
     console.log("Membership tiers loaded:", membershipTiers.value)
   } catch (error) {
     console.error('Failed to load membership tiers:', error)
-    alert("Failed to load membership tiers. Please try again.")
+    toast.error("Tải bậc thành viên thất bại. Vui lòng thử lại sau")
   }
 })
 </script>

@@ -737,6 +737,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 import unifiedApi from '@/services/unifiedClassApi.js';
 import { formatDate } from '@/views/Test/dateUtils.js';
 import api from '@/services/api';
@@ -767,6 +768,7 @@ import EditClassModal from './EditClassModal.vue';
 import EditSessionModal from './EditSessionModal.vue';
 
 const router = useRouter();
+const toast = useToast();
 
 // State
 const classes = ref([]);
@@ -889,7 +891,6 @@ const selectedClassStudents = computed(() => {
 const loadData = async () => {
   classes.value = await unifiedApi.getClasses();
   roomsData.value = await unifiedApi.getRooms();
-  console.log(roomsData.value);
   teachersData.value = await unifiedApi.getTeachers();
   studentsData.value = await unifiedApi.getStudents();
   
@@ -1088,16 +1089,12 @@ const updatePreview = async () => {
     }));
     
     roomConflicts.value = {};
-    console.log('🔍 Checking conflicts for', sessions.length, 'sessions');
     for (const room of roomsData.value) {
       const conflicts = await unifiedApi.checkRoomConflicts(room.id, sessions);
-      console.log(`Room ${room.name} (${room.id}):`, conflicts.length, 'conflicts');
       if (conflicts.length > 0) {
         roomConflicts.value[room.id] = conflicts;
-        console.log('Conflicts:', conflicts);
       }
     }
-    console.log('Final roomConflicts:', roomConflicts.value);
   }
 };
 
@@ -1148,7 +1145,6 @@ const createClass = async () => {
     };
     const fitnessClassRes = await api.post('/fitness_class', fitnessClassData);
     const fitnessClassId = fitnessClassRes.data.id;
-    console.log('✅ Created FitnessClass:', fitnessClassId);
 
     // Step 3: Convert daysOfWeek array to backend format (MONDAY,WEDNESDAY,FRIDAY)
     let daysOfWeekStr = '';
@@ -1179,7 +1175,6 @@ const createClass = async () => {
     };
     const patternRes = await api.post('/schedule-patterns', schedulePatternData);
     const patternId = patternRes.data.id;
-    console.log('✅ Created SchedulePattern:', patternId);
 
     // Step 5: Check available rooms for this pattern
     const availableRoomsRes = await api.post('/room/available-for-pattern', schedulePatternData);
@@ -1235,7 +1230,6 @@ const createClass = async () => {
           const scheduleRes = await api.post('/classschedule', singleSchedulePayload);
           generatedSchedules.push(scheduleRes.data);
         } catch (err) {
-          console.error('Error creating single schedule:', err);
           throw new Error(`Lỗi khi tạo lịch cho ngày ${formatDate(dateStr)}: ${err.response?.data?.message || err.message}`);
         }
       }
@@ -1245,8 +1239,7 @@ const createClass = async () => {
       generatedSchedules = generateRes.data;
     }
 
-    console.log('✅ Generated ClassSchedules:', generatedSchedules.length);
-    alert(`✅ Tạo lớp học thành công! Đã tạo ${generatedSchedules.length} buổi học.`);
+    toast.success(`Tạo lớp học thành công! Đã tạo ${generatedSchedules.length} buổi học.`);
     
     showCreateForm.value = false;
     currentStep.value = 0;
@@ -1255,9 +1248,8 @@ const createClass = async () => {
     roomConflicts.value = {};
     await loadData();
   } catch (error) {
-    console.error('Error creating class:', error);
     const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra';
-    alert('❌ Lỗi: ' + errorMessage);
+    toast.error('Lỗi: ' + errorMessage);
   }
 };
 
@@ -1272,7 +1264,6 @@ const viewDetails = async (cls) => {
     const sessions = await unifiedApi.getSessions(cls.id);
     selectedClassSessions.value = sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
   } catch (error) {
-    console.error('Error loading sessions:', error);
   } finally {
     loadingSessionsDetails.value = false;
   }
@@ -1295,7 +1286,6 @@ const openEditSession = (session) => {
 };
 
 const handleClassUpdated = async (updatedClass) => {
-  console.log('Class updated:', updatedClass);
   // Update local data
   const index = classes.value.findIndex(c => c.id === updatedClass.id);
   if (index !== -1) {
@@ -1307,17 +1297,16 @@ const handleClassUpdated = async (updatedClass) => {
   }
   // Reload data to ensure consistency
   await loadData();
-  alert('✅ Cập nhật lớp học thành công!');
+  toast.success('Cập nhật lớp học thành công!');
 };
 
 const handleSessionUpdated = async (updatedSession) => {
-  console.log('Session updated:', updatedSession);
   // Update in selectedClassSessions
   const index = selectedClassSessions.value.findIndex(s => s.id === updatedSession.id);
   if (index !== -1) {
     selectedClassSessions.value[index] = { ...selectedClassSessions.value[index], ...updatedSession };
   }
-  alert('✅ Cập nhật buổi học thành công!');
+  toast.success('Cập nhật buổi học thành công!');
 };
 
 const formatScheduleTime = (dateTime) => {
@@ -1344,11 +1333,11 @@ const deleteClass = async (classId) => {
   
   // Check if already inactive
   if (cls.status === 'INACTIVE') {
-    alert('⚠️ Lớp học này đã bị vô hiệu hóa trước đó.');
+    toast.warning('Lớp học này đã bị vô hiệu hóa trước đó.');
     return;
   }
   
-  if (confirm('⚠️ Bạn có chắc muốn vô hiệu hóa lớp học này?\n\nLưu ý: Đây là soft delete, lớp học sẽ chuyển sang trạng thái INACTIVE.')) {
+  if (confirm('Bạn có chắc muốn vô hiệu hóa lớp học này?\n\nLưu ý: Đây là soft delete, lớp học sẽ chuyển sang trạng thái INACTIVE.')) {
     try {
       // Call API delete (backend will set status to INACTIVE)
       await api.delete(`/fitness_class/${classId}`);
@@ -1364,10 +1353,10 @@ const deleteClass = async (classId) => {
         selectedClass.value.status = 'INACTIVE';
       }
       
-      alert('✅ Đã vô hiệu hóa lớp học thành công!');
+      toast.success('Đã vô hiệu hóa lớp học thành công!');
     } catch (error) {
       console.error('Error deleting class:', error);
-      alert('❌ Lỗi khi vô hiệu hóa lớp học: ' + (error.response?.data?.message || error.message));
+      toast.error('Lỗi khi vô hiệu hóa lớp học: ' + (error.response?.data?.message || error.message));
     }
   }
 };

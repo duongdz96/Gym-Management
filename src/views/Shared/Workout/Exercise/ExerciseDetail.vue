@@ -4,10 +4,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Dumbbell, Edit, Lightbulb } from 'lucide-vue-next'
 import { exerciseApi } from '@/services/workoutApi'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useToast } from 'vue-toastification'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const toast = useToast();
 
 // ==================== STATE ====================
 const exercise = ref(null)
@@ -21,7 +23,7 @@ const fetchExercise = async () => {
     exercise.value = response.data
   } catch (error) {
     console.error('Lỗi khi tải bài tập:', error)
-    alert('Không thể tải thông tin bài tập')
+    toast.error('Không thể tải thông tin bài tập')
     goBack()
   } finally {
     isLoading.value = false

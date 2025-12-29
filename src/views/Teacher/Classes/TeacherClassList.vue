@@ -204,8 +204,10 @@ import {
   Inbox,
   X
 } from 'lucide-vue-next';
+import { useToast } from 'vue-toastification';
 
 const router = useRouter();
+const toast = useToast();
 const authStore = useAuthStore();
 
 const loading = ref(true);
@@ -222,7 +224,7 @@ const currentTeacherId = computed(() => {
 
 const loadData = async () => {
   if (!currentTeacherId.value) {
-    alert('Vui lòng đăng nhập!');
+    toast.error('Vui lòng đăng nhập!');
     return;
   }
 
@@ -235,7 +237,7 @@ const loadData = async () => {
     myClasses.value = allClasses.filter(c => c.teacherId === currentTeacherId.value);
   } catch (error) {
     console.error('Error loading classes:', error);
-    alert('❌ Lỗi khi tải danh sách lớp: ' + error.message);
+    toast.error('Lỗi khi tải danh sách lớp: ' + error.message);
   } finally {
     loading.value = false;
   }
@@ -264,7 +266,7 @@ const viewSchedule = async (cls) => {
     selectedClassSessions.value = sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
     showScheduleModal.value = true;
   } catch (error) {
-    alert('Không thể tải lịch học: ' + error.message);
+    toast.error('Không thể tải lịch học: ' + error.message);
   }
 };
 

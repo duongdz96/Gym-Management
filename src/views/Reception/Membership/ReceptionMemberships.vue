@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
 import api from '@/services/api';
+import { useToast } from 'vue-toastification';
 
 type MembershipTier = {
     id: number,
@@ -42,6 +43,7 @@ const memberships = ref<Membership[]>([])
 
 const search = ref('')
 const statusFilter = ref('')
+const toast = useToast();
 
 const filteredMemberships = computed(() => {
     return memberships.value.filter(membership => {
@@ -61,7 +63,7 @@ onMounted(async () => {
         console.log("Memberships loaded:", memberships.value);
     } catch (error) {
         console.error('Failed to load memberships:', error);
-        alert("Tải hội viên thất bại. Vui lòng thử lại");
+        toast.error("Tải hội viên thất bại. Vui lòng thử lại");
     }
 })
 </script>

@@ -299,6 +299,7 @@ import {
   Users,
   AlertTriangle
 } from 'lucide-vue-next';
+import { useToast } from 'vue-toastification';
 
 const currentTeacherId = ref(1);
 const selectedDate = ref(new Date());
@@ -306,6 +307,7 @@ const selectedDateStr = ref(new Date().toISOString().split('T')[0]);
 const todaySessions = ref([]);
 const classes = ref([]);
 const rooms = ref([]);
+const toast = useToast();
 const loading = ref(false);
 
 // Leave Request Modal
@@ -359,7 +361,7 @@ const loadData = async () => {
     console.log('Filtered sessions:', todaySessions.value);
   } catch (error) {
     console.error('Error loading data:', error);
-    alert('Lỗi: ' + error.message);
+    toast.error('Lỗi khi tải dữ liệu');
   } finally {
     loading.value = false;
   }
@@ -432,10 +434,10 @@ const confirmAttendance = async (session) => {
   if (confirm('Xác nhận bạn sẽ có mặt để dạy buổi này?')) {
     try {
       await mockApi.confirmTeacherAttendance(session.id, currentTeacherId.value);
-      alert('✅ Đã xác nhận có mặt!');
+      toast.success('Đã xác nhận có mặt!');
       await loadData();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      toast.error('Có lỗi xảy ra');
     }
   }
 };
@@ -448,17 +450,17 @@ const openLeaveRequest = (session) => {
 
 const submitLeaveRequest = async () => {
   if (!leaveReason.value.trim()) {
-    alert('Vui lòng nhập lý do nghỉ');
+    toast.warning('Vui lòng nhập lý do nghỉ');
     return;
   }
   
   try {
     await mockApi.requestTeacherLeave(selectedSession.value.id, currentTeacherId.value, leaveReason.value);
-    alert('✅ Đã gửi yêu cầu nghỉ! Chờ Manager duyệt.');
+    toast.success('Đã gửi yêu cầu nghỉ! Chờ quản lý duyệt.');
     showLeaveModal.value = false;
     await loadData();
   } catch (error) {
-    alert('❌ Lỗi: ' + error.message);
+    toast.error('Có lỗi xảy ra');
   }
 };
 
@@ -471,7 +473,7 @@ const openAttendance = async (session) => {
     attendanceList.value = await mockApi.getSessionAttendance(session.id);
     showAttendanceModal.value = true;
   } catch (error) {
-    alert('❌ Lỗi: ' + error.message);
+    toast.error('Có lỗi xảy ra');
   }
 };
 
@@ -489,7 +491,7 @@ const markAttendance = async (attendance, status) => {
     // Reload sessions to update count in button
     await loadData();
   } catch (error) {
-    alert('❌ Lỗi: ' + error.message);
+    toast.error('Có lỗi xảy ra');
   }
 };
 </script>

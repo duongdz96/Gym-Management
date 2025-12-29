@@ -109,6 +109,9 @@
 import { ref, computed, watch } from 'vue';
 import { Edit, X, Save, AlertTriangle } from 'lucide-vue-next';
 import api from '@/services/api';
+import { useToast } from 'vue-toastification';
+
+const toast = useToast();
 
 const props = defineProps({
   show: {
@@ -176,8 +179,7 @@ const saveChanges = async () => {
     
     closeModal();
   } catch (error) {
-    console.error('Error updating fitness class:', error);
-    alert('❌ Lỗi khi cập nhật lớp học: ' + (error.response?.data?.message || error.message));
+    toast.error('Lỗi khi cập nhật lớp học');
   } finally {
     saving.value = false;
   }

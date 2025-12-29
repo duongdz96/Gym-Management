@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import { useToast } from 'vue-toastification'
+
+const toast = useToast()
 
 // ================== Trial Form ==================
 const trialName = ref('')
@@ -14,7 +17,7 @@ function handleTrialSubmit() {
   localStorage.setItem('custom_phone', trialPhone.value)
   if (trialEmail.value) localStorage.setItem('custom_email', trialEmail.value)
   if (trialPreferredDate.value) localStorage.setItem('custom_preferred_date', trialPreferredDate.value)
-  alert('Đã gửi đăng ký. Chúng tôi sẽ liên hệ sớm!')
+  toast.success('Đã gửi đăng ký. Chúng tôi sẽ liên hệ sớm!')
   // Reset form
   trialName.value = ''
   trialPhone.value = ''
@@ -53,7 +56,7 @@ onMounted(async () => {
     feedbacks.value = response.data
       .sort((a, b) => b.id - a.id)
   } catch (error) {
-    console.error('Lỗi khi tải feedback:', error)
+    // Error loading feedbacks
   }
 })
 
@@ -66,7 +69,7 @@ onMounted(async () => {
     const res = await axios.get('http://localhost:8080/api/config/banner/public')
     banners.value = res.data
   } catch (err) {
-    console.error('Lỗi tải banner:', err)
+    // Error loading banners
   }
 })
 

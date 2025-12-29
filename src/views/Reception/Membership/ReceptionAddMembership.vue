@@ -2,8 +2,10 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/services/api";
+import { useToast } from "vue-toastification";
 
 const router = useRouter();
+const toast = useToast();
 
 type MembershipTier = {
   id: number,
@@ -53,7 +55,7 @@ const submit = async () => {
     let payload;
     if (isExistingMember.value) {
       if (!selectedMemberId.value) {
-        alert("Vui lòng chọn một thành viên");
+        toast.warning("Vui lòng chọn một thành viên");
         return;
       }
       payload = {
@@ -82,11 +84,11 @@ const submit = async () => {
     console.log(payload);
 
     await api.post("/membership", payload);
-    alert("Gói thành viên đã được thêm vào thành công!");
+    toast.success("Gói thành viên đã được thêm vào thành công!");
     router.push({ name: "reception.memberships" });
   } catch (error) {
     console.error("Có lỗi khi thêm membership:", error);
-    alert("Thêm thành viên không thành công. Vui lòng thử lại.");
+    toast.error("Thêm thành viên không thành công. Vui lòng thử lại.");
   }
 };
 
@@ -122,7 +124,7 @@ onMounted(async () => {
     members.value = memberRes.data;
   } catch (error) {
     console.error("Error loading data:", error);
-    alert("Failed to load data. Please try again.");
+    toast.error("Tải dữ liệu không thành công. Vui lòng thử lại");
   }
 });
 </script>

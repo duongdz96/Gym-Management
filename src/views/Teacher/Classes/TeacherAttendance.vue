@@ -269,8 +269,10 @@ import {
   Search,
   AlertTriangle
 } from 'lucide-vue-next';
+import { useToast } from 'vue-toastification';
 
 const router = useRouter();
+const toast = useToast();
 const route = useRoute();
 const authStore = useAuthStore();
 
@@ -344,7 +346,7 @@ const filteredStudents = computed(() => {
 const loadClassData = async () => {
   try {
     if (!currentTeacherId.value) {
-      alert("Bạn chưa đăng nhập hoặc không phải giáo viên.");
+      toast.error("Bạn chưa đăng nhập hoặc không phải giáo viên.");
       return;
     }
 
@@ -421,7 +423,7 @@ const loadClassData = async () => {
 
   } catch (error) {
     console.error('Error:', error);
-    alert('❌ Lỗi hệ thống: ' + error.message);
+    toast.error('Lỗi hệ thống: ' + error.message);
   }
 };
 
@@ -473,7 +475,7 @@ const loadSessionData = async () => {
 
   } catch (error) {
     console.error('Error:', error);
-    if (error.response?.status !== 404) alert('❌ Lỗi: ' + error.message);
+    if (error.response?.status !== 404) toast.error('Lỗi: ' + error.message);
   } finally {
     loadingStudents.value = false;
   }
@@ -517,7 +519,7 @@ const markPresent = async (student) => {
     }
   } catch (error) {
     console.error('Error marking present:', error);
-    alert('❌ Lỗi: ' + (error.response?.data?.message || error.message));
+    toast.error('Lỗi: ' + (error.response?.data?.message || error.message));
   }
 };
 
@@ -558,7 +560,7 @@ const markAbsent = async (student) => {
     }
   } catch (error) {
     console.error('Error marking absent:', error);
-    alert('❌ Lỗi: ' + (error.response?.data?.message || error.message));
+    toast.error('Lỗi: ' + (error.response?.data?.message || error.message));
   }
 };
 
@@ -589,12 +591,12 @@ const autoAbsent = async () => {
   try {
     const response = await api.post(`/class-attendance/students/auto-absent/${selectedSession.value.id}`);
 
-    alert('✅ ' + response.data);
+    toast.success(response.data);
 
     await loadSessionData(); // Tải lại để thấy danh sách những người vừa bị đánh vắng
   } catch (error) {
     console.error('Error auto absent:', error);
-    alert('❌ Lỗi: ' + (error.response?.data || error.message));
+    toast.error('Lỗi: ' + (error.response?.data || error.message));
   } finally {
     finalizing.value = false;
   }

@@ -152,6 +152,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { Calendar, Clock, MapPin, Info, FileText, X, Save, AlertTriangle } from 'lucide-vue-next';
 import api from '@/services/api';
 import { formatDate as formatDisplayDate } from '@/views/Test/dateUtils.js';
+import { useToast } from 'vue-toastification';
 
 const props = defineProps({
   show: {
@@ -176,6 +177,7 @@ const formData = ref({
 
 const rooms = ref([]);
 const saving = ref(false);
+const toast = useToast();
 
 const isValid = computed(() => {
   if (!formData.value.startTime || !formData.value.endTime || !formData.value.roomId) {
@@ -273,7 +275,7 @@ const saveChanges = async () => {
     closeModal();
   } catch (error) {
     console.error('Error updating session:', error);
-    alert('❌ Lỗi khi cập nhật buổi học: ' + (error.response?.data?.message || error.message));
+    toast.error('Lỗi khi cập nhật buổi học: ' + (error.response?.data?.message || error.message));
   } finally {
     saving.value = false;
   }

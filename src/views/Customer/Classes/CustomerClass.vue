@@ -465,6 +465,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useToast } from 'vue-toastification';
 import unifiedApi from '@/services/unifiedClassApi.js';
 import apiService from '@/views/Test/apiService.js';
 import { formatDate, getWeeksUntilStart, canVIPRegister, canAllRegister } from '@/views/Test/dateUtils.js';
@@ -487,6 +488,7 @@ import {
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
+const toast = useToast();
 const USE_REAL_API = true; // Set to false to use mock data
 
 const classes = ref([]);
@@ -525,7 +527,7 @@ const viewSessions = async (cls) => {
       .sort((a, b) => new Date(a.date) - new Date(b.date));
     showSessionsModal.value = true;
   } catch (error) {
-    alert('Không thể tải lịch học: ' + error.message);
+    toast.error('Không thể tải lịch học: ' + error.message);
   }
 };
 
@@ -576,7 +578,7 @@ const filteredClasses = computed(() => {
 
 const loadData = async () => {
   if (!currentStudentId.value) {
-    alert('Vui lòng đăng nhập!');
+    toast.warning('Vui lòng đăng nhập!');
     return;
   }
   
@@ -728,7 +730,7 @@ const openScheduleSelection = async (cls) => {
       return dateA - dateB;
     });
   } catch (error) {
-    alert('❌ Lỗi khi tải lịch học: ' + error.message);
+    toast.error('Lỗi khi tải lịch học: ' + error.message);
     closeScheduleModal();
   } finally {
     loadingSchedules.value = false;
@@ -829,12 +831,12 @@ const formatScheduleTime = (dateTime) => {
 
 const registerSelectedSchedules = async () => {
   if (!currentStudentId.value) {
-    alert('❌ Vui lòng đăng nhập!');
+    toast.warning('Vui lòng đăng nhập!');
     return;
   }
   
   if (selectedScheduleIds.value.length === 0) {
-    alert('Vui lòng chọn ít nhất một buổi học!');
+    toast.warning('Vui lòng chọn ít nhất một buổi học!');
     return;
   }
   
@@ -842,11 +844,11 @@ const registerSelectedSchedules = async () => {
     try {
       // Use bulk register API
       await unifiedApi.registerBulkSchedules(currentStudentId.value, selectedScheduleIds.value);
-      alert(`✅ Đã đăng ký thành công ${selectedScheduleIds.value.length} buổi học!`);
+      toast.success(`Đã đăng ký thành công ${selectedScheduleIds.value.length} buổi học!`);
       closeScheduleModal();
       await loadData();
     } catch (error) {
-      alert('❌ Lỗi: ' + (error.response?.data?.message || error.message));
+      toast.error('Lỗi: ' + (error.response?.data?.message || error.message));
     }
   }
 };
@@ -858,17 +860,17 @@ const register = async (cls) => {
 
 const cancelRegistration = async (cls) => {
   if (!currentStudentId.value) {
-    alert('❌ Vui lòng đăng nhập!');
+    toast.warning('Vui lòng đăng nhập!');
     return;
   }
   
   if (confirm(`Bạn có chắc muốn hủy đăng ký lớp "${cls.name}"?`)) {
     try {
       await unifiedApi.cancelRegistration(cls.id, currentStudentId.value);
-      alert('✅ Đã hủy đăng ký!');
+      toast.success('Đã hủy đăng ký!');
       await loadData();
     } catch (error) {
-      alert('❌ Lỗi: ' + (error.response?.data?.message || error.message));
+      toast.error('Lỗi: ' + (error.response?.data?.message || error.message));
     }
   }
 };

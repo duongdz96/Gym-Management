@@ -23,7 +23,7 @@ const trainingHistory = ref([
 ])
 
 onMounted(() => {
-  console.log("Customer dashboard loaded")
+  // Customer dashboard loaded
 })
 </script>
 

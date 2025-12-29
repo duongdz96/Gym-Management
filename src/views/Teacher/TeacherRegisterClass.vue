@@ -275,8 +275,10 @@ import {
   Eye,
   X
 } from 'lucide-vue-next';
+import { useToast } from 'vue-toastification';
 
 const authStore = useAuthStore();
+const toast = useToast();
 
 // State
 const classes = ref([]);
@@ -302,7 +304,7 @@ const viewSessions = async (cls) => {
     selectedClassSessions.value = sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
     showSessionsModal.value = true;
   } catch (error) {
-    alert('Không thể tải lịch học: ' + error.message);
+    toast.error('Không thể tải lịch học: ' + error.message);
   }
 };
 
@@ -422,22 +424,22 @@ const getApplicationStatusText = (classId) => {
 
 const applyToTeach = async (cls) => {
   if (!currentTeacherId.value) {
-    alert('❌ Vui lòng đăng nhập!');
+    toast.error('Vui lòng đăng nhập!');
     return;
   }
   
   if (conflictMap.value[cls.id]) {
-    alert('❌ Bạn có lịch trùng với lớp này!');
+    toast.error('Bạn có lịch trùng với lớp này!');
     return;
   }
   
   if (confirm(`Bạn có chắc muốn đăng ký dạy lớp "${cls.name}"?`)) {
     try {
       await unifiedApi.applyToTeach(cls.id, currentTeacherId.value);
-      alert('✅ Đăng ký thành công! Vui lòng chờ Manager duyệt.');
+      toast.success('Đăng ký thành công! Vui lòng chờ quản lý duyệt.');
       await loadData();
     } catch (error) {
-      alert('❌ Lỗi: ' + (error.response?.data?.message || error.message));
+      toast.error('Lỗi: ' + (error.response?.data?.message || error.message));
     }
   }
 };

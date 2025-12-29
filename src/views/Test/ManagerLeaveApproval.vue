@@ -197,8 +197,10 @@ import { ref, onMounted } from 'vue';
 import mockApi from './mockData.js';
 import { formatDate } from './dateUtils.js';
 import { XCircle, FileText } from 'lucide-vue-next';
+import { useToast } from 'vue-toastification';
 
 const loading = ref(false);
+const toast = useToast();
 const leaveRequests = ref([]);
 const managerId = ref(1); // Mock manager ID
 
@@ -248,7 +250,7 @@ const loadLeaveRequests = async () => {
       };
     });
   } catch (error) {
-    alert('Lỗi: ' + error.message);
+    toast.error('Có lỗi xảy ra');
   } finally {
     loading.value = false;
   }
@@ -258,10 +260,10 @@ const approveLeave = async (request) => {
   if (confirm(`Duyệt đơn xin nghỉ của ${request.teacherName}?`)) {
     try {
       await mockApi.approveTeacherLeave(request.sessionId, managerId.value, true);
-      alert('✅ Đã duyệt đơn xin nghỉ! Bạn có thể hủy buổi học hoặc thêm ghi chú.');
+      toast.success('Đã duyệt đơn xin nghỉ! Bạn có thể hủy buổi học hoặc thêm ghi chú.');
       await loadLeaveRequests();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      toast.error('Có lỗi xảy ra');
     }
   }
 };
@@ -270,10 +272,10 @@ const rejectLeave = async (request) => {
   if (confirm(`Từ chối đơn xin nghỉ của ${request.teacherName}?`)) {
     try {
       await mockApi.approveTeacherLeave(request.sessionId, managerId.value, false);
-      alert('✅ Đã từ chối đơn xin nghỉ!');
+      toast.success('Đã từ chối đơn xin nghỉ!');
       await loadLeaveRequests();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      toast.error('Có lỗi xảy ra');
     }
   }
 };
@@ -291,17 +293,17 @@ const submitCancellation = async () => {
     : cancellationReason.value;
     
   if (!reason) {
-    alert('Vui lòng chọn/nhập lý do hủy');
+    toast.warning('Vui lòng chọn/nhập lý do hủy');
     return;
   }
   
   try {
     await mockApi.cancelSession(selectedRequest.value.sessionId, managerId.value, reason);
-    alert('✅ Đã hủy buổi học!');
+    toast.success('Đã hủy buổi học!');
     showCancelModal.value = false;
     await loadLeaveRequests();
   } catch (error) {
-    alert('❌ Lỗi: ' + error.message);
+    toast.error('Có lỗi xảy ra');
   }
 };
 
@@ -313,17 +315,17 @@ const openNoteModal = (request) => {
 
 const submitNote = async () => {
   if (!managerNote.value.trim()) {
-    alert('Vui lòng nhập ghi chú');
+    toast.warning('Vui lòng nhập ghi chú');
     return;
   }
   
   try {
     await mockApi.addSessionNote(selectedRequest.value.sessionId, managerId.value, managerNote.value);
-    alert('✅ Đã thêm ghi chú!');
+    toast.success('Đã thêm ghi chú!');
     showNoteModal.value = false;
     await loadLeaveRequests();
   } catch (error) {
-    alert('❌ Lỗi: ' + error.message);
+    toast.error('Có lỗi xảy ra');
   }
 };
 

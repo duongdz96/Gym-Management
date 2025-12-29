@@ -194,10 +194,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useToast } from 'vue-toastification';
 // TODO: Replace mockApi with real API calls
 // import mockApi from './mockData.js';
 import { formatDate } from '@/views/Test/dateUtils.js';
 import { XCircle, FileText } from 'lucide-vue-next';
+
+const toast = useToast();
 
 const loading = ref(false);
 const leaveRequests = ref([]);
@@ -254,7 +257,7 @@ const loadLeaveRequests = async () => {
     */
     leaveRequests.value = []; // Placeholder
   } catch (error) {
-    alert('Lỗi: ' + error.message);
+    toast.error('Lỗi: ' + error.message);
   } finally {
     loading.value = false;
   }
@@ -264,10 +267,10 @@ const approveLeave = async (request) => {
   if (confirm(`Duyệt đơn xin nghỉ của ${request.teacherName}?`)) {
     try {
       // TODO: await mockApi.approveTeacherLeave(request.sessionId, managerId.value, true);
-      alert('✅ Đã duyệt đơn xin nghỉ! Bạn có thể hủy buổi học hoặc thêm ghi chú.');
+      toast.success('Đã duyệt đơn xin nghỉ! Bạn có thể hủy buổi học hoặc thêm ghi chú.');
       await loadLeaveRequests();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      toast.error('Lỗi: ' + error.message);
     }
   }
 };
@@ -276,10 +279,10 @@ const rejectLeave = async (request) => {
   if (confirm(`Từ chối đơn xin nghỉ của ${request.teacherName}?`)) {
     try {
       // TODO: await mockApi.approveTeacherLeave(request.sessionId, managerId.value, false);
-      alert('✅ Đã từ chối đơn xin nghỉ!');
+      toast.success('Đã từ chối đơn xin nghỉ!');
       await loadLeaveRequests();
     } catch (error) {
-      alert('❌ Lỗi: ' + error.message);
+      toast.error('Lỗi: ' + error.message);
     }
   }
 };
@@ -297,17 +300,17 @@ const submitCancellation = async () => {
     : cancellationReason.value;
     
   if (!reason) {
-    alert('Vui lòng chọn/nhập lý do hủy');
+    toast.warning('Vui lòng chọn/nhập lý do hủy');
     return;
   }
   
   try {
     // TODO: await mockApi.cancelSession(selectedRequest.value.sessionId, managerId.value, reason);
-    alert('✅ Đã hủy buổi học!');
+    toast.success('Đã hủy buổi học!');
     showCancelModal.value = false;
     await loadLeaveRequests();
   } catch (error) {
-    alert('❌ Lỗi: ' + error.message);
+    toast.error('Lỗi: ' + error.message);
   }
 };
 
@@ -319,17 +322,17 @@ const openNoteModal = (request) => {
 
 const submitNote = async () => {
   if (!managerNote.value.trim()) {
-    alert('Vui lòng nhập ghi chú');
+    toast.warning('Vui lòng nhập ghi chú');
     return;
   }
   
   try {
     // TODO: await mockApi.addSessionNote(selectedRequest.value.sessionId, managerId.value, managerNote.value);
-    alert('✅ Đã thêm ghi chú!');
+    toast.success('Đã thêm ghi chú!');
     showNoteModal.value = false;
     await loadLeaveRequests();
   } catch (error) {
-    alert('❌ Lỗi: ' + error.message);
+    toast.error('Lỗi: ' + error.message);
   }
 };
 

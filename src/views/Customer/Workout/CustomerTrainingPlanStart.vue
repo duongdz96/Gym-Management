@@ -3,9 +3,11 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, CheckCircle, Circle, Dumbbell, TrendingUp } from 'lucide-vue-next'
 import { trainingPlanApi } from '@/services/workoutApi'
+import { useToast } from 'vue-toastification'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 
 // ==================== STATE ====================
 const trainingPlan = ref(null)
@@ -43,7 +45,7 @@ const fetchTrainingPlan = async () => {
     }
 
   } catch (error) {
-    console.error(error)
+    // Error loading training plan
   } finally {
     isLoading.value = false
   }
@@ -59,30 +61,29 @@ const toggleExercise = async (detailId) => {
   try {
     await trainingPlanApi.toggleDetailStatus(detailId)
   } catch (error) {
-    console.error('Lỗi khi đánh dấu bài tập:', error)
+    // Revert the change if API call fails
     if (completedExercises.value.has(detailId)) {
       completedExercises.value.delete(detailId)
     } else {
       completedExercises.value.add(detailId)
     }
-    alert('Có lỗi xảy ra, vui lòng thử lại')
+    toast.error('Có lỗi xảy ra, vui lòng thử lại')
   }
 }
 
 const completePlan = async () => {
   if (!allCompleted.value) {
-    alert('Vui lòng hoàn thành tất cả bài tập!')
+    toast.warning('Vui lòng hoàn thành tất cả bài tập!')
     return
   }
 
   isCompleting.value = true
   try {
     await trainingPlanApi.completePlan(route.params.id)
-    alert('Chúc mừng! Bạn đã hoàn thành buổi tập!')
+    toast.success('Chúc mừng! Bạn đã hoàn thành buổi tập!')
     router.push('/customer/workout/training-plans')
   } catch (error) {
-    console.error('Lỗi khi hoàn thành lịch tập:', error)
-    alert('Không thể hoàn thành lịch tập')
+    toast.error('Không thể hoàn thành lịch tập')
   } finally {
     isCompleting.value = false
   }

@@ -187,7 +187,7 @@ function startPolling() {
 const submit = async () => {
     if (!bill.value) return;
     if (!paymentMethod.value) {
-        alert("Vui lòng chọn phương thức thanh toán");
+        toast.warning("Vui lòng chọn phương thức thanh toán");
         return;
     }
 
@@ -227,9 +227,9 @@ const submit = async () => {
         const status = e.response?.status;
         const msg = e.response?.data?.message || e.message;
         if (status === 403) {
-            alert(`Lỗi quyền truy cập (403): ${msg}. Vui lòng kiểm tra đăng nhập hoặc quyền hạn.`);
+            toast.err(`Lỗi quyền truy cập (403): ${msg}. Vui lòng kiểm tra đăng nhập hoặc quyền hạn.`);
         } else {
-            alert(`Lỗi tạo hóa đơn (${status}): ${msg}`);
+            toast.error(`Lỗi tạo hóa đơn (${status}): ${msg}`);
         }
         console.error("Submit Error:", e);
     }

@@ -3,8 +3,10 @@ import { ref, onMounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Camera, X, TrendingUp, Calendar, Award, Ticket, Activity, Clock, Dumbbell, Heart } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useToast } from 'vue-toastification'
 
 const authStore = useAuthStore()
+const toast = useToast()
 
 // ===================== STATE =====================
 const rating = ref(0)
@@ -115,12 +117,12 @@ const removeImage = (index) => {
 
 const submitFeedback = async () => {
   if (!rating.value) {
-    alert('Vui lòng chọn số sao đánh giá!')
+    toast.warning('Vui lòng chọn số sao đánh giá!')
     return
   }
   
   if (!comment.value.trim()) {
-    alert('Vui lòng nhập nội dung đánh giá!')
+    toast.warning('Vui lòng nhập nội dung đánh giá!')
     return
   }
   
@@ -144,13 +146,12 @@ const submitFeedback = async () => {
       body: formData
     })
 
-    alert('Cảm ơn bạn đã gửi đánh giá!')
+    toast.success('Cảm ơn bạn đã gửi đánh giá!')
     rating.value = 0
     comment.value = ''
     images.value = []
   } catch (error) {
-    console.error('Error submitting feedback:', error)
-    alert('Không thể gửi đánh giá. Vui lòng thử lại!')
+    toast.error('Không thể gửi đánh giá. Vui lòng thử lại!')
   }
 }
 

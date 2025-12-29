@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { Plus, Search, Dumbbell, Eye, Edit, Trash2, Filter } from 'lucide-vue-next'
 import { exerciseApi } from '@/services/workoutApi'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useToast } from 'vue-toastification'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -15,6 +16,7 @@ const searchQuery = ref('')
 const selectedMuscleGroup = ref('')
 const showDeleteModal = ref(false)
 const exerciseToDelete = ref(null)
+const toast = useToast();
 
 const muscleGroups = [
   'Tất cả',
@@ -60,7 +62,7 @@ const fetchExercises = async () => {
     exercises.value = response.data
   } catch (error) {
     console.error('Lỗi khi tải danh sách bài tập:', error)
-    alert('Không thể tải danh sách bài tập')
+    toast.error('Không thể tải danh sách bài tập')
   } finally {
     isLoading.value = false
   }
@@ -96,7 +98,7 @@ const deleteExercise = async () => {
     exerciseToDelete.value = null
   } catch (error) {
     console.error('Lỗi khi xóa bài tập:', error)
-    alert('Không thể xóa bài tập này')
+    toast.error('Không thể xóa bài tập này')
   }
 }
 

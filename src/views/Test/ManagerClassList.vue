@@ -689,9 +689,10 @@ import {
   AlertTriangle,
   Filter
 } from 'lucide-vue-next';
+import { useToast } from 'vue-toastification';
 
 const router = useRouter();
-
+const toast = useToast();
 // State
 const classes = ref([]);
 const roomsData = ref([]);
@@ -1128,7 +1129,7 @@ const createClass = async () => {
     }
 
     console.log('✅ Generated ClassSchedules:', generatedSchedules.length);
-    alert(`✅ Tạo lớp học thành công! Đã tạo ${generatedSchedules.length} buổi học.`);
+    toast.success(`Tạo lớp học thành công! Đã tạo ${generatedSchedules.length} buổi học.`);
     
     showCreateForm.value = false;
     currentStep.value = 0;
@@ -1139,7 +1140,7 @@ const createClass = async () => {
   } catch (error) {
     console.error('Error creating class:', error);
     const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra';
-    alert('❌ Lỗi: ' + errorMessage);
+    toast.error('Có lỗi xảy ra');
   }
 };
 
@@ -1155,7 +1156,7 @@ const approveTeacher = async (cls) => {
 const deleteClass = async (classId) => {
   const cls = classes.value.find(c => c.id === classId);
   if (cls && cls.status === 'ready_for_students') {
-    alert('❌ Không thể xóa lớp học đã sẵn sàng (đã có giáo viên và có thể có học viên)!');
+    toast.error('Không thể xóa lớp học đã sẵn sàng (đã có giáo viên và có thể có học viên)!');
     return;
   }
   

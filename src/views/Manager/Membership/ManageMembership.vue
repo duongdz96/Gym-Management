@@ -2,6 +2,7 @@
 import { computed, ref, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import api from '@/services/api';
+import { useToast } from 'vue-toastification';
 
 type MembershipTier = {
     id: number,
@@ -25,6 +26,7 @@ const membershipTiers = ref<MembershipTier[]>([])
 
 const search = ref('')
 const membershipType = ref('')
+const toast = useToast();
 
 const filteredMembershipPlans = computed(() => {
     return membershipPlans.value.filter(plan => {
@@ -48,7 +50,7 @@ onMounted(async () => {
         console.log("Membership plans loaded:", membershipPlans.value);
     } catch (error) {
         console.error('Failed to load memberships:', error);
-        alert("Failed to load memberships. Please try again.");
+        toast.error("Failed to load memberships. Please try again.");
     }
 })
 </script>
