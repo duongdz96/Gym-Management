@@ -34,4 +34,14 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     
     @Query("SELECT SUM(b.total) FROM Bill b WHERE MONTH(b.date) = :month AND YEAR(b.date) = :year AND b.paymentStatus = 'PAID'")
     Double getRevenueByMonthAndYear(@Param("month") int month, @Param("year") int year);
+    
+    // Query methods for Reception Dashboard
+    @Query("SELECT b FROM Bill b WHERE DATE(b.date) = CURRENT_DATE ORDER BY b.date DESC")
+    List<Bill> findTodayBills();
+    
+    @Query("SELECT COUNT(b) FROM Bill b WHERE DATE(b.date) = CURRENT_DATE AND b.paymentStatus = 'PAID'")
+    Long countTodayPaidBills();
+    
+    @Query("SELECT SUM(b.total) FROM Bill b WHERE DATE(b.date) = CURRENT_DATE AND b.paymentStatus = 'PAID'")
+    Double getTodayRevenue();
 }

@@ -31,4 +31,8 @@ public interface CustomerMembershipRepository extends JpaRepository<CustomerMemb
     @Modifying
     @Query("UPDATE CustomerMembership c SET c.status = 'Expired' WHERE c.status = 'Active' AND c.endDate < :now")
     void updateExpiredMemberships(@Param("now") Date now);
+    
+    // Query method for Reception Dashboard
+    @Query("SELECT COUNT(cm) FROM CustomerMembership cm WHERE DATE(cm.startDate) = CURRENT_DATE")
+    Long countTodayNewMemberships();
 }

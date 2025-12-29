@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -32,6 +33,12 @@ public class StatsServiceImpl implements StatsService {
     private ProductRepository productRepository;
     @Autowired
     private ImportBillRepository importBillRepository;
+    @Autowired
+    private AccessLogRepository accessLogRepository;
+    @Autowired
+    private ClassScheduleRepository classScheduleRepository;
+    @Autowired
+    private ClassRegistrationRepository classRegistrationRepository;
 
     @Override
     public List<ProductStatDTO> getTopSellingProducts() {
@@ -190,5 +197,142 @@ public class StatsServiceImpl implements StatsService {
             this.timestamp = timestamp;
             this.dto = dto;
         }
+    }
+    
+    // ===================== RECEPTION DASHBOARD METHODS =====================
+    
+    @Override
+    public ReceptionTodayStatsDTO getReceptionTodayStats() {
+        ReceptionTodayStatsDTO stats = new ReceptionTodayStatsDTO();
+        
+        // Get new memberships today
+        Long newMemberships = customerMembershipRepository.countTodayNewMemberships();
+        stats.setNewMemberships(newMemberships != null ? newMemberships : 0L);
+        
+        // Get total check-ins today
+        Long checkIns = accessLogRepository.countTodayCheckIns();
+        stats.setTotalCheckIns(checkIns != null ? checkIns : 0L);
+        
+        // Get total revenue today
+        Double revenue = billRepository.getTodayRevenue();
+        stats.setTotalRevenue(revenue != null ? revenue : 0.0);
+        
+        return stats;
+    }
+    
+    @Override
+    public List<RecentTransactionDTO> getRecentTransactions() {
+        List<Bill> todayBills = billRepository.findTodayBills();
+        
+        return todayBills.stream()
+                .limit(5)
+                .map(bill -> {
+                    RecentTransactionDTO dto = new RecentTransactionDTO();
+                    dto.setId(bill.getId());
+                    
+                    // Get customer name from member
+                    String customerName = "Khách hàng";
+                    if (bill.getMember() != null && bill.getMember().getFullName() != null) {
+                        customerName = bill.getMember().getFullName();
+                    }
+                    dto.setCustomerName(customerName);
+                    
+                    // Determine transaction type based on bill contents
+                    String type = "Sản phẩm";
+                    if (bill.getListSoldProduct() != null && !bill.getListSoldProduct().isEmpty()) {
+                        // Check if it's a membership or PT package by looking at product names
+                        boolean hasMembership = bill.getListSoldProduct().stream()
+                                .anyMatch(sp -> sp.getProduct() != null && 
+                                        sp.getProduct().getName() != null &&
+                                        (sp.getProduct().getName().toLowerCase().contains("gói") ||
+                                         sp.getProduct().getName().toLowerCase().contains("membership")));
+                        boolean hasPT = bill.getListSoldProduct().stream()
+                                .anyMatch(sp -> sp.getProduct() != null && 
+                                        sp.getProduct().getName() != null &&
+                                        (sp.getProduct().getName().toLowerCase().contains("pt") ||
+                                         sp.getProduct().getName().toLowerCase().contains("personal training")));
+                        
+                        if (hasMembership) {
+                            type = "Gói thành viên";
+                        } else if (hasPT) {
+                            type = "PT Package";
+                        }
+                    }
+                    dto.setType(type);
+                    
+                    dto.setAmount(bill.getTotal());
+                    dto.setStatus(bill.getPaymentStatus());
+                    
+                    // Format time as HH:mm
+                    if (bill.getDate() != null) {
+                        java.text.SimpleDateFormat timeFormat = new java.text.SimpleDateFormat("HH:mm");
+                        dto.setTime(timeFormat.format(bill.getDate()));
+                    } else {
+                        dto.setTime("--:--");
+                    }
+                    
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<UpcomingClassDTO> getUpcomingClasses() {
+        // Get classes starting in the next 7 days
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime endDate = now.plusDays(7);
+        
+        List<com.example.gympool.entity.ClassSchedule> upcomingSchedules = 
+                classScheduleRepository.findUpcomingClasses(endDate);
+        
+        return upcomingSchedules.stream()
+                .limit(5)
+                .map(schedule -> {
+                    UpcomingClassDTO dto = new UpcomingClassDTO();
+                    
+                    // Get class name
+                    String className = "Lớp học";
+                    if (schedule.getFitnessClass() != null && schedule.getFitnessClass().getName() != null) {
+                        className = schedule.getFitnessClass().getName();
+                    }
+                    dto.setClassName(className);
+                    
+                    // Get teacher name - try to find from ClassRegistration
+                    String teacherName = "Chưa có giáo viên";
+                    if (schedule.getFitnessClass() != null) {
+                        List<com.example.gympool.entity.ClassRegistration> registrations = 
+                                classRegistrationRepository.findByFitnessClass(schedule.getFitnessClass());
+                        if (!registrations.isEmpty()) {
+                            // Get the first approved teacher
+                            for (com.example.gympool.entity.ClassRegistration reg : registrations) {
+                                if ("APPROVED".equals(reg.getStatus()) && reg.getTeacher() != null) {
+                                    teacherName = reg.getTeacher().getFullName();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    dto.setTeacher(teacherName);
+                    
+                    // Format start date as dd/MM/yyyy
+                    if (schedule.getStartTime() != null) {
+                        java.time.format.DateTimeFormatter dateFormatter = 
+                                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                        dto.setStartDate(schedule.getStartTime().format(dateFormatter));
+                        
+                        // Calculate days left
+                        long daysLeft = java.time.temporal.ChronoUnit.DAYS.between(
+                                LocalDateTime.now().toLocalDate(), 
+                                schedule.getStartTime().toLocalDate()
+                        );
+                        dto.setDaysLeft(daysLeft);
+                    } else {
+                        dto.setStartDate("--/--/----");
+                        dto.setDaysLeft(0L);
+                    }
+                    
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }

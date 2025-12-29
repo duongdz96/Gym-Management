@@ -45,4 +45,21 @@ public class StatsController {
     public ResponseEntity<List<RecentActivityDTO>> getRecentActivities() {
         return ResponseEntity.ok(statsService.getRecentActivities());
     }
+    
+    // ===================== RECEPTION DASHBOARD ENDPOINTS =====================
+    
+    @GetMapping("/reception/today")
+    public ResponseEntity<ReceptionTodayStatsDTO> getReceptionTodayStats() {
+        return ResponseEntity.ok(statsService.getReceptionTodayStats());
+    }
+    
+    @GetMapping("/reception/recent-transactions")
+    public ResponseEntity<List<RecentTransactionDTO>> getRecentTransactions() {
+        return ResponseEntity.ok(statsService.getRecentTransactions());
+    }
+    
+    @GetMapping("/reception/upcoming-classes")
+    public ResponseEntity<List<UpcomingClassDTO>> getUpcomingClasses() {
+        return ResponseEntity.ok(statsService.getUpcomingClasses());
+    }
 }

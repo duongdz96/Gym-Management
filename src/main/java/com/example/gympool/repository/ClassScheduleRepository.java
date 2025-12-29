@@ -26,4 +26,12 @@ public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, Lo
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime
     );
+    
+    // Query method for Reception Dashboard - upcoming classes in next 7 days
+    @Query("SELECT s FROM ClassSchedule s " +
+            "WHERE s.startTime > CURRENT_TIMESTAMP " +
+            "AND s.startTime <= :endDate " +
+            "AND s.status = 'OPEN' " +
+            "ORDER BY s.startTime ASC")
+    List<ClassSchedule> findUpcomingClasses(@Param("endDate") LocalDateTime endDate);
 }
