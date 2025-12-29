@@ -53,7 +53,7 @@ const submit = async () => {
     let payload;
     if (isExistingMember.value) {
       if (!selectedMemberId.value) {
-        alert("Please select a member");
+        alert("Vui lòng chọn một thành viên");
         return;
       }
       payload = {
@@ -82,11 +82,11 @@ const submit = async () => {
     console.log(payload);
 
     await api.post("/membership", payload);
-    alert("Membership added successfully!");
+    alert("Gói thành viên đã được thêm vào thành công!");
     router.push({ name: "reception.memberships" });
   } catch (error) {
-    console.error("Error adding membership:", error);
-    alert("Failed to add membership. Please try again.");
+    console.error("Có lỗi khi thêm membership:", error);
+    alert("Thêm thành viên không thành công. Vui lòng thử lại.");
   }
 };
 
@@ -130,12 +130,12 @@ onMounted(async () => {
 <template>
   <div class="p-4">
     <div class="flex items-center justify-between mb-4">
-      <h1 class="text-xl font-semibold">Add Membership</h1>
+      <h1 class="text-xl font-semibold">Thêm gói thành viên</h1>
       <RouterLink
         :to="{ name: 'reception.memberships' }"
         class="px-3 py-2 rounded-md bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
       >
-        Back
+        Quay lại
       </RouterLink>
     </div>
 
@@ -149,11 +149,11 @@ onMounted(async () => {
         <div class="flex gap-4">
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="radio" v-model="isExistingMember" :value="false" class="form-radio text-emerald-600" />
-            <span>New Customer</span>
+            <span>Khách hàng mới</span>
           </label>
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="radio" v-model="isExistingMember" :value="true" class="form-radio text-emerald-600" />
-            <span>Existing Customer</span>
+            <span>Khách hàng đã có tài khoản</span>
           </label>
         </div>
       </div>
@@ -162,14 +162,14 @@ onMounted(async () => {
       <div v-if="isExistingMember" class="md:col-span-2">
         <label
           class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >Select Member</label
+          >Chọn thành viên</label
         >
         <select
           v-model="selectedMemberId"
           class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           required
         >
-          <option value="" disabled>Select a member</option>
+          <option value="" disabled>Chọn thành viên</option>
           <option
             v-for="member in members"
             :key="member.id"
@@ -186,7 +186,7 @@ onMounted(async () => {
         <div>
           <label
             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >Full Name</label
+            >Họ và tên</label
           >
           <input
             v-model="form.fullName"
@@ -214,7 +214,7 @@ onMounted(async () => {
         <div>
           <label
             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >Date of Birth</label
+            >Ngày sinh</label
           >
           <input
             v-model="form.dob"
@@ -228,15 +228,15 @@ onMounted(async () => {
         <div>
           <label
             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >Gender</label
+            >Giới tính</label
           >
           <select
             v-model="form.gender"
             class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           >
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
+            <option value="Male">Nam</option>
+            <option value="Female">Nữ</option>
           </select>
         </div>
 
@@ -244,7 +244,7 @@ onMounted(async () => {
         <div>
           <label
             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >Phone</label
+            >Điện thoại</label
           >
           <input
             v-model="form.phone"
@@ -259,7 +259,7 @@ onMounted(async () => {
       <div>
         <label
           class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >Membership Plan</label
+          >Gói thành viên</label
         >
         <select
           v-model="form.membershipPlanId"
@@ -267,7 +267,7 @@ onMounted(async () => {
           class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         >
-          <option value="" disabled>Select a plan</option>
+          <option value="" disabled>Chọn một gói thành viên</option>
           <option
             v-for="plan in membershipPlans"
             :key="plan.id"
@@ -282,7 +282,7 @@ onMounted(async () => {
       <div>
         <label
           class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >Start Date</label
+          >Ngày bắt đầu</label
         >
         <input
           v-model="form.startDate"
@@ -297,7 +297,7 @@ onMounted(async () => {
       <div>
         <label
           class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >End Date</label
+          >Ngày kết thúc</label
         >
         <input
           v-model="endDate"
@@ -313,7 +313,7 @@ onMounted(async () => {
           type="submit"
           class="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white"
         >
-          Add Membership
+          Thêm gói thành viên
         </button>
       </div>
     </form>

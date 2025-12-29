@@ -61,7 +61,7 @@ onMounted(async () => {
         console.log("Memberships loaded:", memberships.value);
     } catch (error) {
         console.error('Failed to load memberships:', error);
-        alert("Failed to load memberships. Please try again.");
+        alert("Tải hội viên thất bại. Vui lòng thử lại");
     }
 })
 </script>
@@ -70,14 +70,14 @@ onMounted(async () => {
     <div class="space-y-4 p-4">
         <!-- Toolbar -->
         <div class="justify-between flex">
-             <h1 class="text-xl font-semibold">Customer Memberships</h1>
+             <h1 class="text-xl font-semibold">Thành viên khách hàng</h1>
              <div>
-                <input type="text" v-model="search" placeholder="Search by member name or plan name" class="px-3 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-200 mr-2">
+                <input type="text" v-model="search" placeholder="Tìm tên thành viên" class="px-3 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-200 mr-2">
 
                 <select v-model="statusFilter" class="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 mr-2">
-                    <option value="">All statuses</option>
-                 <option value="Active">Active</option>
-                 <option value="Expired">Expired</option>
+                    <option value="">Mọi trạng thái</option>
+                 <option value="Active">Còn hạn</option>
+                 <option value="Expired">Hết hạn</option>
                 </select>
              </div>
         </div>
@@ -91,22 +91,22 @@ onMounted(async () => {
                             <span>ID</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Member Name</span>
+                            <span>Tên thành viên</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Plan Name</span>
+                            <span>Gói thành viên</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Tier</span>
+                            <span>Bậc</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Start Date</span>
+                            <span>Ngày bắt đầu</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>End Date</span>
+                            <span>Ngày kết thúc</span>
                         </th>
                         <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Status</span>
+                            <span>Trạng thái</span>
                         </th>
                     </tr>
                 </thead>
@@ -125,7 +125,7 @@ onMounted(async () => {
                             <span :class="[
                                 'px-2 py-1 rounded-full text-xs', membership.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                             ]">
-                            {{ membership.status }}
+                            {{ membership.status === 'Active' ? 'Còn hạn' : 'Hết hạn'}}
                             </span>
                         </td>
                     </tr>
