@@ -107,9 +107,13 @@ public class CustomerMembershipServiceImpl implements CustomerMembershipService 
         MembershipPlan newPlan = membershipPlanRepository.findById(newPlanId)
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
 
-        Date baseDate = current.getEndDate().after(new Date()) ? current.getEndDate() : new Date();
-
+        Date today = new Date();
+        Date baseDate = current.getEndDate().after(today) ? current.getEndDate() : today;
         Date newEndDate = addDuration(baseDate, newPlan.getDuration());
+
+        if (current.getEndDate().before(today)) {
+            current.setStartDate(today);
+        }
 
         current.setMembershipPlan(newPlan);
         current.setEndDate(newEndDate);

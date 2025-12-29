@@ -73,4 +73,10 @@ public class MemberServiceImpl implements MemberService {
         }
         memberRepository.deleteById(id);
     }
+
+    @Override
+    public Member getMemberByEmail(String email) {
+        return memberRepository.findByEmail(email)
+                .orElse(null);
+    }
 }
