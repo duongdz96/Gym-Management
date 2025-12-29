@@ -55,6 +55,7 @@ const filteredMemberships = computed(() => {
 })
 
 onMounted(async () => {
+    console.log("Vao trang reception memberships");
     try {
         // Load memberships
         const res = await api.get("/membership");

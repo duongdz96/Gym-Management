@@ -1,141 +1,318 @@
-public class FitnessClass {
-
+@Table(name="membership_plan")
+public class MembershipPlan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String name;    //gold 1 month
+    private String duration;
+    private String status;
+    private String benefits;
+    private Double price;
 
-    @Column(nullable = false, length = 100)
+    @ManyToOne
+    @JoinColumn(name = "tier_id", nullable = false)
+    private MembershipTier membershipTier;
+}
+public class MembershipTier {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String name;
+    private Integer priority;
+    private String status;
+}
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @Column(length = 50)
-    private String difficultyLevel;
-
+public class CustomerMembership {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Date startDate;
+    private Date endDate;
     private String status;
 
-    @OneToMany(mappedBy = "fitnessClass", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<ClassSchedule> classSchedule;
-}
-public class ClassSchedule {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
-    private Integer capacity;
-
-    @Column(length = 20)
-    private String status;   //"OPEN", "CLOSED", "CANCELLED"
-
     @ManyToOne
-    @JoinColumn(name = "fitness_class_id", nullable = true)
-    @JsonIgnoreProperties({"schedules", "registrations"})
-    private FitnessClass fitnessClass;
-
-    @ManyToOne
-    @JoinColumn(name = "schedule_pattern_id", nullable = true)
-    private SchedulePattern schedulePattern;
-
-    @ManyToOne
-    @JoinColumn(name = "room_id", nullable = true)
-    private Room room;
-
-    private String note;
-}
-public class MemberRegistration {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private Date followDate;
-
-    @ManyToOne
-    @JoinColumn(name = "class_schedule_id", nullable = false)
-    private ClassSchedule classSchedule;
+    @JoinColumn(name = "plan_id", nullable = false)
+    private MembershipPlan membershipPlan;
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 }
-public class ClassRegistration {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "teacher_id", nullable = false)
-    private Teacher teacher;
 
-    @ManyToOne
-    @JoinColumn(name = "class_template_id", nullable = false)
-    private FitnessClass fitnessClass;
+@Service
+public class CustomerMembershipServiceImpl implements CustomerMembershipService {
+    @Autowired
+    private CustomerMembershipRepository customerMembershipRepository;
+    @Autowired
+    private MemberService memberService;
+    @Autowired
+    private MembershipPlanRepository membershipPlanRepository;
 
-    private String description;
-    
-    private String status; // PENDING, APPROVED, REJECTED
+    @Override
+    public List<CustomerMembership> getAllCustomerMembership(){
+        return customerMembershipRepository.findAll();
+    }
+    @Override
+    public CustomerMembership getMembershipById(Long id){
+        return customerMembershipRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("CustomerMembership not found with id: " + id));
+    }
+    @Override
+    public CustomerMembership getMembershipByCustomerName(String customerName){
+        return customerMembershipRepository.findByMemberName(customerName)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found with name: " + customerName));
+    }
+    @Override
+    @Transactional
+    public CustomerMembership RegisterMembership(com.example.gympool.dto.CustomerMembershipRequest request){
+        CustomerMembership customerMembership = new CustomerMembership();
+        
+        // Handle member - create new or use existing
+        if (request.getMember() != null && request.getMember().getId() == null) {
+            Member newMember = memberService.createMember(request.getMember());
+            customerMembership.setMember(newMember);
+        } else if (request.getMember() != null && request.getMember().getId() != null) {
+            Member existingMember = memberService.getMemberById(request.getMember().getId());
+            customerMembership.setMember(existingMember);
+        }
+
+        // Handle membership plan
+        if (request.getMembershipPlanId() != null) {
+            com.example.gympool.entity.MembershipPlan plan = membershipPlanRepository.findById(request.getMembershipPlanId())
+                    .orElseThrow(() -> new IllegalArgumentException("Membership Plan not found"));
+            customerMembership.setMembershipPlan(plan);
+        }
+
+        // Set dates
+        customerMembership.setStartDate(request.getStartDate());
+        customerMembership.setEndDate(request.getEndDate());
+        
+        // Set default status
+        customerMembership.setStatus("Active");
+
+        CustomerMembership savedMembership = customerMembershipRepository.save(customerMembership);
+
+        // Update Member info
+        Member member = savedMembership.getMember();
+        if (member != null) {
+            if (savedMembership.getMembershipPlan() != null && savedMembership.getMembershipPlan().getMembershipTier() != null) {
+                member.setMembership(savedMembership.getMembershipPlan().getMembershipTier().getName());
+            }
+            member.setStatus("Active");
+            if (member.getJoinDate() == null) {
+                member.setJoinDate(new java.util.Date());
+            }
+            memberService.updateMember(member.getId(), member);
+        }
+
+        return savedMembership;
+    }
+    @Override
+    public CustomerMembership updateMembership(Long id, CustomerMembership customerMembershipDetails){
+        CustomerMembership customerMembership = getMembershipById(id);
+
+        // update field từ User
+        if (customerMembershipDetails.getMembershipPlan() != null) customerMembership.setMembershipPlan(customerMembershipDetails.getMembershipPlan());
+        if (customerMembershipDetails.getStatus() != null) customerMembership.setStatus(customerMembershipDetails.getStatus());
+        if (customerMembershipDetails.getMember() != null) customerMembership.setMember(customerMembershipDetails.getMember());
+        if (customerMembershipDetails.getStartDate() != null) customerMembership.setStartDate(customerMembershipDetails.getStartDate());
+        if (customerMembershipDetails.getEndDate() != null) customerMembership.setEndDate(customerMembershipDetails.getEndDate());
+        return customerMembershipRepository.save(customerMembership);
+    }
+    @Override
+    @Transactional
+    public CustomerMembership renewMembership(Long currentMembershipId, Long newPlanId) {
+        CustomerMembership current = getMembershipById(currentMembershipId);
+        MembershipPlan newPlan = membershipPlanRepository.findById(newPlanId)
+                .orElseThrow(() -> new RuntimeException("Plan not found"));
+
+        Date today = new Date();
+        Date baseDate = current.getEndDate().after(today) ? current.getEndDate() : today;
+        Date newEndDate = addDuration(baseDate, newPlan.getDuration());
+
+        if (current.getEndDate().before(today)) {
+            current.setStartDate(today);
+        }
+
+        current.setMembershipPlan(newPlan);
+        current.setEndDate(newEndDate);
+        current.setStatus("Active");
+
+        return customerMembershipRepository.save(current);
+    }
+
+    //Tuyetzz
+    //cái này sẽ lấy cái cũ chia cho số tiền
+    //ví du
+    //gói silver (1 thang 60k) còn 2 ngày, đơn giá 2k/ngày => Dư 4k
+    //gói gold mới (1 thang 90k) => đơn giá 3k/ngày
+    //lấy 4k / 3k = 1.33 ngày
+    //enddate += 1.33 ngày
+    @Override
+    @Transactional
+    public CustomerMembership upgradeMembership(Long currentMembershipId, Long newPlanId) {
+        CustomerMembership oldMem = getMembershipById(currentMembershipId);
+        MembershipPlan newPlan = membershipPlanRepository.findById(newPlanId)
+                .orElseThrow(() -> new RuntimeException("Plan not found"));
+
+        Date today = new Date();
+
+        // 1. Tính ngày kết thúc tiêu chuẩn (Hôm nay + Thời hạn gói mới)
+        Date standardEndDate = addDuration(today, newPlan.getDuration());
+        Date finalEndDate = standardEndDate;
+
+        // 2. Tính toán quy đổi nếu gói cũ còn hạn
+        if (oldMem.getEndDate().after(today)) {
+            // Tính số ngày còn lại của gói cũ
+            long diffInMillies = oldMem.getEndDate().getTime() - today.getTime();
+            long oldDaysRemaining = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+
+            // Tính đơn giá ngày của gói cũ
+            long oldDurationDays = getDurationInDays(oldMem.getMembershipPlan().getDuration());
+            double oldPricePerDay = oldMem.getMembershipPlan().getPrice() / oldDurationDays;
+
+            // Tính tổng tiền dư (Remaining Value)
+            double residualValue = oldDaysRemaining * oldPricePerDay;
+
+            // Tính đơn giá ngày của gói mới
+            long newDurationDays = getDurationInDays(newPlan.getDuration());
+            double newPricePerDay = newPlan.getPrice() / newDurationDays;
+
+            // Tính số ngày được cộng thêm (Extra Days)
+            double extraDays = residualValue / newPricePerDay;
+
+            // Cộng thêm số ngày này vào hạn chuẩn (đổi ra milliseconds để chính xác cả số lẻ như 1.33 ngày)
+            long extraTimeInMillis = (long) (extraDays * 24 * 60 * 60 * 1000);
+            finalEndDate = new Date(standardEndDate.getTime() + extraTimeInMillis);
+        }
+
+        // 3. Cập nhật gói cũ
+        oldMem.setStatus("Upgraded");
+        customerMembershipRepository.save(oldMem);
+
+        // 4. Tạo gói mới
+        CustomerMembership newMem = new CustomerMembership();
+        newMem.setMember(oldMem.getMember());
+        newMem.setMembershipPlan(newPlan);
+        newMem.setStartDate(today);
+        newMem.setEndDate(finalEndDate);
+        newMem.setStatus("Active");
+
+        Member m = oldMem.getMember();
+        if (m != null) {
+            m.setMembership(newPlan.getMembershipTier().getName());
+            memberService.updateMember(m.getId(), m);
+        }
+
+        return customerMembershipRepository.save(newMem);
+    }
+
+    private Date addDuration(Date startDate, String duration) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(startDate);
+
+        String[] parts = duration.split(" ");
+        int amount = Integer.parseInt(parts[0]);
+        String unit = parts[1].toLowerCase();
+
+        if (unit.contains("month")) {
+            cal.add(Calendar.MONTH, amount);
+        } else if (unit.contains("year")) {
+            cal.add(Calendar.YEAR, amount);
+        }
+        return cal.getTime();
+    }
+
+    private long getDurationInDays(String duration) {
+        Date now = new Date();
+        Date end = addDuration(now, duration);
+        return (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    }
+
+    @Override
+    public CustomerMembership getLatestMembership(Long memberId) {
+        Optional<CustomerMembership> lastMemOpt = customerMembershipRepository.findFirstByMemberIdOrderByIdDesc(memberId);
+
+        if (lastMemOpt.isEmpty()) {
+            return null;
+        }
+
+        CustomerMembership membership = lastMemOpt.get();
+
+        if ("Active".equalsIgnoreCase(membership.getStatus())) {
+            Date now = new Date();
+            if (membership.getEndDate().before(now)) {
+                membership.setStatus("Expired");
+                return customerMembershipRepository.save(membership);
+            }
+        }
+
+        return membership;
+    }
+
+    @Override
+    @Transactional
+    public void scanAndExpireMemberships() {
+        customerMembershipRepository.updateExpiredMemberships(new Date());
+    }
 }
 
-    @GetMapping("/member/{memberId}")
-    public ResponseEntity<List<MemberRegistration>> getByMember(@PathVariable Long memberId) {
-        return ResponseEntity.ok(memberRegistrationService.getByMember(memberId));
-    }
-{
-        "id": 1,
-        "followDate": "2025-12-07T11:35:20.994+00:00",
-        "classSchedule": {
-            "id": 2,
-            "startTime": "2025-12-11T12:00:00",
-            "endTime": "2025-12-11T13:00:00",
-            "capacity": 20,
-            "status": "OPEN",
-            "fitnessClass": {
-                "id": 1,
-                "name": "Yoga Thursday 9pm",
-                "description": "",
-                "difficultyLevel": "Beginner",
-                "status": "ACTIVE"
-            },
-            "schedulePattern": {
-                "id": 1,
-                "daysOfWeek": "THURSDAY",
-                "timeStart": "21:00:00",
-                "timeEnd": "12:00:00",
-                "classStartDate": "2025-12-01",
-                "classEndDate": "2025-12-31"
-            },
-            "room": {
-                "id": 1,
-                "name": "Cardio Zone",
-                "description": null,
-                "capacity": null
-            }
-        },
-        "member": {
-            "id": 3,
-            "email": "member01@gmail.com",
-            "password": "$2a$10$JaB39GiciFDE6afHP3BVm.u8g6eF7jwxsL6vZXHaGnKVGEyi1aQgW",
-            "fullName": "Do Van E",
-            "dob": "1999-12-10T00:00:00.000+00:00",
-            "gender": "MALE",
-            "phone": "0979123456",
-            "role": "MEMBER",
-            "membership": "VIP",
-            "joinDate": "2025-12-08T14:32:26.120+00:00",
-            "status": "Active",
-            "faceId": null,
-            "cardId": null,
-            "deleted": false
-        }
-    },
 
-    @GetMapping("/fitness_class/{fitnessClassId}")
-    public ResponseEntity<List<ClassRegistration>> getByFitnessClass(@PathVariable Long fitnessClassId) {
-        return ResponseEntity.ok(classRegistrationService.getByFitnessClass(fitnessClassId));
+@RestController
+@RequestMapping("/api/membership")
+@RequiredArgsConstructor
+public class CustomerMembershipController {
+    private final CustomerMembershipService customerMembershipService;
+    @GetMapping()
+    public List<CustomerMembership> findAll() {
+        return customerMembershipService.getAllCustomerMembership();
     }
-    
+    @GetMapping("/{id}")
+    public CustomerMembership findCustomerMembershipById(@PathVariable("id") Long id) {
+        return customerMembershipService.getMembershipById(id);
+    }
+    @GetMapping("/")
+    public CustomerMembership findCustomerMembershipByName(@RequestParam("name") String name) {
+        return customerMembershipService.getMembershipByCustomerName(name);
+    }
+    @PostMapping()
+    public void RegisterMembership(@RequestBody com.example.gympool.dto.CustomerMembershipRequest request) {
+        customerMembershipService.RegisterMembership(request);
+    }
+
+    @PutMapping("/{id}")
+    public void updateCustomerMembership(@PathVariable("id") Long id,
+                                     @RequestBody CustomerMembership CustomerMembership) {
+        customerMembershipService.updateMembership(id, CustomerMembership);
+    }
+
+    // API Gia hạn gói
+    @PostMapping("/{id}/renew")
+    public ResponseEntity<CustomerMembership> renewMembership(
+            @PathVariable Long id,
+            @RequestParam Long newPlanId) {
+        CustomerMembership updated = customerMembershipService.renewMembership(id, newPlanId);
+        return ResponseEntity.ok(updated);
+    }
+
+    // API Đổi gói / Nâng cấp gói
+    @PostMapping("/{id}/upgrade")
+    public ResponseEntity<CustomerMembership> upgradeMembership(
+            @PathVariable Long id,
+            @RequestParam Long newPlanId) {
+        CustomerMembership upgraded = customerMembershipService.upgradeMembership(id, newPlanId);
+        return ResponseEntity.ok(upgraded);
+    }
+
+    @GetMapping("/member/{memberId}/current")
+    public ResponseEntity<CustomerMembership> getCurrentMembership(@PathVariable Long memberId) {
+        CustomerMembership currentMem = customerMembershipService.getLatestMembership(memberId);
+
+        if (currentMem == null) {
+            return ResponseEntity.noContent().build(); // Trả về 204 No Content
+        }
+
+        return ResponseEntity.ok(currentMem);
+    }
+}
