@@ -11,6 +11,8 @@ const currentMembership = ref(null)
 const availablePackages = ref([])
 const membershipHistory = ref([])
 const loading = ref(true)
+const showDetailModal = ref(false)
+const selectedPackage = ref(null)
 
 const formatDate = (dateString) => {
   if (!dateString) return "N/A"
@@ -102,6 +104,16 @@ onMounted(async () => {
   ])
   loading.value = false
 })
+
+const viewPackageDetail = (pkg) => {
+  selectedPackage.value = pkg
+  showDetailModal.value = true
+}
+
+const closeDetailModal = () => {
+  showDetailModal.value = false
+  selectedPackage.value = null
+}
 </script>
 
 <template>
@@ -154,6 +166,7 @@ onMounted(async () => {
             <p class="text-sm text-gray-500 mb-1">Thời hạn: {{ pkg.duration }}</p>
             <p class="text-red-600 font-medium mb-3">{{ formatCurrency(pkg.price) }}</p>
             <button
+              @click="viewPackageDetail(pkg)"
               class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 w-full"
             >
               Xem chi tiết
@@ -193,6 +206,105 @@ onMounted(async () => {
         </div>
       </section>
     </template>
+
+    <!-- Package Detail Modal -->
+    <transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div 
+        v-if="showDetailModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+        @click.self="closeDetailModal"
+      >
+        <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden">
+          <!-- Modal Header -->
+          <div class="p-6 bg-gradient-to-r from-red-600 to-red-700 text-white">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="text-2xl font-bold">{{ selectedPackage?.name }}</h3>
+                <p class="text-red-100 text-sm mt-1">Chi tiết gói hội viên</p>
+              </div>
+              <button 
+                @click="closeDetailModal"
+                class="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-2 rounded-lg"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Modal Body -->
+          <div class="p-6 space-y-6">
+            <!-- Price and Duration -->
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-red-50 p-4 rounded-xl border-2 border-red-200">
+                <p class="text-sm text-gray-600 mb-1">Giá gói</p>
+                <p class="text-2xl font-bold text-red-600">{{ formatCurrency(selectedPackage?.price) }}</p>
+              </div>
+              <div class="bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
+                <p class="text-sm text-gray-600 mb-1">Thời hạn</p>
+                <p class="text-2xl font-bold text-blue-600">{{ selectedPackage?.duration }}</p>
+              </div>
+            </div>
+
+            <!-- Benefits -->
+            <div>
+              <h4 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                Quyền lợi
+              </h4>
+              <div class="bg-gray-50 p-4 rounded-xl">
+                <div v-if="selectedPackage?.description" class="space-y-2">
+                  <div 
+                    v-for="(benefit, index) in selectedPackage.description.split('\n')" 
+                    :key="index"
+                    class="flex items-start gap-2 text-gray-700"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    <span>{{ benefit }}</span>
+                  </div>
+                </div>
+                <p v-else class="text-gray-500 text-center py-4">Không có thông tin quyền lợi</p>
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="flex items-center justify-between p-4 bg-green-50 rounded-xl border-2 border-green-200">
+              <span class="text-gray-700 font-semibold">Trạng thái</span>
+              <span class="px-4 py-2 bg-green-500 text-white rounded-full text-sm font-bold">
+                {{ selectedPackage?.status === 'Active' ? 'Đang hoạt động' : 'Không hoạt động' }}
+              </span>
+            </div>
+          </div>
+          
+          <!-- Modal Footer -->
+          <div class="p-4 border-t bg-gray-50 flex justify-end gap-3">
+            <button 
+              @click="closeDetailModal"
+              class="px-6 py-2 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition-colors"
+            >
+              Đóng
+            </button>
+            <button 
+              class="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl hover:shadow-lg transition-all"
+            >
+              Liên hệ đăng ký
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 

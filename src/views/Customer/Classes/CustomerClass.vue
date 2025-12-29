@@ -37,6 +37,18 @@
         </select>
       </div>
       
+      <div class="relative">
+        <Filter class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <select 
+          v-model="filterRegistrationStatus"
+          class="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-100 outline-none transition-all appearance-none bg-white"
+        >
+          <option value="">Tất cả lớp</option>
+          <option value="registered">Đã đăng ký</option>
+          <option value="not_registered">Chưa đăng ký</option>
+        </select>
+      </div>
+      
       <div class="relative flex-1">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <input 
@@ -483,6 +495,7 @@ const teachersData = ref([]);
 const registrations = ref([]);
 const registeredScheduleIds = ref(new Set());
 const filterDifficulty = ref('');
+const filterRegistrationStatus = ref(''); // '' = all, 'registered' = đã đăng ký, 'not_registered' = chưa đăng ký
 const searchQuery = ref('');
 const currentStudentId = computed(() => {
   const user = authStore.user;
@@ -542,6 +555,12 @@ const filteredClasses = computed(() => {
   
   if (filterDifficulty.value) {
     result = result.filter(c => c.difficulty === filterDifficulty.value);
+  }
+  
+  if (filterRegistrationStatus.value === 'registered') {
+    result = result.filter(c => isRegistered(c.id));
+  } else if (filterRegistrationStatus.value === 'not_registered') {
+    result = result.filter(c => !isRegistered(c.id));
   }
   
   if (searchQuery.value) {

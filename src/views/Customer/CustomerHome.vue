@@ -124,36 +124,34 @@ const submitFeedback = async () => {
     return
   }
   
-  // Mock submission
-  alert('Cảm ơn bạn đã gửi đánh giá!')
-  rating.value = 0
-  comment.value = ''
-  images.value = []
-  
-  /* REAL API CALL - Commented for mock data
   try {
     const formData = new FormData()
     formData.append('rating', rating.value)
     formData.append('comment', comment.value)
     formData.append('memberId', authStore.user?.id || 1)
 
+    // Append images if any
     images.value.forEach((img) => {
       formData.append('images', img.file)
     })
 
-    await axios.post(`${API_BASE_URL}/feedbacks`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    const API_BASE_URL = 'http://localhost:8080/api'
+    await fetch(`${API_BASE_URL}/feedbacks`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authStore.token || localStorage.getItem('accessToken')}`
+      },
+      body: formData
     })
 
-    alert('Feedback submitted successfully!')
+    alert('Cảm ơn bạn đã gửi đánh giá!')
     rating.value = 0
     comment.value = ''
     images.value = []
   } catch (error) {
     console.error('Error submitting feedback:', error)
-    alert('Failed to submit feedback!')
+    alert('Không thể gửi đánh giá. Vui lòng thử lại!')
   }
-  */
 }
 
 // ===================== COMPUTED =====================
