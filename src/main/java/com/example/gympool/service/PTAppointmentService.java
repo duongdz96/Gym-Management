@@ -12,4 +12,6 @@ public interface PTAppointmentService {
     PTAppointment getPTAppointmentByStaffName(String name);
     PTAppointment addPTAppointment(PTAppointment PTAppointment);
     PTAppointment updatePTAppointment(Long id, PTAppointment PTAppointment);
+    List<PTAppointment> getUpcomingPTAppointment(Long staffId);
+    List<PTAppointment> getUpcomingMemberAppointment(Long memberId);
 }

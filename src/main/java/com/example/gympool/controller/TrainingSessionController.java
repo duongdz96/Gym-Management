@@ -33,6 +33,15 @@ public class TrainingSessionController {
     public void addTrainingSession(@RequestBody TrainingSession TrainingSession) {
         trainingSessionService.addTrainingSession(TrainingSession);
     }
-
+    @PostMapping("/start")
+    public TrainingSession startSession(@PathVariable("id") Long appointmentId,
+                                        @RequestParam("note") String note){
+        return trainingSessionService.startSession(appointmentId, note);
+    }
+    @PostMapping("/end")
+    TrainingSession endSession(@PathVariable("id") Long appointmentId,
+                               @RequestParam("note") String note){
+        return trainingSessionService.endSession(appointmentId, note);
+    }
 
 }

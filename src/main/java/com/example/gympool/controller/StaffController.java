@@ -27,7 +27,7 @@ public class StaffController {
         return ResponseEntity.ok(staffService.updateStaff(id, staff));
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping("/{id}/delete")
     public ResponseEntity<Void> deleteStaff(@PathVariable Long id) {
         staffService.deleteStaff(id);
         return ResponseEntity.noContent().build();

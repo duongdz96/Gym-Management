@@ -1,6 +1,7 @@
 package com.example.gympool.service.impl;
 
 import com.example.gympool.entity.Staff;
+import com.example.gympool.entity.Status;
 import com.example.gympool.repository.StaffRepository;
 import com.example.gympool.service.StaffService;
 import org.springframework.stereotype.Service;
@@ -39,10 +40,9 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     public void deleteStaff(Long id) {
-        if (!staffRepository.existsById(id)) {
-            throw new RuntimeException("Staff not found with id " + id);
-        }
-        staffRepository.deleteById(id);
+        Staff staff = getStaffById(id);
+        staff.setStatus(String.valueOf(Status.INACTIVE));
+        staffRepository.save(staff);
     }
 
     @Override

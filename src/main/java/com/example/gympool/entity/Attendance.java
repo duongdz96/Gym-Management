@@ -9,23 +9,24 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "access_logs")
+@Table(name = "attendance")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccessLog {
-
+public class Attendance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private LocalDateTime accessTime;  // thời điểm quẹt/scan
+    private LocalDateTime checkInTime;
+
+    @Column(nullable = false)
+    private LocalDateTime checkOutTime;
 
     // FK tới Member
     @ManyToOne
-    @JoinColumn(name = "member_id")
-    private Member member;
-
+    @JoinColumn(name = "user_id")
+    private User user;
 }

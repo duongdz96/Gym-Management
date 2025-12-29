@@ -1,6 +1,7 @@
 package com.example.gympool.service.impl;
 
 import com.example.gympool.entity.Member;
+import com.example.gympool.entity.Status;
 import com.example.gympool.repository.MemberRepository;
 import com.example.gympool.service.MemberService;
 import org.springframework.stereotype.Service;
@@ -55,9 +56,8 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public void deleteMember(Long id) {
-        if (!memberRepository.existsById(id)) {
-            throw new IllegalArgumentException("Member not found with id: " + id);
-        }
-        memberRepository.deleteById(id);
+        Member member = getMemberById(id);
+        member.setStatus(String.valueOf(Status.INACTIVE));
+        memberRepository.save(member);
     }
 }

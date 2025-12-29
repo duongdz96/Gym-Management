@@ -15,4 +15,5 @@ public class Staff extends User {
     private String position;
     private String specialize;
     private String hirePrice;
+    private String status;
 }
