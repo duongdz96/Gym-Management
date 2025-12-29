@@ -1,294 +1,407 @@
 # 🏋️ Gym Management - Face Recognition System
 
-Hệ thống nhận diện khuôn mặt cho phòng gym sử dụng **DeepFace + ArcFace** với độ chính xác **95-98%**.
+Hệ thống nhận diện khuôn mặt cho phòng gym tích hợp với backend Java/Spring Boot, sử dụng **DeepFace + ArcFace** với độ chính xác **95-98%**.
 
 ---
 
 ## 🚀 QUICK START
 
-### 1. Cài đặt dependencies (2 phút):
-
+### 1. Import Database:
 ```bash
-pip install deepface scipy opencv-python
+mysql -u root -p < Dump20251118.sql
 ```
 
-### 2. Chạy project:
-
+### 2. Cài đặt dependencies:
 ```bash
-# Bước 1: Thêm members/employees vào database
-python setup_database.py
+pip install -r requirements.txt
+```
 
-# Bước 2: Thu thập face data với DeepFace
+### 3. Cấu hình MySQL:
+
+Edit [database.py](database.py#L10-L16):
+```python
+DB_CONFIG = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'YOUR_PASSWORD_HERE',  # ⚠️ Thay đổi password
+    'database': 'gympool'
+}
+```
+
+### 4. Chạy hệ thống:
+```bash
+# Test connection
+python setup_mysql.py
+
+# Thu thập face data
 python add_faces_improved.py
 
-# Bước 3: Chạy nhận diện với ArcFace (95-98% accuracy)
+# Chạy nhận diện
 python test_improved.py
 ```
 
-**Chi tiết:** Xem phần [HƯỚNG DẪN CHI TIẾT](#-hướng-dẫn-chi-tiết-từ-a-z)
-
 ---
 
-## 📚 TÀI LIỆU
+## 🏗️ KIẾN TRÚC HỆ THỐNG
 
-| Document | Mô tả |
-|----------|-------|
-| **[HƯỚNG DẪN CHI TIẾT](#-hướng-dẫn-chi-tiết-từ-a-z)** | Hướng dẫn từ A-Z 📘 |
-| **[CẤU HÌNH](#-cấu-hình)** | Settings và fine-tuning 🔧 |
-| **[DATABASE](#-database-schema)** | Schema và migration 💾 |
-| **[TROUBLESHOOTING](#-troubleshooting)** | Giải quyết lỗi 🐛 |
-
----
-
-## 📁 PROJECT STRUCTURE
+### Database Architecture (MySQL)
 
 ```
-Gym-Management/
-│
-├── 📄 Core System
-│   ├── add_faces_improved.py      # Thu thập face data với DeepFace
-│   ├── test_improved.py           # Nhận diện với ArcFace (95-98%)
-│   ├── database.py                # SQLite operations
-│   ├── database_embeddings.py     # Embeddings storage
-│   └── config.py                  # Configuration settings
-│
-├── 📄 Utilities
-│   ├── setup_database.py          # Helper thêm members/employees
-│   └── check_gpu.py               # GPU setup checker
-│
-├── 📂 Data
-│   └── data/
-│       └── face_recognition.db    # SQLite database
-│
-├── 📂 Documentation
-│   └── README.md                  # This file
-│
-└── 📂 Backup
-    └── baseline_backup/           # Old baseline version (Haar+KNN)
+┌─────────────────────────────────────────────┐
+│   MySQL Database: gympool                   │
+│                                             │
+│   ┌─────────────────────────────────────┐  │
+│   │  User Management                    │  │
+│   │  • users (all users)                │  │
+│   │  • members (extends users)          │  │
+│   │  • roles: MANAGER/RECEPTIONIST/     │  │
+│   │          PT/TEACHER/MEMBER          │  │
+│   └─────────────────────────────────────┘  │
+│                                             │
+│   ┌─────────────────────────────────────┐  │
+│   │  Face Recognition                   │  │
+│   │  • member_face_embeddings           │  │
+│   │  • employee_face_embeddings         │  │
+│   │    → 512D ArcFace vectors (LONGBLOB)│  │
+│   └─────────────────────────────────────┘  │
+│                                             │
+│   ┌─────────────────────────────────────┐  │
+│   │  Logs & Attendance                  │  │
+│   │  • access_logs (members check-in)   │  │
+│   │  • attendance (employees in/out)    │  │
+│   └─────────────────────────────────────┘  │
+└─────────────────────────────────────────────┘
+```
+
+### Face Recognition Pipeline
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+│   Webcam    │───▶│  RetinaFace  │───▶│  Quality    │
+│   Input     │    │  Detector    │    │  Control    │
+└─────────────┘    └──────────────┘    └─────────────┘
+                                              │
+                   ┌──────────────────────────┘
+                   │
+                   ▼
+           ┌───────────────┐         ┌──────────────┐
+           │   ArcFace     │────────▶│   Cosine     │
+           │   Embedding   │         │  Similarity  │
+           │   (512D)      │         │  Matching    │
+           └───────────────┘         └──────────────┘
+                                             │
+                   ┌─────────────────────────┘
+                   │
+                   ▼
+           ┌──────────────┐
+           │  Temporal    │         ┌──────────────┐
+           │  Smoothing   │────────▶│  Log to DB   │
+           │  (5 frames)  │         │  (MySQL)     │
+           └──────────────┘         └──────────────┘
+```
+
+---
+
+## 💾 CƠ CHẾ LƯU TRỮ KHUÔN MẶT
+
+### 1. Thu thập (add_faces_improved.py)
+
+```python
+# Mỗi người: 50 samples
+for i in range(50):
+    frame = camera.read()
+    
+    # Quality checks
+    if check_blur(frame) and check_lighting(frame):
+        # Extract 512D embedding with ArcFace
+        embedding = DeepFace.represent(
+            frame, 
+            model_name='ArcFace',      # 512D vector
+            detector_backend='retinaface'
+        )
+        
+        samples.append(embedding)
+
+# Save to MySQL
+save_embeddings(user_id, samples)  # LONGBLOB
+```
+
+### 2. Lưu trữ trong MySQL
+
+```sql
+CREATE TABLE member_face_embeddings (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    member_id INT UNIQUE NOT NULL,
+    embeddings LONGBLOB NOT NULL,        -- Numpy array pickled
+    model_name VARCHAR(50) DEFAULT 'ArcFace',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
+);
+```
+
+**Format lưu trữ:**
+- Type: `LONGBLOB` (binary data)
+- Content: Pickled numpy array
+- Shape: `(N, 512)` where N = số samples (typically 50)
+- Data type: `float64`
+- Size: ~200KB per person (50 samples × 512 dimensions × 8 bytes)
+
+### 3. Nhận diện (test_improved.py)
+
+```python
+# Load all embeddings from MySQL
+known_embeddings = load_all_embeddings()  # Dict[user_id, array(N, 512)]
+
+# Real-time recognition
+while True:
+    frame = camera.read()
+    face = detect_face(frame)
+    
+    # Extract embedding
+    test_embedding = DeepFace.represent(face, model_name='ArcFace')
+    
+    # Compare với tất cả stored embeddings
+    for user_id, stored_embeddings in known_embeddings.items():
+        distances = cosine_similarity(test_embedding, stored_embeddings)
+        min_distance = min(distances)
+        
+        if min_distance < THRESHOLD:  # 0.38
+            # Match! Log to MySQL
+            log_access(user_id)
+```
+
+### 4. Tối ưu hiệu năng
+
+**Embedding Cache:**
+```python
+# Load once at startup, cache in memory
+embeddings_cache = {
+    'members': load_member_embeddings(),      # ~100 members × 200KB = 20MB
+    'employees': load_employee_embeddings()   # ~20 employees × 200KB = 4MB
+}
+# Total: ~24MB RAM (acceptable)
+```
+
+**Temporal Smoothing:**
+```python
+# 5 consecutive frames must match
+confidence_buffer = []
+for frame in range(5):
+    result = recognize(frame)
+    confidence_buffer.append(result)
+
+if all_match(confidence_buffer):
+    confirmed_identity = result
+    log_to_mysql(confirmed_identity)
 ```
 
 ---
 
 ## 🎯 TECHNOLOGY STACK
 
-### Face Recognition:
-
-- ✅ **RetinaFace** detector (96-99% detection accuracy)
-- ✅ **ArcFace** embeddings (512D, SOTA accuracy 95-99%)
-- ✅ **Cosine similarity** matching
-- ✅ **Quality control** (blur, lighting, contrast checks)
-- ✅ **Temporal smoothing** (5-frame buffer giảm false positives)
-- ✅ **GPU acceleration** ready (NVIDIA CUDA)
-
-### Framework & Libraries:
-
-- **DeepFace** - Face recognition framework
-- **OpenCV** - Computer vision
-- **TensorFlow** - Deep learning backend
-- **SQLite** - Database
-- **NumPy/SciPy** - Scientific computing
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Face Detection** | RetinaFace | 96-99% accuracy, best detector |
+| **Face Recognition** | ArcFace | 512D embeddings, SOTA accuracy |
+| **Similarity** | Cosine Distance | Fast computation, threshold 0.38 |
+| **Database** | MySQL 8.0.43 | Primary storage, integrated backend |
+| **Framework** | DeepFace | Unified interface, easy to use |
+| **Backend** | OpenCV | Video capture, image processing |
+| **ML Backend** | TensorFlow | Neural network inference |
+| **Python** | 3.8+ | Main programming language |
 
 ---
 
 ## 📊 PERFORMANCE
 
-| Metric | Value |
-|--------|-------|
-| **Accuracy** | 95-98% ⭐ |
-| **FAR** (False Accept) | <0.5% |
-| **FRR** (False Reject) | 2-3% |
-| **FPS** (CPU) | 6-10 FPS |
-| **FPS** (GPU GTX 1650) | 15-20 FPS |
+| Metric | Value | Notes |
+|--------|-------|-------|
+| **Accuracy** | 95-98% | ArcFace on LFW dataset |
+| **FAR** | <0.5% | False Accept Rate |
+| **FRR** | 2-3% | False Reject Rate |
+| **FPS (CPU)** | 6-10 | Intel i5+ |
+| **FPS (GPU)** | 15-20 | NVIDIA GTX 1650+ |
+| **Threshold** | 0.38 | Cosine distance |
+| **Embedding Size** | 512D | Per face sample |
+| **Storage** | ~200KB | Per person (50 samples) |
 
-**Quy mô phù hợp:** 50-200 người dùng (gym, lớp học, văn phòng nhỏ)
+**Quy mô:** 50-500 người (gym/office scale)
 
 ---
 
-## 🎯 FEATURES
+## 📁 PROJECT FILES
 
-### Core Features:
-
-✅ **High Accuracy Recognition** - 95-98% accuracy với ArcFace
-✅ **Auto Check-in/out** - Tự động log attendance
-✅ **Quality Control** - Chỉ thu ảnh chất lượng cao
-✅ **Member & Employee Support** - Members (check-in) + Employees (check-in/out)
-✅ **Real-time Processing** - 15-20 FPS với GPU
-✅ **Status Management** - Active/Inactive status
-✅ **Voice Feedback** - Text-to-speech confirmation
-
-### Advanced Features:
-
-✅ **Temporal Smoothing** - 5 consecutive frames để confirm
-✅ **Confidence Score** - Hiển thị độ tin cậy
-✅ **Unknown Detection** - Phát hiện khuôn mặt chưa biết
-✅ **Multi-face Support** - Nhận diện nhiều người cùng lúc
-✅ **Cooldown System** - Tránh log trùng lặp
+| File | Description |
+|------|-------------|
+| [database.py](database.py) | MySQL operations (members, employees, logs) |
+| [database_embeddings.py](database_embeddings.py) | Face embeddings storage/retrieval |
+| [add_faces_improved.py](add_faces_improved.py) | Collect face data (50 samples/person) |
+| [test_improved.py](test_improved.py) | Real-time recognition + logging |
+| [config.py](config.py) | Configuration (threshold, model, detector) |
+| [setup_mysql.py](setup_mysql.py) | Connection test + data viewer |
+| [Dump20251118.sql](Dump20251118.sql) | MySQL schema with tables |
+| [requirements.txt](requirements.txt) | Python dependencies |
 
 ---
 
 ## 🔧 CẤU HÌNH
 
-File `config.py` chứa tất cả settings quan trọng:
+### File: [config.py](config.py)
 
 ```python
-# Face Recognition Model
-FACE_MODEL = 'ArcFace'              # Best accuracy
-FACE_DETECTOR = 'retinaface'        # Best detector
-RECOGNITION_THRESHOLD = 0.40        # Tune để balance FAR/FRR
+# Recognition Model
+FACE_MODEL = 'ArcFace'                  # 512D embeddings
+FACE_DETECTOR = 'retinaface'            # Best detector
+RECOGNITION_THRESHOLD = 0.38            # Cosine distance
 
 # Data Collection
-NUM_SAMPLES = 50                    # Số samples per person
+NUM_SAMPLES = 50                        # Samples per person
 
 # Quality Control
-BLUR_THRESHOLD = 100
+BLUR_THRESHOLD = 100                    # Laplacian variance
 MIN_BRIGHTNESS = 40
 MAX_BRIGHTNESS = 220
+MIN_CONTRAST = 30
 
 # Performance
-CONFIDENCE_BUFFER_SIZE = 5          # Temporal smoothing
-MIN_CONFIDENCE = 80                 # Min confidence để trigger
+CONFIDENCE_BUFFER_SIZE = 5              # Frames for smoothing
+MIN_CONFIDENCE = 80                     # Confidence %
+COOLDOWN_SECONDS = 300                  # 5 min between logs
 ```
 
 **Fine-tuning:**
-- Threshold thấp (0.35) = Stricter (ít false accepts, nhiều false rejects)
-- Threshold cao (0.45) = Looser (nhiều false accepts, ít false rejects)
+- Threshold thấp (0.35): Strict (ít false accepts, nhiều false rejects)
+- Threshold cao (0.45): Loose (nhiều false accepts, ít false rejects)
+- Default (0.38): Balanced
 
 ---
 
-## 💾 DATABASE SCHEMA
+## 📖 HƯỚNG DẪN SỬ DỤNG
 
-### Tables sử dụng:
+### 1️⃣ Thu thập Face Data
 
-**Members** - Thông tin khách hàng
-```sql
-- id (PK)
-- name
-- status (active/inactive)
-- face_data (NULL - không dùng cho improved version)
+```bash
+python add_faces_improved.py
 ```
 
-**Employees** - Thông tin nhân viên
-```sql
-- id (PK)
-- name
-- status (active/inactive)
-- face_data (NULL)
+**Quy trình:**
+1. Chọn loại: `1` (Member) hoặc `2` (Employee)
+2. Chọn người từ danh sách
+3. Nhìn thẳng camera, giữ khuôn mặt trong khung
+4. Hệ thống thu 50 samples với quality checks:
+   - ✓ Face detection (RetinaFace)
+   - ✓ Blur check
+   - ✓ Lighting check
+   - ✓ Contrast check
+5. Embeddings tự động lưu vào MySQL
+
+**Tips:**
+- Ánh sáng tốt (không quá tối/sáng)
+- Giữ đầu yên, nhìn thẳng
+- Tháo kính/mũ nếu có thể
+
+### 2️⃣ Chạy Nhận Diện
+
+```bash
+python test_improved.py
 ```
 
-**MemberEmbeddings** - Face embeddings của members
-```sql
-- id (PK)
-- member_id (FK → Members.id)
-- embeddings (512D ArcFace vectors)
-- model_name ('ArcFace')
+**Chức năng:**
+- Real-time face detection + recognition
+- Members: Check-in vào `access_logs`
+- Employees: Check-in/out vào `attendance`
+- Temporal smoothing: 5 frames liên tiếp confirm
+- Cooldown: 5 phút giữa các lần log
+- Press `q` để thoát
+
+### 3️⃣ Kiểm tra Logs
+
+```bash
+python setup_mysql.py
 ```
 
-**EmployeeEmbeddings** - Face embeddings của employees
-```sql
-- id (PK)
-- employee_id (FK → Employees.id)
-- embeddings (512D vectors)
-- model_name ('ArcFace')
-```
-
-**AccessLogs** - Check-in logs
-```sql
-- id (PK)
-- member_id (FK → Members.id)
-- access_time
-```
-
-**EmployeeLogs** - Check-in/out logs
-```sql
-- id (PK)
-- employee_id (FK → Employees.id)
-- check_type ('in' or 'out')
-- log_time
-```
+Hiển thị:
+- Connection status
+- Members/Employees count
+- Recent logs
+- Embeddings statistics
 
 ---
 
-## 🚀 HƯỚNG DẪN CHI TIẾT TỪ A-Z
+## 🔍 TROUBLESHOOTING
 
-### 📋 YÊU CẦU HỆ THỐNG
+| Vấn đề | Giải pháp |
+|--------|-----------|
+| **Connection refused** | Kiểm tra MySQL service đang chạy |
+| **Access denied** | Sửa password trong [database.py](database.py#L15) |
+| **No face detected** | Kiểm tra ánh sáng, camera, góc nhìn |
+| **Image too blurry** | Giữ đầu yên, tăng ánh sáng |
+| **False positives** | Giảm threshold xuống 0.35 |
+| **False negatives** | Tăng threshold lên 0.45 |
+| **Low FPS** | Giảm CAMERA_WIDTH/HEIGHT trong config |
+| **Module not found** | `pip install -r requirements.txt` |
 
-- ✅ Windows 10/11
-- ✅ Python 3.8+ (đang dùng: Python 3.12.5)
-- ✅ Webcam
-- ✅ RAM: 8GB+ (khuyến nghị 16GB)
-- ✅ GPU: NVIDIA GTX 1650 (optional, tăng tốc độ)
+---
 
-### 🔧 BƯỚC 1: CÀI ĐẶT THỨ VIỆC
+## 📊 BẢNG SO SÁNH PHIÊN BẢN
 
-Mở Command Prompt hoặc Terminal trong folder project:
+| Feature | Baseline (Haar+KNN) | Improved (DeepFace+ArcFace) |
+|---------|---------------------|----------------------------|
+| **Accuracy** | ~62% | **95-98%** ⭐ |
+| **Face Detection** | Haar Cascade | RetinaFace |
+| **Embeddings** | None (raw pixels) | 512D ArcFace |
+| **Matching** | KNN Euclidean | Cosine Similarity |
+| **Quality Control** | ❌ None | ✅ Blur/Light/Contrast |
+| **Temporal Smoothing** | ❌ None | ✅ 5 frames |
+| **Database** | SQLite | **MySQL** |
+| **Backend Integration** | ❌ Separate | ✅ Integrated |
 
+---
+
+## 🎓 CHO ĐỒ ÁN
+
+### Metrics Báo Cáo:
+- Accuracy: **95-98%**
+- FAR: **<0.5%**
+- FRR: **2-3%**
+- FPS: **15-20** (GPU) / **6-10** (CPU)
+- Embedding Size: **512D**
+- Storage per person: **~200KB**
+
+### Technology Evolution:
+1. **Detection:** Haar Cascade → RetinaFace (+30% accuracy)
+2. **Recognition:** KNN → ArcFace embeddings (+33% accuracy)  
+3. **Database:** SQLite → MySQL (backend integration)
+
+### Demo Plan:
+1. Show baseline (Haar+KNN): ~62% accuracy
+2. Show improved (ArcFace): ~95% accuracy
+3. Highlight: **+33% improvement**
+
+---
+
+## 📞 SUPPORT
+
+**Quick Checks:**
 ```bash
-# Navigate to project folder
-cd g:\PTIT\DATN\FE\Gym-Management
+# Test Python
+python --version
 
-# Cài đặt thư viện cần thiết
-pip install deepface scipy opencv-python
+# Test MySQL connection
+python setup_mysql.py
+
+# Test dependencies
+pip list | findstr "deepface opencv mysql"
 ```
 
-**Lưu ý:** Nếu muốn dùng GPU để tăng tốc:
-```bash
-pip install tensorflow[and-cuda]
-```
+**Documentation:**
+- [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) - Detailed setup guide
+- [config.py](config.py) - All configuration options
 
-### ✅ BƯỚC 2: KIỂM TRA SETUP
+---
 
-Chạy script kiểm tra:
-
-```bash
-python check_gpu.py
-```
-
-**Kết quả mong đợi:**
-```
-✅ CUDA: OK (nếu có GPU)
-✅ OpenCV: OK
-✅ DeepFace: OK
-```
-
-Nếu có lỗi → Xem phần [TROUBLESHOOTING](#-troubleshooting)
-
-### 📊 BƯỚC 3: CHUẨN BỊ DATABASE
-
-#### Option A: Database đã có sẵn
-
-Nếu file `data/face_recognition.db` đã tồn tại:
-
-```bash
-# Kiểm tra xem có members/employees chưa
-python -c "from database import get_all_active_members; print('Members:', get_all_active_members())"
-```
-
-#### Option B: Tạo database mới và thêm người
-
-Nếu chưa có database hoặc muốn thêm người mới:
-
-**Cách 1: Qua Python console**
-
-```bash
-python
-```
-
-Trong Python console:
-```python
-from database import add_member_without_face_data, add_employee_without_face_data
-
-# Thêm members (chỉ check-in)
-add_member_without_face_data("Nguyen Van A")
-add_member_without_face_data("Tran Thi B")
-add_member_without_face_data("Le Van C")
-
-# Thêm employees (check-in/out)
-add_employee_without_face_data("Nguyen Van D - NV")
-add_employee_without_face_data("Tran Thi E - NV")
-
-# Kiểm tra
-from database import get_all_active_members, get_all_active_employees
-print("Members:", get_all_active_members())
+Made with ❤️ for PTIT DATN 2025
 print("Employees:", get_all_active_employees())
 
 # Thoát

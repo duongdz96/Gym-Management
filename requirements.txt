@@ -6,3 +6,5 @@ deepface
 pillow
 pandas
 tqdm
+mysql-connector-python
+bcrypt

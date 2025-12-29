@@ -1,251 +1,362 @@
 """
-Database operations cho face embeddings (DeepFace version)
-Mở rộng database.py để support 512D embeddings thay vì raw pixels
+MySQL Database operations cho face embeddings
+Lưu trữ ArcFace embeddings (512D) vào MySQL
 """
 
-import sqlite3
+import mysql.connector
+from mysql.connector import Error
 import pickle
 import numpy as np
 
-DB_PATH = 'data/face_recognition.db'
+# Import MySQL config
+from database import get_connection
 
-def init_embeddings_tables():
-    """
-    Tạo tables mới cho embeddings
-    Giữ nguyên tables cũ để có thể so sánh baseline vs improved
-    """
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
 
-    # Table cho member embeddings
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS MemberEmbeddings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            member_id INTEGER,
-            embeddings BLOB,
-            model_name TEXT DEFAULT 'ArcFace',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (member_id) REFERENCES Members(id)
-        )
-    ''')
-
-    # Table cho employee embeddings
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS EmployeeEmbeddings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            employee_id INTEGER,
-            embeddings BLOB,
-            model_name TEXT DEFAULT 'ArcFace',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (employee_id) REFERENCES Employees(id)
-        )
-    ''')
-
-    conn.commit()
-    conn.close()
-    print("✅ Embeddings tables initialized")
-
+# ============================================================
+# MEMBER EMBEDDINGS OPERATIONS
+# ============================================================
 
 def save_member_embeddings(member_id, embeddings, model_name='ArcFace'):
     """
-    Lưu face embeddings cho member
-
+    Lưu face embeddings cho member vào MySQL
+    
     Args:
         member_id: ID của member
         embeddings: numpy array shape (N, 512) - N embeddings, mỗi cái 512D
         model_name: Tên model (ArcFace, Facenet512, etc.)
+    
+    Returns:
+        True/False
     """
-    # Delete old embeddings if exist
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM MemberEmbeddings WHERE member_id = ?', (member_id,))
+    conn = get_connection()
+    if not conn:
+        return False
+    
+    try:
+        cursor = conn.cursor()
+        
+        # Serialize embeddings
+        serialized = pickle.dumps(embeddings)
+        
+        # Delete old embeddings if exist (REPLACE INTO)
+        cursor.execute('''
+            REPLACE INTO member_face_embeddings (member_id, embeddings, model_name)
+            VALUES (%s, %s, %s)
+        ''', (member_id, serialized, model_name))
+        
+        conn.commit()
+        print(f"✅ Saved {len(embeddings)} embeddings for member {member_id}")
+        return True
+        
+    except Error as e:
+        print(f"❌ Error saving member embeddings: {e}")
+        return False
+    finally:
+        cursor.close()
+        conn.close()
 
-    # Serialize embeddings
-    serialized = pickle.dumps(embeddings)
 
-    # Insert new embeddings
-    cursor.execute('''
-        INSERT INTO MemberEmbeddings (member_id, embeddings, model_name)
-        VALUES (?, ?, ?)
-    ''', (member_id, serialized, model_name))
-
-    conn.commit()
-    conn.close()
-    print(f"✅ Saved {len(embeddings)} embeddings for member {member_id}")
-
-
-def save_employee_embeddings(employee_id, embeddings, model_name='ArcFace'):
+def get_member_embeddings(member_id):
     """
-    Lưu face embeddings cho employee
-
-    Args:
-        employee_id: ID của employee
-        embeddings: numpy array shape (N, 512)
-        model_name: Tên model
+    Lấy embeddings của 1 member cụ thể
+    
+    Returns:
+        numpy array hoặc None
     """
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM EmployeeEmbeddings WHERE employee_id = ?', (employee_id,))
-
-    serialized = pickle.dumps(embeddings)
-
-    cursor.execute('''
-        INSERT INTO EmployeeEmbeddings (employee_id, embeddings, model_name)
-        VALUES (?, ?, ?)
-    ''', (employee_id, serialized, model_name))
-
-    conn.commit()
-    conn.close()
-    print(f"✅ Saved {len(embeddings)} embeddings for employee {employee_id}")
+    conn = get_connection()
+    if not conn:
+        return None
+    
+    try:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT embeddings 
+            FROM member_face_embeddings
+            WHERE member_id = %s
+        ''', (member_id,))
+        
+        result = cursor.fetchone()
+        if result:
+            return pickle.loads(result[0])
+        return None
+        
+    except Error as e:
+        print(f"Error: {e}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def get_all_member_embeddings():
     """
-    Load tất cả member embeddings từ database
-
+    Load tất cả member embeddings từ MySQL
+    
     Returns:
         dict: {member_id: embeddings_array, ...}
     """
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+    conn = get_connection()
+    if not conn:
+        return {}
+    
+    try:
+        cursor = conn.cursor()
+        
+        # Chỉ lấy members có status active
+        cursor.execute('''
+            SELECT me.member_id, me.embeddings
+            FROM member_face_embeddings me
+            JOIN members m ON me.member_id = m.id
+            WHERE m.status = 'Active'
+        ''')
+        
+        rows = cursor.fetchall()
+        
+        embeddings_dict = {}
+        for member_id, serialized in rows:
+            embeddings = pickle.loads(serialized)
+            embeddings_dict[str(member_id)] = embeddings
+        
+        return embeddings_dict
+        
+    except Error as e:
+        print(f"Error loading member embeddings: {e}")
+        return {}
+    finally:
+        cursor.close()
+        conn.close()
 
-    # Chỉ lấy members có status active
-    cursor.execute('''
-        SELECT me.member_id, me.embeddings
-        FROM MemberEmbeddings me
-        JOIN Members m ON me.member_id = m.id
-        WHERE m.status = 'active'
-    ''')
 
-    rows = cursor.fetchall()
-    conn.close()
+def delete_member_embeddings(member_id):
+    """Xóa embeddings của member"""
+    conn = get_connection()
+    if not conn:
+        return False
+    
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM member_face_embeddings WHERE member_id = %s', (member_id,))
+        conn.commit()
+        return True
+    except Error as e:
+        print(f"Error: {e}")
+        return False
+    finally:
+        cursor.close()
+        conn.close()
 
-    embeddings_dict = {}
-    for member_id, serialized in rows:
-        embeddings = pickle.loads(serialized)
-        embeddings_dict[member_id] = embeddings
 
-    return embeddings_dict
+# ============================================================
+# EMPLOYEE EMBEDDINGS OPERATIONS
+# ============================================================
+
+def save_employee_embeddings(user_id, embeddings, model_name='ArcFace'):
+    """
+    Lưu face embeddings cho employee (user) vào MySQL
+    
+    Args:
+        user_id: ID của user (employee)
+        embeddings: numpy array shape (N, 512)
+        model_name: Tên model
+    
+    Returns:
+        True/False
+    """
+    conn = get_connection()
+    if not conn:
+        return False
+    
+    try:
+        cursor = conn.cursor()
+        
+        serialized = pickle.dumps(embeddings)
+        
+        cursor.execute('''
+            REPLACE INTO employee_face_embeddings (user_id, embeddings, model_name)
+            VALUES (%s, %s, %s)
+        ''', (user_id, serialized, model_name))
+        
+        conn.commit()
+        print(f"✅ Saved {len(embeddings)} embeddings for employee {user_id}")
+        return True
+        
+    except Error as e:
+        print(f"❌ Error saving employee embeddings: {e}")
+        return False
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_employee_embeddings(user_id):
+    """
+    Lấy embeddings của 1 employee cụ thể
+    
+    Returns:
+        numpy array hoặc None
+    """
+    conn = get_connection()
+    if not conn:
+        return None
+    
+    try:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT embeddings 
+            FROM employee_face_embeddings
+            WHERE user_id = %s
+        ''', (user_id,))
+        
+        result = cursor.fetchone()
+        if result:
+            return pickle.loads(result[0])
+        return None
+        
+    except Error as e:
+        print(f"Error: {e}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def get_all_employee_embeddings():
     """
-    Load tất cả employee embeddings từ database
-
+    Load tất cả employee embeddings từ MySQL
+    
     Returns:
-        dict: {employee_id: embeddings_array, ...}
+        dict: {f"emp_{user_id}": embeddings_array, ...}
     """
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+    conn = get_connection()
+    if not conn:
+        return {}
+    
+    try:
+        cursor = conn.cursor()
+        
+        # Chỉ lấy users có role là staff và không bị deleted
+        cursor.execute('''
+            SELECT ee.user_id, ee.embeddings
+            FROM employee_face_embeddings ee
+            JOIN users u ON ee.user_id = u.id
+            WHERE u.role IN ('MANAGER', 'RECEPTIONIST', 'PT', 'TEACHER')
+              AND u.is_deleted = 0
+        ''')
+        
+        rows = cursor.fetchall()
+        
+        embeddings_dict = {}
+        for user_id, serialized in rows:
+            embeddings = pickle.loads(serialized)
+            # Prefix để phân biệt với members
+            embeddings_dict[f"emp_{user_id}"] = embeddings
+        
+        return embeddings_dict
+        
+    except Error as e:
+        print(f"Error loading employee embeddings: {e}")
+        return {}
+    finally:
+        cursor.close()
+        conn.close()
 
-    cursor.execute('''
-        SELECT ee.employee_id, ee.embeddings
-        FROM EmployeeEmbeddings ee
-        JOIN Employees e ON ee.employee_id = e.id
-        WHERE e.status = 'active'
-    ''')
 
-    rows = cursor.fetchall()
-    conn.close()
+def delete_employee_embeddings(user_id):
+    """Xóa embeddings của employee"""
+    conn = get_connection()
+    if not conn:
+        return False
+    
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM employee_face_embeddings WHERE user_id = %s', (user_id,))
+        conn.commit()
+        return True
+    except Error as e:
+        print(f"Error: {e}")
+        return False
+    finally:
+        cursor.close()
+        conn.close()
 
-    embeddings_dict = {}
-    for employee_id, serialized in rows:
-        embeddings = pickle.loads(serialized)
-        embeddings_dict[f"emp_{employee_id}"] = embeddings  # Prefix để phân biệt
 
-    return embeddings_dict
-
+# ============================================================
+# COMBINED OPERATIONS
+# ============================================================
 
 def get_all_embeddings():
     """
     Load TẤT CẢ embeddings (cả members và employees)
-
+    
     Returns:
         dict: {
             '123': embeddings,           # member_id
-            'emp_45': embeddings,         # employee_id với prefix
+            'emp_45': embeddings,         # employee với prefix
             ...
         }
     """
     member_embs = get_all_member_embeddings()
     employee_embs = get_all_employee_embeddings()
-
+    
     # Merge hai dicts
-    all_embeddings = {}
-
-    # Add member embeddings với key là member_id
-    for member_id, embs in member_embs.items():
-        all_embeddings[str(member_id)] = embs
-
-    # Add employee embeddings với key là "emp_{employee_id}"
-    all_embeddings.update(employee_embs)
-
-    print(f"✅ Loaded {len(member_embs)} members + {len(employee_embs)} employees")
+    all_embeddings = {**member_embs, **employee_embs}
+    
+    print(f"✅ Loaded {len(member_embs)} members + {len(employee_embs)} employees = {len(all_embeddings)} total")
     return all_embeddings
-
-
-def get_member_embedding(member_id):
-    """
-    Lấy embeddings của 1 member cụ thể
-
-    Returns:
-        numpy array hoặc None
-    """
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute('''
-        SELECT embeddings FROM MemberEmbeddings
-        WHERE member_id = ?
-    ''', (member_id,))
-
-    result = cursor.fetchone()
-    conn.close()
-
-    if result:
-        return pickle.loads(result[0])
-    return None
-
-
-def delete_member_embeddings(member_id):
-    """Xóa embeddings của member"""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM MemberEmbeddings WHERE member_id = ?', (member_id,))
-    conn.commit()
-    conn.close()
-
-
-def delete_employee_embeddings(employee_id):
-    """Xóa embeddings của employee"""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM EmployeeEmbeddings WHERE employee_id = ?', (employee_id,))
-    conn.commit()
-    conn.close()
 
 
 def get_stats():
     """
     Thống kê embeddings trong database
     """
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+    conn = get_connection()
+    if not conn:
+        return {'members': 0, 'employees': 0, 'total': 0}
+    
+    try:
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT COUNT(*) FROM member_face_embeddings')
+        member_count = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT COUNT(*) FROM employee_face_embeddings')
+        employee_count = cursor.fetchone()[0]
+        
+        return {
+            'members': member_count,
+            'employees': employee_count,
+            'total': member_count + employee_count
+        }
+        
+    except Error as e:
+        print(f"Error: {e}")
+        return {'members': 0, 'employees': 0, 'total': 0}
+    finally:
+        cursor.close()
+        conn.close()
 
-    cursor.execute('SELECT COUNT(*) FROM MemberEmbeddings')
-    member_count = cursor.fetchone()[0]
 
-    cursor.execute('SELECT COUNT(*) FROM EmployeeEmbeddings')
-    employee_count = cursor.fetchone()[0]
+# ============================================================
+# TESTING
+# ============================================================
 
-    conn.close()
-
-    return {
-        'members': member_count,
-        'employees': employee_count,
-        'total': member_count + employee_count
-    }
-
-
-# Initialize tables khi import module
-init_embeddings_tables()
+if __name__ == '__main__':
+    print("=" * 60)
+    print("TESTING EMBEDDINGS OPERATIONS")
+    print("=" * 60)
+    
+    # Test stats
+    stats = get_stats()
+    print(f"\nEmbeddings Statistics:")
+    print(f"  Members with face data: {stats['members']}")
+    print(f"  Employees with face data: {stats['employees']}")
+    print(f"  Total: {stats['total']}")
+    
+    # Test load all
+    print("\nLoading all embeddings...")
+    all_embs = get_all_embeddings()
+    
+    if all_embs:
+        print("\nSample embeddings:")
+        for person_id, embs in list(all_embs.items())[:3]:
+            print(f"  {person_id}: {embs.shape}")
