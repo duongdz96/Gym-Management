@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Users, DollarSign, CheckCircle, AlertCircle, UserPlus, Calendar, Clock, User, GraduationCap } from 'lucide-vue-next'
-
+import api from '@/services/api'
 // ===================== STATE =====================
 const isLoading = ref(true)
 
@@ -15,98 +15,37 @@ const todayStats = ref({
 const recentTransactions = ref([])
 const upcomingClasses = ref([])
 
-// ===================== MOCK DATA =====================
+// ===================== FETCH REAL DATA FROM BACKEND =====================
 const fetchReceptionData = async () => {
   isLoading.value = true
   
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 800))
-  
-  // Mock today's stats
-  todayStats.value = {
-    newMemberships: 8,
-    totalCheckIns: 52,
-    totalRevenue: 15750000
-  }
-
-  // Mock recent transactions
-  recentTransactions.value = [
-    { id: 1, customerName: 'Nguyễn Văn A', type: 'Gói thành viên', amount: 2500000, status: 'PAID', time: '08:30' },
-    { id: 2, customerName: 'Trần Thị B', type: 'Sản phẩm', amount: 350000, status: 'PAID', time: '09:15' },
-    { id: 3, customerName: 'Lê Văn C', type: 'PT Package', amount: 5000000, status: 'PENDING', time: '10:00' },
-    { id: 4, customerName: 'Phạm Thị D', type: 'Gói thành viên', amount: 1800000, status: 'PAID', time: '11:20' },
-    { id: 5, customerName: 'Hoàng Văn E', type: 'Sản phẩm', amount: 450000, status: 'PAID', time: '12:45' }
-  ]
-
-  // Mock upcoming classes
-  upcomingClasses.value = [
-    { className: 'Yoga Sáng', teacher: 'Nguyễn Thị A', startDate: '25/12/2024', daysLeft: 2 },
-    { className: 'Gym Cơ Bản', teacher: 'Trần Văn B', startDate: '26/12/2024', daysLeft: 3 },
-    { className: 'Boxing', teacher: 'Lê Thị C', startDate: '27/12/2024', daysLeft: 4 },
-    { className: 'Pilates', teacher: 'Phạm Văn D', startDate: '28/12/2024', daysLeft: 5 },
-    { className: 'Cardio', teacher: 'Hoàng Thị E', startDate: '29/12/2024', daysLeft: 6 }
-  ]
-  
-  isLoading.value = false
-  
-  /* REAL API CALLS - Commented for mock data
   try {
-    const API_BASE_URL = 'http://localhost:8080/api'
+    // Fetch today's statistics
+    const statsRes = await api.get(`v1/stats/reception/today`)
+    todayStats.value = statsRes.data
     
-    // Fetch bills for today's revenue
-    const billsRes = await axios.get(`${API_BASE_URL}/bills`)
-    const bills = billsRes.data || []
+    // Fetch recent transactions
+    const transactionsRes = await api.get(`v1/stats/reception/recent-transactions`)
+    recentTransactions.value = transactionsRes.data || []
     
-    const today = new Date().toDateString()
-    const todayBills = bills.filter(b => new Date(b.createdAt).toDateString() === today)
+    // Fetch upcoming classes
+    const classesRes = await api.get(`v1/stats/reception/upcoming-classes`)
+    upcomingClasses.value = classesRes.data || []
     
-    todayStats.value.totalRevenue = todayBills
-      .filter(b => b.status === 'PAID')
-      .reduce((sum, b) => sum + (b.totalAmount || 0), 0)
-    
-    todayStats.value.pendingBills = bills.filter(b => b.status === 'PENDING').length
-
-    // Fetch memberships
-    const membershipsRes = await axios.get(`${API_BASE_URL}/customer-membership`)
-    const memberships = membershipsRes.data || []
-    
-    todayStats.value.newMemberships = memberships.filter(m => 
-      new Date(m.startDate).toDateString() === today
-    ).length
-
-    // Recent transactions
-    recentTransactions.value = todayBills.slice(0, 5).map(bill => ({
-      id: bill.id,
-      customerName: bill.customerName || 'Customer',
-      type: bill.type || 'Membership',
-      amount: bill.totalAmount,
-      status: bill.status,
-      time: new Date(bill.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-    }))
-
-    // Expiring memberships
-    const nextWeek = new Date()
-    nextWeek.setDate(nextWeek.getDate() + 7)
-    
-    expiringMemberships.value = memberships
-      .filter(m => {
-        const endDate = new Date(m.endDate)
-        return endDate >= new Date() && endDate <= nextWeek
-      })
-      .slice(0, 5)
-      .map(m => ({
-        customerName: m.customerName || 'Customer',
-        tier: m.tier,
-        expiryDate: new Date(m.endDate).toLocaleDateString('vi-VN'),
-        daysLeft: Math.ceil((new Date(m.endDate) - new Date()) / (1000 * 60 * 60 * 24))
-      }))
-
   } catch (error) {
     console.error('Error fetching reception data:', error)
+    
+    // Fallback to empty data on error
+    todayStats.value = {
+      newMemberships: 0,
+      totalCheckIns: 0,
+      totalRevenue: 0
+    }
+    recentTransactions.value = []
+    upcomingClasses.value = []
   } finally {
     isLoading.value = false
   }
-  */
 }
 
 const formatCurrency = (value) => {

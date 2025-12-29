@@ -145,7 +145,7 @@ onMounted(async () => {
     >
       <!-- Customer Type Selection -->
       <div class="md:col-span-2 mb-4">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Customer Type</label>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Loại Khách Hàng</label>
         <div class="flex gap-4">
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="radio" v-model="isExistingMember" :value="false" class="form-radio text-emerald-600" />
