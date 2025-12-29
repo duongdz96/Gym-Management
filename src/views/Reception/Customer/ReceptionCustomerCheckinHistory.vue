@@ -79,7 +79,6 @@ onMounted(async () => {
       }
     ];
   } catch (error) {
-    console.error("Error fetching checkin records:", error);
     useToast().error("Không thể tải dữ liệu check-in");
   } finally {
     isLoading.value = false;

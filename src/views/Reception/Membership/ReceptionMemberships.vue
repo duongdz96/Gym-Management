@@ -60,9 +60,7 @@ onMounted(async () => {
         const res = await api.get("/membership");
         memberships.value = res.data;
 
-        console.log("Memberships loaded:", memberships.value);
     } catch (error) {
-        console.error('Failed to load memberships:', error);
         toast.error("Tải hội viên thất bại. Vui lòng thử lại");
     }
 })

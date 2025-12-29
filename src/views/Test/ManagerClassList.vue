@@ -792,7 +792,6 @@ const selectedClassStudents = computed(() => {
 const loadData = async () => {
   classes.value = await unifiedApi.getClasses();
   roomsData.value = await unifiedApi.getRooms();
-  console.log(roomsData.value);
   teachersData.value = await unifiedApi.getTeachers();
   studentsData.value = await unifiedApi.getStudents();
   
@@ -1031,7 +1030,6 @@ const createClass = async () => {
     };
     const fitnessClassRes = await api.post('/fitness_class', fitnessClassData);
     const fitnessClassId = fitnessClassRes.data.id;
-    console.log('✅ Created FitnessClass:', fitnessClassId);
 
     // Step 3: Convert daysOfWeek array to backend format (MONDAY,WEDNESDAY,FRIDAY)
     let daysOfWeekStr = '';
@@ -1062,7 +1060,6 @@ const createClass = async () => {
     };
     const patternRes = await api.post('/schedule-patterns', schedulePatternData);
     const patternId = patternRes.data.id;
-    console.log('✅ Created SchedulePattern:', patternId);
 
     // Step 5: Check available rooms for this pattern
     const availableRoomsRes = await api.post('/room/available-for-pattern', schedulePatternData);
@@ -1128,7 +1125,6 @@ const createClass = async () => {
       generatedSchedules = generateRes.data;
     }
 
-    console.log('✅ Generated ClassSchedules:', generatedSchedules.length);
     toast.success(`Tạo lớp học thành công! Đã tạo ${generatedSchedules.length} buổi học.`);
     
     showCreateForm.value = false;
@@ -1138,8 +1134,6 @@ const createClass = async () => {
     roomConflicts.value = {};
     await loadData();
   } catch (error) {
-    console.error('Error creating class:', error);
-    const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra';
     toast.error('Có lỗi xảy ra');
   }
 };

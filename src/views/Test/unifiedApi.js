@@ -461,9 +461,6 @@ export const unifiedApi = {
   
   // Member Registrations
   registerBulkSchedules: async (memberId, scheduleIds) => {
-    console.log(`--- Bulk Registration Started ---`);
-    console.log(`Member ID: ${memberId}`);
-    console.log(`Schedule IDs to process:`, scheduleIds);
     if (USE_REAL_API) {
       return await apiService.memberRegistration.registerBulk(memberId, scheduleIds);
     } else {

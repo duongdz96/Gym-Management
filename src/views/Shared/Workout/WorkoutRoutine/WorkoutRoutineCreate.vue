@@ -66,7 +66,6 @@ const fetchRoutine = async () => {
       }))
     }
   } catch (error) {
-    console.error('Lỗi khi tải mẫu lịch tập:', error)
     toast.error('Không thể tải thông tin mẫu lịch tập')
     handleCancel()
   } finally {

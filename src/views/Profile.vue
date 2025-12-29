@@ -71,7 +71,6 @@ const handleSubmit = async () => {
     toast.success('Cập nhật thông tin thành công!')
     isEditing.value = false
   } catch (error) {
-    console.error('Error updating profile:', error)
     toast.error('Có lỗi xảy ra khi cập nhật thông tin')
   } finally {
     isLoading.value = false

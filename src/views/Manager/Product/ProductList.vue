@@ -441,7 +441,6 @@ const handleDelete = async () => {
     closeDeleteModal();
     inventoryStore.fetchProducts();
   } catch (error) {
-    console.error(error);
     toast.error("Có lỗi xảy ra khi xóa sản phẩm!");
   }
 };

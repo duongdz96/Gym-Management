@@ -90,13 +90,11 @@ const startPolling = () => {
         `/casso/check?addInfo=${encodeURIComponent(addInfo.value)}&amount=${amount.value}`
       );
 
-      console.log("Polling response:", res.data);
 
       if (res.data?.paid) {
         status.value = "Paid";
 
         toast.success("Payment received!");
-        console.log("Transaction details:", res.data);
 
         if (pollInterval) clearInterval(pollInterval);
       }

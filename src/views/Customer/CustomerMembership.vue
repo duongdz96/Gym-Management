@@ -73,7 +73,6 @@ async function fetchCurrentMembership() {
       }))
     }
   } catch (err) {
-    console.error("Error fetching current membership:", err)
     toast.error("Không thể tải thông tin gói hội viên!")
   }
 }
@@ -91,7 +90,6 @@ async function fetchAvailablePackages() {
       status: plan.status
     })).filter(p => p.status === "Active")
   } catch (err) {
-    console.error("Error fetching available packages:", err)
     toast.error("Không thể tải danh sách gói!")
   }
 }

@@ -44,7 +44,6 @@ const handleChangePassword = async () => {
     // Optionally redirect
     router.push('/');
   } catch (error: any) {
-    console.error(error);
     if (error.response?.data) {
       toast.error('Có lỗi xảy ra');
     } else {

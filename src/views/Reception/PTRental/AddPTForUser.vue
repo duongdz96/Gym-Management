@@ -100,7 +100,6 @@ const submitPTAssignment = async () => {
     // Reset
     selectedMember.value = null;
   } catch (err) {
-    console.error("Error assigning PT:", err);
     toast.error("Thêm gói PT thất bại.");
   }
 };

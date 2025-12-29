@@ -397,8 +397,6 @@ const loadData = async () => {
   roomsData.value = await unifiedApi.getRooms();
   applications.value = await unifiedApi.getApplications();
   
-  console.log(classes.value);
-  console.log(currentTeacherId.value);
   // Check conflicts for all classes
   if (currentTeacherId.value) {
     for (const cls of classes.value) {
@@ -413,7 +411,7 @@ const loadData = async () => {
           conflictMap.value[cls.id] = conflicts;
         }
       } catch (error) {
-        console.error('Error checking conflicts:', error);
+        toast.error('Lỗi khi kiểm tra trùng');
       }
     }
   }

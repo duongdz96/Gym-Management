@@ -81,13 +81,11 @@ const submit = async () => {
         endDate: endDate.value,
       };
     }
-    console.log(payload);
 
     await api.post("/membership", payload);
     toast.success("Gói thành viên đã được thêm vào thành công!");
     router.push({ name: "reception.memberships" });
   } catch (error) {
-    console.error("Có lỗi khi thêm membership:", error);
     toast.error("Thêm thành viên không thành công. Vui lòng thử lại.");
   }
 };

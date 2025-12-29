@@ -328,39 +328,23 @@ const isToday = computed(() => {
 const loadData = async () => {
   loading.value = true;
   try {
-    console.log('=== LOAD DATA START ===');
-    console.log('mockApi:', mockApi);
-    console.log('mockApi.getSessions:', mockApi.getSessions);
     
     // Load classes and rooms for display
     classes.value = await mockApi.getClasses();
     rooms.value = await mockApi.getRooms();
     
-    console.log('Classes loaded:', classes.value.length);
-    console.log('Rooms loaded:', rooms.value.length);
     
     // Load sessions for selected date
     const dateStr = selectedDateStr.value;
-    console.log('About to call getAllSessions...');
     const allSessions = await mockApi.getAllSessions();
-    console.log('getAllSessions returned:', allSessions);
-    
-    console.log('=== DEBUG INFO ===');
-    console.log('Selected date string:', dateStr);
-    console.log('Total sessions:', allSessions.length);
-    console.log('Current teacher ID:', currentTeacherId.value);
-    console.log('All sessions:', allSessions);
     
     todaySessions.value = allSessions.filter(s => {
       const matchDate = s.date === dateStr;
       const matchTeacher = s.teacherId === currentTeacherId.value;
-      console.log(`Session ${s.id}: date=${s.date}, match=${matchDate}, teacher=${s.teacherId}, matchTeacher=${matchTeacher}`);
       return matchDate && matchTeacher;
     }).sort((a, b) => a.startTime.localeCompare(b.startTime));
     
-    console.log('Filtered sessions:', todaySessions.value);
   } catch (error) {
-    console.error('Error loading data:', error);
     toast.error('Lỗi khi tải dữ liệu');
   } finally {
     loading.value = false;

@@ -61,7 +61,6 @@ const fetchExercises = async () => {
     
     exercises.value = response.data
   } catch (error) {
-    console.error('Lỗi khi tải danh sách bài tập:', error)
     toast.error('Không thể tải danh sách bài tập')
   } finally {
     isLoading.value = false

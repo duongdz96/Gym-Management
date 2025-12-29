@@ -19,7 +19,6 @@ const loadCheckinHistory = async () => {
     const res = await api.get(`/attendance/staff/${authStore.user.id}`);
     checkinHistory.value = res.data;
   } catch (error) {
-    console.error("Failed to load checkin history:", error);
     toast.error("Lỗi khi tải lịch sử checkin. Vui lòng thử lại sau!");
   } finally {
     loadingCheckin.value = false;
@@ -47,7 +46,6 @@ const loadTeachingHistory = async () => {
       status: appt.status
     }));
   } catch (error) {
-    console.error("Failed to load teaching history:", error);
     toast.error("Lỗi khi tải lịch sử giảng dạy. Vui lòng thử lại sau!");
   } finally {
     loadingTeaching.value = false;

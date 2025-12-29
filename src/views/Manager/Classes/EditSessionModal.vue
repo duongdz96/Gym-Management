@@ -274,8 +274,7 @@ const saveChanges = async () => {
     
     closeModal();
   } catch (error) {
-    console.error('Error updating session:', error);
-    toast.error('Lỗi khi cập nhật buổi học: ' + (error.response?.data?.message || error.message));
+    toast.error('Lỗi khi cập nhật buổi học');
   } finally {
     saving.value = false;
   }

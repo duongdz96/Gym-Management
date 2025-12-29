@@ -56,7 +56,6 @@ const fetchExercise = async () => {
       creator: exercise.creator
     }
   } catch (error) {
-    console.error('Lỗi khi tải bài tập:', error)
     toast.error('Không thể tải thông tin bài tập')
     handleCancel()
   } finally {
@@ -95,7 +94,6 @@ const handleSubmit = async () => {
     const basePath = authStore.user?.role === 'PT' ? '/pt' : '/customer'
     router.push(`${basePath}/workout/exercises`)
   } catch (error) {
-    console.error('Lỗi khi lưu bài tập:', error)
     toast.error(isEditMode.value ? 'Không thể cập nhật bài tập' : 'Không thể tạo bài tập')
   } finally {
     isSubmitting.value = false

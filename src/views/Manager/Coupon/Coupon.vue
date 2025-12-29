@@ -159,16 +159,14 @@ async function doImport() {
             toast.success(`Nhập thành công ${result.success} mã giảm giá`);
             if (result.errors > 0) {
                 toast.warning(`${result.errors} mã giá bị lỗi.`);
-                console.error('Import errors:', result.errorDetails);
             }
             await fetchCoupons(); // Refresh list
         } else {
-            console.log(result.errorDetails);
+            (result.errorDetails);
             toast.error('Nhập thất bại: ' + result.errorDetails);
         }
     } catch (error) {
         toast.error('Nhập coupon thất bại');
-        console.error(error);
     } finally {
         closeImportModal();
     }

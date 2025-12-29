@@ -387,7 +387,7 @@ const loadData = async () => {
           conflictMap.value[app.id] = conflicts;
         }
       } catch (error) {
-        console.error('Error checking conflicts:', error);
+        toast.error('Lỗi khi kiểm tra trùng');
       }
     }
   }

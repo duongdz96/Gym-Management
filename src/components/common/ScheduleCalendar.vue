@@ -272,16 +272,13 @@ const loadSchedule = async () => {
 
   try {
     const userId = props.userId || authStore.user?.id || 0;
-    console.log('📅 loadSchedule called:', { userId, role: props.role, startStr, endStr });
     
     let scheduleData = [];
     if (props.role === 'student') {
-      console.log('👨‍🎓 Loading student schedule...');
       scheduleData = await unifiedApi.getStudentSchedule(userId, startStr, endStr);
       const regs = await unifiedApi.getStudentRegistrations(userId);
       registeredScheduleIds.value = new Set(regs.map(r => r.scheduleId)); 
     } else {
-      console.log('👨‍🏫 Loading teacher schedule...');
       scheduleData = await unifiedApi.getTeacherSchedule(userId, startStr, endStr);
       registeredScheduleIds.value = new Set();
     }
@@ -311,11 +308,9 @@ const loadSchedule = async () => {
     
     // Fetch thông tin teacher cho student schedule (vì MemberRegistration không có teacher)
     if (props.role === 'student' && sessions.value.length > 0) {
-      console.log('🔍 Fetching teacher info for student schedule...');
       
       // Lấy danh sách unique fitnessClassId
       const uniqueFitnessClassIds = [...new Set(sessions.value.map(s => s.fitnessClassId || s.classId).filter(Boolean))];
-      console.log('Unique fitness class IDs:', uniqueFitnessClassIds);
       
       // Tạo map để lưu teacher theo fitnessClassId
       const teacherMap = new Map();
@@ -324,7 +319,6 @@ const loadSchedule = async () => {
       for (const fitnessClassId of uniqueFitnessClassIds) {
         try {
           const classRegistrations = await unifiedApi.getTeachersByFitnessClass(fitnessClassId);
-          console.log(`Class ${fitnessClassId} teachers:`, classRegistrations);
           
           // Lấy teacher đầu tiên (hoặc teacher có status APPROVED)
           const approvedReg = classRegistrations.find(r => r.status === 'APPROVED') || classRegistrations[0];
@@ -346,7 +340,6 @@ const loadSchedule = async () => {
         };
       });
       
-      console.log('✅ Teacher info merged:', sessions.value.slice(0, 3));
     }
   } catch (error) {
     console.error('Error loading schedule:', error);

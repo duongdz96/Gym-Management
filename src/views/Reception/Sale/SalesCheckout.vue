@@ -139,7 +139,6 @@ const checkCoupon = async () => {
             appliedCoupon.value = null;
         }
     } catch (e) {
-        console.error(e);
         toast.error("Lỗi kiểm tra mã giảm giá");
         appliedCoupon.value = null;
     }
@@ -162,7 +161,6 @@ function startPolling() {
         `/casso/check?addInfo=${encodeURIComponent(transferCode.value)}&amount=${finalPrice.value}`
       );
 
-      console.log("Polling response:", res.data);
 
       if (res.data?.paid) {
         paymentStatus.value = "Paid";
@@ -255,7 +253,6 @@ async function simulatePayment() {
     // Auto update status in UI if polling doesn't catch it immediately (optional)
     // But polling usually catches it.
   } catch (err) {
-    console.error("Error simulating payment:", err);
     toast.error("Lỗi khi giả lập thanh toán!");
   }
 }
@@ -263,7 +260,6 @@ async function simulatePayment() {
 async function updateBillStatus(billId, status) {
   try {
     await api.patch(`/bills/${billId}/status`, { paymentStatus: status });
-    console.log(`Bill ${billId} status updated to ${status}`);
     if (status === 'PAID') {
         isPaid.value = true;
     }

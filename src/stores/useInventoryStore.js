@@ -181,7 +181,6 @@ export const useInventoryStore = defineStore('inventory', () => {
 
             return response.data;
         } catch (error) {
-            console.error("Add receipt error:", error);
             const msg = error.response?.data?.message || error.message;
             toast.error(`Lỗi khi lưu phiếu nhập: ${msg}`);
             throw error;

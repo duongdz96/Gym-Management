@@ -1355,8 +1355,7 @@ const deleteClass = async (classId) => {
       
       toast.success('Đã vô hiệu hóa lớp học thành công!');
     } catch (error) {
-      console.error('Error deleting class:', error);
-      toast.error('Lỗi khi vô hiệu hóa lớp học: ' + (error.response?.data?.message || error.message));
+      toast.error('Lỗi khi vô hiệu hóa lớp học');
     }
   }
 };

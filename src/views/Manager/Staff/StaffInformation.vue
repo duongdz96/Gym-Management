@@ -42,7 +42,6 @@ onMounted(async () => {
     const response = await api.get(`/users/${userId}`)
     user.value = response.data
   } catch (err: any) {
-    console.error("Lỗi khi tải thông tin:", err)
     toast.error("Không thể tải thông tin.")
     router.push('/staff')
   } finally {
@@ -113,7 +112,6 @@ const handleSave = async () => {
     toast.success("Cập nhật thông tin thành công!");
 
   } catch (err: any) {
-    console.error("Lỗi khi cập nhật:", err);
     toast.error("Cập nhật thất bại.");
   } finally {
     isSaving.value = false;

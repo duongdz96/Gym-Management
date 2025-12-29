@@ -191,7 +191,6 @@ const fetchRooms = async () => {
     const res = await api.get('/room')
     rooms.value = res.data
   } catch (err) {
-    console.error('Error fetching rooms:', err)
     toast.error('Không thể tải danh sách phòng')
   }
 }
@@ -233,7 +232,6 @@ const confirmDelete = async () => {
     toast.success('Xóa phòng thành công')
     await fetchRooms()
   } catch (err) {
-    console.error('Error deleting room:', err)
     toast.error('Không thể xóa phòng')
   } finally {
     showDeleteModal.value = false
@@ -263,7 +261,6 @@ const handleSave = async () => {
     showModal.value = false
     await fetchRooms()
   } catch (err) {
-    console.error('Error saving room:', err)
     toast.error('Không thể lưu phòng')
   }
 }

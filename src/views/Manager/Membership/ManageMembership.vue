@@ -46,10 +46,7 @@ onMounted(async () => {
         const planRes = await api.get("/membershipplan");
         membershipPlans.value = planRes.data;
 
-        console.log("Membership tiers loaded:", membershipTiers.value);
-        console.log("Membership plans loaded:", membershipPlans.value);
     } catch (error) {
-        console.error('Failed to load memberships:', error);
         toast.error("Failed to load memberships. Please try again.");
     }
 })

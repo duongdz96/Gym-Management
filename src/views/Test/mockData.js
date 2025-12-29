@@ -459,8 +459,6 @@ export const mockApi = {
     getClasses: () => Promise.resolve([...classes]),
     getClass: (id) => Promise.resolve(classes.find(c => c.id === id)),
     getSessions: () => {
-        console.log('getSessions called, sessions.length:', sessions.length);
-        console.log('sessions array:', sessions);
         return Promise.resolve([...sessions]);
     },
     getRooms: () => Promise.resolve([...rooms]),

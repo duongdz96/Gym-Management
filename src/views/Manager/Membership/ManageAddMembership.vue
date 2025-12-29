@@ -45,8 +45,6 @@ const submit = async () => {
     membershipTier: selectedTier
   }
 
-    console.log("Submitting membership plan:", payload)
-
   try {
     const res = await api.post("/membershipplan", payload)
 
@@ -67,7 +65,6 @@ onMounted(async () => {
   try {
     const res = await api.get("/membershiptier")
     membershipTiers.value = res.data
-    console.log("Membership tiers loaded:", membershipTiers.value)
   } catch (error) {
     console.error('Failed to load membership tiers:', error)
     toast.error("Tải bậc thành viên thất bại. Vui lòng thử lại sau")

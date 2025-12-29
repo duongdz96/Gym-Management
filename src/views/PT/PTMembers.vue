@@ -50,7 +50,6 @@ const saveCurrentWeight = async () => {
       isEditingWeight.value = false;
       toast.success("Cân nặng cập nhật thành công!");
     } catch (error) {
-      console.error("Cân nặng cập nhật thất bại. Vui lòng thử lại sau!", error);
       toast.error("Cân nặng cập nhật thất bại. Vui lòng thử lại sau!");
     }
   }
@@ -156,9 +155,7 @@ onMounted(async () => {
       weight: profile.weight,
       trainingPlan: profile.trainingPlan,
     }));
-    console.log("PT Members loaded:", members.value);
   } catch (error) {
-    console.error('Failed to load PT members:', error);
     toast.error("Không thể tải thành viên. Vui lòng thử lại sau");
   }
 

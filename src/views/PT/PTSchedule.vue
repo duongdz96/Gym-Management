@@ -91,9 +91,7 @@ async function fetchSchedule(query = "") {
       };
     });
 
-    console.log("PT Schedule loaded:", schedule.value);
   } catch (error) {
-    console.error("Failed to fetch PT schedule:", error);
     schedule.value = [];
     toast.error("Không thể tải lịch. Vui lòng thử lại sau");
   }
@@ -121,9 +119,7 @@ async function loadAvailableMembers() {
       weight: profile.weight,
       trainingPlan: profile.trainingPlan,
     }));
-    console.log("Available members loaded:", availableMembers.value);
   } catch (error) {
-    console.error('Failed to load available members:', error);
     availableMembers.value = [];
     toast.error("Không thể tải thành viên. Vui lòng thử lại sau!");
   }
@@ -280,7 +276,6 @@ function registerNewClass() {
 }
 
 onMounted(async () => {
-  console.log("PT Schedule loaded");
   await fetchSchedule();
 });
 </script>

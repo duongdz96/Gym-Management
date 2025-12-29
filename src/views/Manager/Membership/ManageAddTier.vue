@@ -26,7 +26,6 @@ const submit = async () => {
     status: "Active"
   }
 
-  console.log("Submitting membership tier:", payload)
 
   try {
     const res = await api.post("/membershiptier", payload)

@@ -100,7 +100,6 @@ const deleteMember = async (membership: Membership) => {
 
     useToast().success('Xóa học viên thành công')
   } catch (err) {
-    console.error('Error deleting member:', err)
     useToast().error('Không thể xóa học viên. Vui lòng thử lại.')
   }
 }

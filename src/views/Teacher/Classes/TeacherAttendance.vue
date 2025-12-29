@@ -422,7 +422,6 @@ const loadClassData = async () => {
     roomsData.value = await unifiedApi.getRooms();
 
   } catch (error) {
-    console.error('Error:', error);
     toast.error('Lỗi hệ thống');
   }
 };
@@ -474,7 +473,6 @@ const loadSessionData = async () => {
     // sessionFinalized.value = selectedSession.value.status === 'CLOSED';
 
   } catch (error) {
-    console.error('Error:', error);
     if (error.response?.status !== 404) toast.error('Có lỗi xảy ra');
   } finally {
     loadingStudents.value = false;
@@ -518,7 +516,6 @@ const markPresent = async (student) => {
       });
     }
   } catch (error) {
-    console.error('Error marking present:', error);
     toast.error('Có lỗi xảy ra');
   }
 };
@@ -559,7 +556,6 @@ const markAbsent = async (student) => {
       });
     }
   } catch (error) {
-    console.error('Error marking absent:', error);
     toast.error('Có lỗi xảy ra');
   }
 };
@@ -595,7 +591,6 @@ const autoAbsent = async () => {
 
     await loadSessionData(); // Tải lại để thấy danh sách những người vừa bị đánh vắng
   } catch (error) {
-    console.error('Error auto absent:', error);
     toast.error('Có lỗi xảy ra');
   } finally {
     finalizing.value = false;

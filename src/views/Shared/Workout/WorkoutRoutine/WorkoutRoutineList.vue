@@ -70,11 +70,7 @@ const fetchRoutines = async () => {
       : await workoutRoutineApi.getAllRoutines()
     
     routines.value = response.data
-    console.log('Loaded routines:', routines.value)
-    console.log('Current user ID:', userId)
-    console.log('Public routines:', routines.value.filter(r => r.isPublic))
   } catch (error) {
-    console.error('Lỗi khi tải danh sách mẫu lịch tập:', error)
     toast.error('Không thể tải danh sách mẫu lịch tập')
   } finally {
     isLoading.value = false
@@ -121,7 +117,6 @@ const selectForWorkout = async (routine) => {
     const basePath = authStore.user?.role === 'PT' ? '/pt' : '/customer'
     router.push(`${basePath}/workout/training-plans`)
   } catch (error) {
-    console.error('Lỗi khi tạo lịch tập:', error)
     toast.error('Không thể tạo lịch tập')
   }
 }
@@ -151,7 +146,6 @@ const assignToMember = async () => {
     toast.success(`Đã gán lịch tập cho ${selectedMember.value.fullName}!`)
     closeAssignModal()
   } catch (error) {
-    console.error('Lỗi khi gán lịch tập:', error)
     toast.error('Không thể gán lịch tập')
   }
 }
@@ -177,7 +171,6 @@ const deleteRoutine = async () => {
     showDeleteModal.value = false
     routineToDelete.value = null
   } catch (error) {
-    console.error('Lỗi khi xóa mẫu lịch tập:', error)
     toast.error('Không thể xóa mẫu lịch tập này')
   }
 }

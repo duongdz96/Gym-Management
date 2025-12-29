@@ -47,7 +47,6 @@ const fetchData = async () => {
         const resServices = await api.get("/products/include-types?types=PT,Membership");
         services.value = processImages(resServices.data);
     } catch (err) {
-        console.error("Error fetching data:", err);
         toast.error("Lỗi khi tải dữ liệu sản phẩm!");
     } finally {
         isLoading.value = false;

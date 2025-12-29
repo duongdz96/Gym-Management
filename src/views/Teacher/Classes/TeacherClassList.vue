@@ -236,7 +236,6 @@ const loadData = async () => {
     // Filter classes where this teacher is assigned
     myClasses.value = allClasses.filter(c => c.teacherId === currentTeacherId.value);
   } catch (error) {
-    console.error('Error loading classes:', error);
     toast.error('Lỗi khi tải danh sách lớp: ' + error.message);
   } finally {
     loading.value = false;

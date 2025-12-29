@@ -46,7 +46,6 @@ const handleSubmit = async () => {
   }
 
   try {
-    console.log('Payload đăng ký nhân viên:', payload)
     const response = await api.post('/auth/register-employee', payload)
     
     toast.success("Thêm nhân viên thành công!");
@@ -64,7 +63,6 @@ const handleSubmit = async () => {
     }, 1500)
 
   } catch (err: any) {
-    console.error('Lỗi khi đăng ký nhân viên:', err)
     const errorMessage = 'Lỗi khi đăng ký nhân viên!';
     toast.error(errorMessage);
     
