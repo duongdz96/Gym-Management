@@ -56,7 +56,6 @@ const submit = async () => {
       router.push({ name: "membership" })
     }
   } catch (err: any) {
-        console.error("Error adding membership plan:", err)
         toast.error("Thêm gói thành viên thất bại. Vui lòng thử lại sau")
   }
 }

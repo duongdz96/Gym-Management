@@ -285,6 +285,7 @@ onMounted(() => {
 <style scoped>
 .line-clamp-3 {
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
