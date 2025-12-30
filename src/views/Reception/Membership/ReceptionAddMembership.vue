@@ -390,7 +390,7 @@ loadData();
               : 'text-gray-600 dark:text-gray-400 hover:text-emerald-500',
           ]"
         >
-          🔄 Khách Hàng Cũ (Gia hạn & Nâng cấp)
+          🔄 Khách Hàng Cũ (Gia hạn & Đổi gói)
         </button>
       </div>
     </div>
@@ -709,7 +709,7 @@ loadData();
               <span v-else class="text-2xl">⬆️</span>
               <div>
                 <p class="font-semibold" :class="actionType === 'renew' ? 'text-blue-800 dark:text-blue-300' : 'text-purple-800 dark:text-purple-300'">
-                  {{ actionType === "renew" ? "Gia hạn gói hiện tại" : "Nâng cấp gói" }}
+                  {{ actionType === "renew" ? "Gia hạn gói hiện tại" : "Đổi gói" }}
                 </p>
                 <p class="text-sm" :class="actionType === 'renew' ? 'text-blue-700 dark:text-blue-400' : 'text-purple-700 dark:text-purple-400'">
                   {{
