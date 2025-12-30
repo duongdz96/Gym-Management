@@ -13,6 +13,7 @@ const isMenuOpen = ref(false);
 const isAccountMenuOpen = ref(false);
 const isProductMenuOpen = ref(false);
 const isClassMenuOpen = ref(false);
+const isContentMenuOpen = ref(false);
 
 const handleLogout = () => {
   authStore.logout();
@@ -99,13 +100,50 @@ const handleLogout = () => {
             </div>
           </transition>
         </div>
-        <RouterLink
-          to="/manager/coupon"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="route.path === '/manager/coupon' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+        
+        <!-- Content Dropdown (Banner, Coupon, Blog) -->
+        <div
+          class="relative"
+          @mouseenter="isContentMenuOpen = true"
+          @mouseleave="isContentMenuOpen = false"
         >
-          Mã giảm giá
-        </RouterLink>
+          <button
+            class="uppercase tracking-wider hover:text-red-600 flex items-center gap-1"
+            :class="route.path.startsWith('/manager/banner') || route.path.startsWith('/manager/coupon') || route.path.startsWith('/manager/blog') ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+          >
+            Nội dung
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          <transition name="fade">
+            <div
+              v-show="isContentMenuOpen"
+              class="absolute left-0 mt-2 w-56 bg-white rounded shadow-md z-50 text-gray-800"
+            >
+              <RouterLink
+                to="/manager/banner"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Quản lý banner
+              </RouterLink>
+              <RouterLink
+                to="/manager/coupon"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Quản lý mã giảm giá
+              </RouterLink>
+              <RouterLink
+                to="/manager/blog"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Quản lý blog
+              </RouterLink>
+            </div>
+          </transition>
+        </div>
+        
         <RouterLink
           to="/manager/membership"
           class="uppercase tracking-wider hover:text-red-600"
@@ -163,14 +201,6 @@ const handleLogout = () => {
             </div>
           </transition>
         </div>
-        
-        <RouterLink
-          to="/manager/banner"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="route.path === '/manager/banner' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
-        >
-          Banner
-        </RouterLink>
       </nav>
 
       <!-- Account dropdown -->

@@ -75,6 +75,10 @@ import TeacherApprovalList from "@/views/Manager/Classes/TeacherApprovalList.vue
 import ManagerLeaveApproval from "@/views/Manager/Classes/ManagerLeaveApproval.vue";
 import TeacherAttendance from "@/views/Teacher/Classes/TeacherAttendance.vue";
 import StaffInformation from "@/views/Manager/Staff/StaffInformation.vue";
+import BlogList from "@/views/Manager/Blog/BlogList.vue";
+import BlogCreate from "@/views/Manager/Blog/BlogCreate.vue";
+import BlogEdit from "@/views/Manager/Blog/BlogEdit.vue";
+import CustomerBlogList from "@/views/Customer/CustomerBlogList.vue";
 
 const routes = [
     {
@@ -126,8 +130,9 @@ const routes = [
             { path: "room", name: "room", component: RoomManagement },
             { path: "teacher-approval", name: "manager.teacher-approval", component: TeacherApprovalList },
             { path: "leave-approval", name: "manager.leave-approval", component: ManagerLeaveApproval },
-            { path: "banner", name: "banner", component: Banner },
-
+            { path: "blog", name: "manager.blog", component: BlogList },
+            { path: "blog/create", name: "manager.blog.create", component: BlogCreate },
+            { path: "blog/edit/:id", name: "manager.blog.edit", component: BlogEdit },
         ],
     },
 
@@ -146,6 +151,7 @@ const routes = [
             { path: "profile", name: "customer.profile", component: CustomerProfile },
             { path: "setting", name: "customer.setting", component: CustomerSetting },
             { path: "billhistory", name: "customer.billhistory", component: CustomerBillHistory },
+            { path: "blogs", name: "customer.blogs", component: CustomerBlogList },
 
             // Workout Management Routes
             {
