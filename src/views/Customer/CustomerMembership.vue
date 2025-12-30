@@ -8,6 +8,7 @@ const authStore = useAuthStore()
 const toast = useToast()
 
 const currentMembership = ref(null)
+const currentPTPackages = ref([])
 const availablePackages = ref([])
 const membershipHistory = ref([])
 const loading = ref(true)
@@ -77,6 +78,39 @@ async function fetchCurrentMembership() {
   }
 }
 
+// Fetch PT packages
+async function fetchPTPackages() {
+  try {
+    const memberId = authStore.user?.id
+    if (!memberId) {
+      console.error("No member ID found")
+      return
+    }
+
+    // Get PT package issues for this member
+    const res = await api.get("/packageissued")
+    const allPackages = res.data || []
+    
+    // Filter packages for current user
+    const userPackages = allPackages.filter(pkg => 
+      pkg.member?.id === memberId && 
+      pkg.ptPackage?.status === "Active"
+    )
+    
+    currentPTPackages.value = userPackages.map(pkg => ({
+      id: pkg.id,
+      ptName: pkg.pt?.fullName || "Chưa có PT",
+      packageName: pkg.ptPackage?.name || "N/A",
+      sessionsTotal: pkg.ptPackage?.sessions || 0,
+      sessionsRemaining: pkg.remainingSessions || 0,
+      sessionsUsed: (pkg.ptPackage?.sessions || 0) - (pkg.remainingSessions || 0)
+    }))
+  } catch (err) {
+    console.error("Error fetching PT packages:", err)
+    toast.error("Không thể tải thông tin gói PT!")
+  }
+}
+
 // Fetch available packages
 async function fetchAvailablePackages() {
   try {
@@ -98,6 +132,7 @@ onMounted(async () => {
   loading.value = true
   await Promise.all([
     fetchCurrentMembership(),
+    fetchPTPackages(),
     fetchAvailablePackages()
   ])
   loading.value = false
@@ -144,10 +179,58 @@ const closeDetailModal = () => {
         <p v-if="currentMembership" class="mt-2">
           <strong>Trạng thái:</strong>
           <span
-            :class="currentMembership.status === 'Active' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'"
+            :class="currentMembership.status === 'Active' ? 'text-emerald-600 font-medium' : 'text-gray-500 font-medium'"
             >{{ currentMembership.status }}</span
           >
         </p>
+      </section>
+
+      <!-- Gói PT hiện tại -->
+      <section class="bg-white rounded-xl shadow p-5">
+        <h2 class="text-xl font-semibold mb-3">Gói PT hiện tại</h2>
+        <div v-if="currentPTPackages.length > 0" class="space-y-4">
+          <div 
+            v-for="ptPackage in currentPTPackages" 
+            :key="ptPackage.id"
+            class="border border-emerald-200 rounded-lg p-4 bg-gradient-to-r from-emerald-50 to-teal-50"
+          >
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <h3 class="font-semibold text-lg text-gray-800">{{ ptPackage.packageName }}</h3>
+                <p class="text-gray-600 mt-1">
+                  <strong>Huấn luyện viên:</strong> {{ ptPackage.ptName }}
+                </p>
+              </div>
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                Đang sử dụng
+              </span>
+            </div>
+            
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">Buổi tập đã sử dụng:</span>
+                <span class="font-semibold text-emerald-600">
+                  {{ ptPackage.sessionsUsed }}/{{ ptPackage.sessionsTotal }} buổi
+                </span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">Buổi còn lại:</span>
+                <span class="font-bold text-lg" :class="ptPackage.sessionsRemaining > 5 ? 'text-emerald-600' : 'text-orange-600'">
+                  {{ ptPackage.sessionsRemaining }} buổi
+                </span>
+              </div>
+              <div class="mt-2 w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  class="bg-gradient-to-r from-emerald-500 to-teal-500 h-2.5 rounded-full transition-all"
+                  :style="{ width: `${(ptPackage.sessionsUsed / ptPackage.sessionsTotal) * 100}%` }"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="text-gray-500 text-center py-4">
+          Bạn chưa đăng ký gói PT nào
+        </div>
       </section>
 
       <!-- Danh sách gói khả dụng -->
@@ -162,10 +245,9 @@ const closeDetailModal = () => {
             <h3 class="font-semibold text-lg mb-1">{{ pkg.name }}</h3>
             <p class="text-gray-600 mb-1 text-sm">{{ pkg.description }}</p>
             <p class="text-sm text-gray-500 mb-1">Thời hạn: {{ pkg.duration }}</p>
-            <p class="text-red-600 font-medium mb-3">{{ formatCurrency(pkg.price) }}</p>
+            <p class="text-emerald-600 font-medium mb-3">{{ formatCurrency(pkg.price) }}</p>
             <button
-              @click="viewPackageDetail(pkg)"
-              class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 w-full"
+              class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 w-full"
             >
               Xem chi tiết
             </button>

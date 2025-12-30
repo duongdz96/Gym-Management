@@ -145,10 +145,13 @@ const fetchPTData = async () => {
     const appointmentsRes = await api.get('/appointment');
     const appointments = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : [];
 
+    const packageIssuedRes = await api.get('/packageissued');
+    const packageIssued = Array.isArray(packageIssuedRes.data) ? packageIssuedRes.data : [];
+
     // Filter profiles for the current PT
     const ptStudents = studentProfiles.filter(profile => profile.pt && profile.pt.id === authStore.user.id);
 
-    studentProgress.value = ptStudents.slice(0, 4).map(profile => {
+    studentProgress.value = ptStudents.slice(0, 2).map(profile => {
       // Find appointments for this member
       const memberAppointments = appointments.filter(appt =>
         appt.ptPackageIssued?.member?.id === profile.member.id &&
@@ -158,13 +161,20 @@ const fetchPTData = async () => {
       // Calculate completed sessions
       const completedSessions = memberAppointments.filter(appt => appt.status === 'Completed').length;
 
-      // Get package info from the most recent appointment
-      const latestAppointment = memberAppointments
-        .filter(appt => appt.ptPackageIssued)
-        .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))[0];
-
-      const totalSessions = latestAppointment?.ptPackageIssued?.ptPackage?.sessions || 12;
-      const remainingSessions = latestAppointment?.ptPackageIssued?.remainingSessions || totalSessions;
+      // Get package info for this member
+      const memberPackages = packageIssued.filter(pkg => pkg.member?.id === profile.member.id);
+      
+      let totalSessions = 0;
+      let remainingSessions = 0;
+      
+      if (memberPackages.length > 0) {
+        // Sum up all packages for this member
+        totalSessions = memberPackages.reduce((sum, pkg) => sum + (pkg.ptPackage?.sessions || 0), 0);
+        remainingSessions = memberPackages.reduce((sum, pkg) => sum + (pkg.remainingSessions || 0), 0);
+      } else {
+        totalSessions = 12; // Default fallback
+        remainingSessions = 12;
+      }
 
       // Calculate progress based on used sessions
       const usedSessions = totalSessions - remainingSessions;
@@ -211,13 +221,58 @@ const fetchPTData = async () => {
     ];
   }
 
-  // Mock data for upcoming appointments
-  upcomingAppointments.value = [
-    { student: 'Hoàng Văn E', time: '09:00', type: 'Tập cá nhân', date: 'Hôm nay' },
-    { student: 'Đặng Thị F', time: '14:00', type: 'Tư vấn dinh dưỡng', date: 'Hôm nay' },
-    { student: 'Vũ Văn G', time: '10:00', type: 'Tập cá nhân', date: 'Ngày mai' },
-    { student: 'Bùi Thị H', time: '15:30', type: 'Đánh giá tiến độ', date: 'Ngày mai' }
-  ];
+  // Fetch upcoming appointments from API
+  try {
+    const appointmentsRes = await api.get('/appointment');
+    const appointments = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : [];
+    
+    // Filter for this PT's upcoming appointments
+    const now = new Date();
+    const ptUpcomingAppointments = appointments
+      .filter(appt => 
+        appt.pt?.id === authStore.user.id && 
+        appt.status === 'Scheduled' &&
+        new Date(appt.startTime) > now
+      )
+      .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
+      .slice(0, 4); // Limit to 4 appointments
+
+    upcomingAppointments.value = ptUpcomingAppointments.map(appt => {
+      const startTime = new Date(appt.startTime);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const apptDay = new Date(startTime);
+      apptDay.setHours(0, 0, 0, 0);
+
+      let dateLabel = '';
+      if (apptDay.getTime() === today.getTime()) {
+        dateLabel = 'Hôm nay';
+      } else if (apptDay.getTime() === tomorrow.getTime()) {
+        dateLabel = 'Ngày mai';
+      } else {
+        dateLabel = startTime.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+      }
+
+      return {
+        student: appt.ptPackageIssued?.member?.fullName || 'Unknown',
+        time: startTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+        type: appt.ptPackageIssued?.ptPackage?.name || 'Tập cá nhân',
+        date: dateLabel
+      };
+    });
+
+  } catch (error) {
+    console.error('Error fetching upcoming appointments:', error);
+    // Fallback to mock data
+    upcomingAppointments.value = [
+      { student: 'Hoàng Văn E', time: '09:00', type: 'Tập cá nhân', date: 'Hôm nay' },
+      { student: 'Đặng Thị F', time: '14:00', type: 'Tư vấn dinh dưỡng', date: 'Hôm nay' },
+      { student: 'Vũ Văn G', time: '10:00', type: 'Tập cá nhân', date: 'Ngày mai' },
+      { student: 'Bùi Thị H', time: '15:30', type: 'Đánh giá tiến độ', date: 'Ngày mai' }
+    ];
+  }
   
   isLoading.value = false
   
@@ -256,14 +311,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-emerald-50 to-emerald-50 py-8">
-    <div class="mx-auto max-w-7xl px-6">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-emerald-50 to-emerald-50 py-4 sm:py-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
       <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
-          Bảng điều khiển PT 💪
+      <div class="mb-4 sm:mb-8">
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
+          Xin chào, {{ authStore.user?.fullName }} 💪
         </h1>
-        <p class="text-gray-600 mt-2">Quản lý học viên và buổi tập của bạn</p>
+        <p class="text-sm sm:text-base text-gray-600 mt-2">Quản lý học viên và buổi tập của bạn</p>
       </div>
 
       <!-- Loading State -->
@@ -271,9 +326,9 @@ onMounted(() => {
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
 
-      <div v-else class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div v-else class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         <!-- Left Sidebar - Stats -->
-        <div class="lg:col-span-1 space-y-6">
+        <div class="lg:col-span-1 space-y-4 sm:space-y-6">
           <!-- Stats Cards -->
           <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100">
             <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center mb-4">
@@ -313,10 +368,10 @@ onMounted(() => {
             </div>
 
             <!-- Week Days -->
-            <div class="grid grid-cols-7 gap-2">
+            <div class="grid grid-cols-7 gap-1 sm:gap-2">
               <div v-for="day in currentWeek" :key="day.dayNumber" 
                    :class="[
-                     'p-4 rounded-xl text-center transition-all cursor-pointer',
+                     'p-2 sm:p-4 rounded-lg sm:rounded-xl text-center transition-all cursor-pointer',
                      day.isToday
                        ? 'bg-gradient-to-br from-emerald-500 to-emerald-500 text-white shadow-lg scale-105'
                        : 'bg-gray-50 hover:bg-gray-100'
@@ -334,7 +389,7 @@ onMounted(() => {
               </div>
               <div v-else class="space-y-3">
                 <div v-for="session in todaySessions" :key="session.id"
-                     class="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-emerald-50 rounded-xl border border-emerald-100">
+                     class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-emerald-50 to-emerald-50 rounded-lg sm:rounded-xl border border-emerald-100 gap-2 sm:gap-0">
                   <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center">
                       <Dumbbell class="w-5 h-5 text-white" />
@@ -354,7 +409,7 @@ onMounted(() => {
           </div>
 
           <!-- Student Progress & Upcoming Appointments -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <!-- Student Progress -->
             <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100">
               <div class="flex items-center gap-2 mb-6">
@@ -376,6 +431,14 @@ onMounted(() => {
                   </div>
                 </div>
               </div>
+              
+              <!-- View All Members Button -->
+              <RouterLink
+                to="/pt/members"
+                class="block w-full mt-4 p-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-center font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-300"
+              >
+                Xem chi tiết học viên
+              </RouterLink>
             </div>
 
             <!-- Upcoming Appointments -->

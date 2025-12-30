@@ -90,22 +90,28 @@ const fetchUpcomingSessions = async (memberId) => {
 
 const fetchMemberPackages = async (memberId) => {
   try {
-    // Mock data for member packages - only basic package
-    const mockPackages = [
-      {
-        id: 1,
-        name: "Gói PT Cơ Bản",
-        totalSessions: 20,
-        usedSessions: 10,
-        status: "active",
-        expiryDate: "2025-03-15"
-      }
-    ];
-
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    memberPackages.value = mockPackages;
+    const res = await api.get("/packageissued");
+    const data = Array.isArray(res.data) ? res.data : [];
+    
+    // Filter packages for the selected member
+    const memberIssuedPackages = data.filter(pkg => pkg.member?.id === memberId);
+    
+    // Map to the expected format
+    memberPackages.value = memberIssuedPackages.map(pkg => {
+      const totalSessions = pkg.ptPackage?.sessions || 0;
+      const remainingSessions = pkg.remainingSessions || 0;
+      const usedSessions = totalSessions - remainingSessions;
+      
+      return {
+        id: pkg.id,
+        name: pkg.ptPackage?.name || 'Gói PT',
+        totalSessions: totalSessions,
+        usedSessions: usedSessions,
+        remainingSessions: remainingSessions,
+        status: pkg.ptPackage?.status === 'Active' ? 'active' : 'expired',
+        expiryDate: null // API doesn't provide expiry date
+      };
+    });
   } catch (error) {
     console.error("Error fetching member packages:", error);
     memberPackages.value = [];
@@ -170,14 +176,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="p-6 space-y-8">
+  <div class="p-4 sm:p-6 space-y-4 sm:space-y-8">
     <!-- Title -->
-    <h1 class="text-2xl font-bold text-stone-800">Member List</h1>
+    <h1 class="text-xl sm:text-2xl font-bold text-stone-800">Danh sách học viên</h1>
 
     <!-- Layout chính -->
-    <div class="flex gap-6 h-screen">
+    <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
       <!-- Bên trái: Danh sách học viên -->
-      <div class="w-1/3 bg-white rounded-xl shadow p-5 overflow-y-auto">
+      <div class="w-full lg:w-1/3 bg-white rounded-xl shadow p-4 sm:p-5 max-h-[400px] lg:max-h-screen overflow-y-auto">
         <h2 class="text-xl font-semibold mb-4">Học viên của tôi</h2>
 
         <!-- Search Bar -->
@@ -211,17 +217,17 @@ onMounted(async () => {
           >
             <div class="font-medium text-gray-900">{{ member.name }}</div>
             <div class="text-sm text-gray-500">{{ member.email }}</div>
-            <div class="text-sm text-gray-500">Height: {{ member.height }} cm</div>
-            <div class="text-sm text-gray-500">Weight: {{ member.weight }} kg</div>
+            <div class="text-sm text-gray-500">Chiều cao: {{ member.height }} cm</div>
+            <div class="text-sm text-gray-500">Cân nặng: {{ member.weight }} kg</div>
           </div>
         </div>
       </div>
 
       <!-- Bên phải: Thông tin chi tiết -->
-      <div class="w-2/3 bg-white rounded-xl shadow p-5">
+      <div class="w-full lg:w-2/3 bg-white rounded-xl shadow p-4 sm:p-5 max-h-[600px] lg:max-h-screen overflow-y-auto">
         <h2 class="text-xl font-semibold mb-4">Thông tin chi tiết</h2>
         <div v-if="selectedMember" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700"
                 >Họ và tên</label
@@ -242,35 +248,35 @@ onMounted(async () => {
               <label class="block text-sm font-medium text-gray-700"
                 >Cân nặng</label
               >
-              <div class="mt-1 flex items-center space-x-2">
+              <div class="mt-1 flex flex-wrap items-center gap-2">
                 <input
                   v-if="isEditingWeight"
                   v-model.number="tempCurrentWeight"
                   type="number"
-                  class="text-lg text-gray-900 border border-gray-300 rounded px-2 py-1 w-20"
+                  class="text-base sm:text-lg text-gray-900 border border-gray-300 rounded px-2 py-1 w-20"
                   min="0"
                   step="0.1"
                 />
-                <span v-else class="text-lg text-gray-900"
+                <span v-else class="text-base sm:text-lg text-gray-900"
                   >{{ selectedMember.weight }} kg</span
                 >
                 <button
                   v-if="!isEditingWeight"
                   @click="startEditingWeight"
-                  class="text-emerald-600 hover:text-emerald-800 text-sm"
+                  class="text-emerald-600 hover:text-emerald-800 text-xs sm:text-sm"
                 >
                   Chỉnh sửa
                 </button>
-                <div v-if="isEditingWeight" class="flex space-x-1">
+                <div v-if="isEditingWeight" class="flex gap-2">
                   <button
                     @click="saveCurrentWeight"
-                    class="text-green-600 hover:text-green-800 text-sm"
+                    class="text-green-600 hover:text-green-800 text-xs sm:text-sm px-2 py-1 border border-green-600 rounded"
                   >
                     Lưu
                   </button>
                   <button
                     @click="cancelEditingWeight"
-                    class="text-red-600 hover:text-red-800 text-sm"
+                    class="text-red-600 hover:text-red-800 text-xs sm:text-sm px-2 py-1 border border-red-600 rounded"
                   >
                     Hủy
                   </button>
@@ -279,7 +285,7 @@ onMounted(async () => {
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Height</label
+                >Chiều cao</label
               >
               <p class="mt-1 text-lg text-gray-900">
                 {{ selectedMember.height }} cm
@@ -288,7 +294,7 @@ onMounted(async () => {
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >Training Plan</label
+              >Kế hoạch tập luyện</label
             >
             <p class="mt-1 text-lg text-gray-900">
               {{ selectedMember.trainingPlan }}
@@ -301,10 +307,10 @@ onMounted(async () => {
             <div v-if="memberPackages.length === 0" class="text-gray-500">Chưa đăng ký gói nào</div>
             <div v-else class="space-y-2">
               <div v-for="pkg in memberPackages" :key="pkg.id" class="border rounded-lg p-3 bg-emerald-50">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div>
                     <p class="text-sm font-medium text-gray-900">{{ pkg.name }}</p>
-                    <p class="text-xs text-gray-600">Hết hạn: {{ new Date(pkg.expiryDate).toLocaleDateString('vi-VN') }}</p>
+                    <p class="text-xs text-gray-600">Còn lại: {{ pkg.remainingSessions }} buổi</p>
                   </div>
                   <div class="text-right">
                     <p class="text-sm font-semibold text-emerald-600">{{ pkg.usedSessions }}/{{ pkg.totalSessions }} buổi</p>
@@ -324,21 +330,21 @@ onMounted(async () => {
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >Upcoming Sessions</label
+              >Buổi tập sắp tới</label
             >
-            <div v-if="upcomingSessions.length === 0" class="mt-1 text-gray-500">No upcoming sessions</div>
+            <div v-if="upcomingSessions.length === 0" class="mt-1 text-gray-500">Không có buổi tập sắp tới</div>
             <div v-else class="mt-1 space-y-2">
-              <div v-for="session in upcomingSessions" :key="session.id" class="border rounded p-2 bg-gray-50">
-                <p class="text-sm font-medium">{{ new Date(session.startTime).toLocaleDateString() }}</p>
-                <p class="text-sm text-gray-600">{{ formatTimeRange(session.startTime, session.endTime) }}</p>
-                <p class="text-sm text-gray-600">{{ session.ptPackageIssued?.ptPackage?.name || 'Session' }}</p>
+              <div v-for="session in upcomingSessions" :key="session.id" class="border rounded p-2 sm:p-3 bg-gray-50">
+                <p class="text-xs sm:text-sm font-medium">{{ new Date(session.startTime).toLocaleDateString() }}</p>
+                <p class="text-xs sm:text-sm text-gray-600">{{ formatTimeRange(session.startTime, session.endTime) }}</p>
+                <p class="text-xs sm:text-sm text-gray-600">{{ session.ptPackageIssued?.ptPackage?.name || 'Session' }}</p>
               </div>
             </div>
           </div>
 
         </div>
         <div v-else class="text-center text-gray-500">
-          Select a member to view detailed information
+          Chọn một học viên để xem thông tin chi tiết
                     </div>
           </div>
         </div>
@@ -348,8 +354,8 @@ onMounted(async () => {
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No members found</h3>
-          <p class="mt-1 text-sm text-gray-500">Try adjusting your search terms.</p>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Không tìm thấy học viên</h3>
+          <p class="mt-1 text-sm text-gray-500">Thử điều chỉnh từ khóa tìm kiếm.</p>
         </div>
       </div>
 </template>

@@ -13,30 +13,30 @@
             v-model="searchQuery"
             type="text" 
             placeholder="Tìm sản phẩm..." 
-            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none w-full md:w-56 text-sm"
+            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none w-full md:w-56 text-sm"
           />
           <SearchIcon class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
 
         <!-- Filters -->
-        <select v-model="filterType" class="px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm bg-white focus:border-indigo-500">
+        <select v-model="filterType" class="px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm bg-white focus:border-emerald-500">
           <option value="">Tất cả loại</option>
           <option v-for="t in productTypes" :key="t" :value="t">{{ t }}</option>
         </select>
 
-        <select v-model="filterStatus" class="px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm bg-white focus:border-indigo-500">
+        <select v-model="filterStatus" class="px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm bg-white focus:border-emerald-500">
           <option value="all">Tất cả trạng thái</option>
           <option value="active">Đang kinh doanh</option>
           <option value="inactive">Ngừng kinh doanh</option>
         </select>
 
-         <select v-model="sortBy" class="px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm bg-white focus:border-indigo-500">
+         <select v-model="sortBy" class="px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm bg-white focus:border-emerald-500">
           <option value="newest">Mới nhất</option>
           <option value="priceAsc">Giá tăng dần</option>
           <option value="priceDesc">Giá giảm dần</option>
         </select>
 
-        <button @click="openAddModal" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium whitespace-nowrap">
+        <button @click="openAddModal" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-sm font-medium whitespace-nowrap">
           <PlusIcon class="w-4 h-4" />
           Thêm mới
         </button>
@@ -80,7 +80,7 @@
                 </div>
               </td>
               <td class="px-6 py-4">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-800">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800">
                   {{ product.type }}
                 </span>
               </td>
@@ -98,7 +98,7 @@
               </td>
               <td class="px-6 py-4 text-center">
                 <div class="flex items-center justify-center gap-2">
-                  <button @click="openEditModal(product)" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Chỉnh sửa">
+                  <button @click="openEditModal(product)" class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors" title="Chỉnh sửa">
                     <Edit2Icon class="w-4 h-4" />
                   </button>
                   <button @click="confirmDelete(product)" class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Xóa">
@@ -126,16 +126,11 @@
              <div class="grid grid-cols-2 gap-4">
               <div class="col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm <span class="text-red-500">*</span></label>
-                <input v-model="form.name" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                <input v-model="form.name" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Loại sản phẩm</label>
-                <select 
-                  v-model="form.type" 
-                  :disabled="isEditingMembership"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white"
-                  :class="{ 'bg-gray-100 cursor-not-allowed opacity-60': isEditingMembership }"
-                >
+                <select v-model="form.type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-white">
                   <option value="" disabled>Chọn loại</option>
                   <option v-for="type in availableProductTypes" :key="type" :value="type">{{ type }}</option>
                 </select>
@@ -145,13 +140,13 @@
               </div>
               <div v-if="form.type !== 'Membership'">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính</label>
-                <select v-model="form.unit" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white">
+                <select v-model="form.unit" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-white">
                   <option v-for="u in unitOptions" :key="u" :value="u">{{ u }}</option>
                 </select>
               </div>
               <div v-if="form.type !== 'Membership'">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Thương hiệu</label>
-                <input v-model="form.brand" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                <input v-model="form.brand" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" />
               </div>
               <div v-if="form.type === 'Membership'" class="col-span-2">
                 <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
@@ -160,11 +155,11 @@
               </div>
                <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Giá bán (VND)</label>
-                <input v-model.number="form.price" type="number" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                <input v-model.number="form.price" type="number" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-                <select v-model="form.status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white">
+                <select v-model="form.status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-white">
                   <option :value="false">Active</option>
                   <option :value="true">Inactive</option>
                 </select>
@@ -181,7 +176,7 @@
                       type="file" 
                       accept="image/*"
                       @change="handleImageUpload"
-                      class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-colors"
+                      class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-colors"
                     />
                     <p class="mt-1 text-xs text-gray-500">Chọn ảnh từ máy tính của bạn.</p>
                   </div>
@@ -191,7 +186,7 @@
           </div>
           <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
             <button @click="closeModal" class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors font-medium">Hủy</button>
-            <button @click="handleSubmit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-sm">
+            <button @click="handleSubmit" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium shadow-sm">
               {{ isEditing ? 'Cập nhật' : 'Thêm mới' }}
             </button>
           </div>

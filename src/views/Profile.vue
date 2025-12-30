@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import axios from 'axios'
 import { useToast } from 'vue-toastification'
+import PTHeader from '@/components/PTHeader.vue'
+import ReceptionHeader from '@/components/ReceptionHeader.vue'
+import ManagerHeader from '@/components/ManagerHeader.vue'
+import CustomerHeader from '@/components/CustomerHeader.vue'
+import TeacherHeader from '@/components/TeacherHeader.vue'
 
 const authStore = useAuthStore()
 const toast = useToast()
@@ -16,6 +21,17 @@ const email = ref('') // Read-only
 
 const isLoading = ref(false)
 const isEditing = ref(false)
+
+// Determine header component based on user role
+const headerComponent = computed(() => {
+  const role = authStore.user?.role
+  if (role === 'PT') return PTHeader
+  if (role === 'RECEPTIONIST') return ReceptionHeader
+  if (role === 'MANAGER') return ManagerHeader
+  if (role === 'MEMBER') return CustomerHeader
+  if (role === 'TEACHER') return TeacherHeader
+  return null
+})
 
 // Load user data from store
 onMounted(() => {
@@ -94,23 +110,17 @@ const cancelEdit = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
+  <div class="profile-page-wrapper">
+    <component v-if="headerComponent" :is="headerComponent" />
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4">
     <div class="max-w-3xl mx-auto">
-      <!-- Header -->
-      <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
-        <div class="flex items-center gap-4 mb-6">
-          <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold">
-            {{ authStore.user?.fullName?.charAt(0).toUpperCase() }}
-          </div>
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900">Thông Tin Cá Nhân</h1>
-            <p class="text-gray-600 mt-1">Quản lý thông tin tài khoản của bạn</p>
-          </div>
-        </div>
-      </div>
-
       <!-- Profile Form -->
       <div class="bg-white rounded-2xl shadow-lg p-8">
+        <div class="mb-6">
+          <h1 class="text-3xl font-bold text-gray-900">Thông Tin Cá Nhân</h1>
+          <p class="text-gray-600 mt-1">Quản lý thông tin tài khoản của bạn</p>
+        </div>
+        
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <!-- Full Name -->
           <div>
@@ -275,8 +285,18 @@ const cancelEdit = () => {
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <style scoped>
-/* Custom styles if needed */
+.profile-page-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  z-index: 9999;
+  overflow-y: auto;
+}
 </style>

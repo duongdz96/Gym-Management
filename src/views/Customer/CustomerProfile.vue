@@ -25,7 +25,7 @@
 
       <div class="mt-6">
         <button
-          class="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition"
+          class="bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition"
         >
           Chỉnh sửa hồ sơ
         </button>

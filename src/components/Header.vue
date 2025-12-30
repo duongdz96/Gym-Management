@@ -19,12 +19,13 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <header class="w-full bg-stone-900">
-    <div class="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
+  <header class="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 shadow-lg relative z-50">
+    <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-transparent to-cyan-500/20"></div>
+    <div class="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between relative z-10">
       <!-- Logo -->
       <div class="flex items-center gap-3">
         <RouterLink to="/" class="inline-flex items-center gap-2">
-          <span class="h-8 w-8 rounded-full bg-red-600 inline-block"></span>
+          <span class="h-8 w-8 rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-500 inline-block shadow-lg"></span>
           <span class="font-bold text-white tracking-wider uppercase"
             >Gym Management</span
           >
@@ -33,11 +34,11 @@ const handleLogout = () => {
 
       <!-- Navigation -->
       <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-white">
-        <a href="#classes" class="uppercase hover:text-red-500">Dịch vụ</a>
-        <a href="#clubs" class="uppercase hover:text-red-500">Câu lạc bộ</a>
-        <a href="#schedule" class="uppercase hover:text-red-500">Lịch tập</a>
-        <a href="#pricing" class="uppercase hover:text-red-500">Bảng giá</a>
-        <a href="#gifts" class="uppercase hover:text-red-500">Quà tặng</a>
+        <a href="#classes" class="uppercase hover:text-yellow-300 transition-colors duration-300">Dịch vụ</a>
+        <a href="#clubs" class="uppercase hover:text-orange-300 transition-colors duration-300">Câu lạc bộ</a>
+        <a href="#schedule" class="uppercase hover:text-pink-300 transition-colors duration-300">Lịch tập</a>
+        <a href="#pricing" class="uppercase hover:text-cyan-300 transition-colors duration-300">Bảng giá</a>
+        <a href="#gifts" class="uppercase hover:text-purple-300 transition-colors duration-300">Quà tặng</a>
       </nav>
 
       <!-- Auth / User -->
@@ -45,7 +46,7 @@ const handleLogout = () => {
         <template v-if="!authStore.user">
           <RouterLink
             :to="{ name: 'login' }"
-            class="inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-white text-sm font-semibold hover:bg-black"
+            class="inline-flex items-center rounded-lg bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 px-4 py-2 text-white text-sm font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300"
           >
             Đăng Nhập
           </RouterLink>
@@ -55,7 +56,7 @@ const handleLogout = () => {
           <div class="relative">
             <button
               @click="isMenuOpen = !isMenuOpen"
-              class="flex items-center gap-2 text-white hover:text-red-500"
+              class="flex items-center gap-2 text-white hover:text-yellow-300 transition-colors duration-300"
             >
               <User class="w-6 h-6" />
               <ChevronDown

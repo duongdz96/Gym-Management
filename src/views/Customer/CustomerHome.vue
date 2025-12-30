@@ -26,74 +26,86 @@ const personalStats = ref({
 
 const recentActivities = ref([])
 
-// ===================== MOCK DATA =====================
+// ===================== FETCH DATA =====================
 const fetchPersonalStats = async () => {
   isLoading.value = true
   
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 800))
-  
-  // Mock membership data
-  personalStats.value.activeMembership = {
-    tier: 'Gold',
-    startDate: '2024-01-01',
-    endDate: '2025-03-15'
-  }
-  
-  // Calculate days left
-  const endDate = new Date(personalStats.value.activeMembership.endDate)
-  const today = new Date()
-  const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24))
-  personalStats.value.membershipDaysLeft = daysLeft > 0 ? daysLeft : 0
-  
-  // Mock stats
-  personalStats.value.upcomingClasses = 5
-  personalStats.value.availableCoupons = 3
-  personalStats.value.totalCheckIns = 18
-  
-  // Mock recent activities
-  recentActivities.value = [
-    { type: 'checkin', action: 'Đã check-in vào phòng gym', time: '2 giờ trước', icon: Activity },
-    { type: 'class', action: 'Tham gia lớp Yoga buổi sáng', time: '1 ngày trước', icon: Dumbbell },
-    { type: 'coupon', action: 'Nhận mã giảm giá mới', time: '2 ngày trước', icon: Ticket },
-    { type: 'workout', action: 'Hoàn thành buổi tập cardio', time: '3 ngày trước', icon: Heart }
-  ]
-  
-  isLoading.value = false
-  
-  /* REAL API CALLS - Commented for mock data
   try {
-    const API_BASE_URL = 'http://localhost:8080/api'
-    
+    const memberId = authStore.user?.id
+    if (!memberId) {
+      console.error('No member ID found')
+      isLoading.value = false
+      return
+    }
+
     // Fetch membership info
-    const membershipRes = await axios.get(`${API_BASE_URL}/customer-membership/current`, {
-      headers: { Authorization: `Bearer ${authStore.token}` }
-    })
-    if (membershipRes.data) {
-      personalStats.value.activeMembership = membershipRes.data
-      const endDate = new Date(membershipRes.data.endDate)
+    const membershipRes = await api.get('/membership')
+    const allMemberships = membershipRes.data || []
+    const userMembership = allMemberships.find(m => m.member?.id === memberId && m.status === 'Active')
+    
+    if (userMembership) {
+      personalStats.value.activeMembership = {
+        tier: userMembership.membershipPlan?.name || 'Basic',
+        startDate: userMembership.startDate,
+        endDate: userMembership.endDate
+      }
+      
+      const endDate = new Date(userMembership.endDate)
       const today = new Date()
       const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24))
       personalStats.value.membershipDaysLeft = daysLeft > 0 ? daysLeft : 0
     }
 
-    // Fetch upcoming classes
-    const classesRes = await axios.get(`${API_BASE_URL}/class-registration/my-classes`, {
-      headers: { Authorization: `Bearer ${authStore.token}` }
-    })
-    personalStats.value.upcomingClasses = classesRes.data?.length || 0
+    // Fetch upcoming classes (from member registrations)
+    try {
+      const registrationsRes = await api.get(`/member-registrations/member/${memberId}`)
+      const allRegistrations = registrationsRes.data || []
+      
+      // Filter for future classes only
+      const now = new Date()
+      const upcomingClasses = allRegistrations.filter(r => {
+        const classDate = new Date(r.classSchedule?.startTime)
+        return classDate > now && r.classSchedule?.status === 'OPEN'
+      })
+      
+      personalStats.value.upcomingClasses = upcomingClasses.length
+    } catch (error) {
+      console.error('Error fetching class registrations:', error)
+      personalStats.value.upcomingClasses = 0
+    }
 
     // Fetch available coupons
-    const couponsRes = await axios.get(`${API_BASE_URL}/issued-coupons/my-coupons`, {
-      headers: { Authorization: `Bearer ${authStore.token}` }
-    })
-    personalStats.value.availableCoupons = couponsRes.data?.filter(c => c.status === 'ACTIVE')?.length || 0
+    try {
+      const couponsRes = await api.get(`/issued-coupons/find?memberId=${memberId}`)
+      const allCoupons = couponsRes.data || []
+      // Filter for available coupons with remaining uses and valid dates
+      const now = new Date()
+      const userCoupons = allCoupons.filter(c => 
+        c.status === 'AVAILABLE' && 
+        c.remainingUses > 0 &&
+        new Date(c.coupon?.endDate) > now
+      )
+      personalStats.value.availableCoupons = userCoupons.length
+    } catch (error) {
+      console.error('Error fetching coupons:', error)
+      personalStats.value.availableCoupons = 0
+    }
+
+    // Mock check-ins for now (TODO: implement real API)
+    personalStats.value.totalCheckIns = 18
+    
+    // Mock recent activities (TODO: implement real activity log API)
+    recentActivities.value = [
+      { type: 'checkin', action: 'Đã check-in vào phòng gym', time: '2 giờ trước', icon: Activity },
+      { type: 'class', action: 'Tham gia lớp Yoga buổi sáng', time: '1 ngày trước', icon: Dumbbell },
+      { type: 'coupon', action: 'Nhận mã giảm giá mới', time: '2 ngày trước', icon: Ticket },
+      { type: 'workout', action: 'Hoàn thành buổi tập cardio', time: '3 ngày trước', icon: Heart }
+    ]
   } catch (error) {
     console.error('Error fetching personal stats:', error)
   } finally {
     isLoading.value = false
   }
-  */
 }
 
 // ===================== FEEDBACK =====================
@@ -173,7 +185,7 @@ onMounted(() => {
     <div class="mx-auto max-w-7xl px-6">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-red-600 to-red-600 bg-clip-text text-transparent">
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
           Chào mừng trở lại, {{ authStore.user?.fullName || 'Hội viên' }} 👋
         </h1>
         <p class="text-gray-600 mt-2">Tổng quan hành trình tập luyện của bạn</p>
@@ -181,16 +193,16 @@ onMounted(() => {
 
       <!-- Loading State -->
       <div v-if="isLoading" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
 
       <div v-else class="space-y-8">
         <!-- Personal Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <!-- Membership Card -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center">
                 <Award class="w-6 h-6 text-white" />
               </div>
               <span :class="`px-3 py-1 rounded-full text-xs font-semibold bg-${membershipStatusColor}-100 text-${membershipStatusColor}-700`">
@@ -199,7 +211,7 @@ onMounted(() => {
             </div>
             <h3 class="text-gray-600 text-sm font-medium mb-1">Gói thành viên</h3>
             <p class="text-2xl font-bold text-gray-900">{{ personalStats.activeMembership?.tier || 'Chưa kích hoạt' }}</p>
-            <RouterLink to="/customer/membership" class="text-red-600 text-sm font-medium hover:underline mt-2 inline-block">
+            <RouterLink to="/customer/membership" class="text-emerald-600 text-sm font-medium hover:underline mt-2 inline-block">
               Xem chi tiết →
             </RouterLink>
           </div>
@@ -207,21 +219,21 @@ onMounted(() => {
           <!-- Upcoming Classes -->
           <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center">
                 <Calendar class="w-6 h-6 text-white" />
               </div>
             </div>
             <h3 class="text-gray-600 text-sm font-medium mb-1">Lớp học sắp tới</h3>
             <p class="text-2xl font-bold text-gray-900">{{ personalStats.upcomingClasses }}</p>
-            <RouterLink to="/customer/class" class="text-red-600 text-sm font-medium hover:underline mt-2 inline-block">
+            <RouterLink to="/customer/class" class="text-emerald-600 text-sm font-medium hover:underline mt-2 inline-block">
               Xem lịch học →
             </RouterLink>
           </div>
 
           <!-- Check-ins -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
                 <TrendingUp class="w-6 h-6 text-white" />
               </div>
             </div>
@@ -231,63 +243,46 @@ onMounted(() => {
           </div>
 
           <!-- Coupons -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-rose-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
                 <Ticket class="w-6 h-6 text-white" />
               </div>
             </div>
             <h3 class="text-gray-600 text-sm font-medium mb-1">Mã giảm giá khả dụng</h3>
             <p class="text-2xl font-bold text-gray-900">{{ personalStats.availableCoupons }}</p>
-            <RouterLink to="/customer/coupon" class="text-rose-600 text-sm font-medium hover:underline mt-2 inline-block">
+            <RouterLink to="/customer/coupon" class="text-emerald-600 text-sm font-medium hover:underline mt-2 inline-block">
               Xem mã giảm giá →
             </RouterLink>
           </div>
         </div>
 
-        <!-- Activity Timeline & Quick Actions -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Recent Activity Timeline -->
-          <div class="lg:col-span-2 bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100">
-            <div class="flex items-center gap-2 mb-6">
-              <Clock class="w-5 h-5 text-red-600" />
+        <!-- Activity Timeline -->
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-2">
+              <Clock class="w-5 h-5 text-emerald-600" />
               <h2 class="text-xl font-bold text-gray-900">Hoạt động gần đây</h2>
             </div>
-            <div class="space-y-4">
-              <div v-for="(activity, index) in recentActivities" :key="index" class="flex items-start gap-4 p-4 bg-gradient-to-r from-red-50 to-red-50 rounded-xl hover:shadow-md transition-shadow">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-500 flex items-center justify-center flex-shrink-0">
-                  <component :is="activity.icon" class="w-5 h-5 text-white" />
-                </div>
-                <div class="flex-1">
-                  <p class="text-sm font-medium text-gray-900">{{ activity.action }}</p>
-                  <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
-                </div>
-              </div>
-            </div>
+            <RouterLink to="/customer/activity-history" class="text-emerald-600 text-sm font-medium hover:underline flex items-center gap-1">
+              Xem tất cả →
+            </RouterLink>
           </div>
-
-          <!-- Quick Links -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-red-100">
-            <h2 class="text-xl font-bold text-gray-900 mb-6">Liên kết nhanh</h2>
-            <div class="space-y-3">
-              <RouterLink to="/customer/plan" class="block p-4 bg-gradient-to-r from-red-500 to-red-500 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105">
-                <p class="font-semibold">Kế hoạch tập luyện</p>
-                <p class="text-xs opacity-90 mt-1">Xem kế hoạch PT của bạn</p>
-              </RouterLink>
-              <RouterLink to="/customer/billhistory" class="block p-4 bg-gradient-to-r from-red-500 to-red-500 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105">
-                <p class="font-semibold">Lịch sử thanh toán</p>
-                <p class="text-xs opacity-90 mt-1">Kiểm tra các giao dịch</p>
-              </RouterLink>
-              <RouterLink to="/customer/profile" class="block p-4 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl hover:shadow-lg transition-all transform hover:scale-105">
-                <p class="font-semibold">Hồ sơ của tôi</p>
-                <p class="text-xs opacity-90 mt-1">Cập nhật thông tin</p>
-              </RouterLink>
-            </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <RouterLink v-for="(activity, index) in recentActivities" :key="index" to="/customer/activity-history" class="flex flex-col items-center gap-3 p-5 bg-gradient-to-r from-emerald-50 to-emerald-50 rounded-xl hover:shadow-md hover:scale-105 transition-all cursor-pointer">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center">
+                <component :is="activity.icon" class="w-6 h-6 text-white" />
+              </div>
+              <div class="text-center">
+                <p class="text-sm font-medium text-gray-900">{{ activity.action }}</p>
+                <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
+              </div>
+            </RouterLink>
           </div>
         </div>
 
         <!-- Feedback Section -->
-        <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-red-100">
+        <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-emerald-100">
           <h2 class="text-2xl font-bold text-gray-900 mb-6">Chia sẻ đánh giá của bạn</h2>
 
           <!-- Star Rating -->
@@ -313,19 +308,19 @@ onMounted(() => {
             v-model="comment"
             rows="4"
             placeholder="Chia sẻ trải nghiệm của bạn tại phòng gym của chúng tôi"
-            class="w-full border border-gray-300 rounded-xl p-4 mb-6 focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none"
+            class="w-full border border-gray-300 rounded-xl p-4 mb-6 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
           ></textarea>
 
           <!-- Upload Images -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-700 mb-3">Tải ảnh lên (không bắt buộc)</label>
             <div class="flex flex-wrap gap-3">
-              <label class="w-24 h-24 border-2 border-dashed border-red-300 rounded-xl flex items-center justify-center cursor-pointer hover:border-red-500 hover:bg-red-50 transition-all">
-                <Camera class="w-8 h-8 text-red-400" />
+              <label class="w-24 h-24 border-2 border-dashed border-emerald-300 rounded-xl flex items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all">
+                <Camera class="w-8 h-8 text-emerald-400" />
                 <input type="file" class="hidden" multiple accept="image/png, image/jpeg, image/jpg, image/gif, image/webp" @change="previewImages" />
               </label>
 
-              <div v-for="(img, index) in images" :key="index" class="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-red-200">
+              <div v-for="(img, index) in images" :key="index" class="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-emerald-200">
                 <img :src="img.url" class="w-full h-full object-cover" />
                 <button @click="removeImage(index)" class="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1 hover:bg-opacity-70">
                   <X class="w-4 h-4" />
@@ -335,7 +330,7 @@ onMounted(() => {
           </div>
 
           <!-- Submit -->
-          <button @click="submitFeedback" class="bg-gradient-to-r from-red-600 to-red-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105">
+          <button @click="submitFeedback" class="bg-gradient-to-r from-emerald-600 to-emerald-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105">
             Gửi đánh giá
           </button>
         </div>

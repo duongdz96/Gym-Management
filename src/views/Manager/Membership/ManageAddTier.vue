@@ -107,7 +107,7 @@ const submit = async () => {
       <div class="md:col-span-2 flex items-center gap-2">
         <button
           type="submit"
-          class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+          class="px-4 py-2 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white"
         >
           Add Tier
         </button>

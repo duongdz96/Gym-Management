@@ -40,6 +40,8 @@ import CustomerCoupon from "@/views/Customer/CustomerCoupon.vue";
 import CustomerPlan from "@/views/Customer/CustomerPlan.vue";
 import CustomerProfile from "@/views/Customer/CustomerProfile.vue";
 import CustomerSetting from "@/views/Customer/CustomerSetting.vue";
+import CustomerActivityHistory from "@/views/Customer/CustomerActivityHistory.vue";
+import CustomerNotifications from "@/views/Customer/CustomerNotifications.vue";
 
 import ReceptionLayout from "@/layout/ReceptionLayout.vue";
 import ReceptionHome from "@/views/Reception/ReceptionHome.vue";
@@ -47,7 +49,7 @@ import ReceptionAddMembership from "@/views/Reception/Membership/ReceptionAddMem
 import ReceptionMemberships from "@/views/Reception/Membership/ReceptionMemberships.vue";
 import SalesSelect from "@/views/Reception/Sale/SalesSelect.vue";
 import SalesCheckout from "@/views/Reception/Sale/SalesCheckout.vue";
-import ReceptionClassRegistration from "@/views/Reception/Classes/ReceptionClassRegistration.vue";
+import AddPTForUser from "@/views/Reception/PTRental/AddPTForUser.vue";
 import ReceptionCustomerManagement from "@/views/Reception/Customer/ReceptionCustomerManagement.vue";
 import ReceptionCustomerDetail from "@/views/Reception/Customer/ReceptionCustomerDetail.vue";
 import ReceptionTeacherManagement from "@/views/Reception/Teacher/ReceptionTeacherManagement.vue";
@@ -146,6 +148,8 @@ const routes = [
             { path: "profile", name: "customer.profile", component: CustomerProfile },
             { path: "setting", name: "customer.setting", component: CustomerSetting },
             { path: "billhistory", name: "customer.billhistory", component: CustomerBillHistory },
+            { path: "activity-history", name: "customer.activity-history", component: CustomerActivityHistory },
+            { path: "notifications", name: "customer.notifications", component: CustomerNotifications },
 
             // Workout Management Routes
             {
@@ -210,7 +214,7 @@ const routes = [
             { path: "", name: "reception.home", component: ReceptionHome },
             { path: "memberships", name: "reception.memberships", component: ReceptionMemberships },
             { path: "add-membership", name: "add-membership", component: ReceptionAddMembership },
-            { path: "class-registration", name: "reception.class-registration", component: ReceptionClassRegistration },
+            { path: "pt-registration", name: "reception.pt-registration", component: AddPTForUser },
             { path: "customer-management", name: "reception.customer-management", component: ReceptionCustomerManagement },
             { path: "customer/:id", name: "reception.customer-detail", component: ReceptionCustomerDetail },
             { path: "teachers", name: "reception.teachers", component: ReceptionTeacherManagement },

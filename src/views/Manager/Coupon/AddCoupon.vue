@@ -2,7 +2,7 @@
   <div class="p-6 max-w-4xl mx-auto">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-        <MonitorSmartphoneIcon class="w-6 h-6 text-blue-600" />
+        <MonitorSmartphoneIcon class="w-6 h-6 text-emerald-600" />
         Thêm Mã Giảm Giá
       </h1>
       <RouterLink
@@ -26,7 +26,7 @@
                 v-model="form.code"
                 type="text"
                 placeholder="vd: SUMMER2025"
-                class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 dark:bg-gray-800"
+                class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-gray-50 dark:bg-gray-800"
                 required
               />
              <TagIcon class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
@@ -39,7 +39,7 @@
         <div class="relative">
              <select
               v-model="form.discountType"
-              class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 dark:bg-gray-800 appearance-none"
+              class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-gray-50 dark:bg-gray-800 appearance-none"
               required
             >
               <option value="PERCENTAGE">Phần trăm (%)</option>
@@ -57,7 +57,7 @@
               v-model.number="form.discountValue"
               type="number"
               min="0"
-              class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 dark:bg-gray-800"
+              class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-gray-50 dark:bg-gray-800"
               required
             />
             <DollarSignIcon class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
@@ -70,7 +70,7 @@
         <div class="relative">
              <select
               v-model="form.status"
-              class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 dark:bg-gray-800 appearance-none"
+              class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-gray-50 dark:bg-gray-800 appearance-none"
               required
             >
               <option value="ACTIVE">Đang hoạt động</option>
@@ -87,7 +87,7 @@
              <input
               v-model="form.startDate"
               type="date"
-              class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 dark:bg-gray-800"
+              class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-gray-50 dark:bg-gray-800"
               required
             />
             <CalendarIcon class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
@@ -101,7 +101,7 @@
              <input
               v-model="form.endDate"
               type="date"
-              class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 dark:bg-gray-800"
+              class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-gray-50 dark:bg-gray-800"
               required
             />
             <CalendarOffIcon class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
@@ -117,7 +117,7 @@
               type="number"
               min="1"
               placeholder="vd: 3"
-              class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 dark:bg-gray-800"
+              class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-gray-50 dark:bg-gray-800"
               required
             />
             <HashIcon class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
@@ -130,11 +130,11 @@
               <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Gán Coupon Cho:</label>
               <div class="flex gap-4">
                   <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" v-model="assignType" value="tier" class="w-4 h-4 text-blue-600">
+                      <input type="radio" v-model="assignType" value="tier" class="w-4 h-4 text-emerald-600">
                       <span>Hạng Thành Viên</span>
                   </label>
                   <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" v-model="assignType" value="user" class="w-4 h-4 text-blue-600">
+                      <input type="radio" v-model="assignType" value="user" class="w-4 h-4 text-emerald-600">
                       <span>Người Dùng Cụ Thể</span>
                   </label>
               </div>
@@ -145,7 +145,7 @@
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Chọn Hạng</label>
             <select
               v-model="form.scope"
-              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white dark:bg-gray-900"
+              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white dark:bg-gray-900"
             >
               <option disabled value="">-- Chọn Hạng --</option>
               <option v-for="tier in tiers" :key="tier.id" :value="tier.name">
@@ -188,7 +188,7 @@
         </button>
         <button
           type="submit"
-          class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 flex items-center gap-2"
+          class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-lg hover:shadow-emerald-500/30 transition-all disabled:opacity-50 flex items-center gap-2"
           :disabled="loading"
         >
           <Loader2Icon v-if="loading" class="w-4 h-4 animate-spin" />
@@ -314,7 +314,7 @@ const submit = async () => {
     color: white;
 }
 .dark .multiselect-custom .multiselect__option--highlight {
-    background-color: #3b82f6; /* bg-blue-500 */
+    background-color: #059669; /* bg-emerald-600 */
     color: white;
 }
 </style>

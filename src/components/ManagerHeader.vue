@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useRoute, useRouter, RouterLink } from "vue-router";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useToast } from "vue-toastification";
+import { UserIcon, Clock, Settings, LogOut, Dumbbell } from "lucide-vue-next";
 
 const route = useRoute();
 const router = useRouter();
@@ -13,6 +14,7 @@ const isMenuOpen = ref(false);
 const isAccountMenuOpen = ref(false);
 const isProductMenuOpen = ref(false);
 const isClassMenuOpen = ref(false);
+const isStaffMenuOpen = ref(false);
 
 const handleLogout = () => {
   authStore.logout();
@@ -22,40 +24,63 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <header class="w-full bg-stone-900 relative">
-    <div class="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
+  <header class="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 shadow-lg relative z-50">
+    <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-transparent to-cyan-500/20"></div>
+    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between relative z-10">
       <!-- Logo -->
       <div class="flex items-center gap-3">
-        <RouterLink to="/manager" class="inline-flex items-center gap-2">
-          <span class="h-8 w-8 rounded-full bg-red-600 inline-block"></span>
+        <RouterLink to="/manager" class="inline-flex items-center gap-2 hover:opacity-90 transition">
+          <div class="h-8 w-8 rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-500 flex items-center justify-center shadow-lg">
+            <Dumbbell class="h-5 w-5 text-white" />
+          </div>
           <span class="font-bold text-white tracking-wider uppercase">
-            Gym Management
+            Quản lý Gym
           </span>
         </RouterLink>
       </div>
 
       <!-- Navigation (desktop) -->
-      <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
-        <RouterLink
-          to="/manager/staff"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="route.path === '/manager/staff' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
+        <!-- Staff Dropdown -->
+        <div
+          class="relative"
+          @mouseenter="isStaffMenuOpen = true"
+          @mouseleave="isStaffMenuOpen = false"
         >
-          Staff
-        </RouterLink>
+          <button
+            class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-yellow-300 transition-colors duration-300 rounded-md"
+          >
+            Nhân viên
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <transition name="fade">
+            <div
+              v-show="isStaffMenuOpen"
+              class="absolute left-0 mt-2 w-56 bg-white rounded shadow-md z-50 text-gray-800"
+            >
+              <RouterLink
+                to="/manager/staff"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-emerald-600"
+              >
+                Quản lý nhân viên
+              </RouterLink>
+              <RouterLink
+                to="/manager/leave-approval"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-emerald-600"
+              >
+                Duyệt nghỉ phép
+              </RouterLink>
+            </div>
+          </transition>
+        </div>
         <RouterLink
           to="/manager/customer"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="route.path === '/manager/customer' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-orange-300 transition-colors duration-300 rounded-md"
         >
-          Customers
-        </RouterLink>
-        <RouterLink
-          to="/manager/attendance"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="route.path === '/manager/attendance' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
-        >
-          Attendance
+          Khách hàng
         </RouterLink>
         <!-- Product Dropdown -->
         <div
@@ -64,8 +89,7 @@ const handleLogout = () => {
           @mouseleave="isProductMenuOpen = false"
         >
           <button
-            class="uppercase tracking-wider hover:text-red-600 flex items-center gap-1"
-            :class="route.path.startsWith('/manager/product') ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+            class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-pink-300 transition-colors duration-300 rounded-md"
           >
             Sản phẩm
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -96,22 +120,20 @@ const handleLogout = () => {
               >
                 Lịch sử nhập kho
               </RouterLink>
+              <RouterLink
+                to="/manager/coupon"
+                class="block px-4 py-2 hover:bg-gray-100 hover:text-red-600"
+              >
+                Mã giảm giá
+              </RouterLink>
             </div>
           </transition>
         </div>
         <RouterLink
-          to="/manager/coupon"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="route.path === '/manager/coupon' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
-        >
-          Mã giảm giá
-        </RouterLink>
-        <RouterLink
           to="/manager/membership"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="route.path.startsWith('/manager/membership') ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-cyan-300 transition-colors duration-300 rounded-md"
         >
-          Memberships
+          Thành viên
         </RouterLink>
         
         <!-- Classes Dropdown -->
@@ -121,10 +143,9 @@ const handleLogout = () => {
           @mouseleave="isClassMenuOpen = false"
         >
           <button
-            class="uppercase tracking-wider hover:text-red-600 flex items-center gap-1"
-            :class="route.path.startsWith('/manager/class') || route.path.startsWith('/manager/room') ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+            class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-purple-300 transition-colors duration-300 rounded-md"
           >
-            Classes
+            Lớp học
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
@@ -166,8 +187,7 @@ const handleLogout = () => {
         
         <RouterLink
           to="/manager/banner"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="route.path === '/manager/banner' ? 'text-red-600 border-b-2 border-red-600 pb-1' : 'text-white'"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-yellow-300 transition-colors duration-300 rounded-md"
         >
           Banner
         </RouterLink>
@@ -181,32 +201,43 @@ const handleLogout = () => {
         @mouseleave="isAccountMenuOpen = false"
       >
         <button
-          class="flex items-center gap-2 text-white uppercase tracking-wider hover:text-red-600"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-orange-300 transition-colors duration-300 rounded-md"
         >
-          <span>👤 {{ authStore.user.fullName }}</span>
+          <UserIcon class="w-5 h-5" />
+          <span>{{ authStore.user?.fullName || 'Tài khoản' }}</span>
         </button>
         <transition name="fade">
           <div
             v-show="isAccountMenuOpen"
-            class="absolute right-0 mt-2 w-44 bg-white rounded shadow-md z-50"
+            class="absolute right-0 mt-2 w-56 bg-white rounded shadow-md z-50"
           >
             <RouterLink
               to="/profile"
-              class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+              class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
-              Profile
+              <UserIcon class="w-4 h-4" />
+              Hồ sơ cá nhân
+            </RouterLink>
+            <RouterLink
+              to="/manager/attendance"
+              class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              <Clock class="w-4 h-4" />
+              Lịch sử điểm danh
             </RouterLink>
             <RouterLink
               to="/change-password"
-              class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+              class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
-              Change Password
+              <Settings class="w-4 h-4" />
+              Thay đổi mật khẩu
             </RouterLink>
             <button
               @click="handleLogout"
-              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+              class="flex items-center gap-2 w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
-              Logout
+              <LogOut class="w-4 h-4" />
+              Đăng xuất
             </button>
           </div>
         </transition>
@@ -215,9 +246,9 @@ const handleLogout = () => {
       <div v-else class="hidden md:block">
         <RouterLink
           :to="{ name: 'login' }"
-          class="text-white uppercase tracking-wider hover:text-red-600"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-cyan-300 transition-colors duration-300 rounded-md"
         >
-          Login
+          Đăng nhập
         </RouterLink>
       </div>
 
@@ -246,66 +277,74 @@ const handleLogout = () => {
     <!-- Mobile menu -->
     <div
       v-if="isMenuOpen"
-      class="md:hidden bg-stone-800 text-white px-6 py-3 space-y-2"
+      class="md:hidden bg-gradient-to-r from-emerald-700 to-emerald-800 text-white px-6 py-3 space-y-2"
     >
-      <RouterLink
-        to="/manager/staff"
-        class="block hover:text-red-600"
-        @click="isMenuOpen = false"
-      >Staff</RouterLink>
+      <div class="space-y-1">
+        <div class="font-semibold text-emerald-200 uppercase text-xs tracking-wider">Nhân viên</div>
+        <RouterLink
+          to="/manager/staff"
+          class="block pl-4 hover:text-emerald-400"
+          @click="isMenuOpen = false"
+        >Quản lý nhân viên</RouterLink>
+        <RouterLink
+          to="/manager/leave-approval"
+          class="block pl-4 hover:text-emerald-400"
+          @click="isMenuOpen = false"
+        >Duyệt nghỉ phép</RouterLink>
+      </div>
       <RouterLink
         to="/manager/customer"
-        class="block hover:text-red-600"
+        class="block hover:text-emerald-400"
         @click="isMenuOpen = false"
-      >Customers</RouterLink>
-      <RouterLink
-        to="/manager/attendance"
-        class="block hover:text-red-600"
-        @click="isMenuOpen = false"
-      >Attendance</RouterLink>
+      >Khách hàng</RouterLink>
       <RouterLink
         to="/manager/product"
-        class="block hover:text-red-600"
+        class="block hover:text-emerald-400"
         @click="isMenuOpen = false"
-      >Products</RouterLink>
+      >Sản phẩm</RouterLink>
       <RouterLink
         to="/manager/coupon"
-        class="block hover:text-red-600"
+        class="block hover:text-emerald-400"
         @click="isMenuOpen = false"
-      >Coupons</RouterLink>
+      >Mã giảm giá</RouterLink>
       <RouterLink
         to="/manager/membership"
-        class="block hover:text-red-600"
+        class="block hover:text-emerald-400"
         @click="isMenuOpen = false"
-      >Memberships</RouterLink>
+      >Thành viên</RouterLink>
 
       <hr class="border-gray-700 my-2" />
 
       <template v-if="authStore.user">
         <RouterLink
-          to="/manager/profile"
-          class="block hover:text-red-600"
+          to="/profile"
+          class="block hover:text-emerald-400"
           @click="isMenuOpen = false"
-        >Profile</RouterLink>
+        >Hồ sơ cá nhân</RouterLink>
         <RouterLink
-          to="/manager/setting"
-          class="block hover:text-red-600"
+          to="/manager/attendance"
+          class="block hover:text-emerald-400"
           @click="isMenuOpen = false"
-        >Settings</RouterLink>
+        >Lịch sử điểm danh</RouterLink>
+        <RouterLink
+          to="/change-password"
+          class="block hover:text-emerald-400"
+          @click="isMenuOpen = false"
+        >Thay đổi mật khẩu</RouterLink>
         <button
           @click="handleLogout"
-          class="block text-left w-full hover:text-red-600"
+          class="block text-left w-full hover:text-emerald-400"
         >
-          Logout
+          Đăng xuất
         </button>
       </template>
 
       <template v-else>
         <RouterLink
           :to="{ name: 'login' }"
-          class="block hover:text-red-600"
+          class="block hover:text-emerald-400"
           @click="isMenuOpen = false"
-        >Login</RouterLink>
+        >Đăng nhập</RouterLink>
       </template>
     </div>
   </header>

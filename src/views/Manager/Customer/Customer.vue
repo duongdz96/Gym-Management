@@ -71,15 +71,21 @@ const formatDate = (dateString: string) => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'Active': return 'bg-green-100 text-green-800'
-    case 'Inactive': return 'bg-red-100 text-red-800'
-    case 'Expired': return 'bg-yellow-100 text-yellow-800'
+    case 'Active': return 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200'
+    case 'Inactive': return 'bg-gradient-to-r from-gray-50 to-slate-50 text-gray-600 border border-gray-300'
+    case 'Expired': return 'bg-gradient-to-r from-red-50 to-orange-50 text-red-700 border border-red-200'
     default: return 'bg-gray-100 text-gray-800'
   }
 }
 
 const getMembershipColor = (membership: string) => {
-  return 'bg-blue-100 text-blue-800'
+  const membershipLower = membership.toLowerCase()
+  switch (membershipLower) {
+    case 'vip': return 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border border-purple-300'
+    case 'standard': return 'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-300'
+    case 'basic': return 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-700 border border-gray-300'
+    default: return 'bg-emerald-100 text-emerald-800'
+  }
 }
 
 // --- Actions ---
@@ -123,7 +129,7 @@ const deleteMember = async (membership: Membership) => {
       </div>
 
       <div class="flex gap-2">
-        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-semibold">
+        <span class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm font-semibold">
           {{ filteredMemberships.length }} khách hàng
         </span>
       </div>
@@ -182,7 +188,7 @@ const deleteMember = async (membership: Membership) => {
             <tr v-for="membership in filteredMemberships" :key="membership.id" class="hover:bg-gray-50 transition">
               <td class="px-6 py-4">
                 <div class="flex items-center">
-                  <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm mr-3">
+                  <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm mr-3">
                     {{ membership.member.fullName.charAt(0).toUpperCase() }}
                   </div>
                   <div>
@@ -219,19 +225,27 @@ const deleteMember = async (membership: Membership) => {
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                   <RouterLink
-                    :to="{ name: 'manager.customer-detail', params: { id: membership.member.id } }"
-                    class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition"
+                    :to="`customer/${membership.member.id}/edit`"
+                    class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                    title="Chỉnh sửa"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    Xem
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </RouterLink>
+
+                  <RouterLink
+                    :to="{ name: 'manager.customer-detail', params: { id: membership.member.id } }"
+                    class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                    title="Xem chi tiết"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   </RouterLink>
 
                   <button
                     @click="deleteMember(membership)"
-                    class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100 transition"
+                    class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    title="Xóa"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                    Xóa
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                   </button>
                 </div>
               </td>

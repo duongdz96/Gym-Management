@@ -3,7 +3,10 @@ import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Users, DollarSign, CheckCircle, AlertCircle, UserPlus, Calendar, Clock, User, GraduationCap } from 'lucide-vue-next'
 import api from '@/services/api'
+import { useAuthStore } from '@/stores/useAuthStore'
+
 // ===================== STATE =====================
+const authStore = useAuthStore()
 const isLoading = ref(true)
 
 const todayStats = ref({
@@ -63,7 +66,7 @@ onMounted(() => {
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
-          Bảng điều khiển Lễ tân 📋
+          Xin chào, {{ authStore.user?.fullName }} 📋
         </h1>
         <p class="text-gray-600 mt-2">Tổng quan hoạt động hôm nay - {{ new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
       </div>

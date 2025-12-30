@@ -1,11 +1,29 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import api from '@/services/api';
 import { useToast } from "vue-toastification";
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/useAuthStore';
+import PTHeader from '@/components/PTHeader.vue';
+import ReceptionHeader from '@/components/ReceptionHeader.vue';
+import ManagerHeader from '@/components/ManagerHeader.vue';
+import CustomerHeader from '@/components/CustomerHeader.vue';
+import TeacherHeader from '@/components/TeacherHeader.vue';
 
 const toast = useToast();
 const router = useRouter();
+const authStore = useAuthStore();
+
+// Determine header component based on user role
+const headerComponent = computed(() => {
+  const role = authStore.user?.role
+  if (role === 'PT') return PTHeader
+  if (role === 'RECEPTIONIST') return ReceptionHeader
+  if (role === 'MANAGER') return ManagerHeader
+  if (role === 'MEMBER') return CustomerHeader
+  if (role === 'TEACHER') return TeacherHeader
+  return null
+});
 
 // Form data
 const oldPassword = ref('');
@@ -56,7 +74,9 @@ const handleChangePassword = async () => {
 </script>
 
 <template>
-  <div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+  <div class="change-password-wrapper">
+    <component v-if="headerComponent" :is="headerComponent" />
+    <div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
     <h2 class="text-2xl font-bold mb-6 text-center">Đổi mật khẩu</h2>
 
     <form @submit.prevent="handleChangePassword">
@@ -99,4 +119,18 @@ const handleChangePassword = async () => {
       </button>
     </form>
   </div>
+  </div>
 </template>
+
+<style scoped>
+.change-password-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  z-index: 9999;
+  overflow-y: auto;
+}
+</style>
