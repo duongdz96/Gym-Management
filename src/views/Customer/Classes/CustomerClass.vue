@@ -468,6 +468,7 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { useToast } from 'vue-toastification';
 import unifiedApi from '@/services/unifiedClassApi.js';
 import apiService from '@/views/Test/apiService.js';
+import Swal from 'sweetalert2';
 import { formatDate, getWeeksUntilStart, canVIPRegister, canAllRegister } from '@/views/Test/dateUtils.js';
 import { 
   Dumbbell, 
@@ -830,25 +831,61 @@ const formatScheduleTime = (dateTime) => {
 };
 
 const registerSelectedSchedules = async () => {
+  // 1. Kiểm tra đăng nhập
   if (!currentStudentId.value) {
     toast.warning('Vui lòng đăng nhập!');
     return;
   }
   
+  // 2. Kiểm tra đã chọn buổi chưa
   if (selectedScheduleIds.value.length === 0) {
     toast.warning('Vui lòng chọn ít nhất một buổi học!');
     return;
   }
+
+  // 3. Lấy tên lớp an toàn (tránh lỗi null)
+  // Dùng ?. để nếu selectedFitnessClass.value là null thì nó không báo lỗi mà trả về undefined
+  const className = selectedFitnessClass.value?.name || 'Lớp học';
   
-  if (confirm(`Bạn có chắc muốn đăng ký ${selectedScheduleIds.value.length} buổi học cho lớp "${selectedFitnessClass.value.name}"?`)) {
+  // 4. Hiện popup xác nhận (Code Swal phải nằm ở đây)
+  const result = await Swal.fire({
+    title: 'Xác nhận đăng ký?',
+    text: `Bạn có chắc muốn đăng ký ${selectedScheduleIds.value.length} buổi học cho lớp "${className}"?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10B981', // Màu Emerald
+    cancelButtonColor: '#EF4444', // Màu Red
+    confirmButtonText: 'Đăng ký ngay',
+    cancelButtonText: 'Hủy bỏ'
+  });
+  
+  // 5. Xử lý khi người dùng bấm "Đăng ký ngay"
+  if (result.isConfirmed) {
     try {
-      // Use bulk register API
+      // Hiện loading
+      Swal.fire({
+        title: 'Đang xử lý...',
+        allowOutsideClick: false, // Không cho click ra ngoài
+        didOpen: () => Swal.showLoading()
+      });
+
+      // Gọi API
       await unifiedApi.registerBulkSchedules(currentStudentId.value, selectedScheduleIds.value);
+      
+      // Đóng loading
+      Swal.close(); 
+      
+      // Thông báo thành công
       toast.success(`Đã đăng ký thành công ${selectedScheduleIds.value.length} buổi học!`);
+      
       closeScheduleModal();
       await loadData();
+      
     } catch (error) {
-      toast.error('Có lỗi xảy ra');
+      Swal.close(); // Đóng loading nếu lỗi
+      // Kiểm tra xem backend có trả về message lỗi cụ thể không
+      const errorMessage = error.response?.data?.message || 'Không được đăng ký trùng lịch học!';
+      toast.error(errorMessage);
     }
   }
 };

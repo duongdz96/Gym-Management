@@ -363,7 +363,7 @@ loadData();
         :to="{ name: 'reception.memberships' }"
         class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
       >
-        📋 Danh sách thành viên
+        Danh sách thành viên
       </RouterLink>
     </div>
 
@@ -379,7 +379,7 @@ loadData();
               : 'text-gray-600 dark:text-gray-400 hover:text-emerald-500',
           ]"
         >
-          👤 Khách Hàng Mới
+          Khách Hàng Mới
         </button>
         <button
           @click="activeTab = 'existing'"
@@ -390,7 +390,7 @@ loadData();
               : 'text-gray-600 dark:text-gray-400 hover:text-emerald-500',
           ]"
         >
-          🔄 Khách Hàng Cũ (Gia hạn & Đổi gói)
+          Khách Hàng Cũ (Gia hạn & Đổi gói)
         </button>
       </div>
     </div>
@@ -439,7 +439,7 @@ loadData();
               class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-md"
             >
               <p class="text-sm text-yellow-800 dark:text-yellow-300 mb-2">
-                ⚠️ Email này đã thuộc về khách hàng:
+                Email này đã thuộc về khách hàng:
                 <strong>{{ emailCheckState.existingMember.fullName }}</strong>
               </p>
               <button
@@ -528,7 +528,7 @@ loadData();
         <!-- Info note -->
         <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-md">
           <p class="text-sm text-blue-800 dark:text-blue-300">
-            ℹ️ Mật khẩu mặc định cho khách hàng mới: <strong>123456</strong>
+            Mật khẩu mặc định cho khách hàng mới: <strong>123456</strong>
           </p>
         </div>
 
@@ -538,7 +538,7 @@ loadData();
             type="submit"
             class="px-6 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
           >
-            ✅ Thêm Mới Thành Viên
+            Thêm Mới Thành Viên
           </button>
         </div>
       </form>
@@ -596,7 +596,7 @@ loadData();
           type="button"
           class="mt-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
         >
-          🔄 Chọn khách hàng khác
+          Chọn khách hàng khác
         </button>
       </div>
 
@@ -631,7 +631,7 @@ loadData();
 
           <div class="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300 dark:border-emerald-700 rounded-lg">
             <h3 class="font-semibold text-emerald-800 dark:text-emerald-300 mb-2">
-              📋 Gói hiện tại
+              Gói hiện tại
             </h3>
             <div class="space-y-2">
               <div class="flex justify-between">
@@ -658,8 +658,8 @@ loadData();
                 >
                   {{
                     existingCustomerState.currentMembership.status === "Active"
-                      ? "🟢 Hoạt động"
-                      : "🔴 Hết hạn"
+                      ? "Hoạt động"
+                      : "Hết hạn"
                   }}
                 </span>
               </div>
@@ -704,9 +704,7 @@ loadData();
 
           <!-- Action Type Badge -->
           <div v-if="actionType" class="p-4 rounded-lg" :class="actionType === 'renew' ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700' : 'bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700'">
-            <div class="flex items-center gap-2">
-              <span v-if="actionType === 'renew'" class="text-2xl">🔄</span>
-              <span v-else class="text-2xl">⬆️</span>
+            <div>
               <div>
                 <p class="font-semibold" :class="actionType === 'renew' ? 'text-blue-800 dark:text-blue-300' : 'text-purple-800 dark:text-purple-300'">
                   {{ actionType === "renew" ? "Gia hạn gói hiện tại" : "Đổi gói" }}
@@ -725,7 +723,7 @@ loadData();
           <!-- Preview End Date -->
           <div v-if="previewEndDate" class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
             <h3 class="font-semibold text-green-800 dark:text-green-300 mb-2">
-              📅 Ngày hết hạn mới dự kiến
+              Ngày hết hạn mới dự kiến
             </h3>
             <p class="text-lg font-bold text-green-900 dark:text-green-100">
               {{ formatDate(previewEndDate) }}
@@ -739,7 +737,7 @@ loadData();
             type="submit"
             class="px-6 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
           >
-            {{ actionType === "renew" ? "✅ Xác nhận Gia hạn" : "✅ Xác nhận Nâng cấp" }}
+            {{ actionType === "renew" ? "Xác nhận Gia hạn" : "Xác nhận Nâng cấp" }}
           </button>
         </div>
       </form>

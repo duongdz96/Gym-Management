@@ -106,21 +106,21 @@ const selectMember = (member: Member) => {
 };
 
 const submitPTAssignment = async () => {
-  if (!selectedMember.value || !selectedPTProduct.value || !startDate.value || !selectedPTStaff.value) {
-    toast.warning("Vui lòng điền vào tất cả các trường!");
+  // 1. Validate đầu vào
   if (!selectedMember.value || !selectedPT.value || !selectedPackage.value) {
-    alert("Vui lòng chọn member, PT và gói PT!");
+    toast.warning("Vui lòng chọn đầy đủ Member, PT và Gói tập!");
     return;
   }
 
   if (!remainingSessions.value || remainingSessions.value <= 0) {
-    alert("Vui lòng nhập số buổi còn lại hợp lệ!");
+    toast.warning("Vui lòng nhập số buổi còn lại hợp lệ!");
     return;
   }
 
   try {
     const existingPackage = getMemberPackage(selectedMember.value.id);
     
+    // Payload gửi đi
     const payload = {
       memberId: selectedMember.value.id,
       ptId: selectedPT.value.id,
@@ -129,27 +129,29 @@ const submitPTAssignment = async () => {
     };
 
     if (existingPackage) {
-      // Update existing package
+      // 2. Update (PUT)
       await api.put(`/packageissued/${existingPackage.id}`, payload);
-      alert("Cập nhật gói PT cho member thành công!");
+      toast.success("Cập nhật gói PT thành công!");
     } else {
-      // Create new package issued
+      // 3. Create (POST)
       await api.post("/packageissued", payload);
-      alert("Đăng ký gói PT cho member thành công!");
+      toast.success("Đăng ký gói PT thành công!");
     }
     
-    // Reload package issued
+    // 4. Reload data
     const issuedRes = await api.get("/packageissued");
     packageIssued.value = issuedRes.data;
     
-    // Reset
+    // 5. Reset form (Giữ lại list nhưng clear selection)
     selectedMember.value = null;
     selectedPT.value = null;
     selectedPackage.value = null;
     remainingSessions.value = null;
+    searchMember.value = ""; // Reset thanh tìm kiếm nếu muốn
+
   } catch (err) {
     console.error("Error assigning PT:", err);
-    alert("Đăng ký gói PT thất bại!");
+    toast.error("Có lỗi xảy ra khi xử lý dữ liệu!");
   }
 };
 </script>

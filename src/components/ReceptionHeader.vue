@@ -53,7 +53,7 @@ const handleLogout = () => {
           class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-orange-300 transition-colors duration-300 rounded-md"
         >
           <UserPlus class="h-4 w-4" />
-          Thêm thành viên
+          Hội viên
         </RouterLink>
 
         <RouterLink

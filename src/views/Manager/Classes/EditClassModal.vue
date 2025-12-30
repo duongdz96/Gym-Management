@@ -70,7 +70,7 @@
         </div>
 
         <!-- Status -->
-        <!-- <div>
+        <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2">
             Trạng thái *
           </label>
@@ -80,8 +80,9 @@
           >
             <option value="ACTIVE">Đang hoạt động</option>
             <option value="INACTIVE">Không hoạt động</option>
+            <option value="PENDING">Chờ duyệt</option>
           </select>
-        </div> -->
+        </div>
       </div>
       
       <!-- Modal Footer -->

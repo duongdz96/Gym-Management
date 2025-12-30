@@ -81,6 +81,18 @@ onMounted(() => {
   }, 4000)
 })
 
+// ================== Blog ==================
+const blogs = ref([])
+
+onMounted(async () => {
+  try {
+    const res = await axios.get('http://localhost:8080/api/blogs/public')
+    blogs.value = res.data
+  } catch (err) {
+    // Error loading blogs
+  }
+})
+
 // ================== Smooth Scroll ==================
 function scrollToTrial() {
   const trialSection = document.getElementById('trial')
@@ -580,27 +592,36 @@ function scrollToTrial() {
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-8">
                     <h3 class="text-3xl font-bold text-gray-900">ĐỪNG BỎ LỠ BÀI VIẾT HỮU ÍCH</h3>
-                    <a href="https://cali.vn/blog" target="_blank" class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors">
-                        Xem tất cả →
-                    </a>
                 </div>
-                <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <a href="https://cali.vn/blog/cong-nghe-exbody-nen-tang-cho-tap-luyen-hieu-chinh-giup-giam-dau-va-cai-thien-van-dong" target="_blank" class="block rounded-xl overflow-hidden border-2 border-gray-300 hover:border-red-500 transition-all hover:shadow-lg bg-white">
-                        <img class="w-full h-48 object-cover" src="https://cali.vn/storage/app/media/2025/Blog/Corrective%20Exercise/CE-4.webp" alt="ExBody">
-                        <div class="p-4 text-sm font-medium text-gray-800">Công nghệ ExBody - Nền Tảng Cho Tập Luyện Hiệu Chỉnh...</div>
-                    </a>
-                    <a href="https://cali.vn/blog/hoa-hau-huong-giang-saabirose-xuat-hien-bung-no-tai-hnoise-2025" target="_blank" class="block rounded-xl overflow-hidden border-2 border-gray-300 hover:border-red-500 transition-all hover:shadow-lg bg-white">
-                        <img class="w-full h-48 object-cover" src="https://cali.vn/storage/app/media/2025/Blog/HUONG%20GIANG.webp" alt="HNOISE">
-                        <div class="p-4 text-sm font-medium text-gray-800">Hoa Hậu Hương Giang & Saabirose Xuất Hiện Bùng Nổ...</div>
-                    </a>
-                    <a href="https://cali.vn/blog/ngoi-nhieu-cung-nguy-hiem-nhu-hut-thuoc-canh-bao-cho-dan-van-phong" target="_blank" class="block rounded-xl overflow-hidden border-2 border-gray-300 hover:border-red-500 transition-all hover:shadow-lg bg-white">
-                        <img class="w-full h-48 object-cover" src="https://cali.vn/storage/app/media/2025/Blog/Corrective%20Exercise/hut-thuoc.webp" alt="Sitting hazard">
-                        <div class="p-4 text-sm font-medium text-gray-800">Ngồi Nhiều Cũng Nguy Hiểm Như Hút Thuốc...</div>
-                    </a>
-                    <a href="https://cali.vn/blog/so-tai-luc-tai-hnoise-2025-cung-california" target="_blank" class="block rounded-xl overflow-hidden border-2 border-gray-300 hover:border-red-500 transition-all hover:shadow-lg bg-white">
-                        <img class="w-full h-48 object-cover" src="https://cali.vn/storage/app/media/2025/Blog/HNOISE-blog.webp" alt="So tai luc">
-                        <div class="p-4 text-sm font-medium text-gray-800">So Tài Thể Lực Tại THE HNOISE 2025...</div>
-                    </a>
+                
+                <div v-if="blogs.length === 0" class="text-center py-12">
+                    <p class="text-gray-500 text-lg">Chưa có bài viết nào</p>
+                </div>
+
+                <div v-else class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div
+                        v-for="blog in blogs"
+                        :key="blog.id"
+                        class="block rounded-xl overflow-hidden border-2 border-gray-300 hover:border-red-500 transition-all hover:shadow-lg bg-white cursor-pointer"
+                    >
+                        <img
+                            v-if="blog.coverImagePath"
+                            class="w-full h-48 object-cover"
+                            :src="`http://localhost:8080${blog.coverImagePath}`"
+                            :alt="blog.title"
+                        >
+                        <div v-else class="w-full h-48 bg-gray-300 flex items-center justify-center">
+                            <span class="text-gray-500">Không có ảnh</span>
+                        </div>
+                        <div class="p-4">
+                            <div class="text-sm font-medium text-gray-800 line-clamp-2 mb-2">
+                                {{ blog.title }}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ new Date(blog.publishDate).toLocaleDateString('vi-VN') }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

@@ -166,13 +166,6 @@ const handleLogout = () => {
           </transition>
         </div>
 
-        <RouterLink
-          to="/customer/plan"
-          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-orange-300 transition-colors duration-300 rounded-md"
-        >
-          <Target class="h-4 w-4" />
-          Kế hoạch tập
-        </RouterLink>
 
         <!-- Account dropdown -->
         
