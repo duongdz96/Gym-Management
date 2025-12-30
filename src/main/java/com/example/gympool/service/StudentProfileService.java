@@ -9,7 +9,7 @@ public interface StudentProfileService {
     List<StudentProfile> getAllStudentProfile();
     StudentProfile getStudentProfileById(Long id);
     StudentProfile getStudentProfileByCustomerName(String name);
-    StudentProfile getStudentProfileByStaffName(String name);
+    StudentProfile getStudentProfileByPTName(String name);
     StudentProfile addStudentProfile(StudentProfile StudentProfile);
     StudentProfile updateStudentProfile(Long id, StudentProfile StudentProfile);
 }

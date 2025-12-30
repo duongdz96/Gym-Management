@@ -16,18 +16,18 @@ public class NotificationServiceImpl implements NotificationService {
     public void sendAppointmentReminder(PTAppointment appointment){
         // Gửi email cho Member
         emailService.sendEmail(
-                appointment.getMember().getEmail(), // Giả sử Member có trường email
+                appointment.getPtPackageIssued().getMember().getEmail(), // Giả sử Member có trường email
                 "Nhắc nhở lịch hẹn PT",
                 String.format("Bạn có lịch hẹn PT vào lúc %s với huấn luyện viên %s. Vui lòng đến đúng giờ!",
-                        appointment.getStartTime(), appointment.getStaff().getFullName())
+                        appointment.getStartTime(), appointment.getPt().getFullName())
         );
 
         // Gửi email cho Staff
         emailService.sendEmail(
-                appointment.getStaff().getEmail(), // Giả sử Staff có trường email
+                appointment.getPt().getEmail(), // Giả sử Staff có trường email
                 "Nhắc nhở lịch hẹn PT",
                 String.format("Bạn có lịch hẹn PT với học viên %s vào lúc %s. Vui lòng chuẩn bị!",
-                        appointment.getMember().getFullName(), appointment.getStartTime()));
+                        appointment.getPtPackageIssued().getMember().getFullName(), appointment.getStartTime()));
     }
 
 

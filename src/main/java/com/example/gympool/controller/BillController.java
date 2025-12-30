@@ -47,4 +47,15 @@ public class BillController {
     public ResponseEntity<List<Bill>> getBillsByReceptionist(@PathVariable Long ReceptionistId) {
         return ResponseEntity.ok(billService.getBillsByReceptionistId(ReceptionistId));
     }
+
+    @GetMapping("/member/{memberId}")
+    public ResponseEntity<List<Bill>> getBillsByMemberId(@PathVariable Long memberId) {
+        return ResponseEntity.ok(billService.getBillByMemberId(memberId));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Bill> updateBillStatus(@PathVariable Long id, @RequestBody java.util.Map<String, String> statusUpdate) {
+        String newStatus = statusUpdate.get("paymentStatus");
+        return ResponseEntity.ok(billService.updateBillPaymentStatus(id, newStatus));
+    }
 }

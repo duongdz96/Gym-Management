@@ -3,6 +3,7 @@ package com.example.gympool.controller;
 import com.example.gympool.dto.LoginRequest;
 import com.example.gympool.dto.LoginResponse;
 import com.example.gympool.dto.RegisterRequest;
+import com.example.gympool.dto.ChangePasswordRequest;
 import com.example.gympool.entity.RefreshToken;
 import com.example.gympool.repository.RefreshTokenRepository;
 import com.example.gympool.security.JwtTokenProvider;
@@ -25,6 +26,16 @@ public class AuthController {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
+
+    @PutMapping("/change-password")
+    public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName(); // email của user hiện tại
+
+        authService.changePassword(email, request);
+
+        return ResponseEntity.ok("Đổi mật khẩu thành công");
+    }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
@@ -62,7 +73,8 @@ public class AuthController {
 
         String newAccessToken = jwtTokenProvider.generateToken(
                 refreshToken.getUser().getEmail(),
-                refreshToken.getUser().getRole()
+                refreshToken.getUser().getRole(),
+                refreshToken.getUser().getId()
         );
 
         return ResponseEntity.ok(Map.of(

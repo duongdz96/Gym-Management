@@ -14,6 +14,6 @@ public interface StudentProfileRepository extends JpaRepository<StudentProfile, 
     @Query("SELECT sf FROM StudentProfile sf WHERE sf.member.fullName LIKE %:name%")
     Optional<StudentProfile> findByMemberName(String name);
 
-    @Query("SELECT sf FROM StudentProfile sf WHERE sf.staff.fullName LIKE %:name%")
-    Optional<StudentProfile> findByStaffName(String name);
+    @Query("SELECT sf FROM StudentProfile sf WHERE sf.pt.fullName LIKE %:name%")
+    Optional<StudentProfile> findByPTName(String name);
 }

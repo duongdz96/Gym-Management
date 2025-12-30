@@ -10,4 +10,5 @@ public interface MemberService {
     Member createMember(Member member);
     Member updateMember(Long id, Member member);
     void deleteMember(Long id);
+    Member getMemberByEmail(String email);
 }

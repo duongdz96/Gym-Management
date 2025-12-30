@@ -1,10 +1,7 @@
 package com.example.gympool.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Date;
 
@@ -13,6 +10,7 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Table(name="users")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User {
@@ -20,7 +18,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false,unique = true, length = 50)
     private String email;
 
     @Column(nullable = false, length = 255)
@@ -40,4 +38,7 @@ public class User {
 
     @Column(nullable = false, length = 50)
     private String role;
+
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "boolean default false")
+    private boolean isDeleted = false;
 }

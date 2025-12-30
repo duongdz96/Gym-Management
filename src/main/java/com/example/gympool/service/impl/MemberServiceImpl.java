@@ -12,9 +12,11 @@ import java.util.List;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    public MemberServiceImpl(MemberRepository memberRepository) {
+    public MemberServiceImpl(MemberRepository memberRepository, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.memberRepository = memberRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -30,6 +32,17 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public Member createMember(Member member) {
+        if (member.getPassword() == null || member.getPassword().isEmpty()) {
+            // TODO: Generate random password and send via email
+            // String randomPassword = generateRandomPassword();
+            // emailService.sendPassword(member.getEmail(), randomPassword);
+            // member.setPassword(passwordEncoder.encode(randomPassword));
+            
+            // Temporary default password
+            member.setPassword(passwordEncoder.encode("123456"));
+        } else {
+            member.setPassword(passwordEncoder.encode(member.getPassword()));
+        }
         return memberRepository.save(member);
     }
 
@@ -59,5 +72,11 @@ public class MemberServiceImpl implements MemberService {
         Member member = getMemberById(id);
         member.setStatus(String.valueOf(Status.INACTIVE));
         memberRepository.save(member);
+    }
+
+    @Override
+    public Member getMemberByEmail(String email) {
+        return memberRepository.findByEmail(email)
+                .orElse(null);
     }
 }

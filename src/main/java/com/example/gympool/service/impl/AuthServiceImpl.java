@@ -3,11 +3,13 @@ package com.example.gympool.service.impl;
 import com.example.gympool.dto.LoginRequest;
 import com.example.gympool.dto.LoginResponse;
 import com.example.gympool.dto.RegisterRequest;
+import com.example.gympool.dto.UserResponse;
 import com.example.gympool.entity.*;
 import com.example.gympool.repository.*;
 import com.example.gympool.security.JwtTokenProvider;
 import com.example.gympool.service.AuthService;
 import com.example.gympool.service.RefreshTokenService;
+import com.example.gympool.dto.ChangePasswordRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,9 +22,31 @@ public class AuthServiceImpl implements AuthService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-    private final StaffRepository staffRepository;
+    private final TeacherRepository teacherRepository;
     private final ReceptionistRepository receptionistRepository;
     private final RefreshTokenService refreshTokenService;
+    private final ManagerRepository managerRepository;
+    private final PTRepository ptRepository;
+
+    @Override
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+
+        // Kiểm tra mật khẩu cũ
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new RuntimeException("Mật khẩu cũ không đúng");
+        }
+
+        // Kiểm tra confirm password
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException("Xác nhận mật khẩu không khớp");
+        }
+
+        // Encode và lưu mật khẩu mới
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
 
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -33,11 +57,11 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid password");
         }
 
-        String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole());
+        String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), user.getId());
 
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
-        return new LoginResponse(accessToken, refreshToken.getToken(), user.getRole(), user.getFullName());
+        return new LoginResponse(accessToken, refreshToken.getToken(), new UserResponse(user));
     }
 
     @Override
@@ -72,25 +96,24 @@ public class AuthServiceImpl implements AuthService {
         }
 
         switch (request.getRole().toUpperCase()) {
-            case "STAFF" -> {
-                if (staffRepository.findByEmail(request.getEmail()).isPresent()) {
+            case "TEACHER" -> {
+                if (teacherRepository.findByEmail(request.getEmail()).isPresent()) {
                     throw new RuntimeException("Email already taken");
                 }
 
-                Staff staff = new Staff();
-                staff.setEmail(request.getEmail());
-                staff.setPassword(passwordEncoder.encode(request.getPassword()));
-                staff.setFullName(request.getFullName());
-                staff.setDob(request.getDob());
-                staff.setGender(request.getGender());
-                staff.setPhone(request.getPhone());
-                staff.setRole("STAFF");
+                Teacher teacher = new Teacher();
+                teacher.setEmail(request.getEmail());
+                teacher.setPassword(passwordEncoder.encode(request.getPassword()));
+                teacher.setFullName(request.getFullName());
+                teacher.setDob(request.getDob());
+                teacher.setGender(request.getGender());
+                teacher.setPhone(request.getPhone());
+                teacher.setRole("TEACHER");
 
-                staff.setPosition(null);
-                staff.setSpecialize(null);
-                staff.setHirePrice(null);
-
-                staffRepository.save(staff);
+                teacher.setPosition(request.getPosition());
+                teacher.setSpecialize(request.getSpecialize());
+//                System.out.println(teacher);
+                teacherRepository.save(teacher);
             }
             case "RECEPTIONIST" -> {
                 if (receptionistRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -107,6 +130,38 @@ public class AuthServiceImpl implements AuthService {
                 receptionist.setRole("RECEPTIONIST");
 
                 receptionistRepository.save(receptionist);
+            }
+            case "MANAGER" -> {
+                if (managerRepository.findByEmail(request.getEmail()).isPresent()) {
+                    throw new RuntimeException("Email already taken");
+                }
+
+                Manager manager = new Manager();
+                manager.setEmail(request.getEmail());
+                manager.setPassword(passwordEncoder.encode(request.getPassword()));
+                manager.setFullName(request.getFullName());
+                manager.setDob(request.getDob());
+                manager.setGender(request.getGender());
+                manager.setPhone(request.getPhone());
+                manager.setRole("MANAGER");
+
+                managerRepository.save(manager);
+            }
+            case "PT" -> {
+                if (ptRepository.findByEmail(request.getEmail()).isPresent()) {
+                    throw new RuntimeException("Email already taken");
+                }
+                PT personalTrainer = new PT();
+
+                personalTrainer.setEmail(request.getEmail());
+                personalTrainer.setPassword(passwordEncoder.encode(request.getPassword())); // Mã hóa mật khẩu
+                personalTrainer.setFullName(request.getFullName());
+                personalTrainer.setDob(request.getDob());
+                personalTrainer.setGender(request.getGender());
+                personalTrainer.setPhone(request.getPhone());
+                personalTrainer.setRole("PT"); // Thiết lập Role là "PT"
+
+                ptRepository.save(personalTrainer);
             }
             default -> throw new RuntimeException("Invalid role for employee registration");
         }

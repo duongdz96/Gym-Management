@@ -24,6 +24,7 @@ public class ImportBill {
     @Temporal(TemporalType.TIMESTAMP)
     private Date date;
 
+    private Double price;
 
     // Quan hệ 1-nhiều với ImportedProduct
     @OneToMany(mappedBy = "importBill", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -34,8 +35,9 @@ public class ImportBill {
     @JoinColumn(name = "provider_id", nullable = false)
     private Provider provider;
 
-    // Nhiều ImportBill có thể do 1 Manager lập
     @ManyToOne
     @JoinColumn(name = "manager_id", nullable = false)
-    private Receptionist receptionist;
+    private Manager manager;
+
+    private String status;
 }

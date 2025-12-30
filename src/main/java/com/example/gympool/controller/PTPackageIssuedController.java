@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/packageissued")
+@RequestMapping("/api/packageissued")
 @RequiredArgsConstructor
 public class PTPackageIssuedController {
     private final PTPackageIssuedService ptPackageIssuedService;
@@ -25,9 +25,9 @@ public class PTPackageIssuedController {
     public PTPackageIssued findPTPackageIssuedByCustomerName(@RequestParam("name") String name) {
         return ptPackageIssuedService.getPTPackageIssuedByCustomerName(name);
     }
-    @GetMapping("/staff")
-    public PTPackageIssued findPTPackageIssuedByStaffName(@RequestParam("name") String name) {
-        return ptPackageIssuedService.getPTPackageIssuedByStaffName(name);
+    @GetMapping("/pt")
+    public PTPackageIssued findPTPackageIssuedByPTName(@RequestParam("name") String name) {
+        return ptPackageIssuedService.getPTPackageIssuedByPTName(name);
     }
     @PostMapping()
     public void addPTPackageIssued(@RequestBody PTPackageIssued PTPackageIssued) {

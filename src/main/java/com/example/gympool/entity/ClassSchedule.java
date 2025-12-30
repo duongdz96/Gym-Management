@@ -1,8 +1,12 @@
 package com.example.gympool.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.Date;
+
+import java.time.LocalDateTime;
+
 
 @Entity
 @Getter
@@ -16,19 +20,25 @@ public class ClassSchedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date startTime;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date endTime;
-
-    @Column(nullable = false, length = 100)
-    private String location;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private Integer capacity;
 
     @Column(length = 20)
     private String status;   //"OPEN", "CLOSED", "CANCELLED"
 
     @ManyToOne
-    @JoinColumn(name = "class_type_id", nullable = false)
-    private ClassTemplate classTemplate;
+    @JoinColumn(name = "fitness_class_id", nullable = true)
+    @JsonIgnoreProperties({"schedules", "registrations"})
+    private FitnessClass fitnessClass;
+
+    @ManyToOne
+    @JoinColumn(name = "schedule_pattern_id", nullable = true)
+    private SchedulePattern schedulePattern;
+
+    @ManyToOne
+    @JoinColumn(name = "room_id", nullable = true)
+    private Room room;
+
+    private String note;
 }

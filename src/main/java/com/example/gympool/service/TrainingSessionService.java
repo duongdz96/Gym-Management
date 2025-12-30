@@ -8,7 +8,7 @@ public interface TrainingSessionService  {
     List<TrainingSession> getAllTrainingSession();
     TrainingSession getTrainingSessionById(Long id);
     TrainingSession getTrainingSessionByCustomerName(String name);
-    TrainingSession getTrainingSessionByStaffName(String name);
+    TrainingSession getTrainingSessionByPtName(String name);
     TrainingSession addTrainingSession(TrainingSession TrainingSession);
     TrainingSession startSession(Long appointmentId, String note);
     TrainingSession endSession(Long appointmentId, String note);

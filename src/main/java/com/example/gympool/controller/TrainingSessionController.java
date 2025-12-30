@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/trainingsession")
+@RequestMapping("/api/trainingsession")
 @RequiredArgsConstructor
 public class TrainingSessionController {
     private final TrainingSessionService trainingSessionService;
@@ -25,9 +25,9 @@ public class TrainingSessionController {
     public TrainingSession findTrainingSessionByCustomerName(@RequestParam("name") String name) {
         return trainingSessionService.getTrainingSessionByCustomerName(name);
     }
-    @GetMapping("/staff")
-    public TrainingSession findTrainingSessionByStaffName(@RequestParam("name") String name) {
-        return trainingSessionService.getTrainingSessionByStaffName(name);
+    @GetMapping("/pt")
+    public TrainingSession findTrainingSessionByPtName(@RequestParam("name") String name) {
+        return trainingSessionService.getTrainingSessionByPtName(name);
     }
     @PostMapping()
     public void addTrainingSession(@RequestBody TrainingSession TrainingSession) {

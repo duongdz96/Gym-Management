@@ -13,4 +13,6 @@ public class RegisterRequest {
     private String gender;
     private String phone;
     private String role;
+    private String position;
+    private String specialize;
 }

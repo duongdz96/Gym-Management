@@ -1,51 +1,140 @@
 package com.example.gympool.service.impl;
 
+import com.example.gympool.dto.RegisterRequest;
+import com.example.gympool.dto.UpdateProfileRequest;
+import com.example.gympool.entity.Teacher;
 import com.example.gympool.entity.User;
+import com.example.gympool.repository.TeacherRepository;
 import com.example.gympool.repository.UserRepository;
 import com.example.gympool.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
+
     @Autowired
     private UserRepository userRepository;
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private TeacherRepository teacherRepository;
+    // ==================== LẤY DỮ LIỆU ====================
 
     @Override
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        // Chỉ lấy user chưa bị xoá
+        return userRepository.findAll()
+                .stream()
+                .filter(u -> !u.isDeleted())
+                .toList();
+    }
+
+    @Override
+    public List<User> getAllStaffs() {
+        return userRepository.findAllStaffs();
     }
 
     @Override
     public User getUserById(Long id) {
-        return userRepository.findById(id)
+        return userRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
 
     @Override
     public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
     }
 
+    // ==================== THÊM / CẬP NHẬT ====================
+
     @Override
     public void addUser(User user) {
+        user.setDeleted(false); // đảm bảo không bị xoá mềm
         userRepository.save(user);
+    }
+
+    @Override
+    public User updateUser(Long id, RegisterRequest request) { // <--- Đảm bảo trả về User
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // ... (cập nhật các trường chung: fullName, email, dob...) ...
+        existingUser.setFullName(request.getFullName());
+        existingUser.setEmail(request.getEmail());
+        existingUser.setPhone(request.getPhone());
+        existingUser.setGender(request.getGender());
+        existingUser.setDob(request.getDob());
+        existingUser.setRole(request.getRole());
+
+        // Nếu user này là một Staff...
+        if (existingUser instanceof Teacher teacher) {
+            teacher.setPosition(request.getPosition());
+            teacher.setSpecialize(request.getSpecialize());
+
+            // Lưu và TRẢ VỀ đối tượng Staff đã cập nhật
+            return teacherRepository.save(teacher);
+        }
+
+        // ... (logic cho các role khác nếu cần) ...
+
+        // Lưu và TRẢ VỀ đối tượng User đã cập nhật
+        return userRepository.save(existingUser);
+    }
+
+    @Override
+    public User updateProfile(Long id, UpdateProfileRequest request) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Chỉ cập nhật các trường được phép: fullName, dob, gender, phone
+        // KHÔNG cập nhật email và password
+        existingUser.setFullName(request.getFullName());
+        existingUser.setPhone(request.getPhone());
+        existingUser.setGender(request.getGender());
+        existingUser.setDob(request.getDob());
+
+        // Nếu user này là Teacher, vẫn lưu qua teacherRepository
+        if (existingUser instanceof Teacher teacher) {
+            return teacherRepository.save(teacher);
+        }
+
+        // Lưu và trả về user đã cập nhật
+        return userRepository.save(existingUser);
     }
 
     @Override
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+
+    }
+
+    // ==================== XOÁ MỀM / KHÔI PHỤC ====================
+
+    @Override
+    public void softDeleteUser(Long id) {
+        userRepository.softDeleteById(id);
     }
 
     @Override
-    public void updateUser(User user) {
+    public void restoreUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        user.setDeleted(false);
         userRepository.save(user);
     }
 
+    @Override
+    public List<User> getDeletedUsers() {
+        return userRepository.findAll()
+                .stream()
+                .filter(User::isDeleted)
+                .toList();
+    }
+
+    @Override
+    public List<User> getUsersByRole(String role) {
+        return userRepository.findAllByRoleAndIsDeletedFalse(role);
+    }
 }

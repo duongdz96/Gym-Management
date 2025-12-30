@@ -23,6 +23,9 @@ public class SoldProduct {
     @Column(nullable = false)
     private int quantity;
 
+    private Double soldPrice;
+
+
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;

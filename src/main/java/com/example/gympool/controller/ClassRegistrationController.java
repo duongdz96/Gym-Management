@@ -11,36 +11,49 @@ import java.util.List;
 @RequestMapping("/api/class-registrations")
 public class ClassRegistrationController {
 
-    private final ClassRegistrationService teachingRegistrationService;
+    private final ClassRegistrationService classRegistrationService;
 
-    public ClassRegistrationController(ClassRegistrationService teachingRegistrationService) {
-        this.teachingRegistrationService = teachingRegistrationService;
+    public ClassRegistrationController(ClassRegistrationService classRegistrationService) {
+        this.classRegistrationService = classRegistrationService;
     }
 
-    // Lấy danh sách lớp mà staff đã đăng ký
-    @GetMapping("/staff/{staffId}")
-    public ResponseEntity<List<ClassRegistration>> getByStaff(@PathVariable Long staffId) {
-        return ResponseEntity.ok(teachingRegistrationService.getByStaff(staffId));
+    // Lấy danh sách lớp mà staff đã đăng ký dạy
+    @GetMapping("/teacher/{staffId}")
+    public ResponseEntity<List<ClassRegistration>> getByTeacher(@PathVariable Long staffId) {
+        return ResponseEntity.ok(classRegistrationService.getByTeacher(staffId));
     }
 
-    // Lấy danh sách giáo viên đã đăng ký cho class slot
-    @GetMapping("/classschedule/{scheduleId}")
-    public ResponseEntity<List<ClassRegistration>> getByClassSlot(@PathVariable Long slotId) {
-        return ResponseEntity.ok(teachingRegistrationService.getByClassSlot(slotId));
+    // Lấy danh sách đã đăng ký cho fitness class
+    @GetMapping("/fitness_class/{fitnessClassId}")
+    public ResponseEntity<List<ClassRegistration>> getByFitnessClass(@PathVariable Long fitnessClassId) {
+        return ResponseEntity.ok(classRegistrationService.getByFitnessClass(fitnessClassId));
     }
 
     // Staff đăng ký dạy 1 lớp
     @PostMapping
-    public ResponseEntity<ClassRegistration> registerTeaching(
-            @RequestBody ClassRegistration reg) {
-        return ResponseEntity.ok(teachingRegistrationService.registerTeaching(reg));
+    public ResponseEntity<ClassRegistration> registerTeaching(@RequestBody ClassRegistration reg) {
+        return ResponseEntity.ok(classRegistrationService.registerTeaching(reg));
     }
 
-
     // Staff hủy đăng ký dạy
-    @DeleteMapping
-    public ResponseEntity<String> unregisterTeaching(@RequestBody ClassRegistration reg) {
-        teachingRegistrationService.unregisterTeaching(reg);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> unregisterTeaching(@PathVariable Long staffId ,Long registrationId) { // Dùng @PathVariable
+        classRegistrationService.unregisterTeachingById(staffId, registrationId); // Gọi một service mới theo ID
         return ResponseEntity.ok("Teaching registration removed successfully");
+    }
+
+    // Manager approve teacher registration
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<ClassRegistration> approveTeacher(@PathVariable Long id) {
+        return ResponseEntity.ok(classRegistrationService.approveRegistration(id));
+    }
+
+    // Manager reject teacher registration
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<ClassRegistration> rejectTeacher(
+            @PathVariable Long id,
+            @RequestParam(required = false) String reason
+    ) {
+        return ResponseEntity.ok(classRegistrationService.rejectRegistration(id, reason));
     }
 }
