@@ -38,7 +38,7 @@ public class TrainingSessionServiceImpl implements TrainingSessionService {
     }
     @Override
     public TrainingSession getTrainingSessionByPtName(String name){
-        return trainingSessionRepository.findByPtName(name)
+        return trainingSessionRepository.findByStaffName(name)
                 .orElseThrow(() -> new IllegalArgumentException("TrainingSession not found with StaffName: " + name));
     }
     @Override

@@ -44,7 +44,7 @@ public class PTAppointmentServiceImpl implements PTAppointmentService {
                 .orElseThrow(() -> new IllegalArgumentException("PTAppointment not found with MemberName: " + name));
     }
     @Override
-    public PTAppointment getPTAppointmentByStaffName(String name){
+    public PTAppointment getPTAppointmentByPTName(String name){
         return ptAppointmentRepository.findByStaffName(name)
                 .orElseThrow(() -> new IllegalArgumentException("PTAppointment not found with StaffName: " + name));
     }

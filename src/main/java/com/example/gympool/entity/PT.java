@@ -10,4 +10,5 @@ import lombok.Setter;
 @Setter
 @Table(name="PT")
 public class PT extends User{
+    private String specialize;
 }

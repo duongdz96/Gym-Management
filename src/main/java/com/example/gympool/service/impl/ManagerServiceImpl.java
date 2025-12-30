@@ -25,13 +25,18 @@ public class ManagerServiceImpl implements ManagerService {
     }
 
     @Override
-    public Optional<Manager> getManagerById(Long id) {
-        return managerRepository.findById(id);
+    public Manager getManagerById(Long id) {
+        return managerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Teacher not found with id " + id));
     }
 
     @Override
     public void deleteManager(Long id) {
-        managerRepository.deleteById(id);
+
+        Manager manager=getManagerById(id);
+        manager.setDeleted(true);
+        managerRepository.save(manager);
+
     }
 
     @Override

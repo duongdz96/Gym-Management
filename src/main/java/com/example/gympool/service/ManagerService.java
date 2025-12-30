@@ -7,7 +7,7 @@ import java.util.Optional;
 public interface ManagerService {
     Manager saveManager(Manager manager);
     List<Manager> getAllManagers();
-    Optional<Manager> getManagerById(Long id);
+    Manager getManagerById(Long id);
     void deleteManager(Long id);
     Manager updateManager(Long id, Manager manager);
     Optional<Manager> findByEmail(String email);

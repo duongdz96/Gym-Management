@@ -43,7 +43,7 @@ public class StudentProfileServiceImpl implements StudentProfileService {
 
         if (StudentProfileUpd.getHeight() != null) studentProfile.setHeight(StudentProfileUpd.getHeight());
         if (StudentProfileUpd.getWeight() != null) studentProfile.setWeight(StudentProfileUpd.getWeight());
-        if (StudentProfileUpd.getStaff() != null) studentProfile.setStaff(StudentProfileUpd.getStaff());
+        if (StudentProfileUpd.getPt() != null) studentProfile.setPt(StudentProfileUpd.getPt());
         if (StudentProfileUpd.getTrainingPlan() != null) studentProfile.setTrainingPlan(StudentProfileUpd.getTrainingPlan());
         return studentProfileRepository.save(studentProfile);
     }
@@ -67,8 +67,8 @@ public class StudentProfileServiceImpl implements StudentProfileService {
         return studentProfile;
     }
     @Override
-    public StudentProfile getStudentProfileByStaffName(String name){
-        StudentProfile studentProfile= studentProfileRepository.findByStaffName(name)
+    public StudentProfile getStudentProfileByPTName(String name){
+        StudentProfile studentProfile= studentProfileRepository.findByMemberName(name)
                 .orElseThrow(() -> new IllegalArgumentException("StudentProfile not found with StaffName: " + name));
         studentProfile=getStudentProfileDetails(studentProfile);
         return studentProfile;

@@ -38,10 +38,9 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     public void deleteTeacher(Long id) {
-        if (!teacherRepository.existsById(id)) {
-            throw new RuntimeException("Teacher not found with id " + id);
-        }
-        teacherRepository.deleteById(id);
+        Teacher teacher = getTeacherById(id);
+        teacher.setDeleted(true);
+        teacherRepository.save(teacher);
     }
 
     @Override

@@ -34,7 +34,7 @@ public class PTController {
         return ptService.update(id, pt);
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping("/{id}/delete")
     public void delete(@PathVariable Long id) {
         ptService.delete(id);
     }

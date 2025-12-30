@@ -44,7 +44,7 @@ public class ReceptionistController {
         return ResponseEntity.ok(receptionistService.updateReceptionist(id, receptionist));
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping("/{id}/delete")
     public ResponseEntity<Void> deleteReceptionist(@PathVariable Long id) {
         receptionistService.deleteReceptionist(id);
         return ResponseEntity.noContent().build();

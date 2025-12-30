@@ -19,12 +19,12 @@ public class NotificationServiceImpl implements NotificationService {
                 appointment.getPtPackageIssued().getMember().getEmail(), // Giả sử Member có trường email
                 "Nhắc nhở lịch hẹn PT",
                 String.format("Bạn có lịch hẹn PT vào lúc %s với huấn luyện viên %s. Vui lòng đến đúng giờ!",
-                        appointment.getStartTime(), appointment.getPt().getFullName())
+                        appointment.getStartTime(), appointment.getStaff().getFullName())
         );
 
         // Gửi email cho Staff
         emailService.sendEmail(
-                appointment.getPt().getEmail(), // Giả sử Staff có trường email
+                appointment.getStaff().getEmail(), // Giả sử Staff có trường email
                 "Nhắc nhở lịch hẹn PT",
                 String.format("Bạn có lịch hẹn PT với học viên %s vào lúc %s. Vui lòng chuẩn bị!",
                         appointment.getPtPackageIssued().getMember().getFullName(), appointment.getStartTime()));

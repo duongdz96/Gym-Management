@@ -28,5 +28,5 @@ public class PTAppointment {
 
     @ManyToOne
     @JoinColumn(name = "staff_id", nullable = false)
-    private Staff staff;
+    private PT staff;
 }

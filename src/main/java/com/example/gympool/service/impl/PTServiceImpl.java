@@ -3,16 +3,18 @@ package com.example.gympool.service.impl;
 import com.example.gympool.entity.PT;
 import com.example.gympool.repository.PTRepository;
 import com.example.gympool.service.PTService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PTServiceImpl implements PTService {
 
-    @Autowired
-    private PTRepository ptRepository;
+
+    private final PTRepository ptRepository;
 
     @Override
     public PT create(PT pt) {
@@ -40,6 +42,7 @@ public class PTServiceImpl implements PTService {
         pt.setPhone(ptDetails.getPhone());
         pt.setGender(ptDetails.getGender());
         pt.setDob(ptDetails.getDob());
+        pt.setSpecialize(ptDetails.getSpecialize());
         // Thêm field nào trong User hay PT thì update ở đây
 
         return ptRepository.save(pt);
@@ -47,10 +50,9 @@ public class PTServiceImpl implements PTService {
 
     @Override
     public void delete(Long id) {
-        if (!ptRepository.existsById(id)) {
-            throw new RuntimeException("PT not found with id: " + id);
-        }
-        ptRepository.deleteById(id);
+        PT pt = getById(id);
+        pt.setDeleted(true);
+        ptRepository.save(pt);
     }
 }
 
