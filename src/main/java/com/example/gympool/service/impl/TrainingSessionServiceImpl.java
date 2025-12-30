@@ -1,18 +1,23 @@
 package com.example.gympool.service.impl;
 
+import com.example.gympool.entity.PTAppointment;
 import com.example.gympool.entity.TrainingSession;
 import com.example.gympool.entity.TrainingSession;
+import com.example.gympool.repository.PTAppointmentRepository;
 import com.example.gympool.repository.TrainingSessionRepository;
 import com.example.gympool.service.TrainingSessionService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class TrainingSessionServiceImpl implements TrainingSessionService {
     private final TrainingSessionRepository trainingSessionRepository;
+    private final PTAppointmentRepository ptAppointmentRepository;
     @Override
     public List<TrainingSession> getAllTrainingSession(){
         return trainingSessionRepository.findAll();
@@ -35,5 +40,25 @@ public class TrainingSessionServiceImpl implements TrainingSessionService {
     public TrainingSession getTrainingSessionByPtName(String name){
         return trainingSessionRepository.findByPtName(name)
                 .orElseThrow(() -> new IllegalArgumentException("TrainingSession not found with StaffName: " + name));
+    }
+    @Override
+    @Transactional
+    public TrainingSession startSession(Long appointmentId, String note){
+        PTAppointment appointment = ptAppointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+        TrainingSession session = new TrainingSession();
+        session.setPtAppointment(appointment);
+        session.setStartAt(LocalDateTime.now());
+        session.setEndAt(null);
+        session.setNote(note);
+        return trainingSessionRepository.save(session);
+    }
+    @Override
+    @Transactional
+    public TrainingSession endSession(Long appointmentId, String note) {
+        TrainingSession session = trainingSessionRepository.findByPtAppointmentId(appointmentId).
+                orElseThrow(() -> new RuntimeException("Appointment not found"));
+        session.setEndAt(LocalDateTime.now());
+        return trainingSessionRepository.save(session);
     }
 }

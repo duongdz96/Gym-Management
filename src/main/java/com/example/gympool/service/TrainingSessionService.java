@@ -10,4 +10,6 @@ public interface TrainingSessionService  {
     TrainingSession getTrainingSessionByCustomerName(String name);
     TrainingSession getTrainingSessionByPtName(String name);
     TrainingSession addTrainingSession(TrainingSession TrainingSession);
+    TrainingSession startSession(Long appointmentId, String note);
+    TrainingSession endSession(Long appointmentId, String note);
 }

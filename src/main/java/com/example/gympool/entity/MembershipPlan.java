@@ -16,11 +16,11 @@ public class MembershipPlan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;    //gold 1 month
-    private String duration;
+    private String name;
+    private Integer duration;
     private String status;
     private String benefits;
-    private Double price;
+    private Long price;
 
     @ManyToOne
     @JoinColumn(name = "tier_id", nullable = false)

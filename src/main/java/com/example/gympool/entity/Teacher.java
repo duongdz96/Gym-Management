@@ -1,16 +1,19 @@
 package com.example.gympool.entity;
 
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
-@ToString
-@Table(name="teacher")
-public class Teacher extends User {
+@Table(name="staffs")
+public class Staff extends User {
     private String position;
     private String specialize;
+    private String hirePrice;
+    private String status;
 }

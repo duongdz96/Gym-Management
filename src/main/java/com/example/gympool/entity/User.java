@@ -36,6 +36,7 @@ public class User {
     @Column(nullable = false, length = 50)
     private String phone;
 
+    @Column(nullable = false, length = 50)
     private String role;
 
     @Column(name = "is_deleted", nullable = false, columnDefinition = "boolean default false")

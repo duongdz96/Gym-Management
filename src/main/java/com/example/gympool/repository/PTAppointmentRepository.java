@@ -13,12 +13,20 @@ import java.util.Optional;
 
 @Repository
 public interface PTAppointmentRepository extends JpaRepository<PTAppointment, Long> {
-    @Query("SELECT pa FROM PTAppointment pa WHERE pa.ptPackageIssued.member.fullName LIKE %:name%")
+    @Query("SELECT pa FROM PTAppointment pa WHERE pa.ptPackageIssued.member   .fullName LIKE %:name%")
     Optional<PTAppointment> findByMemberName(String name);
 
-    @Query("SELECT pa FROM PTAppointment pa WHERE pa.pt.fullName LIKE %:name%")
-    Optional<PTAppointment> findByPTName(String name);
+    @Query("SELECT pa FROM PTAppointment pa WHERE pa.staff.fullName LIKE %:name%")
+    Optional<PTAppointment> findByStaffName(String name);
 
     @Query("SELECT pa FROM PTAppointment pa WHERE (pa.startTime BETWEEN :start and :end) and pa.notificationSent =false")
     List<PTAppointment> findUpcomingAppointments(LocalDateTime start, LocalDateTime end);
+
+
+    List<PTAppointment> findTop5ByStaffIdAndStartTimeAfterOrderByStartTimeAsc(Long staffId, LocalDateTime end);
+
+    List<PTAppointment> findTop5ByPtPackageIssuedMemberIdAndStartTimeAfterOrderByStartTimeAsc(
+            Long memberId,
+            LocalDateTime now
+    );
 }
