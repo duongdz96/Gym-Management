@@ -5,6 +5,7 @@ import com.example.gympool.entity.CustomerMembership;
 import com.example.gympool.entity.Member;
 import com.example.gympool.service.AccessLogService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,9 +14,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/accesslog")
-@RequiredArgsConstructor
 public class AccessLogController {
-    private final AccessLogService accessLogService;
+    @Autowired
+    private AccessLogService accessLogService;
     @GetMapping("/{memberId}")
     public List<AccessLog> findAll(@PathVariable Long memberId) {
         return accessLogService.getAllAccessLogs(memberId);

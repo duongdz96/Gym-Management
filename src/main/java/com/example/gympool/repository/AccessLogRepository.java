@@ -21,8 +21,6 @@ public interface AccessLogRepository extends JpaRepository<AccessLog, Long> {
                                      LocalDateTime from,
                                      LocalDateTime to);
 
-    // Lấy log theo result
-    List<AccessLog> findByResult(String result);
 
     // Query method for Reception Dashboard
     @Query("SELECT COUNT(al) FROM AccessLog al WHERE DATE(al.accessTime) = CURRENT_DATE ")
