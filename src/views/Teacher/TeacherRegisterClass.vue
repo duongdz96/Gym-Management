@@ -1,19 +1,19 @@
 <template>
-  <div class="p-6">
-    <div class="flex items-center gap-3 mb-8">
-      <BookOpen class="w-10 h-10 text-teal-600" />
-      <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+  <div class="p-3 sm:p-6">
+    <div class="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-8">
+      <BookOpen class="w-8 h-8 sm:w-10 sm:h-10 text-teal-600" />
+      <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
         Đăng Ký Dạy Lớp
       </h1>
     </div>
 
     <!-- Filters -->
-    <div class="flex gap-4 mb-6">
-      <div class="relative">
-        <Filter class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+    <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4 sm:mb-6">
+      <div class="relative w-full sm:w-auto">
+        <Filter class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
         <select 
           v-model="filterDifficulty"
-          class="pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 outline-none transition-all appearance-none bg-white"
+          class="w-full pl-8 sm:pl-10 pr-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 outline-none transition-all appearance-none bg-white text-sm sm:text-base"
         >
           <option value="">Tất cả độ khó</option>
           <option value="Beginner">Beginner</option>
@@ -23,29 +23,29 @@
       </div>
       
       <div class="relative flex-1">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
         <input 
           v-model="searchQuery" 
           type="text" 
           placeholder="Tìm kiếm lớp học..." 
-          class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 outline-none transition-all"
+          class="w-full pl-8 sm:pl-10 pr-4 py-2 sm:py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-sm sm:text-base"
         />
       </div>
     </div>
 
     <!-- Available Classes -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
       <div 
         v-for="cls in filteredClasses" 
         :key="cls.id" 
-        class="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+        class="bg-white rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
       >
         <!-- Card Header -->
-        <div class="p-5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
-          <div class="flex justify-between items-start">
-            <h3 class="text-xl font-bold">{{ cls.name }}</h3>
+        <div class="p-3 sm:p-5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+          <div class="flex justify-between items-start gap-2">
+            <h3 class="text-lg sm:text-xl font-bold">{{ cls.name }}</h3>
             <span 
-              class="px-3 py-1 rounded-full text-xs font-semibold"
+              class="px-2 sm:px-3 py-1 rounded-full text-xs font-semibold shrink-0"
               :class="{
                 'bg-cyan-500': cls.difficulty === 'Beginner',
                 'bg-orange-500': cls.difficulty === 'Intermediate',
@@ -58,54 +58,54 @@
         </div>
         
         <!-- Card Body -->
-        <div class="p-5 space-y-4">
-          <p class="text-gray-600 line-clamp-2">{{ cls.description }}</p>
+        <div class="p-3 sm:p-5 space-y-3 sm:space-y-4">
+          <p class="text-gray-600 line-clamp-2 text-sm sm:text-base">{{ cls.description }}</p>
           
-          <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
             <div>
-              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Users class="w-4 h-4" /> Sức chứa:</span>
+              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Users class="w-3 h-3 sm:w-4 sm:h-4" /> Sức chứa:</span>
               <span class="text-gray-800">{{ cls.maxStudents }} học viên</span>
             </div>
             <div>
-              <span class="text-gray-500 font-semibold block flex items-center gap-1"><MapPin class="w-4 h-4" /> Phòng:</span>
-              <span class="text-gray-800">{{ getRoomName(cls.roomId) }}</span>
+              <span class="text-gray-500 font-semibold block flex items-center gap-1"><MapPin class="w-3 h-3 sm:w-4 sm:h-4" /> Phòng:</span>
+              <span class="text-gray-800 truncate block">{{ getRoomName(cls.roomId) }}</span>
             </div>
             <div>
-              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Clock class="w-4 h-4" /> Thời gian:</span>
+              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Clock class="w-3 h-3 sm:w-4 sm:h-4" /> Thời gian:</span>
               <span class="text-gray-800">{{ cls.startTime }} - {{ cls.endTime }}</span>
             </div>
             <div>
-              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Calendar class="w-4 h-4" /> Lịch:</span>
-              <div class="flex items-center gap-2">
-                <span class="text-gray-800">{{ getScheduleText(cls) }}</span>
+              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Calendar class="w-3 h-3 sm:w-4 sm:h-4" /> Lịch:</span>
+              <div class="flex items-center gap-1 sm:gap-2">
+                <span class="text-gray-800 truncate">{{ getScheduleText(cls) }}</span>
                 <button 
                   @click.stop="viewSessions(cls)" 
-                  class="text-teal-600 hover:text-teal-800 text-xs font-bold underline flex items-center gap-1"
+                  class="text-teal-600 hover:text-teal-800 text-xs font-bold underline flex items-center gap-1 shrink-0"
                 >
-                  <Eye class="w-3 h-3" /> Chi tiết
+                  <Eye class="w-3 h-3" /> <span class="hidden sm:inline">Chi tiết</span>
                 </button>
               </div>
             </div>
             <div>
-              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Calendar class="w-4 h-4" /> Bắt đầu:</span>
+              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Calendar class="w-3 h-3 sm:w-4 sm:h-4" /> Bắt đầu:</span>
               <span class="text-gray-800">{{ formatDate(cls.startDate) }}</span>
             </div>
             <div>
-              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Calendar class="w-4 h-4" /> Kết thúc:</span>
+              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Calendar class="w-3 h-3 sm:w-4 sm:h-4" /> Kết thúc:</span>
               <span class="text-gray-800">{{ formatDate(cls.endDate) }}</span>
             </div>
           </div>
 
           <!-- Conflict Warning -->
-          <div v-if="conflictMap[cls.id]" class="p-3 bg-orange-50 border-2 border-orange-200 rounded-xl text-orange-700 font-semibold text-sm">
-            <div class="flex items-center gap-2 mb-1">
-              <AlertTriangle class="w-4 h-4" />
-              Bạn có lịch trùng với lớp này
+          <div v-if="conflictMap[cls.id]" class="p-2 sm:p-3 bg-orange-50 border-2 border-orange-200 rounded-xl text-orange-700 font-semibold text-xs sm:text-sm">
+            <div class="flex items-center gap-1 sm:gap-2 mb-1">
+              <AlertTriangle class="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+              <span>Bạn có lịch trùng với lớp này</span>
             </div>
-            <div class="mt-2 space-y-1 font-normal ml-6">
+            <div class="mt-1 sm:mt-2 space-y-1 font-normal ml-4 sm:ml-6">
               <div v-for="(conflict, idx) in conflictMap[cls.id]" :key="idx" class="flex items-center gap-1">
-                <Calendar class="w-3 h-3" />
-                {{ conflict.date }}: {{ conflict.time }} - {{ conflict.className }}
+                <Calendar class="w-3 h-3 shrink-0" />
+                <span class="truncate">{{ conflict.date }}: {{ conflict.time }} - {{ conflict.className }}</span>
               </div>
             </div>
           </div>
@@ -113,7 +113,7 @@
           <!-- Application Status -->
           <div 
             v-if="getApplicationStatus(cls.id)" 
-            class="p-3 border-2 rounded-xl font-semibold text-sm text-center flex items-center justify-center gap-2 relative group cursor-help transition-all"
+            class="p-2 sm:p-3 border-2 rounded-xl font-semibold text-xs sm:text-sm text-center flex items-center justify-center gap-1 sm:gap-2 relative group cursor-help transition-all"
             :class="{
               'bg-red-50 border-red-200 text-red-700': getApplicationStatus(cls.id) === 'pending',
               'bg-green-50 border-green-200 text-green-700': getApplicationStatus(cls.id) === 'approved',
@@ -122,30 +122,30 @@
           >
             <component 
               :is="getApplicationStatus(cls.id) === 'pending' ? Clock : getApplicationStatus(cls.id) === 'approved' ? CheckCircle : XCircle" 
-              class="w-4 h-4"
+              class="w-3 h-3 sm:w-4 sm:h-4"
             />
             {{ getApplicationStatusText(cls.id) }}
             
             <div 
               v-if="getApplicationStatus(cls.id) === 'rejected' && getRejectionReason(cls.id)"
-              class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-gray-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-left"
+              class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 sm:w-64 p-2 sm:p-3 bg-gray-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-left"
             >
               <div class="font-bold mb-1 flex items-center gap-1">
                 <XCircle class="w-3 h-3 text-red-400" />
                 Lý do từ chối:
               </div>
-              {{ getRejectionReason(cls.id) }}
+              <div class="break-words">{{ getRejectionReason(cls.id) }}</div>
               <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-800"></div>
             </div>
           </div>
         </div>
         
         <!-- Card Footer -->
-        <div class="p-4 bg-gray-50 border-t">
+        <div class="p-3 sm:p-4 bg-gray-50 border-t">
           <button 
             @click="applyToTeach(cls)" 
             :disabled="conflictMap[cls.id] || getApplicationStatus(cls.id)"
-            class="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            class="w-full px-4 py-2 sm:py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
           >
             <component 
               :is="getApplicationStatus(cls.id) ? CheckCircle : Hand" 
@@ -158,9 +158,9 @@
     </div>
 
     <!-- Empty State -->
-    <div v-if="filteredClasses.length === 0" class="text-center py-16">
-      <Inbox class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-      <p class="text-gray-500 text-lg">Không có lớp học nào cần giáo viên</p>
+    <div v-if="filteredClasses.length === 0" class="text-center py-12 sm:py-16">
+      <Inbox class="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+      <p class="text-gray-500 text-base sm:text-lg">Không có lớp học nào cần giáo viên</p>
     </div>
 
     <!-- Sessions Detail Modal -->
@@ -174,63 +174,64 @@
     >
       <div 
         v-if="showSessionsModal"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+        class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/50"
         @click.self="showSessionsModal = false"
       >
-        <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col">
+        <div class="bg-white rounded-xl sm:rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col">
           <!-- Modal Header -->
-          <div class="p-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white flex justify-between items-center shrink-0">
-            <div>
-              <h3 class="text-xl font-bold flex items-center gap-2">
-                <CalendarIcon class="w-6 h-6" />
-                Chi tiết lịch dạy
+          <div class="p-3 sm:p-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white flex justify-between items-center shrink-0">
+            <div class="min-w-0 flex-1">
+              <h3 class="text-base sm:text-xl font-bold flex items-center gap-1 sm:gap-2">
+                <CalendarIcon class="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+                <span class="hidden sm:inline">Chi tiết lịch dạy</span>
+                <span class="sm:hidden">Lịch dạy</span>
               </h3>
-              <p class="text-cyan-100 text-sm mt-1">{{ selectedClass?.name }}</p>
+              <p class="text-cyan-100 text-xs sm:text-sm mt-1 truncate">{{ selectedClass?.name }}</p>
             </div>
             <button 
               @click="showSessionsModal = false"
-              class="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-2 rounded-lg"
+              class="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 sm:p-2 rounded-lg ml-2 shrink-0"
             >
-              <X class="w-6 h-6" />
+              <X class="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
           
           <!-- Modal Body -->
-          <div class="p-6 overflow-y-auto flex-1">
-            <div v-if="selectedClassSessions.length === 0" class="text-center py-8 text-gray-500">
+          <div class="p-3 sm:p-6 overflow-y-auto flex-1">
+            <div v-if="selectedClassSessions.length === 0" class="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
               Chưa có lịch dạy cụ thể.
             </div>
             
-            <div v-else class="grid gap-3">
+            <div v-else class="grid gap-2 sm:gap-3">
               <div 
                 v-for="(session, idx) in selectedClassSessions" 
                 :key="session.id"
-                class="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-teal-200 hover:bg-teal-50/50 transition-all"
+                class="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 rounded-lg sm:rounded-xl border border-gray-100 hover:border-teal-200 hover:bg-teal-50/50 transition-all"
               >
                 <!-- Index -->
-                <div class="w-8 h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-sm shrink-0">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
                   {{ idx + 1 }}
                 </div>
                 
                 <!-- Date Info -->
-                <div class="flex-1">
-                  <div class="font-bold text-gray-800 flex items-center gap-2">
-                    <CalendarIcon class="w-4 h-4 text-teal-600" />
-                    {{ formatDate(session.date) }}
+                <div class="flex-1 min-w-0">
+                  <div class="font-bold text-gray-800 flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
+                    <CalendarIcon class="w-3 h-3 sm:w-4 sm:h-4 text-teal-600 shrink-0" />
+                    <span class="truncate">{{ formatDate(session.date) }}</span>
                   </div>
-                  <div class="text-sm text-gray-500 mt-1 flex items-center gap-4">
+                  <div class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 flex flex-wrap items-center gap-2 sm:gap-4">
                     <span class="flex items-center gap-1">
-                      <Clock class="w-3 h-3" /> {{ session.startTime }} - {{ session.endTime }}
+                      <Clock class="w-3 h-3 shrink-0" /> {{ session.startTime }} - {{ session.endTime }}
                     </span>
                     <span class="flex items-center gap-1">
-                      <MapPin class="w-3 h-3" /> {{ getRoomName(session.roomId) }}
+                      <MapPin class="w-3 h-3 shrink-0" /> <span class="truncate">{{ getRoomName(session.roomId) }}</span>
                     </span>
                   </div>
                 </div>
                 
                 <!-- Status -->
                 <div 
-                  class="text-xs font-semibold px-2 py-1 rounded"
+                  class="text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded shrink-0"
                   :class="getSessionStatus(session).class"
                 >
                   {{ getSessionStatus(session).text }}
@@ -240,10 +241,10 @@
           </div>
           
           <!-- Modal Footer -->
-          <div class="p-4 border-t bg-gray-50 flex justify-end shrink-0">
+          <div class="p-3 sm:p-4 border-t bg-gray-50 flex justify-end shrink-0">
             <button 
               @click="showSessionsModal = false"
-              class="px-6 py-2 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition-colors"
+              class="px-4 sm:px-6 py-2 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition-colors text-sm sm:text-base"
             >
               Đóng
             </button>

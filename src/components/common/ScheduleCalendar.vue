@@ -1,61 +1,63 @@
 <template>
   <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
     <!-- Header -->
-    <div class="p-6 bg-white border-b border-gray-100 flex justify-between items-center">
-      <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-        <CalendarIcon class="w-6 h-6 text-green-600" />
-        Lịch {{ role === 'student' ? 'Học' : 'Dạy' }} - Tháng {{ currentMonth + 1 }}/{{ currentYear }}
+    <div class="p-3 sm:p-6 bg-white border-b border-gray-100 flex justify-between items-center">
+      <h2 class="text-base sm:text-xl font-bold text-gray-800 flex items-center gap-1 sm:gap-2">
+        <CalendarIcon class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+        <span class="hidden sm:inline">Lịch {{ role === 'student' ? 'Học' : 'Dạy' }} - Tháng {{ currentMonth + 1 }}/{{ currentYear }}</span>
+        <span class="sm:hidden">T{{ currentMonth + 1 }}/{{ currentYear }}</span>
       </h2>
-      <div class="flex gap-2">
+      <div class="flex gap-1 sm:gap-2">
         <button 
           @click="prevMonth"
-          class="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+          class="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
         >
-          <ChevronLeft class="w-5 h-5 text-gray-600" />
+          <ChevronLeft class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
         </button>
         <button 
           @click="nextMonth"
-          class="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+          class="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
         >
-          <ChevronRight class="w-5 h-5 text-gray-600" />
+          <ChevronRight class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
         </button>
       </div>
     </div>
 
   </div> 
 
-<div v-if="upcomingSessions.length > 0" class="p-4 bg-green-50/50 border-b border-green-100">
-  <h3 class="text-sm font-bold text-green-800 uppercase tracking-wide mb-3 flex items-center gap-2">
-    <Clock class="w-4 h-4" />
-    Sắp diễn ra ({{ currentMonth + 1 }}/{{ currentYear }})
+<div v-if="upcomingSessions.length > 0" class="p-3 sm:p-4 bg-green-50/50 border-b border-green-100">
+  <h3 class="text-xs sm:text-sm font-bold text-green-800 uppercase tracking-wide mb-2 sm:mb-3 flex items-center gap-1 sm:gap-2">
+    <Clock class="w-3 h-3 sm:w-4 sm:h-4" />
+    <span class="hidden sm:inline">Sắp diễn ra ({{ currentMonth + 1 }}/{{ currentYear }})</span>
+    <span class="sm:hidden">Sắp diễn ra</span>
   </h3>
   
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
     <div 
       v-for="session in upcomingSessions" 
       :key="session.id"
-      class="bg-white p-3 rounded-xl border border-green-200 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+      class="bg-white p-2 sm:p-3 rounded-xl border border-green-200 shadow-sm hover:shadow-md transition-all cursor-pointer group"
       @click="openDayDetails(new Date(session.date))"
     >
-      <div class="flex justify-between items-start mb-2">
+      <div class="flex justify-between items-start mb-1 sm:mb-2">
         <div class="flex flex-col">
-          <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md w-fit">
+          <span class="text-xs font-bold text-green-600 bg-green-50 px-1.5 sm:px-2 py-0.5 rounded-md w-fit">
             {{ formatDate(new Date(session.date)) }}
           </span>
-          <span class="text-lg font-bold text-gray-800 mt-1">
+          <span class="text-base sm:text-lg font-bold text-gray-800 mt-0.5 sm:mt-1">
             {{ session.startTime }}
           </span>
         </div>
-        <div class="p-1.5 bg-gray-50 rounded-lg group-hover:bg-green-500 group-hover:text-white transition-colors">
-          <ArrowRight class="w-4 h-4 text-gray-400 group-hover:text-white" />
+        <div class="p-1 sm:p-1.5 bg-gray-50 rounded-lg group-hover:bg-green-500 group-hover:text-white transition-colors">
+          <ArrowRight class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-white" />
         </div>
       </div>
 
       <div>
-        <div class="font-semibold text-gray-700 truncate" :title="session.className">
+        <div class="text-sm sm:text-base font-semibold text-gray-700 truncate" :title="session.className">
           {{ session.className }}
         </div>
-        <div class="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
+        <div class="flex items-center gap-1 sm:gap-1.5 text-xs text-gray-500 mt-0.5 sm:mt-1">
           <MapPin class="w-3 h-3" />
           <span class="truncate">{{ session.roomName || 'Chưa xếp phòng' }}</span>
         </div>
@@ -63,51 +65,52 @@
     </div>
   </div>
 </div>
-<div class="p-4">
+<div class="p-2 sm:p-4">
 
     <!-- Calendar Grid -->
-    <div class="p-4">
+    <div class="p-2 sm:p-4">
       <!-- Days Header -->
-      <div class="grid grid-cols-7 mb-2">
+      <div class="grid grid-cols-7 mb-1 sm:mb-2">
         <div 
           v-for="day in ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']" 
           :key="day"
-          class="text-center font-semibold text-gray-500 py-2 text-sm uppercase tracking-wider"
+          class="text-center font-semibold text-gray-500 py-1 sm:py-2 text-xs sm:text-sm uppercase tracking-wider"
         >
           {{ day }}
         </div>
       </div>
 
       <!-- Days Grid -->
-      <div class="grid grid-cols-7 gap-2">
+      <div class="grid grid-cols-7 gap-1 sm:gap-2">
         <div 
           v-for="(date, index) in calendarDays" 
           :key="index"
-          class="min-h-[100px] border rounded-xl p-2 transition-all relative group"
+          class="min-h-[60px] sm:min-h-[100px] border rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all relative group"
           :class="[
             !date ? 'bg-gray-50/50 border-transparent' : 'bg-white border-gray-100 hover:border-green-300 hover:shadow-md cursor-pointer',
-            isToday(date) ? 'ring-2 ring-green-500 ring-offset-1' : ''
+            isToday(date) ? 'ring-1 sm:ring-2 ring-green-500 ring-offset-1' : ''
           ]"
           @click="date && openDayDetails(date)"
         >
           <template v-if="date">
             <span 
-              class="text-sm font-medium block mb-1"
+              class="text-xs sm:text-sm font-medium block mb-0.5 sm:mb-1"
               :class="isToday(date) ? 'text-green-600 font-bold' : 'text-gray-700'"
             >
               {{ date.getDate() }}
             </span>
             
             <!-- Events Dots -->
-            <div class="space-y-1">
+            <div class="space-y-0.5 sm:space-y-1">
               <div 
                 v-for="(session, sIndex) in getSessionsForDate(date)" 
                 :key="sIndex"
-                class="text-xs truncate px-1.5 py-0.5 rounded"
+                class="text-[10px] sm:text-xs truncate px-1 sm:px-1.5 py-0.5 rounded"
                 :class="session.isRegistered ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-green-50 text-green-700 border border-green-100'"
                 :title="`${session.startTime} - ${session.className}`"
               >
-                {{ session.startTime }} {{ session.className }}
+                <span class="hidden sm:inline">{{ session.startTime }} {{ session.className }}</span>
+                <span class="sm:hidden">{{ session.startTime }}</span>
               </div>
             </div>
           </template>
@@ -126,62 +129,63 @@
     >
       <div 
         v-if="selectedDate"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+        class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/50"
         @click.self="selectedDate = null"
       >
-        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
-          <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-            <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <Clock class="w-5 h-5 text-green-600" />
-              Lịch trình ngày {{ formatDate(selectedDate) }}
+        <div class="bg-white rounded-xl sm:rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+          <div class="p-3 sm:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <h3 class="text-base sm:text-xl font-bold text-gray-800 flex items-center gap-1 sm:gap-2">
+              <Clock class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+              <span class="hidden sm:inline">Lịch trình ngày {{ formatDate(selectedDate) }}</span>
+              <span class="sm:hidden">{{ formatDate(selectedDate) }}</span>
             </h3>
             <button 
               @click="selectedDate = null"
               class="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <X class="w-6 h-6" />
+              <X class="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
           
-          <div class="p-6 max-h-[60vh] overflow-y-auto">
-            <div v-if="selectedDateSessions.length === 0" class="text-center py-8 text-gray-500">
-              <div class="mb-2">😴</div>
-              Không có lịch nào trong ngày này
+          <div class="p-3 sm:p-6 max-h-[60vh] overflow-y-auto">
+            <div v-if="selectedDateSessions.length === 0" class="text-center py-6 sm:py-8 text-gray-500">
+              <div class="mb-2 text-2xl">😴</div>
+              <p class="text-sm sm:text-base">Không có lịch nào trong ngày này</p>
             </div>
             
-            <div v-else class="space-y-4">
+            <div v-else class="space-y-2 sm:space-y-4">
               <div 
                 v-for="session in selectedDateSessions" 
                 :key="session.id"
-                class="flex gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-green-200 transition-colors bg-white group"
+                class="flex gap-2 sm:gap-4 p-2 sm:p-4 rounded-lg sm:rounded-xl border-2 border-gray-100 hover:border-green-200 transition-colors bg-white group"
               >
                 <!-- Time Column -->
-                <div class="flex flex-col items-center justify-center w-20 rounded-lg font-bold shrink-0"
+                <div class="flex flex-col items-center justify-center w-16 sm:w-20 rounded-lg font-bold shrink-0 py-2"
                   :class="session.isRegistered ? 'bg-green-50 text-green-700' : 'bg-green-50 text-green-700'"
                 >
-                  <span class="text-lg">{{ session.startTime }}</span>
-                  <span class="text-xs font-normal" :class="session.isRegistered ? 'text-green-500' : 'text-green-500'">đến</span>
-                  <span class="text-sm">{{ session.endTime }}</span>
+                  <span class="text-sm sm:text-lg">{{ session.startTime }}</span>
+                  <span class="text-[10px] sm:text-xs font-normal" :class="session.isRegistered ? 'text-green-500' : 'text-green-500'">đến</span>
+                  <span class="text-xs sm:text-sm">{{ session.endTime }}</span>
                 </div>
                 
                 <!-- Info Column -->
-                <div class="flex-1">
-                  <h4 class="font-bold text-gray-800 text-lg group-hover:text-green-600 transition-colors">
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-bold text-gray-800 text-sm sm:text-lg group-hover:text-green-600 transition-colors truncate">
                     {{ session.className }}
                   </h4>
-                  <div class="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                    <MapPin class="w-4 h-4 text-gray-400" />
-                    {{ session.roomName }}
+                  <div class="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 mt-0.5 sm:mt-1">
+                    <MapPin class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
+                    <span class="truncate">{{ session.roomName }}</span>
                   </div>
-                  <div class="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                    <User class="w-4 h-4 text-gray-400" />
-                    {{ session.teacherName }}
+                  <div class="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 mt-0.5 sm:mt-1">
+                    <User class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
+                    <span class="truncate">{{ session.teacherName }}</span>
                   </div>
                   <!-- Note Display -->
-                  <div v-if="session.note" class="mt-2 p-2 bg-orange-50 border border-orange-200 rounded-lg">
-                    <div class="flex items-start gap-2 text-sm">
-                      <AlertTriangle class="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
-                      <div>
+                  <div v-if="session.note" class="mt-1 sm:mt-2 p-1.5 sm:p-2 bg-orange-50 border border-orange-200 rounded-lg">
+                    <div class="flex items-start gap-1 sm:gap-2 text-xs sm:text-sm">
+                      <AlertTriangle class="w-3 h-3 sm:w-4 sm:h-4 text-orange-600 shrink-0 mt-0.5" />
+                      <div class="min-w-0">
                         <div class="font-semibold text-orange-800">Thông báo thay đổi:</div>
                         <div class="text-orange-700">{{ session.note }}</div>
                       </div>

@@ -1,8 +1,8 @@
 <template>
-  <div class="p-6">
-    <div class="flex items-center gap-3 mb-6">
-      <CalendarIcon class="w-8 h-8 text-green-600" />
-      <h1 class="text-2xl font-bold text-gray-800">Lịch dạy của tôi</h1>
+  <div class="p-3 sm:p-6">
+    <div class="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+      <CalendarIcon class="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Lịch dạy của tôi</h1>
     </div>
     <ScheduleCalendar role="teacher" :user-id="userId" />
   </div>

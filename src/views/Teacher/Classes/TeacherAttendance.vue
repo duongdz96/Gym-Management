@@ -1,53 +1,53 @@
 <template>
-  <div class="p-6">
+  <div class="p-3 sm:p-6">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
-      <div class="flex items-center gap-3">
-        <ClipboardCheck class="w-10 h-10 text-green-600" />
-        <h1 class="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-8">
+      <div class="flex items-center gap-2 sm:gap-3">
+        <ClipboardCheck class="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
+        <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
           Điểm Danh
         </h1>
       </div>
       <button @click="goBack"
-        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors flex items-center gap-2">
-        <ArrowLeft class="w-5 h-5" />
+        class="px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors flex items-center gap-2 text-sm sm:text-base">
+        <ArrowLeft class="w-4 h-4 sm:w-5 sm:h-5" />
         Quay lại
       </button>
     </div>
 
     <!-- Class Info -->
     <div v-if="selectedClass"
-      class="mb-6 p-6 bg-gradient-to-r from-green-600 to-green-700 rounded-2xl shadow-md text-white">
-      <div class="flex items-center gap-3 mb-2">
-        <Dumbbell class="w-6 h-6" />
-        <h1 class="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
+      class="mb-4 sm:mb-6 p-3 sm:p-6 bg-gradient-to-r from-green-600 to-green-700 rounded-xl sm:rounded-2xl shadow-md text-white">
+      <div class="flex items-center gap-2 sm:gap-3 mb-2">
+        <Dumbbell class="w-5 h-5 sm:w-6 sm:h-6" />
+        <h1 class="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
           Lịch Dạy & Điểm Danh
         </h1>
       </div>
-      <p class="text-green-100">{{ selectedClass.description }}</p>
+      <p class="text-green-100 text-sm sm:text-base">{{ selectedClass.description }}</p>
     </div>
 
     <!-- Calendar View for Session Selection -->
-    <div v-if="!selectedSession" class="bg-white rounded-2xl shadow-md p-6 mb-6">
-      <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <Calendar class="w-6 h-6 text-green-600" />
+    <div v-if="!selectedSession" class="bg-white rounded-xl sm:rounded-2xl shadow-md p-3 sm:p-6 mb-4 sm:mb-6">
+      <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+        <Calendar class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
         Chọn Buổi Học
       </h2>
 
       <!-- Search & Filter -->
-      <div class="mb-4 flex gap-3">
+      <div class="mb-3 sm:mb-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
         <div class="relative flex-1">
           <input 
             v-model="sessionSearchQuery"
             type="text" 
             placeholder="Tìm kiếm lớp học..." 
-            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm"
+            class="w-full pl-8 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-xs sm:text-sm"
           />
-          <Search class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
         <select 
           v-model="sessionFilterStatus"
-          class="px-3 py-2 border border-gray-300 rounded-lg outline-none text-sm bg-white focus:border-green-500"
+          class="px-3 py-2 border border-gray-300 rounded-lg outline-none text-xs sm:text-sm bg-white focus:border-green-500"
         >
           <option value="all">Tất cả buổi học</option>
           <option value="upcoming">Sắp tới</option>
@@ -56,189 +56,189 @@
       </div>
 
       <!-- Sessions List -->
-      <div v-if="filteredSessions.length > 0" class="grid gap-3">
+      <div v-if="filteredSessions.length > 0" class="grid gap-2 sm:gap-3">
         <div v-for="session in filteredSessions" :key="session.id" @click="selectSession(session)"
-          class="flex items-center gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md" :class="session.id === selectedSession?.id
+          class="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all cursor-pointer hover:shadow-md" :class="session.id === selectedSession?.id
             ? 'border-green-600 bg-green-50'
             : 'border-gray-200 hover:border-green-300'">
           <!-- Date Badge -->
-          <div class="flex flex-col items-center justify-center w-20 rounded-lg font-bold shrink-0 p-3"
+          <div class="flex flex-col items-center justify-center w-14 sm:w-20 rounded-lg font-bold shrink-0 p-2 sm:p-3"
             :class="isToday(session.date) ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'">
-            <span class="text-2xl">{{ new Date(session.date).getDate() }}</span>
-            <span class="text-xs">Tháng {{ new Date(session.date).getMonth() + 1 }}</span>
+            <span class="text-xl sm:text-2xl">{{ new Date(session.date).getDate() }}</span>
+            <span class="text-[10px] sm:text-xs">Tháng {{ new Date(session.date).getMonth() + 1 }}</span>
           </div>
 
           <!-- Session Info -->
-          <div class="flex-1">
-            <div class="text-sm font-bold text-green-700 uppercase mb-1">
+          <div class="flex-1 min-w-0">
+            <div class="text-xs sm:text-sm font-bold text-green-700 uppercase mb-1 truncate">
               {{ session.className }}
             </div>
 
-            <div class="font-bold text-gray-800 flex items-center gap-2">
-              <CalendarIcon class="w-4 h-4 text-green-500" />
-              {{ formatDate(session.date) }}
-              <span v-if="isToday(session.date)" class="px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded">
+            <div class="font-bold text-gray-800 flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
+              <CalendarIcon class="w-3 h-3 sm:w-4 sm:h-4 text-green-500 shrink-0" />
+              <span class="truncate">{{ formatDate(session.date) }}</span>
+              <span v-if="isToday(session.date)" class="px-1.5 sm:px-2 py-0.5 bg-green-500 text-white text-[10px] sm:text-xs font-bold rounded shrink-0">
                 HÔM NAY
               </span>
             </div>
-            <div class="text-sm text-gray-500 mt-1 flex items-center gap-4">
+            <div class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 flex flex-wrap items-center gap-2 sm:gap-4">
               <span class="flex items-center gap-1">
-                <Clock class="w-3 h-3" /> {{ formatScheduleTime(session.startTime) }} - {{
+                <Clock class="w-3 h-3 shrink-0" /> {{ formatScheduleTime(session.startTime) }} - {{
                   formatScheduleTime(session.endTime) }}
               </span>
               <span class="flex items-center gap-1">
-                <MapPin class="w-3 h-3" /> {{ getRoomName(session.roomId) }}
+                <MapPin class="w-3 h-3 shrink-0" /> <span class="truncate">{{ getRoomName(session.roomId) }}</span>
               </span>
             </div>
           </div>
 
           <!-- Attendance Stats -->
           <div class="text-right">
-            <div class="text-sm text-gray-500">Đã điểm danh</div>
-            <div class="text-2xl font-bold text-green-600">
+            <div class="text-[10px] sm:text-sm text-gray-500">Đã điểm danh</div>
+            <div class="text-xl sm:text-2xl font-bold text-green-600">
               {{ getAttendanceCount(session.id) }}/{{ getRegisteredCount(session.id) }}
             </div>
           </div>
 
-          <ChevronRight class="w-6 h-6 text-gray-400" />
+          <ChevronRight class="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 shrink-0" />
         </div>
       </div>
 
       <!-- No Sessions -->
-      <div v-else class="text-center py-8 text-gray-500">
-        <Inbox class="w-12 h-12 text-gray-400 mx-auto mb-2" />
-        <p>Không có buổi học sắp tới</p>
+      <div v-else class="text-center py-6 sm:py-8 text-gray-500">
+        <Inbox class="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-2" />
+        <p class="text-sm sm:text-base">Không có buổi học sắp tới</p>
       </div>
     </div>
 
     <!-- Attendance Tracking -->
-    <div v-if="selectedSession" class="space-y-6">
+    <div v-if="selectedSession" class="space-y-4 sm:space-y-6">
       <!-- Session Info Card -->
-      <div class="bg-white rounded-2xl shadow-md p-6">
-        <div class="flex justify-between items-start mb-4">
+      <div class="bg-white rounded-xl sm:rounded-2xl shadow-md p-3 sm:p-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0 mb-4">
           <div>
-            <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <CalendarIcon class="w-6 h-6 text-green-600" />
+            <h2 class="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+              <CalendarIcon class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               {{ formatDate(selectedSession.date) }}
             </h2>
-            <p class="text-gray-600 mt-1">
+            <p class="text-gray-600 mt-1 text-sm sm:text-base">
               {{ formatScheduleTime(selectedSession.startTime) }} - {{ formatScheduleTime(selectedSession.endTime) }}
             </p>
           </div>
           <button @click="handleBackToList"
-            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
+            class="w-full sm:w-auto px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors text-sm sm:text-base">
             Đổi buổi học
           </button>
         </div>
 
         <!-- Stats -->
-        <div class="grid grid-cols-3 gap-4 mt-4">
-          <div class="p-4 bg-blue-50 rounded-xl">
-            <div class="text-sm text-blue-600 font-semibold">Tổng số</div>
-            <div class="text-2xl font-bold text-blue-700">{{ registeredStudents.length }}</div>
+        <div class="grid grid-cols-3 gap-2 sm:gap-4 mt-4">
+          <div class="p-3 sm:p-4 bg-blue-50 rounded-xl">
+            <div class="text-xs sm:text-sm text-blue-600 font-semibold">Tổng số</div>
+            <div class="text-xl sm:text-2xl font-bold text-blue-700">{{ registeredStudents.length }}</div>
           </div>
-          <div class="p-4 bg-green-50 rounded-xl">
-            <div class="text-sm text-green-600 font-semibold">Có mặt</div>
-            <div class="text-2xl font-bold text-green-700">{{ presentCount }}</div>
+          <div class="p-3 sm:p-4 bg-green-50 rounded-xl">
+            <div class="text-xs sm:text-sm text-green-600 font-semibold">Có mặt</div>
+            <div class="text-xl sm:text-2xl font-bold text-green-700">{{ presentCount }}</div>
           </div>
-          <div class="p-4 bg-red-50 rounded-xl">
-            <div class="text-sm text-red-600 font-semibold">Vắng</div>
-            <div class="text-2xl font-bold text-red-700">{{ absentCount }}</div>
+          <div class="p-3 sm:p-4 bg-red-50 rounded-xl">
+            <div class="text-xs sm:text-sm text-red-600 font-semibold">Vắng</div>
+            <div class="text-xl sm:text-2xl font-bold text-red-700">{{ absentCount }}</div>
           </div>
         </div>
       </div>
 
       <!-- Student List -->
-      <div class="bg-white rounded-2xl shadow-md p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-bold text-gray-800">Danh sách học viên</h3>
+      <div class="bg-white rounded-xl sm:rounded-2xl shadow-md p-3 sm:p-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
+          <h3 class="text-base sm:text-lg font-bold text-gray-800">Danh sách học viên</h3>
 
           <button @click="autoAbsent" :disabled="finalizing"
-            class="px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-            <AlertTriangle class="w-4 h-4" />
+            class="w-full sm:w-auto px-3 sm:px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base">
+            <AlertTriangle class="w-3 h-3 sm:w-4 sm:h-4" />
             Auto Vắng
           </button>
         </div>
 
         <!-- Search Student -->
-        <div class="mb-4">
+        <div class="mb-3 sm:mb-4">
           <div class="relative">
             <input 
               v-model="studentSearchQuery"
               type="text" 
               placeholder="Tìm kiếm học viên..." 
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-sm"
+              class="w-full pl-8 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-xs sm:text-sm"
             />
-            <Search class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
         </div>
 
         <!-- Loading -->
-        <div v-if="loadingStudents" class="text-center py-8">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          Đang tải danh sách...
+        <div v-if="loadingStudents" class="text-center py-6 sm:py-8">
+          <div class="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p class="text-sm sm:text-base">Đang tải danh sách...</p>
         </div>
 
         <!-- Students -->
-        <div v-else-if="filteredStudents.length > 0" class="space-y-3">
-          <div v-for="student in filteredStudents" :key="student.id" class="p-4 border-2 rounded-xl transition-all"
+        <div v-else-if="filteredStudents.length > 0" class="space-y-2 sm:space-y-3">
+          <div v-for="student in filteredStudents" :key="student.id" class="p-2 sm:p-4 border-2 rounded-lg sm:rounded-xl transition-all"
             :class="getStudentAttendance(student.id)?.status === 'PRESENT'
               ? 'border-green-300 bg-green-50'
               : getStudentAttendance(student.id)?.status === 'ABSENT'
                 ? 'border-red-300 bg-red-50'
                 : 'border-gray-200'">
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 sm:gap-4">
               <!-- Avatar -->
               <div
-                class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
+                class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-base sm:text-lg shrink-0">
                 {{ student.name.charAt(0) }}
               </div>
 
               <!-- Student Info -->
-              <div class="flex-1">
-                <div class="font-bold text-gray-800">{{ student.name }}</div>
-                <div class="text-sm text-gray-600">{{ student.email }}</div>
+              <div class="flex-1 min-w-0">
+                <div class="font-bold text-gray-800 text-sm sm:text-base truncate">{{ student.name }}</div>
+                <div class="text-xs sm:text-sm text-gray-600 truncate">{{ student.email }}</div>
               </div>
 
               <!-- Attendance Toggle -->
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1 sm:gap-2 shrink-0">
                 <button @click="markPresent(student)"
-                  class="px-4 py-2 rounded-lg font-semibold transition-all"
+                  class="px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all"
                   :class="getStudentAttendance(student.id)?.status === 'PRESENT'
                     ? 'bg-green-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-green-100'">
-                  <Check class="w-5 h-5" />
+                  <Check class="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <button @click="markAbsent(student)"
-                  class="px-4 py-2 rounded-lg font-semibold transition-all"
+                  class="px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all"
                   :class="getStudentAttendance(student.id)?.status === 'ABSENT'
                     ? 'bg-red-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-red-100'">
-                  <X class="w-5 h-5" />
+                  <X class="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
 
             <!-- Notes -->
-            <div v-if="getStudentAttendance(student.id)" class="mt-3">
+            <div v-if="getStudentAttendance(student.id)" class="mt-2 sm:mt-3">
               <textarea v-model="getStudentAttendance(student.id).notes" @blur="updateNotes(student)"
                 placeholder="Ghi chú..."
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none transition-all"
+                class="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none transition-all"
                 rows="2"></textarea>
             </div>
           </div>
         </div>
 
         <!-- No Students -->
-        <div v-else-if="registeredStudents.length === 0" class="text-center py-8 text-gray-500">
-          <Users class="w-12 h-12 text-gray-400 mx-auto mb-2" />
-          <p>Chưa có học viên đăng ký</p>
+        <div v-else-if="registeredStudents.length === 0" class="text-center py-6 sm:py-8 text-gray-500">
+          <Users class="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-2" />
+          <p class="text-sm sm:text-base">Chưa có học viên đăng ký</p>
         </div>
 
         <!-- No Search Results -->
-        <div v-else class="text-center py-8 text-gray-500">
-          <Search class="w-12 h-12 text-gray-400 mx-auto mb-2" />
-          <p>Không tìm thấy học viên nào</p>
+        <div v-else class="text-center py-6 sm:py-8 text-gray-500">
+          <Search class="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-2" />
+          <p class="text-sm sm:text-base">Không tìm thấy học viên nào</p>
         </div>
       </div>
     </div>
