@@ -112,14 +112,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 py-8">
-    <div class="mx-auto max-w-3xl px-6">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50 py-4 sm:py-8">
+    <div class="mx-auto max-w-3xl px-4 sm:px-6">
       <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+      <div class="mb-6 sm:mb-8">
+        <h1 class="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
           {{ pageTitle }}
         </h1>
-        <p class="text-gray-600 mt-2">{{ pageSubtitle }}</p>
+        <p class="text-gray-600 text-sm sm:text-base mt-2">{{ pageSubtitle }}</p>
       </div>
 
       <!-- Loading State -->
@@ -141,7 +141,7 @@ onMounted(() => {
                 v-model="formData.name"
                 type="text"
                 placeholder="VD: Bench Press, Squat, Deadlift..."
-                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none"
+                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
                 required
               />
             </div>
@@ -154,7 +154,7 @@ onMounted(() => {
             </label>
             <select
               v-model="formData.muscleGroup"
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none appearance-none bg-white"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none appearance-none bg-white"
               required
             >
               <option value="" disabled>Chọn nhóm cơ</option>
@@ -173,7 +173,7 @@ onMounted(() => {
               v-model="formData.description"
               rows="6"
               placeholder="Mô tả cách thực hiện bài tập, kỹ thuật, lưu ý..."
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none resize-none"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none resize-none"
               required
             ></textarea>
             <p class="text-sm text-gray-500 mt-2">
@@ -182,16 +182,16 @@ onMounted(() => {
           </div>
 
           <!-- Preview Card -->
-          <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-6 border border-red-200">
+          <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-6 border border-emerald-200">
             <h3 class="text-sm font-semibold text-gray-700 mb-3">Xem Trước</h3>
             <div class="bg-white rounded-lg p-4">
               <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
                   <Dumbbell class="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h4 class="font-bold text-gray-900">{{ formData.name || 'Tên bài tập' }}</h4>
-                  <span class="text-sm text-red-600 font-medium">{{ formData.muscleGroup || 'Nhóm cơ' }}</span>
+                  <span class="text-sm text-emerald-600 font-medium">{{ formData.muscleGroup || 'Nhóm cơ' }}</span>
                 </div>
               </div>
               <p class="text-sm text-gray-600">
@@ -213,7 +213,7 @@ onMounted(() => {
             <button
               type="submit"
               :disabled="isSubmitting"
-              class="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save class="w-5 h-5" />
               {{ submitButtonText }}

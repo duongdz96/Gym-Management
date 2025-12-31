@@ -110,30 +110,30 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 py-8">
-    <div class="mx-auto max-w-4xl px-6">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 py-4 sm:py-8">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6">
       <button
         @click="goBack"
-        class="flex items-center gap-2 text-gray-600 hover:text-red-600 mb-6 transition-colors"
+        class="flex items-center gap-2 text-gray-600 hover:text-emerald-600 mb-4 sm:mb-6 transition-colors text-sm sm:text-base"
       >
         <ArrowLeft class="w-5 h-5" />
         <span class="font-medium">Quay lại</span>
       </button>
 
       <div v-if="isLoading" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
 
-      <div v-else-if="trainingPlan" class="space-y-6">
-        <div class="bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-8 text-white shadow-lg">
-          <div class="flex items-start justify-between mb-4">
+      <div v-else-if="trainingPlan" class="space-y-4 sm:space-y-6">
+        <div class="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl sm:rounded-2xl p-5 sm:p-8 text-white shadow-lg">
+          <div class="flex flex-col sm:flex-row items-start justify-between mb-4 gap-3">
             <div>
-              <h1 class="text-3xl font-bold mb-2">Bắt Đầu Tập</h1>
-              <p class="text-white/90">{{ formatDate(trainingPlan.date) }}</p>
+              <h1 class="text-2xl sm:text-3xl font-bold mb-2">Bắt Đầu Tập</h1>
+              <p class="text-sm sm:text-base text-white/90">{{ formatDate(trainingPlan.date) }}</p>
             </div>
-            <div class="text-right">
-              <div class="text-4xl font-bold">{{ progress }}%</div>
-              <div class="text-sm text-white/90">Hoàn thành</div>
+            <div class="text-left sm:text-right">
+              <div class="text-3xl sm:text-4xl font-bold">{{ progress }}%</div>
+              <div class="text-xs sm:text-sm text-white/90">Hoàn thành</div>
             </div>
           </div>
 
@@ -155,38 +155,38 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-lg p-6">
-          <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Dumbbell class="w-6 h-6 text-red-600" />
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
+          <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+            <Dumbbell class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
             Danh Sách Bài Tập
           </h2>
 
-          <div class="space-y-3">
+          <div class="space-y-2 sm:space-y-3">
             <div
               v-for="(detail, index) in trainingPlan.details"
               :key="detail.id"
               @click="toggleExercise(detail.id)" 
               :class="[
-                'p-4 rounded-xl border-2 cursor-pointer transition-all',
+                'p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 cursor-pointer transition-all',
                 completedExercises.has(detail.id) 
                   ? 'border-green-500 bg-green-50'
                   : 'border-gray-200 hover:border-red-300 hover:bg-red-50'
               ]"
             >
-              <div class="flex items-start gap-4">
-                <div class="flex-shrink-0 mt-1">
+              <div class="flex items-start gap-2 sm:gap-4">
+                <div class="flex-shrink-0 mt-0.5 sm:mt-1">
                   <component
                     :is="completedExercises.has(detail.id) ? CheckCircle : Circle"
                     :class="completedExercises.has(detail.id) ? 'text-green-600' : 'text-gray-400'"
-                    class="w-6 h-6"
+                    class="w-5 h-5 sm:w-6 sm:h-6"
                   />
                 </div>
 
-                <div class="flex-1">
-                  <div class="flex items-start justify-between">
-                    <div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-col sm:flex-row items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
                       <h3 :class="[
-                        'font-bold text-lg',
+                        'font-bold text-base sm:text-lg',
                         completedExercises.has(detail.id) ? 'text-green-900 line-through' : 'text-gray-900'
                       ]">
                         {{ index + 1 }}. {{ detail.exercise.name }}
@@ -194,7 +194,7 @@ onMounted(() => {
                       <p class="text-sm text-gray-600 mt-1">{{ detail.exercise.muscleGroup }}</p>
                     </div>
                     <div class="text-right">
-                      <div class="text-red-600 font-bold">
+                      <div class="text-emerald-600 font-bold">
                         {{ detail.setCount }} sets
                       </div>
                       <div class="text-sm text-gray-600">
@@ -212,14 +212,14 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-lg p-6">
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6">
           <button
             @click="completePlan"
             :disabled="!allCompleted || isCompleting"
             :class="[
-              'w-full flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-bold text-lg transition-all transform',
+              'w-full flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all transform',
               allCompleted && !isCompleting
-                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:shadow-lg hover:scale-105'
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:shadow-lg hover:scale-105'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             ]"
           >
@@ -233,9 +233,9 @@ onMounted(() => {
         </div>
 
         <!-- Motivation Card -->
-        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-6">
-          <h3 class="text-lg font-bold text-emerald-900 mb-3">💪 Động lực</h3>
-          <ul class="space-y-2 text-emerald-800">
+        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4 sm:p-6">
+          <h3 class="text-base sm:text-lg font-bold text-emerald-900 mb-2 sm:mb-3">💪 Động lực</h3>
+          <ul class="space-y-1.5 sm:space-y-2 text-sm sm:text-base text-emerald-800">
             <li class="flex items-start gap-2">
               <span class="text-emerald-600 mt-1">•</span>
               <span>Tập trung vào kỹ thuật đúng</span>

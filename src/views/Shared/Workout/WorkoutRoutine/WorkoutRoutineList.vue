@@ -191,19 +191,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50 py-8">
-    <div class="mx-auto max-w-7xl px-6">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50 py-4 sm:py-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
       <!-- Header -->
-      <div class="mb-8 flex items-center justify-between">
+      <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
+          <h1 class="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
             Cộng Đồng Workout
           </h1>
-          <p class="text-gray-600 mt-2">Khám phá và chia sẻ các mẫu lịch tập</p>
+          <p class="text-gray-600 text-sm sm:text-base mt-2">Khám phá và chia sẻ các mẫu lịch tập</p>
         </div>
         <button
           @click="goToCreate"
-          class="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105"
+          class="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105"
         >
           <Plus class="w-5 h-5" />
           Tạo Mẫu Mới
@@ -211,25 +211,25 @@ onMounted(() => {
       </div>
 
       <!-- Search & Filter -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-        <div class="flex flex-col md:flex-row gap-4">
+      <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+        <div class="flex flex-col md:flex-row gap-3 sm:gap-4">
           <!-- Search -->
           <div class="relative flex-1">
-            <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             <input
               v-model="searchQuery"
               type="text"
               placeholder="Tìm kiếm mẫu lịch tập..."
-              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
+              class="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
             />
           </div>
 
           <!-- Filter Buttons -->
-          <div class="flex gap-2">
+          <div class="flex flex-wrap gap-2">
             <button
               @click="filterType = 'all'"
               :class="filterType === 'all' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 border border-gray-300'"
-              class="px-4 py-2 rounded-lg font-semibold transition-colors"
+              class="px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg font-semibold transition-colors"
             >
               Tất cả
             </button>
@@ -256,28 +256,28 @@ onMounted(() => {
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
 
-      <div v-else class="space-y-8">
+      <div v-else class="space-y-6 sm:space-y-8">
         <!-- My Routines Section -->
         <div v-if="myRoutines.length > 0 && (filterType === 'all' || filterType === 'mine')">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <ListChecks class="w-6 h-6 text-emerald-600" />
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+            <ListChecks class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
             Mẫu Của Tôi ({{ myRoutines.length }})
           </h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div
               v-for="routine in myRoutines"
               :key="routine.id"
-              class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-emerald-100"
+              class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-emerald-100"
             >
               <!-- Routine Header -->
-              <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center gap-3 flex-1">
-                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
-                    <ListChecks class="w-6 h-6 text-white" />
+              <div class="flex items-start justify-between mb-3 sm:mb-4 gap-2">
+                <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                    <ListChecks class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div class="flex-1 min-w-0">
-                    <h3 class="text-lg font-bold text-gray-900 truncate">{{ routine.name }}</h3>
-                    <span class="text-sm text-emerald-600 font-medium">{{ routine.muscleGroupFocus }}</span>
+                    <h3 class="text-base sm:text-lg font-bold text-gray-900 truncate">{{ routine.name }}</h3>
+                    <span class="text-xs sm:text-sm text-emerald-600 font-medium truncate block">{{ routine.muscleGroupFocus }}</span>
                   </div>
                 </div>
                 <component
@@ -303,31 +303,32 @@ onMounted(() => {
               <div class="grid grid-cols-2 gap-2">
                 <button
                   @click="viewRoutine(routine)"
-                  class="flex items-center justify-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-2 rounded-lg hover:bg-emerald-100 transition-colors text-sm"
+                  class="flex items-center justify-center gap-1 sm:gap-2 bg-emerald-50 text-emerald-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-emerald-100 transition-colors text-xs sm:text-sm"
                 >
-                  <Eye class="w-4 h-4" />
-                  Xem
+                  <Eye class="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span class="hidden sm:inline">Xem</span>
                 </button>
                 <button
                   @click="editRoutine(routine)"
-                  class="flex items-center justify-center gap-2 bg-green-50 text-green-600 px-3 py-2 rounded-lg hover:bg-green-100 transition-colors text-sm"
+                  class="flex items-center justify-center gap-1 sm:gap-2 bg-green-50 text-green-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-green-100 transition-colors text-xs sm:text-sm"
                 >
-                  <Edit class="w-4 h-4" />
-                  Sửa
+                  <Edit class="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span class="hidden sm:inline">Sửa</span>
                 </button>
                 <button
                   v-if="authStore.user?.role === 'MEMBER'"
                   @click="selectForWorkout(routine)"
-                  class="flex items-center justify-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition-colors text-sm"
+                  class="flex items-center justify-center gap-1 bg-red-50 text-red-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-red-100 transition-colors text-xs sm:text-sm"
                 >
-                  Chọn tập
+                  <span class="sm:hidden">Tập</span>
+                  <span class="hidden sm:inline">Chọn tập</span>
                 </button>
                 <button
                   @click="confirmDelete(routine)"
-                  class="flex items-center justify-center gap-2 bg-purple-50 text-purple-600 px-3 py-2 rounded-lg hover:bg-purple-100 transition-colors text-sm"
+                  class="flex items-center justify-center gap-1 sm:gap-2 bg-purple-50 text-purple-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-purple-100 transition-colors text-xs sm:text-sm"
                 >
-                  <Trash2 class="w-4 h-4" />
-                  Xóa
+                  <Trash2 class="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span class="hidden sm:inline">Xóa</span>
                 </button>
                 <!-- <button
                   @click="confirmDelete(routine)"
@@ -343,25 +344,25 @@ onMounted(() => {
 
         <!-- Public Routines Section -->
         <div v-if="publicRoutines.length > 0 && (filterType === 'all' || filterType === 'public')">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Globe class="w-6 h-6 text-green-600" />
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+            <Globe class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
             Mẫu Công Khai ({{ publicRoutines.length }})
           </h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div
               v-for="routine in publicRoutines"
               :key="routine.id"
-              class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+              class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
             >
               <!-- Routine Header -->
-              <div class="flex items-start justify-between mb-4">
-                <div class="flex items-center gap-3 flex-1">
-                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                    <ListChecks class="w-6 h-6 text-white" />
+              <div class="flex items-start justify-between mb-3 sm:mb-4">
+                <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                    <ListChecks class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <div class="flex-1 min-w-0">
-                    <h3 class="text-lg font-bold text-gray-900 truncate">{{ routine.name }}</h3>
-                    <span class="text-sm text-green-600 font-medium">{{ routine.muscleGroupFocus }}</span>
+                    <h3 class="text-base sm:text-lg font-bold text-gray-900 truncate">{{ routine.name }}</h3>
+                    <span class="text-xs sm:text-sm text-green-600 font-medium truncate block">{{ routine.muscleGroupFocus }}</span>
                   </div>
                 </div>
               </div>
@@ -386,24 +387,26 @@ onMounted(() => {
               <div class="grid grid-cols-2 gap-2">
                 <button
                   @click="viewRoutine(routine)"
-                  class="flex items-center justify-center gap-2 bg-green-50 text-green-600 px-3 py-2 rounded-lg hover:bg-green-100 transition-colors text-sm"
+                  class="flex items-center justify-center gap-1 sm:gap-2 bg-green-50 text-green-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-green-100 transition-colors text-xs sm:text-sm"
                 >
-                  <Eye class="w-4 h-4" />
-                  Xem
+                  <Eye class="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span class="hidden sm:inline">Xem</span>
                 </button>
                 <button
                   v-if="authStore.user?.role === 'MEMBER'"
                   @click="selectForWorkout(routine)"
-                  class="flex items-center justify-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition-colors text-sm"
+                  class="flex items-center justify-center gap-1 bg-red-50 text-red-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-red-100 transition-colors text-xs sm:text-sm"
                 >
-                  Chọn tập
+                  <span class="sm:hidden">Tập</span>
+                  <span class="hidden sm:inline">Chọn tập</span>
                 </button>
                 <button
                   @click="openAssignModal(routine)"
-                  class="col-span-2 flex items-center justify-center gap-2 bg-purple-50 text-purple-600 px-3 py-2 rounded-lg hover:bg-purple-100 transition-colors text-sm"
+                  class="col-span-2 flex items-center justify-center gap-1 sm:gap-2 bg-purple-50 text-purple-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-purple-100 transition-colors text-xs sm:text-sm"
                 >
-                  <Users class="w-4 h-4" />
-                  Gán cho người khác
+                  <Users class="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span class="hidden sm:inline">Gán cho người khác</span>
+                  <span class="sm:hidden">Gán</span>
                 </button>
               </div>
             </div>
@@ -429,15 +432,15 @@ onMounted(() => {
     <!-- Delete Confirmation Modal -->
     <div
       v-if="showDeleteModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4"
       @click="cancelDelete"
     >
       <div
-        class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl"
+        class="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 max-w-md w-full mx-4 shadow-2xl"
         @click.stop
       >
-        <h3 class="text-2xl font-bold text-gray-900 mb-4">Xác nhận xóa</h3>
-        <p class="text-gray-600 mb-6">
+        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Xác nhận xóa</h3>
+        <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
           Bạn có chắc chắn muốn xóa mẫu lịch tập <strong>{{ routineToDelete?.name }}</strong>?
           Hành động này không thể hoàn tác.
         </p>
@@ -461,15 +464,15 @@ onMounted(() => {
     <!-- Assign Modal -->
     <div
       v-if="showAssignModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4"
       @click="closeAssignModal"
     >
       <div
-        class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl"
+        class="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 max-w-md w-full mx-4 shadow-2xl"
         @click.stop
       >
-        <h3 class="text-2xl font-bold text-gray-900 mb-4">Gán lịch tập</h3>
-        <p class="text-gray-600 mb-6">
+        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Gán lịch tập</h3>
+        <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
           Gán mẫu <strong>{{ routineToAssign?.name }}</strong> cho học viên
         </p>
 

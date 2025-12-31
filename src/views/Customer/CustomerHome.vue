@@ -181,100 +181,100 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white py-8">
-    <div class="mx-auto max-w-7xl px-6">
+  <div class="min-h-screen bg-white py-4 sm:py-8">
+    <div class="mx-auto max-w-7xl px-3 sm:px-6">
       <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
+      <div class="mb-4 sm:mb-8">
+        <h1 class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
           Chào mừng trở lại, {{ authStore.user?.fullName || 'Hội viên' }} 👋
         </h1>
-        <p class="text-gray-600 mt-2">Tổng quan hành trình tập luyện của bạn</p>
+        <p class="text-gray-600 mt-2 text-sm sm:text-base">Tổng quan hành trình tập luyện của bạn</p>
       </div>
 
       <!-- Loading State -->
       <div v-if="isLoading" class="flex justify-center items-center h-64">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+        <div class="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-emerald-600"></div>
       </div>
 
-      <div v-else class="space-y-8">
+      <div v-else class="space-y-4 sm:space-y-8">
         <!-- Personal Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           <!-- Membership Card -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center">
-                <Award class="w-6 h-6 text-white" />
+          <div class="bg-white/80 backdrop-blur-lg rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 border border-emerald-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center">
+                <Award class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <span :class="`px-3 py-1 rounded-full text-xs font-semibold bg-${membershipStatusColor}-100 text-${membershipStatusColor}-700`">
+              <span :class="`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold bg-${membershipStatusColor}-100 text-${membershipStatusColor}-700`">
                 {{ personalStats.membershipDaysLeft }} ngày còn lại
               </span>
             </div>
-            <h3 class="text-gray-600 text-sm font-medium mb-1">Gói thành viên</h3>
-            <p class="text-2xl font-bold text-gray-900">{{ personalStats.activeMembership?.tier || 'Chưa kích hoạt' }}</p>
-            <RouterLink to="/customer/membership" class="text-emerald-600 text-sm font-medium hover:underline mt-2 inline-block">
+            <h3 class="text-gray-600 text-xs sm:text-sm font-medium mb-1">Gói thành viên</h3>
+            <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ personalStats.activeMembership?.tier || 'Chưa kích hoạt' }}</p>
+            <RouterLink to="/customer/membership" class="text-emerald-600 text-xs sm:text-sm font-medium hover:underline mt-2 inline-block">
               Xem chi tiết →
             </RouterLink>
           </div>
 
           <!-- Upcoming Classes -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center">
-                <Calendar class="w-6 h-6 text-white" />
+          <div class="bg-white/80 backdrop-blur-lg rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 border border-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center">
+                <Calendar class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
-            <h3 class="text-gray-600 text-sm font-medium mb-1">Lớp học sắp tới</h3>
-            <p class="text-2xl font-bold text-gray-900">{{ personalStats.upcomingClasses }}</p>
-            <RouterLink to="/customer/class" class="text-emerald-600 text-sm font-medium hover:underline mt-2 inline-block">
+            <h3 class="text-gray-600 text-xs sm:text-sm font-medium mb-1">Lớp học sắp tới</h3>
+            <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ personalStats.upcomingClasses }}</p>
+            <RouterLink to="/customer/class" class="text-emerald-600 text-xs sm:text-sm font-medium hover:underline mt-2 inline-block">
               Xem lịch học →
             </RouterLink>
           </div>
 
           <!-- Check-ins -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                <TrendingUp class="w-6 h-6 text-white" />
+          <div class="bg-white/80 backdrop-blur-lg rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 border border-emerald-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                <TrendingUp class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
-            <h3 class="text-gray-600 text-sm font-medium mb-1">Check-in tháng này</h3>
-            <p class="text-2xl font-bold text-gray-900">{{ personalStats.totalCheckIns }}</p>
-            <p class="text-sm text-gray-500 mt-2">Tiếp tục phát huy! 💪</p>
+            <h3 class="text-gray-600 text-xs sm:text-sm font-medium mb-1">Check-in tháng này</h3>
+            <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ personalStats.totalCheckIns }}</p>
+            <p class="text-xs sm:text-sm text-gray-500 mt-2">Tiếp tục phát huy! 💪</p>
           </div>
 
           <!-- Coupons -->
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                <Ticket class="w-6 h-6 text-white" />
+          <div class="bg-white/80 backdrop-blur-lg rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 border border-emerald-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                <Ticket class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
             </div>
-            <h3 class="text-gray-600 text-sm font-medium mb-1">Mã giảm giá khả dụng</h3>
-            <p class="text-2xl font-bold text-gray-900">{{ personalStats.availableCoupons }}</p>
-            <RouterLink to="/customer/coupon" class="text-emerald-600 text-sm font-medium hover:underline mt-2 inline-block">
+            <h3 class="text-gray-600 text-xs sm:text-sm font-medium mb-1">Mã giảm giá khả dụng</h3>
+            <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ personalStats.availableCoupons }}</p>
+            <RouterLink to="/customer/coupon" class="text-emerald-600 text-xs sm:text-sm font-medium hover:underline mt-2 inline-block">
               Xem mã giảm giá →
             </RouterLink>
           </div>
         </div>
 
         <!-- Activity Timeline -->
-        <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100">
-          <div class="flex items-center justify-between mb-6">
+        <div class="bg-white/80 backdrop-blur-lg rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 border border-emerald-100">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
             <div class="flex items-center gap-2">
-              <Clock class="w-5 h-5 text-emerald-600" />
-              <h2 class="text-xl font-bold text-gray-900">Hoạt động gần đây</h2>
+              <Clock class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
+              <h2 class="text-lg sm:text-xl font-bold text-gray-900">Hoạt động gần đây</h2>
             </div>
-            <RouterLink to="/customer/activity-history" class="text-emerald-600 text-sm font-medium hover:underline flex items-center gap-1">
+            <RouterLink to="/customer/activity-history" class="text-emerald-600 text-xs sm:text-sm font-medium hover:underline flex items-center gap-1">
               Xem tất cả →
             </RouterLink>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <RouterLink v-for="(activity, index) in recentActivities" :key="index" to="/customer/activity-history" class="flex flex-col items-center gap-3 p-5 bg-gradient-to-r from-emerald-50 to-emerald-50 rounded-xl hover:shadow-md hover:scale-105 transition-all cursor-pointer">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center">
-                <component :is="activity.icon" class="w-6 h-6 text-white" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <RouterLink v-for="(activity, index) in recentActivities" :key="index" to="/customer/activity-history" class="flex flex-col items-center gap-2 sm:gap-3 p-4 sm:p-5 bg-gradient-to-r from-emerald-50 to-emerald-50 rounded-xl hover:shadow-md hover:scale-105 transition-all cursor-pointer">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center">
+                <component :is="activity.icon" class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div class="text-center">
-                <p class="text-sm font-medium text-gray-900">{{ activity.action }}</p>
+                <p class="text-xs sm:text-sm font-medium text-gray-900">{{ activity.action }}</p>
                 <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
               </div>
             </RouterLink>
@@ -282,17 +282,17 @@ onMounted(() => {
         </div>
 
         <!-- Feedback Section -->
-        <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-emerald-100">
-          <h2 class="text-2xl font-bold text-gray-900 mb-6">Chia sẻ đánh giá của bạn</h2>
+        <div class="bg-white/80 backdrop-blur-lg rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-8 border border-emerald-100">
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Chia sẻ đánh giá của bạn</h2>
 
           <!-- Star Rating -->
-          <div class="flex items-center mb-6">
+          <div class="flex items-center mb-4 sm:mb-6">
             <template v-for="star in 5" :key="star">
               <svg
                 @click="setRating(star)"
                 @mouseover="hoverRating = star"
                 @mouseleave="hoverRating = 0"
-                class="w-8 h-8 cursor-pointer transition-all"
+                class="w-6 h-6 sm:w-8 sm:h-8 cursor-pointer transition-all"
                 :class="[(hoverRating >= star || rating >= star) ? 'text-yellow-400' : 'text-gray-300']"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
@@ -308,29 +308,29 @@ onMounted(() => {
             v-model="comment"
             rows="4"
             placeholder="Chia sẻ trải nghiệm của bạn tại phòng gym của chúng tôi"
-            class="w-full border border-gray-300 rounded-xl p-4 mb-6 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
+            class="w-full border border-gray-300 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-sm sm:text-base"
           ></textarea>
 
           <!-- Upload Images -->
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-3">Tải ảnh lên (không bắt buộc)</label>
-            <div class="flex flex-wrap gap-3">
-              <label class="w-24 h-24 border-2 border-dashed border-emerald-300 rounded-xl flex items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all">
-                <Camera class="w-8 h-8 text-emerald-400" />
+          <div class="mb-4 sm:mb-6">
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3">Tải ảnh lên (không bắt buộc)</label>
+            <div class="flex flex-wrap gap-2 sm:gap-3">
+              <label class="w-20 h-20 sm:w-24 sm:h-24 border-2 border-dashed border-emerald-300 rounded-xl flex items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all">
+                <Camera class="w-6 h-6 sm:w-8 sm:h-8 text-emerald-400" />
                 <input type="file" class="hidden" multiple accept="image/png, image/jpeg, image/jpg, image/gif, image/webp" @change="previewImages" />
               </label>
 
-              <div v-for="(img, index) in images" :key="index" class="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-emerald-200">
+              <div v-for="(img, index) in images" :key="index" class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-emerald-200">
                 <img :src="img.url" class="w-full h-full object-cover" />
                 <button @click="removeImage(index)" class="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1 hover:bg-opacity-70">
-                  <X class="w-4 h-4" />
+                  <X class="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>
           </div>
 
           <!-- Submit -->
-          <button @click="submitFeedback" class="bg-gradient-to-r from-emerald-600 to-emerald-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105">
+          <button @click="submitFeedback" class="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-emerald-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105 text-sm sm:text-base">
             Gửi đánh giá
           </button>
         </div>

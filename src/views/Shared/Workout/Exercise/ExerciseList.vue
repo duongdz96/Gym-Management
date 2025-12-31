@@ -117,19 +117,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50 py-8">
-    <div class="mx-auto max-w-7xl px-6">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50 py-4 sm:py-8">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
       <!-- Header -->
-      <div class="mb-8 flex items-center justify-between">
+      <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
+          <h1 class="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
             Danh Sách Bài Tập
           </h1>
-          <p class="text-gray-600 mt-2">Quản lý và tìm kiếm các bài tập</p>
+          <p class="text-gray-600 text-sm sm:text-base mt-2">Quản lý và tìm kiếm các bài tập</p>
         </div>
         <button
           @click="goToCreate"
-          class="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105"
+          class="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105"
         >
           <Plus class="w-5 h-5" />
           Tạo Bài Tập Mới
@@ -137,25 +137,25 @@ onMounted(() => {
       </div>
 
       <!-- Search & Filter -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           <!-- Search -->
           <div class="relative">
-            <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             <input
               v-model="searchQuery"
               type="text"
               placeholder="Tìm kiếm bài tập..."
-              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
+              class="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
             />
           </div>
 
           <!-- Muscle Group Filter -->
           <div class="relative">
-            <Filter class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Filter class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             <select
               v-model="selectedMuscleGroup"
-              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none appearance-none bg-white"
+              class="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none appearance-none bg-white"
             >
               <option v-for="group in muscleGroups" :key="group" :value="group">
                 {{ group }}
@@ -171,21 +171,21 @@ onMounted(() => {
       </div>
 
       <!-- Exercise Grid -->
-      <div v-else-if="filteredExercises.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else-if="filteredExercises.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <div
           v-for="exercise in filteredExercises"
           :key="exercise.id"
-          class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+          class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
         >
           <!-- Exercise Header -->
-          <div class="flex items-start justify-between mb-4">
-            <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-                <Dumbbell class="w-6 h-6 text-white" />
+          <div class="flex items-start justify-between mb-3 sm:mb-4">
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                <Dumbbell class="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div>
-                <h3 class="text-lg font-bold text-gray-900">{{ exercise.name }}</h3>
-                <span class="text-sm text-emerald-600 font-medium">{{ exercise.muscleGroup }}</span>
+              <div class="min-w-0 flex-1">
+                <h3 class="text-base sm:text-lg font-bold text-gray-900 truncate">{{ exercise.name }}</h3>
+                <span class="text-xs sm:text-sm text-emerald-600 font-medium truncate block">{{ exercise.muscleGroup }}</span>
               </div>
             </div>
           </div>
@@ -209,24 +209,24 @@ onMounted(() => {
           <div class="flex gap-2">
             <button
               @click="viewExercise(exercise)"
-              class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-100 transition-colors"
+              class="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-emerald-50 text-emerald-600 px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg hover:bg-emerald-100 transition-colors"
             >
-              <Eye class="w-4 h-4" />
-              Xem
+              <Eye class="w-3 h-3 sm:w-4 sm:h-4" />
+              <span class="hidden sm:inline">Xem</span>
             </button>
             <template v-if="isMyExercise(exercise)">
               <button
                 @click="editExercise(exercise)"
-                class="flex-1 flex items-center justify-center gap-2 bg-green-50 text-green-600 px-4 py-2 rounded-lg hover:bg-green-100 transition-colors"
+                class="flex-1 flex items-center justify-center gap-1 sm:gap-2 bg-green-50 text-green-600 px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg hover:bg-green-100 transition-colors"
               >
-                <Edit class="w-4 h-4" />
-                Sửa
+                <Edit class="w-3 h-3 sm:w-4 sm:h-4" />
+                <span class="hidden sm:inline">Sửa</span>
               </button>
               <button
                 @click="confirmDelete(exercise)"
-                class="flex items-center justify-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition-colors"
+                class="flex items-center justify-center gap-2 bg-red-50 text-red-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-red-100 transition-colors"
               >
-                <Trash2 class="w-4 h-4" />
+                <Trash2 class="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
             </template>
           </div>

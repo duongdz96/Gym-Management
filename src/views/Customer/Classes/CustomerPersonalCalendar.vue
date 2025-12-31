@@ -1,9 +1,9 @@
 <template>
-  <div class="p-6">
+  <div class="p-3 sm:p-6">
     <!-- Header -->
-    <div class="flex items-center gap-3 mb-8">
-      <Calendar class="w-10 h-10 text-emerald-600" />
-      <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+    <div class="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+      <Calendar class="w-8 h-8 sm:w-10 sm:h-10 text-emerald-600" />
+      <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
         Lịch Học Của Tôi
       </h1>
     </div>

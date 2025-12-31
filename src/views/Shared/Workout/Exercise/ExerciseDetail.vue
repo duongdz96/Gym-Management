@@ -51,12 +51,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50 py-8">
-    <div class="mx-auto max-w-4xl px-6">
+  <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-orange-50 py-4 sm:py-8">
+    <div class="mx-auto max-w-4xl px-4 sm:px-6">
       <!-- Back Button -->
       <button
         @click="goBack"
-        class="flex items-center gap-2 text-gray-600 hover:text-emerald-600 mb-6 transition-colors"
+        class="flex items-center gap-2 text-gray-600 hover:text-emerald-600 mb-4 sm:mb-6 transition-colors text-sm sm:text-base"
       >
         <ArrowLeft class="w-5 h-5" />
         <span class="font-medium">Quay lại danh sách</span>
@@ -68,17 +68,17 @@ onMounted(() => {
       </div>
 
       <!-- Exercise Detail -->
-      <div v-else-if="exercise" class="bg-white rounded-2xl shadow-lg overflow-hidden">
+      <div v-else-if="exercise" class="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 p-8 text-white">
-          <div class="flex items-start justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <Dumbbell class="w-8 h-8 text-white" />
+        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 p-6 sm:p-8 text-white">
+          <div class="flex flex-col sm:flex-row items-start justify-between gap-4">
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+              <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+                <Dumbbell class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
-              <div>
-                <h1 class="text-3xl font-bold mb-2">{{ exercise.name }}</h1>
-                <div class="flex items-center gap-3">
+              <div class="min-w-0 flex-1">
+                <h1 class="text-2xl sm:text-3xl font-bold mb-2 truncate">{{ exercise.name }}</h1>
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                   <span class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium">
                     {{ exercise.muscleGroup }}
                   </span>

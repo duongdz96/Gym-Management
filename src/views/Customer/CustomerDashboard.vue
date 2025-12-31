@@ -28,78 +28,80 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-6 space-y-8">
+  <div class="p-3 sm:p-6 space-y-4 sm:space-y-8">
     <!-- Tiêu đề -->
-    <h1 class="text-2xl font-bold text-stone-800">Bảng điều khiển khách hàng</h1>
+    <h1 class="text-xl sm:text-2xl font-bold text-stone-800">Bảng điều khiển khách hàng</h1>
 
     <!-- Thông tin hội viên -->
-    <section class="bg-white rounded-xl shadow p-5">
-      <h2 class="text-xl font-semibold mb-3">Thông tin hội viên</h2>
-      <div class="grid md:grid-cols-3 gap-4 text-gray-700">
+    <section class="bg-white rounded-xl shadow p-3 sm:p-5">
+      <h2 class="text-lg sm:text-xl font-semibold mb-3">Thông tin hội viên</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
         <p><strong>Gói tập:</strong> {{ membership.name }}</p>
         <p><strong>Hạn sử dụng:</strong> {{ membership.expiryDate }}</p>
         <p>
           <strong>Trạng thái:</strong>
-          <span
-            :class="membership.status === 'Active' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'"
-            >{{ membership.status }}</span
-          >
+          <span :class="membership.status === 'Active' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'">{{
+            membership.status }}</span>
         </p>
       </div>
     </section>
 
     <!-- Lớp học sắp tới -->
-    <section class="bg-white rounded-xl shadow p-5">
-      <h2 class="text-xl font-semibold mb-3">Lớp học sắp tới</h2>
-      <table class="min-w-full text-sm text-gray-700">
-        <thead>
-          <tr class="border-b text-left font-medium">
-            <th class="py-2">Tên lớp</th>
-            <th class="py-2">Ngày</th>
-            <th class="py-2">Thời gian</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="cls in upcomingClasses" :key="cls.id" class="border-b hover:bg-gray-50">
-            <td class="py-2">{{ cls.name }}</td>
-            <td class="py-2">{{ cls.date }}</td>
-            <td class="py-2">{{ cls.time }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <section class="bg-white rounded-xl shadow p-3 sm:p-5">
+      <h2 class="text-lg sm:text-xl font-semibold mb-3">Lớp học sắp tới</h2>
+      <div class="overflow-x-auto -mx-3 sm:mx-0">
+        <table class="min-w-full text-xs sm:text-sm text-gray-700">
+          <thead>
+            <tr class="border-b text-left font-medium">
+              <th class="py-2 px-3 sm:px-0">Tên lớp</th>
+              <th class="py-2 px-3 sm:px-0">Ngày</th>
+              <th class="py-2 px-3 sm:px-0">Thời gian</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="cls in upcomingClasses" :key="cls.id" class="border-b hover:bg-gray-50">
+              <td class="py-2 px-3 sm:px-0">{{ cls.name }}</td>
+              <td class="py-2 px-3 sm:px-0">{{ cls.date }}</td>
+              <td class="py-2 px-3 sm:px-0">{{ cls.time }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- Coupon -->
-    <section class="bg-white rounded-xl shadow p-5">
-      <h2 class="text-xl font-semibold mb-3">Coupon hiện có</h2>
+    <section class="bg-white rounded-xl shadow p-3 sm:p-5">
+      <h2 class="text-lg sm:text-xl font-semibold mb-3">Coupon hiện có</h2>
       <ul class="divide-y divide-gray-200">
         <li v-for="c in coupons" :key="c.code" class="py-2">
-          <p class="font-medium text-red-600">{{ c.code }}</p>
-          <p>{{ c.desc }}</p>
-          <p class="text-sm text-gray-500">Hạn dùng: {{ c.valid }}</p>
+          <p class="font-medium text-red-600 text-sm sm:text-base">{{ c.code }}</p>
+          <p class="text-sm sm:text-base">{{ c.desc }}</p>
+          <p class="text-xs sm:text-sm text-gray-500">Hạn dùng: {{ c.valid }}</p>
         </li>
       </ul>
     </section>
 
     <!-- Lịch sử tập luyện -->
-    <section class="bg-white rounded-xl shadow p-5">
-      <h2 class="text-xl font-semibold mb-3">Lịch sử tập luyện gần đây</h2>
-      <table class="min-w-full text-sm text-gray-700">
-        <thead>
-          <tr class="border-b text-left font-medium">
-            <th class="py-2">Ngày</th>
-            <th class="py-2">Hoạt động</th>
-            <th class="py-2">Thời lượng</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, idx) in trainingHistory" :key="idx" class="border-b hover:bg-gray-50">
-            <td class="py-2">{{ item.date }}</td>
-            <td class="py-2">{{ item.activity }}</td>
-            <td class="py-2">{{ item.duration }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <section class="bg-white rounded-xl shadow p-3 sm:p-5">
+      <h2 class="text-lg sm:text-xl font-semibold mb-3">Lịch sử tập luyện gần đây</h2>
+      <div class="overflow-x-auto -mx-3 sm:mx-0">
+        <table class="min-w-full text-xs sm:text-sm text-gray-700">
+          <thead>
+            <tr class="border-b text-left font-medium">
+              <th class="py-2 px-3 sm:px-0">Ngày</th>
+              <th class="py-2 px-3 sm:px-0">Hoạt động</th>
+              <th class="py-2 px-3 sm:px-0">Thời lượng</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, idx) in trainingHistory" :key="idx" class="border-b hover:bg-gray-50">
+              <td class="py-2 px-3 sm:px-0">{{ item.date }}</td>
+              <td class="py-2 px-3 sm:px-0">{{ item.activity }}</td>
+              <td class="py-2 px-3 sm:px-0">{{ item.duration }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
   </div>
 </template>
@@ -108,6 +110,7 @@ onMounted(() => {
 section {
   transition: all 0.2s ease;
 }
+
 section:hover {
   transform: translateY(-2px);
 }

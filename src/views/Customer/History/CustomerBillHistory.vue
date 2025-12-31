@@ -115,10 +115,10 @@ onMounted(fetchBillHistory);
 </script>
 
 <template>
-<div class="p-6 bg-white rounded-lg shadow-md max-w-7xl mx-auto">
-    <h2 class="text-3xl font-bold mb-6 border-b pb-2">🧾 Lịch sử giao dịch</h2>
+<div class="p-4 sm:p-6 bg-white rounded-lg shadow-md max-w-7xl mx-auto">
+    <h2 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 border-b pb-2">🧾 Lịch sử giao dịch</h2>
 
-    <div v-if="isLoading" class="text-center py-10 text-blue-500">
+    <div v-if="isLoading" class="text-center py-10 text-blue-500 text-sm sm:text-base">
         Đang tải dữ liệu...
     </div>
 
@@ -130,23 +130,23 @@ onMounted(fetchBillHistory);
         Bạn chưa có hóa đơn nào
     </div>
 
-    <div v-else class="overflow-x-auto">
+    <div v-else class="overflow-x-auto -mx-4 sm:mx-0">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
             <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Mã HĐ
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Ngày
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Nội dung
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Tổng tiền
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Thanh toán
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -163,27 +163,27 @@ onMounted(fetchBillHistory);
 
             <tbody class="bg-white divide-y divide-gray-200">
             <tr v-for="bill in bills" :key="bill.id">
-                <td class="px-6 py-4 text-sm font-semibold text-gray-900 whitespace-nowrap">
+                <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-900 whitespace-nowrap">
                     #{{ bill.id }}
                 </td>
 
-                <td class="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
+                <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">
                     {{ moment(bill.date).format('DD/MM/YYYY HH:mm') }}
                 </td>
 
-                <td class="px-6 py-4 text-sm text-gray-700">
+                <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700">
                     {{ getBillSummary(bill) }}
                 </td>
 
-                <td class="px-6 py-4 text-sm font-semibold text-red-600 whitespace-nowrap">
+                <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-red-600 whitespace-nowrap">
                     {{ bill.total.toLocaleString('vi-VN') }} đ
                 </td>
 
-                <td class="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
+                <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-700 whitespace-nowrap">
                     {{ bill.paymentMethod }}
                 </td>
 
-                <td class="px-6 py-4 text-sm whitespace-nowrap">
+                <td class="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <span
                         class="px-2 py-1 text-xs font-semibold rounded-full"
                         :class="{
@@ -226,15 +226,15 @@ onMounted(fetchBillHistory);
 >
   <div
     v-if="showDetailModal"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 sm:p-4"
     @click.self="closeDetail"
   >
-    <div class="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div class="bg-white rounded-xl sm:rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
       <!-- Modal Header -->
-      <div class="p-6 bg-gradient-to-r from-red-600 to-red-700 text-white shrink-0">
+      <div class="p-4 sm:p-6 bg-gradient-to-r from-red-600 to-red-700 text-white shrink-0">
         <div class="flex justify-between items-center">
-          <div>
-            <h3 class="text-2xl font-bold flex items-center gap-2">
+          <div class="min-w-0">
+            <h3 class="text-xl sm:text-2xl font-bold flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
