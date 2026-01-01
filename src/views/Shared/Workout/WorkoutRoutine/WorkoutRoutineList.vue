@@ -289,7 +289,7 @@ onMounted(() => {
               </div>
 
               <!-- Description -->
-              <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+              <p class="text-gray-600 text-sm mb-4 line-clamp-2 truncate block">
                 {{ routine.description || 'Chưa có mô tả' }}
               </p>
 

@@ -108,6 +108,12 @@ const handleLogout = () => {
               >
                 Lịch sử nhập kho
               </RouterLink>
+              <RouterLink
+                to="/manager/membership"
+                class="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition"
+              >
+                Quản lý hội viên
+              </RouterLink>
             </div>
           </transition>
         </div>
@@ -155,7 +161,7 @@ const handleLogout = () => {
           </transition>
         </div>
         
-        <RouterLink
+        <!-- <RouterLink
           to="/manager/membership"
           class="px-3 py-2 rounded-md transition-colors duration-300 uppercase tracking-wider"
           :class="route.path.startsWith('/manager/membership') 
@@ -163,7 +169,7 @@ const handleLogout = () => {
             : 'text-white hover:text-yellow-200 hover:bg-white/5'"
         >
           Hội viên
-        </RouterLink>
+        </RouterLink> -->
         
         <div
           class="relative"

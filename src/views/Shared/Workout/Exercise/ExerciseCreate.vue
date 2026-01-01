@@ -68,6 +68,12 @@ const validateForm = () => {
     toast.warning('Vui lòng nhập tên bài tập')
     return false
   }
+  
+  if (formData.value.name.length > 50) {
+    toast.warning('Tên bài tập không được vượt quá 50 ký tự')
+    return false
+  }
+
   if (!formData.value.muscleGroup) {
     toast.warning('Vui lòng chọn nhóm cơ')
     return false
@@ -139,7 +145,7 @@ onMounted(() => {
               <Dumbbell class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 v-model="formData.name"
-                type="text"
+                type="text" maxlength="50"
                 placeholder="VD: Bench Press, Squat, Deadlift..."
                 class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
                 required
@@ -194,7 +200,7 @@ onMounted(() => {
                   <span class="text-sm text-emerald-600 font-medium">{{ formData.muscleGroup || 'Nhóm cơ' }}</span>
                 </div>
               </div>
-              <p class="text-sm text-gray-600">
+              <p class="text-sm text-gray-600 truncate">
                 {{ formData.description || 'Mô tả bài tập sẽ hiển thị ở đây...' }}
               </p>
             </div>

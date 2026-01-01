@@ -22,7 +22,7 @@
         <!-- Card Header -->
         <div class="p-3 sm:p-5 bg-gradient-to-r from-emerald-500 to-emerald-500 text-white">
           <div class="flex justify-between items-start gap-2">
-            <h3 class="text-lg sm:text-xl font-bold">{{ cls.name }}</h3>
+            <h3 class="text-lg sm:text-xl font-bold truncate">{{ cls.name }}</h3>
             <span class="px-2 sm:px-3 py-1 rounded-full text-xs font-semibold shrink-0" :class="{
               'bg-emerald-500': cls.difficulty === 'Beginner',
               'bg-orange-500': cls.difficulty === 'Intermediate',

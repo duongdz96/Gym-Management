@@ -58,7 +58,7 @@
         <!-- Card Header -->
         <div class="p-5 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white">
           <div class="flex justify-between items-start">
-            <h3 class="text-xl font-bold">{{ cls.name }}</h3>
+            <h3 class="text-xl font-bold truncate">{{ cls.name }}</h3>
             <span class="px-3 py-1 bg-white/20 rounded-full text-xs font-semibold flex items-center gap-1">
               <component :is="getStatusIcon(cls.status)" class="w-3 h-3" />
               {{ getStatusText(cls.status) }}

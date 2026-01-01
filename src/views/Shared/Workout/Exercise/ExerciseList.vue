@@ -13,7 +13,7 @@ const router = useRouter()
 const exercises = ref([])
 const isLoading = ref(false)
 const searchQuery = ref('')
-const selectedMuscleGroup = ref('')
+
 const showDeleteModal = ref(false)
 const exerciseToDelete = ref(null)
 const toast = useToast();
@@ -29,7 +29,7 @@ const muscleGroups = [
   'Bụng',
   'Toàn thân'
 ]
-
+const selectedMuscleGroup = ref(muscleGroups[0]);
 // ==================== COMPUTED ====================
 const filteredExercises = computed(() => {
   let result = exercises.value
@@ -191,7 +191,7 @@ onMounted(() => {
           </div>
 
           <!-- Description -->
-          <p class="text-gray-600 text-sm mb-4 line-clamp-3">
+          <p class="text-gray-600 text-sm mb-4 line-clamp-3 truncate block">
             {{ exercise.description || 'Chưa có mô tả' }}
           </p>
 
@@ -259,7 +259,7 @@ onMounted(() => {
         @click.stop
       >
         <h3 class="text-2xl font-bold text-gray-900 mb-4">Xác nhận xóa</h3>
-        <p class="text-gray-600 mb-6">
+        <p class="text-gray-600 mb-6 truncate block">
           Bạn có chắc chắn muốn xóa bài tập <strong>{{ exerciseToDelete?.name }}</strong>?
           Hành động này không thể hoàn tác.
         </p>

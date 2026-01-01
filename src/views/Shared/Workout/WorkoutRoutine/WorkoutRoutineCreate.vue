@@ -106,16 +106,24 @@ const validateForm = () => {
     toast.warning('Vui lòng nhập tên mẫu lịch tập')
     return false
   }
+
+  // THÊM GIỚI HẠN 50 KÝ TỰ TẠI ĐÂY
+  if (formData.value.name.length > 50) {
+    toast.warning('Tên mẫu lịch tập không được vượt quá 50 ký tự')
+    return false
+  }
+
   if (!formData.value.muscleGroupFocus) {
     toast.warning('Vui lòng chọn nhóm cơ')
     return false
   }
+  
   if (formData.value.routineDetails.length === 0) {
     toast.warning('Vui lòng thêm ít nhất 1 bài tập')
     return false
   }
   
-  // Validate each exercise detail
+  // Validate từng dòng bài tập (Giữ nguyên logic của bạn)
   for (let i = 0; i < formData.value.routineDetails.length; i++) {
     const detail = formData.value.routineDetails[i]
     if (!detail.exercise.id) {
@@ -167,12 +175,10 @@ const getExerciseName = (exerciseId) => {
   return exercise ? exercise.name : 'Chọn bài tập'
 }
 
-// ==================== LIFECYCLE ====================
 onMounted(async () => {
   await fetchExercises()
   await fetchRoutine()
   
-  // Add one empty detail by default only in create mode
   if (!isEditMode.value) {
     addExerciseDetail()
   }
@@ -209,7 +215,7 @@ onMounted(async () => {
               </label>
               <input
                 v-model="formData.name"
-                type="text"
+                type="text" maxlength="50"
                 placeholder="VD: Full Body Workout, Leg Day, Upper Body..."
                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none"
                 required

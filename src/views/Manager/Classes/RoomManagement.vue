@@ -96,7 +96,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-1">Tên phòng <span class="text-red-500">*</span></label>
               <input
                 v-model="currentRoom.name"
-                type="text"
+                type="text" maxlength="50"
                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                 placeholder="Ví dụ: Phòng Yoga A"
               />
@@ -245,23 +245,45 @@ const cancelDelete = () => {
 }
 
 const handleSave = async () => {
-  if (!currentRoom.value.name || !currentRoom.value.capacity) {
-    toast.warning('Vui lòng điền đầy đủ thông tin bắt buộc')
-    return
+  // 1. Check trống thông tin bắt buộc
+  if (!currentRoom.value.name.trim() || currentRoom.value.capacity === null) {
+    toast.warning('Vui lòng điền đầy đủ tên phòng và sức chứa');
+    return;
+  }
+
+  // 2. Check giới hạn 50 ký tự cho tên phòng
+  if (currentRoom.value.name.length > 50) {
+    toast.warning('Tên phòng không được vượt quá 50 ký tự');
+    return;
+  }
+
+  // 3. Check sức chứa âm hoặc bằng 0
+  if (currentRoom.value.capacity <= 0) {
+    toast.warning('Sức chứa phải là số dương lớn hơn 0');
+    return;
+  }
+  if (currentRoom.value.description && currentRoom.value.description.length > 200) {
+    toast.warning('Mô tả quá dài (tối đa 200 ký tự)');
+    return;
   }
 
   try {
+    const payload = {
+      ...currentRoom.value,
+      name: currentRoom.value.name.trim() // Trim khoảng trắng thừa
+    };
+
     if (isEditing.value && currentRoom.value.id) {
-      await api.put(`/room/${currentRoom.value.id}`, currentRoom.value)
-      toast.success('Cập nhật phòng thành công')
+      await api.put(`/room/${currentRoom.value.id}`, payload);
+      toast.success('Cập nhật phòng thành công');
     } else {
-      await api.post('/room', currentRoom.value)
-      toast.success('Thêm phòng thành công')
+      await api.post('/room', payload);
+      toast.success('Thêm phòng thành công');
     }
-    showModal.value = false
-    await fetchRooms()
+    showModal.value = false;
+    await fetchRooms();
   } catch (err) {
-    toast.error('Không thể lưu phòng')
+    toast.error('Không thể lưu phòng');
   }
 }
 

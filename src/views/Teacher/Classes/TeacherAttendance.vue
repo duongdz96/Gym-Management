@@ -4,7 +4,8 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-8">
       <div class="flex items-center gap-2 sm:gap-3">
         <ClipboardCheck class="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
-        <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
+        <h1
+          class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
           Điểm Danh
         </h1>
       </div>
@@ -20,7 +21,8 @@
       class="mb-4 sm:mb-6 p-3 sm:p-6 bg-gradient-to-r from-green-600 to-green-700 rounded-xl sm:rounded-2xl shadow-md text-white">
       <div class="flex items-center gap-2 sm:gap-3 mb-2">
         <Dumbbell class="w-5 h-5 sm:w-6 sm:h-6" />
-        <h1 class="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
+        <h1
+          class="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
           Lịch Dạy & Điểm Danh
         </h1>
       </div>
@@ -37,18 +39,12 @@
       <!-- Search & Filter -->
       <div class="mb-3 sm:mb-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
         <div class="relative flex-1">
-          <input 
-            v-model="sessionSearchQuery"
-            type="text" 
-            placeholder="Tìm kiếm lớp học..." 
-            class="w-full pl-8 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-xs sm:text-sm"
-          />
+          <input v-model="sessionSearchQuery" type="text" placeholder="Tìm kiếm lớp học..."
+            class="w-full pl-8 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-xs sm:text-sm" />
           <Search class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </div>
-        <select 
-          v-model="sessionFilterStatus"
-          class="px-3 py-2 border border-gray-300 rounded-lg outline-none text-xs sm:text-sm bg-white focus:border-green-500"
-        >
+        <select v-model="sessionFilterStatus"
+          class="px-3 py-2 border border-gray-300 rounded-lg outline-none text-xs sm:text-sm bg-white focus:border-green-500">
           <option value="all">Tất cả buổi học</option>
           <option value="upcoming">Sắp tới</option>
           <option value="today">Hôm nay</option>
@@ -58,7 +54,8 @@
       <!-- Sessions List -->
       <div v-if="filteredSessions.length > 0" class="grid gap-2 sm:gap-3">
         <div v-for="session in filteredSessions" :key="session.id" @click="selectSession(session)"
-          class="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all cursor-pointer hover:shadow-md" :class="session.id === selectedSession?.id
+          class="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all cursor-pointer hover:shadow-md"
+          :class="session.id === selectedSession?.id
             ? 'border-green-600 bg-green-50'
             : 'border-gray-200 hover:border-green-300'">
           <!-- Date Badge -->
@@ -70,24 +67,29 @@
 
           <!-- Session Info -->
           <div class="flex-1 min-w-0">
-            <div class="text-xs sm:text-sm font-bold text-green-700 uppercase mb-1 truncate">
+            <div
+              class="text-[10px] sm:text-xs font-bold text-green-700 uppercase mb-1 leading-tight break-all line-clamp-2"
+              :title="session.className">
               {{ session.className }}
             </div>
 
             <div class="font-bold text-gray-800 flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
               <CalendarIcon class="w-3 h-3 sm:w-4 sm:h-4 text-green-500 shrink-0" />
               <span class="truncate">{{ formatDate(session.date) }}</span>
-              <span v-if="isToday(session.date)" class="px-1.5 sm:px-2 py-0.5 bg-green-500 text-white text-[10px] sm:text-xs font-bold rounded shrink-0">
+              <span v-if="isToday(session.date)"
+                class="px-1.5 sm:px-2 py-0.5 bg-green-500 text-white text-[10px] sm:text-xs font-bold rounded shrink-0">
                 HÔM NAY
               </span>
             </div>
+
             <div class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 flex flex-wrap items-center gap-2 sm:gap-4">
-              <span class="flex items-center gap-1">
+              <span class="flex items-center gap-1 shrink-0">
                 <Clock class="w-3 h-3 shrink-0" /> {{ formatScheduleTime(session.startTime) }} - {{
                   formatScheduleTime(session.endTime) }}
               </span>
-              <span class="flex items-center gap-1">
-                <MapPin class="w-3 h-3 shrink-0" /> <span class="truncate">{{ getRoomName(session.roomId) }}</span>
+              <span class="flex items-center gap-1 min-w-0">
+                <MapPin class="w-3 h-3 shrink-0" />
+                <span class="truncate">{{ getRoomName(session.roomId) }}</span>
               </span>
             </div>
           </div>
@@ -163,26 +165,23 @@
         <!-- Search Student -->
         <div class="mb-3 sm:mb-4">
           <div class="relative">
-            <input 
-              v-model="studentSearchQuery"
-              type="text" 
-              placeholder="Tìm kiếm học viên..." 
-              class="w-full pl-8 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-xs sm:text-sm"
-            />
+            <input v-model="studentSearchQuery" type="text" placeholder="Tìm kiếm học viên..."
+              class="w-full pl-8 sm:pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-xs sm:text-sm" />
             <Search class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
         </div>
 
         <!-- Loading -->
         <div v-if="loadingStudents" class="text-center py-6 sm:py-8">
-          <div class="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <div class="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-green-600 mx-auto mb-4">
+          </div>
           <p class="text-sm sm:text-base">Đang tải danh sách...</p>
         </div>
 
         <!-- Students -->
         <div v-else-if="filteredStudents.length > 0" class="space-y-2 sm:space-y-3">
-          <div v-for="student in filteredStudents" :key="student.id" class="p-2 sm:p-4 border-2 rounded-lg sm:rounded-xl transition-all"
-            :class="getStudentAttendance(student.id)?.status === 'PRESENT'
+          <div v-for="student in filteredStudents" :key="student.id"
+            class="p-2 sm:p-4 border-2 rounded-lg sm:rounded-xl transition-all" :class="getStudentAttendance(student.id)?.status === 'PRESENT'
               ? 'border-green-300 bg-green-50'
               : getStudentAttendance(student.id)?.status === 'ABSENT'
                 ? 'border-red-300 bg-red-50'
@@ -203,15 +202,13 @@
               <!-- Attendance Toggle -->
               <div class="flex items-center gap-1 sm:gap-2 shrink-0">
                 <button @click="markPresent(student)"
-                  class="px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all"
-                  :class="getStudentAttendance(student.id)?.status === 'PRESENT'
+                  class="px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all" :class="getStudentAttendance(student.id)?.status === 'PRESENT'
                     ? 'bg-green-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-green-100'">
                   <Check class="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <button @click="markAbsent(student)"
-                  class="px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all"
-                  :class="getStudentAttendance(student.id)?.status === 'ABSENT'
+                  class="px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all" :class="getStudentAttendance(student.id)?.status === 'ABSENT'
                     ? 'bg-red-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-red-100'">
                   <X class="w-4 h-4 sm:w-5 sm:h-5" />
@@ -310,7 +307,7 @@ const filteredSessions = computed(() => {
   // Search filter
   if (sessionSearchQuery.value) {
     const query = sessionSearchQuery.value.toLowerCase();
-    result = result.filter(s => 
+    result = result.filter(s =>
       s.className.toLowerCase().includes(query) ||
       s.roomName.toLowerCase().includes(query)
     );
@@ -337,7 +334,7 @@ const filteredStudents = computed(() => {
   }
 
   const query = studentSearchQuery.value.toLowerCase();
-  return registeredStudents.value.filter(s => 
+  return registeredStudents.value.filter(s =>
     s.name.toLowerCase().includes(query) ||
     s.email.toLowerCase().includes(query)
   );
@@ -637,7 +634,7 @@ const goBack = () => {
 };
 
 const handleBackToList = async () => {
-  selectedSession.value = null; 
+  selectedSession.value = null;
   await loadClassData();
 };
 

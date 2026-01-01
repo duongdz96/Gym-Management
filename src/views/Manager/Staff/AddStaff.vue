@@ -85,7 +85,7 @@ const handleCancel = () => {
         
         <div>
           <label class="block text-sm font-medium text-gray-700">Full Name</label>
-          <input v-model="fullName" type="text" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
+          <input v-model="fullName" type="text" maxlength="50" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
         </div>
 
         <div>
