@@ -48,6 +48,9 @@ const handleMobileNavigate = (path) => {
         <RouterLink to="/teacher/registerclass" class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-yellow-300 transition-colors duration-300 rounded-md">
           Đăng ký dạy
         </RouterLink>
+        <RouterLink to="/teacher/classes" class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-yellow-300 transition-colors duration-300 rounded-md">
+          Lớp học
+        </RouterLink>
         <RouterLink to="/teacher/calendar" class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-orange-300 transition-colors duration-300 rounded-md">
           Lịch trình
         </RouterLink>

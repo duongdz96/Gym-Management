@@ -6,7 +6,7 @@
   >
     <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl animate-fadeIn">
       <!-- Modal Header -->
-      <div class="p-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white flex justify-between items-center rounded-t-2xl">
+      <div class="p-6 bg-gradient-to-r from-green-600 to-green-700 text-white flex justify-between items-center rounded-t-2xl">
         <h2 class="text-2xl font-bold flex items-center gap-2">
           <Edit class="w-6 h-6" />
           Chỉnh Sửa Lớp Học
@@ -37,7 +37,7 @@
             v-model="formData.name" 
             type="text" 
             placeholder="VD: Yoga Buổi Sáng"
-            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none transition-all"
           />
         </div>
 
@@ -50,7 +50,7 @@
             v-model="formData.description" 
             rows="4" 
             placeholder="Mô tả về lớp học..."
-            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none transition-all"
           ></textarea>
         </div>
 
@@ -61,7 +61,7 @@
           </label>
           <select 
             v-model="formData.difficultyLevel"
-            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none transition-all"
           >
             <option value="Beginner">Beginner</option>
             <option value="Intermediate">Intermediate</option>
@@ -76,7 +76,7 @@
           </label>
           <select 
             v-model="formData.status"
-            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none transition-all"
           >
             <option value="ACTIVE">Đang hoạt động</option>
             <option value="INACTIVE">Không hoạt động</option>
@@ -96,7 +96,7 @@
         <button 
           @click="saveChanges" 
           :disabled="!isValid || saving"
-          class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          class="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           <Save class="w-5 h-5" />
           {{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}

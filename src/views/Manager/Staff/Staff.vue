@@ -136,20 +136,20 @@ const deleteStaff = async (user: User) => {
             </td>
             <td class="px-4 py-3 text-sm text-center">
               <div class="flex items-center justify-center gap-2">
-                <RouterLink
+                <!-- <RouterLink
                   :to="`staff/${user.id}/edit`"
                   class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                   title="Chỉnh sửa"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </RouterLink>
+                </RouterLink> -->
 
                 <RouterLink
                   :to="`staff/${user.id}`"
                   class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
                   title="Xem chi tiết"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </RouterLink>
 
                 <button

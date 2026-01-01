@@ -81,6 +81,7 @@ import BlogList from "@/views/Manager/Blog/BlogList.vue";
 import BlogCreate from "@/views/Manager/Blog/BlogCreate.vue";
 import BlogEdit from "@/views/Manager/Blog/BlogEdit.vue";
 import CustomerBlogList from "@/views/Customer/CustomerBlogList.vue";
+import TeacherClassList from "@/views/Teacher/Classes/TeacherClassList.vue";
 
 const routes = [
     {
@@ -315,7 +316,7 @@ const routes = [
             { path: "/teacher/registerclass", name: "teacher.register", component: TeacherRegister },
             { path: "/teacher/calendar", name: "teacher.calendar", component: TeacherPersonalCalendar },
             { path: "/teacher/attendance", name: "teacher.attendance", component: TeacherAttendance },
-
+            { path: "/teacher/classes", name: "teacher.classlist", component: TeacherClassList },
         ],
     },
 ]

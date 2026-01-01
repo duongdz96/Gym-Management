@@ -108,7 +108,7 @@
           </button>
           <button 
             @click="openEditClass(cls)" 
-            class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold transition-all flex items-center justify-center gap-2"
+            class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-semibold transition-all flex items-center justify-center gap-2"
           >
             <Edit class="w-4 h-4" /> Sửa
           </button>

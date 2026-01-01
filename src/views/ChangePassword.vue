@@ -85,7 +85,7 @@ const handleChangePassword = async () => {
         <input
           type="password"
           v-model="oldPassword"
-          class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+          class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           placeholder="Nhập mật khẩu cũ"
         />
       </div>
@@ -95,7 +95,7 @@ const handleChangePassword = async () => {
         <input
           type="password"
           v-model="newPassword"
-          class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+          class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           placeholder="Nhập mật khẩu mới"
         />
       </div>
@@ -105,7 +105,7 @@ const handleChangePassword = async () => {
         <input
           type="password"
           v-model="confirmPassword"
-          class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+          class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           placeholder="Xác nhận mật khẩu mới"
         />
       </div>
@@ -113,7 +113,7 @@ const handleChangePassword = async () => {
       <button
         type="submit"
         :disabled="isSubmitting"
-        class="w-full bg-red-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-black transition-colors"
+        class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-black transition-colors"
       >
         {{ isSubmitting ? "Đang xử lý..." : "Đổi mật khẩu" }}
       </button>

@@ -1,8 +1,8 @@
 <template>
   <div class="p-6">
     <div class="flex items-center gap-3 mb-8">
-      <GraduationCap class="w-10 h-10 text-blue-600" />
-      <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+      <GraduationCap class="w-10 h-10 text-green-600" />
+      <h1 class="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
         Duyệt Giáo Viên
       </h1>
     </div>
@@ -12,8 +12,8 @@
       <button 
         @click="activeTab = 'pending'" 
         :class="activeTab === 'pending' 
-          ? 'text-blue-600 border-blue-600' 
-          : 'text-gray-500 border-transparent hover:text-blue-600'"
+          ? 'text-green-600 border-green-600' 
+          : 'text-gray-500 border-transparent hover:text-green-600'"
         class="px-6 py-3 font-semibold border-b-3 transition-all -mb-0.5 flex items-center gap-2"
       >
         <Clock class="w-5 h-5" />
@@ -22,8 +22,8 @@
       <button 
         @click="activeTab = 'approved'" 
         :class="activeTab === 'approved' 
-          ? 'text-blue-600 border-blue-600' 
-          : 'text-gray-500 border-transparent hover:text-blue-600'"
+          ? 'text-green-600 border-green-600' 
+          : 'text-gray-500 border-transparent hover:text-green-600'"
         class="px-6 py-3 font-semibold border-b-3 transition-all -mb-0.5 flex items-center gap-2"
       >
         <CheckCircle class="w-5 h-5" />
@@ -32,8 +32,8 @@
       <button 
         @click="activeTab = 'rejected'" 
         :class="activeTab === 'rejected' 
-          ? 'text-blue-600 border-blue-600' 
-          : 'text-gray-500 border-transparent hover:text-blue-600'"
+          ? 'text-green-600 border-green-600' 
+          : 'text-gray-500 border-transparent hover:text-green-600'"
         class="px-6 py-3 font-semibold border-b-3 transition-all -mb-0.5 flex items-center gap-2"
       >
         <XCircle class="w-5 h-5" />
@@ -49,7 +49,7 @@
         class="bg-white rounded-2xl shadow-md overflow-hidden border-2 border-gray-100"
       >
         <!-- Class Header -->
-        <div class="p-5 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+        <div class="p-5 bg-gradient-to-r from-green-600 to-green-700 text-white">
           <div class="flex items-center gap-2 mb-2">
             <BookOpen class="w-6 h-6" />
             <h3 class="text-xl font-bold">{{ group.className }}</h3>
@@ -82,14 +82,14 @@
             :key="app.id"
             class="border-2 rounded-xl p-4 hover:shadow-md transition-all"
             :class="{
-              'border-blue-200 bg-blue-50': app.status === 'pending',
+              'border-green-200 bg-green-50': app.status === 'pending',
               'border-green-200 bg-green-50': app.status === 'approved',
               'border-red-200 bg-red-50': app.status === 'rejected'
             }"
           >
             <div class="flex items-start gap-4">
               <!-- Teacher Avatar -->
-              <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
+              <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
                 {{ getTeacher(app.teacherId).avatar }}
               </div>
 
@@ -108,7 +108,7 @@
                   <span 
                     class="px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1"
                     :class="{
-                      'bg-blue-500 text-white': app.status === 'pending',
+                      'bg-green-500 text-white': app.status === 'pending',
                       'bg-green-500 text-white': app.status === 'approved',
                       'bg-red-500 text-white': app.status === 'rejected'
                     }"
@@ -123,12 +123,12 @@
 
                 <!-- Specialties -->
                 <div class="flex items-center gap-2 mb-3">
-                  <Target class="w-4 h-4 text-blue-600" />
+                  <Target class="w-4 h-4 text-green-600" />
                   <div class="flex flex-wrap gap-2">
                     <span 
                       v-for="(specialty, idx) in getTeacher(app.teacherId).specialties" 
                       :key="idx"
-                      class="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-semibold"
+                      class="px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-semibold"
                     >
                       {{ specialty }}
                     </span>
@@ -269,7 +269,7 @@
             <label class="block text-sm font-semibold text-gray-700 mb-2">Lý do từ chối *</label>
             <select 
               v-model="rejectionReason"
-              class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+              class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none transition-all"
             >
               <option value="">-- Chọn lý do --</option>
               <option value="Lịch trùng với lớp khác">Lịch trùng với lớp khác</option>
@@ -284,7 +284,7 @@
             <textarea 
               v-model="customRejectionReason" 
               rows="3"
-              class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+              class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none transition-all"
             ></textarea>
           </div>
         </div>

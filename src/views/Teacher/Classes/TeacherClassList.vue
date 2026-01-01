@@ -3,7 +3,8 @@
     <!-- Header -->
     <div class="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-8">
       <BookOpen class="w-8 h-8 sm:w-10 sm:h-10 text-emerald-600" />
-      <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
+      <h1
+        class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
         Lớp Học Của Tôi
       </h1>
     </div>
@@ -16,32 +17,26 @@
 
     <!-- Classes Grid -->
     <div v-else-if="myClasses.length > 0" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
-      <div 
-        v-for="cls in myClasses" 
-        :key="cls.id"
-        class="bg-white rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-      >
+      <div v-for="cls in myClasses" :key="cls.id"
+        class="bg-white rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
         <!-- Card Header -->
         <div class="p-3 sm:p-5 bg-gradient-to-r from-emerald-500 to-emerald-500 text-white">
           <div class="flex justify-between items-start gap-2">
             <h3 class="text-lg sm:text-xl font-bold">{{ cls.name }}</h3>
-            <span 
-              class="px-2 sm:px-3 py-1 rounded-full text-xs font-semibold shrink-0"
-              :class="{
-                'bg-emerald-500': cls.difficulty === 'Beginner',
-                'bg-orange-500': cls.difficulty === 'Intermediate',
-                'bg-purple-500': cls.difficulty === 'Advanced'
-              }"
-            >
+            <span class="px-2 sm:px-3 py-1 rounded-full text-xs font-semibold shrink-0" :class="{
+              'bg-emerald-500': cls.difficulty === 'Beginner',
+              'bg-orange-500': cls.difficulty === 'Intermediate',
+              'bg-purple-500': cls.difficulty === 'Advanced'
+            }">
               {{ cls.difficulty }}
             </span>
           </div>
         </div>
-        
+
         <!-- Card Body -->
         <div class="p-3 sm:p-5 space-y-3 sm:space-y-4">
           <p class="text-gray-600 line-clamp-2 text-sm sm:text-base">{{ cls.description }}</p>
-          
+
           <div class="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
             <div>
               <span class="text-gray-500 font-semibold block flex items-center gap-1">
@@ -69,24 +64,13 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Card Footer -->
-        <div class="p-3 sm:p-4 bg-gray-50 border-t grid grid-cols-2 gap-2">
-          <button 
-            @click="viewSchedule(cls)"
-            class="px-3 sm:px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl font-semibold hover:bg-emerald-200 transition-all flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
-          >
-            <CalendarIcon class="w-3 h-3 sm:w-4 sm:h-4" />
-            <span class="hidden sm:inline">Xem lịch</span>
-            <span class="sm:hidden">Lịch</span>
-          </button>
-          <button 
-            @click="goToAttendance(cls)"
-            class="px-3 sm:px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base"
-          >
-            <CheckSquare class="w-3 h-3 sm:w-4 sm:h-4" />
-            <span class="hidden sm:inline">Điểm danh</span>
-            <span class="sm:hidden">Điểm</span>
+        <div class="p-3 sm:p-4 bg-gray-50 border-t">
+          <button @click="viewSchedule(cls)"
+            class="w-full px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl font-bold hover:bg-emerald-200 transition-all flex items-center justify-center gap-2 text-sm sm:text-base border border-emerald-200">
+            <CalendarIcon class="w-4 h-4" />
+            <span>Xem lịch học</span>
           </button>
         </div>
       </div>
@@ -99,22 +83,16 @@
     </div>
 
     <!-- Schedule Modal -->
-    <transition
-      enter-active-class="transition duration-200 ease-out"
-      enter-from-class="opacity-0 scale-95"
-      enter-to-class="opacity-100 scale-100"
-      leave-active-class="transition duration-150 ease-in"
-      leave-from-class="opacity-100 scale-100"
-      leave-to-class="opacity-0 scale-95"
-    >
-      <div 
-        v-if="showScheduleModal"
-        class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/50"
-        @click.self="showScheduleModal = false"
-      >
-        <div class="bg-white rounded-xl sm:rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col">
+    <transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+      <div v-if="showScheduleModal" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/50"
+        @click.self="showScheduleModal = false">
+        <div
+          class="bg-white rounded-xl sm:rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col">
           <!-- Modal Header -->
-          <div class="p-3 sm:p-6 bg-gradient-to-r from-emerald-500 to-emerald-500 text-white flex justify-between items-center shrink-0">
+          <div
+            class="p-3 sm:p-6 bg-gradient-to-r from-emerald-500 to-emerald-500 text-white flex justify-between items-center shrink-0">
             <div class="min-w-0 flex-1">
               <h3 class="text-base sm:text-xl font-bold flex items-center gap-1 sm:gap-2">
                 <CalendarIcon class="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
@@ -123,64 +101,59 @@
               </h3>
               <p class="text-emerald-100 text-xs sm:text-sm mt-1 truncate">{{ selectedClass?.name }}</p>
             </div>
-            <button 
-              @click="showScheduleModal = false"
-              class="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 sm:p-2 rounded-lg ml-2 shrink-0"
-            >
+            <button @click="showScheduleModal = false"
+              class="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 sm:p-2 rounded-lg ml-2 shrink-0">
               <X class="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
-          
+
           <!-- Modal Body -->
           <div class="p-3 sm:p-6 overflow-y-auto flex-1">
-            <div v-if="selectedClassSessions.length === 0" class="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
+            <div v-if="selectedClassSessions.length === 0"
+              class="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
               Chưa có lịch học cụ thể.
             </div>
-            
+
             <div v-else class="grid gap-2 sm:gap-3">
-              <div 
-                v-for="(session, idx) in selectedClassSessions" 
-                :key="session.id"
-                class="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 rounded-lg sm:rounded-xl border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-all"
-              >
+              <div v-for="(session, idx) in selectedClassSessions" :key="session.id"
+                class="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 rounded-lg sm:rounded-xl border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/50 transition-all">
                 <!-- Index -->
-                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
+                <div
+                  class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
                   {{ idx + 1 }}
                 </div>
-                
+
                 <!-- Date Info -->
                 <div class="flex-1 min-w-0">
                   <div class="font-bold text-gray-800 flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
                     <CalendarIcon class="w-3 h-3 sm:w-4 sm:h-4 text-emerald-500 shrink-0" />
                     <span class="truncate">{{ formatDate(session.date) }}</span>
                   </div>
-                  <div class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 flex flex-wrap items-center gap-2 sm:gap-4">
+                  <div
+                    class="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1 flex flex-wrap items-center gap-2 sm:gap-4">
                     <span class="flex items-center gap-1">
                       <Clock class="w-3 h-3 shrink-0" /> {{ session.startTime }} - {{ session.endTime }}
                     </span>
                     <span class="flex items-center gap-1">
-                      <MapPin class="w-3 h-3 shrink-0" /> <span class="truncate">{{ getRoomName(session.roomId) }}</span>
+                      <MapPin class="w-3 h-3 shrink-0" /> <span class="truncate">{{ getRoomName(session.roomId)
+                        }}</span>
                     </span>
                   </div>
                 </div>
-                
+
                 <!-- Status -->
-                <div 
-                  class="text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded shrink-0"
-                  :class="getSessionStatus(session).class"
-                >
+                <div class="text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded shrink-0"
+                  :class="getSessionStatus(session).class">
                   {{ getSessionStatus(session).text }}
                 </div>
               </div>
             </div>
           </div>
-          
+
           <!-- Modal Footer -->
           <div class="p-3 sm:p-4 border-t bg-gray-50 flex justify-end shrink-0">
-            <button 
-              @click="showScheduleModal = false"
-              class="px-4 sm:px-6 py-2 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition-colors text-sm sm:text-base"
-            >
+            <button @click="showScheduleModal = false"
+              class="px-4 sm:px-6 py-2 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition-colors text-sm sm:text-base">
               Đóng
             </button>
           </div>
@@ -196,7 +169,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/useAuthStore';
 import unifiedApi from '@/services/unifiedClassApi.js';
 import { formatDate } from '@/views/Test/dateUtils.js';
-import { 
+import {
   BookOpen,
   Users,
   MapPin,
@@ -235,7 +208,7 @@ const loadData = async () => {
   try {
     const allClasses = await unifiedApi.getClasses();
     roomsData.value = await unifiedApi.getRooms();
-    
+
     // Filter classes where this teacher is assigned
     myClasses.value = allClasses.filter(c => c.teacherId === currentTeacherId.value);
   } catch (error) {

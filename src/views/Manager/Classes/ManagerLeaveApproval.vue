@@ -74,7 +74,7 @@
             </button>
             <button 
               @click="openNoteModal(request)"
-              class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center gap-2"
+              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 flex items-center justify-center gap-2"
             >
               <FileText class="w-5 h-5" />
               Thêm ghi chú
@@ -167,7 +167,7 @@
             <textarea 
               v-model="managerNote"
               rows="4"
-              class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
+              class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none"
               placeholder="Ví dụ: Giáo viên B sẽ dạy thay..."
             ></textarea>
           </div>
@@ -181,7 +181,7 @@
             </button>
             <button 
               @click="submitNote"
-              class="px-6 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700"
+              class="px-6 py-2 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700"
             >
               Lưu ghi chú
             </button>

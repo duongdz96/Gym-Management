@@ -496,6 +496,7 @@ const USE_REAL_API = true; // Set to false to use mock data
 const classes = ref([]);
 const roomsData = ref([]);
 const teachersData = ref([]);
+const studentsData = ref([]);
 const registrations = ref([]);
 const registeredScheduleIds = ref(new Set());
 const filterDifficulty = ref('');
@@ -519,6 +520,7 @@ const availableSchedules = ref([]);
 const selectedScheduleIds = ref([]);
 const loadingSchedules = ref(false);
 const selectAllCheckbox = ref(null);
+const allRegistrations = ref([]);
 
 const viewSessions = async (cls) => {
   selectedClass.value = cls;
@@ -584,18 +586,35 @@ const loadData = async () => {
     return;
   }
   
-  classes.value = await unifiedApi.getClasses();
-  roomsData.value = await unifiedApi.getRooms();
-  teachersData.value = await unifiedApi.getTeachers();
-  registrations.value = await unifiedApi.getStudentRegistrations(currentStudentId.value);
-  registeredScheduleIds.value = new Set(registrations.value.map(r => r.scheduleId));
-  
-  const allStudents = await unifiedApi.getStudents();
-  currentStudent.value = allStudents.find(s => s.id === currentStudentId.value) || { membershipTier: 'BASIC' };
-  
-  // Update available slots for all classes
-  for (const cls of classes.value) {
-    await updateAvailableSlots(cls);
+  try {
+    const [allClasses, allRooms, allTeachers, allStudents] = await Promise.all([
+      unifiedApi.getClasses(),
+      unifiedApi.getRooms(),
+      unifiedApi.getTeachers(),
+      unifiedApi.getStudents()
+    ]);
+
+    classes.value = allClasses;
+    roomsData.value = allRooms;
+    teachersData.value = allTeachers;
+    studentsData.value = allStudents;
+
+    const regPromises = studentsData.value.map(s => unifiedApi.getStudentRegistrations(s.id));
+    const results = await Promise.all(regPromises);
+    allRegistrations.value = results.flat();
+
+    registrations.value = allRegistrations.value.filter(r => r.studentId === currentStudentId.value);
+    registeredScheduleIds.value = new Set(registrations.value.map(r => r.scheduleId));
+    
+    currentStudent.value = allStudents.find(s => s.id === currentStudentId.value) || { membershipTier: 'BASIC' };
+    
+    for (const cls of classes.value) {
+      calculateSlotsFromData(cls);
+    }
+
+  } catch (error) {
+    console.error("LoadData Error:", error);
+    toast.error('Không thể tải dữ liệu hệ thống');
   }
 };
 
@@ -626,28 +645,19 @@ const getScheduleText = (cls) => {
 const availableSlotsCache = ref({});
 
 const getAvailableSlots = (cls) => {
-  // Return cached value or default
   return availableSlotsCache.value[cls.id] ?? cls.maxStudents;
 };
+const calculateSlotsFromData = (cls) => {
+  const capacity = cls.maxStudents || 0;
 
-const updateAvailableSlots = async (cls) => {
-  try {
-    const classSchedules = await unifiedApi.getSessions(cls.id);
-    if (classSchedules.length === 0) {
-      availableSlotsCache.value[cls.id] = cls.maxStudents;
-      return;
-    }
-    
-    // Get all registrations for all schedules of this class
-    const firstSchedule = classSchedules[0];
-    const capacity = firstSchedule.capacity || cls.maxStudents;
-    
-    // Count total registrations across all schedules
-    const enrolled = registrations.value.filter(r => r.classId === cls.id).length;
-    availableSlotsCache.value[cls.id] = Math.max(0, capacity - enrolled);
-  } catch (error) {
-    availableSlotsCache.value[cls.id] = cls.maxStudents;
-  }
+  const classRegs = allRegistrations.value.filter(r => 
+    r.classId === cls.id && r.status === 'active'
+  );
+  const uniqueStudentIds = new Set(classRegs.map(r => r.studentId));
+  
+  const enrolledCount = uniqueStudentIds.size;
+
+  availableSlotsCache.value[cls.id] = Math.max(0, capacity - enrolledCount);
 };
 
 const isVIPEarlyAccess = (cls) => {
@@ -658,8 +668,9 @@ const isRegistered = (classId) => {
   return registrations.value.some(r => r.classId === classId && r.status === 'active');
 };
 
-const canRegister = async (cls) => {
+const canRegister = (cls) => { 
   if (isRegistered(cls.id)) return false;
+  
   const slots = getAvailableSlots(cls);
   if (slots <= 0) return false;
   
@@ -832,23 +843,18 @@ const formatScheduleTime = (dateTime) => {
 };
 
 const registerSelectedSchedules = async () => {
-  // 1. Kiểm tra đăng nhập
   if (!currentStudentId.value) {
     toast.warning('Vui lòng đăng nhập!');
     return;
   }
   
-  // 2. Kiểm tra đã chọn buổi chưa
   if (selectedScheduleIds.value.length === 0) {
     toast.warning('Vui lòng chọn ít nhất một buổi học!');
     return;
   }
 
-  // 3. Lấy tên lớp an toàn (tránh lỗi null)
-  // Dùng ?. để nếu selectedFitnessClass.value là null thì nó không báo lỗi mà trả về undefined
   const className = selectedFitnessClass.value?.name || 'Lớp học';
   
-  // 4. Hiện popup xác nhận (Code Swal phải nằm ở đây)
   const result = await Swal.fire({
     title: 'Xác nhận đăng ký?',
     text: `Bạn có chắc muốn đăng ký ${selectedScheduleIds.value.length} buổi học cho lớp "${className}"?`,
