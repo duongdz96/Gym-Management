@@ -15,10 +15,10 @@ public class Exercise {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, length = 50)
     private String name;
 
-    @Column(name = "muscle_group")
+    @Column(name = "muscle_group", length = 50)
     private String muscleGroup;
 
     @Column(name = "description", columnDefinition = "TEXT")
