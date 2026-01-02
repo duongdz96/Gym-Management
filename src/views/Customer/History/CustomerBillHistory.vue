@@ -231,7 +231,7 @@ onMounted(fetchBillHistory);
   >
     <div class="bg-white rounded-xl sm:rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
       <!-- Modal Header -->
-      <div class="p-4 sm:p-6 bg-gradient-to-r from-red-600 to-red-700 text-white shrink-0">
+      <div class="p-4 sm:p-6 bg-gradient-to-r from-green-600 to-green-700 text-white shrink-0">
         <div class="flex justify-between items-center">
           <div class="min-w-0">
             <h3 class="text-xl sm:text-2xl font-bold flex items-center gap-2">
@@ -374,7 +374,7 @@ onMounted(fetchBillHistory);
         </div>
 
         <!-- Total Amount -->
-        <div class="bg-gradient-to-r from-red-600 to-red-700 p-5 rounded-xl text-white">
+        <div class="bg-gradient-to-r from-green-600 to-green-700 p-5 rounded-xl text-white">
           <div class="flex justify-between items-center">
             <span class="text-lg font-semibold">Tổng thanh toán</span>
             <span class="text-3xl font-bold">
@@ -393,7 +393,7 @@ onMounted(fetchBillHistory);
           Đóng
         </button>
         <button
-          class="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center gap-2"
+          class="px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center gap-2"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />

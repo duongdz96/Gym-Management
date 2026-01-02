@@ -5,7 +5,8 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { 
   UserIcon, ChevronDown, Dumbbell, Users, Target, Award, 
   Calendar, BookOpen, Ticket, Clock, Settings, LogOut, Bell, 
-  Menu, X // Import thêm icon Menu và X
+  Menu, X, // Import thêm icon Menu và X
+  DollarSign
 } from "lucide-vue-next";
 
 const route = useRoute();
@@ -83,6 +84,10 @@ const handleMobileNavigate = (path) => {
 
         <RouterLink to="/customer/class" class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-orange-300 transition-colors duration-300 rounded-md">
           <Dumbbell class="h-4 w-4" /> Lớp học
+        </RouterLink>
+
+        <RouterLink to="/customer/billhistory" class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-pink-300 transition-colors duration-300 rounded-md">
+          <DollarSign class="h-4 w-4" /> Hoá đơn
         </RouterLink>
 
         <RouterLink to="/customer/calendar" class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-pink-300 transition-colors duration-300 rounded-md">
