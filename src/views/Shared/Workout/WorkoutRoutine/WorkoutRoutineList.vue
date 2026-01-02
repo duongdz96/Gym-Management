@@ -140,7 +140,7 @@ const assignToMember = async () => {
       routineId: routineToAssign.value.id,
       memberId: selectedMember.value.id,
       date: assignDate.value,
-      assignedBy: authStore.user?.id
+      ptId: authStore.user?.id
     }
     await trainingPlanApi.assignPlanToMember(data)
     toast.success(`Đã gán lịch tập cho ${selectedMember.value.fullName}!`)
@@ -325,18 +325,19 @@ onMounted(() => {
                 </button>
                 <button
                   @click="confirmDelete(routine)"
-                  class="flex items-center justify-center gap-1 sm:gap-2 bg-purple-50 text-purple-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-purple-100 transition-colors text-xs sm:text-sm"
+                  class="flex items-center justify-center gap-1 sm:gap-2 bg-purple-50 text-red-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-red-100 transition-colors text-xs sm:text-sm"
                 >
                   <Trash2 class="w-3 h-3 sm:w-4 sm:h-4" />
                   <span class="hidden sm:inline">Xóa</span>
                 </button>
-                <!-- <button
-                  @click="confirmDelete(routine)"
-                  class="col-span-2 flex items-center justify-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition-colors text-sm"
+                <button v-if="authStore.user?.role === 'PT'"
+                  @click="openAssignModal(routine)"
+                  class="flex items-center justify-center gap-1 sm:gap-2 bg-purple-50 text-purple-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-purple-100 transition-colors text-xs sm:text-sm"
                 >
-                  <Trash2 class="w-4 h-4" />
-                  Xóa
-                </button> --> 
+                  <Users class="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span class="hidden sm:inline">Gán</span>
+                  <span class="sm:hidden">Gán</span>
+                </button>
               </div>
             </div>
           </div>
@@ -387,7 +388,7 @@ onMounted(() => {
               <div class="grid grid-cols-2 gap-2">
                 <button
                   @click="viewRoutine(routine)"
-                  class="flex items-center justify-center gap-1 sm:gap-2 bg-green-50 text-green-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-green-100 transition-colors text-xs sm:text-sm"
+                  class="col-span-2 flex items-center justify-center gap-1 sm:gap-2 bg-purple-50 text-green-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-green-100 transition-colors text-xs sm:text-sm"
                 >
                   <Eye class="w-3 h-3 sm:w-4 sm:h-4" />
                   <span class="hidden sm:inline">Xem</span>
@@ -395,12 +396,12 @@ onMounted(() => {
                 <button
                   v-if="authStore.user?.role === 'MEMBER'"
                   @click="selectForWorkout(routine)"
-                  class="flex items-center justify-center gap-1 bg-red-50 text-red-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-red-100 transition-colors text-xs sm:text-sm"
+                  class="col-span-2 flex items-center justify-center gap-1 sm:gap-2 bg-purple-50 text-red-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-red-100 transition-colors text-xs sm:text-sm"
                 >
                   <span class="sm:hidden">Tập</span>
                   <span class="hidden sm:inline">Chọn tập</span>
                 </button>
-                <button
+                <button v-if="authStore.user?.role === 'PT'"
                   @click="openAssignModal(routine)"
                   class="col-span-2 flex items-center justify-center gap-1 sm:gap-2 bg-purple-50 text-purple-600 px-2 sm:px-3 py-2 rounded-lg hover:bg-purple-100 transition-colors text-xs sm:text-sm"
                 >

@@ -74,7 +74,7 @@
 
                   </div>
                   <div>
-                    <p class="font-medium text-gray-900">{{ product.name }}</p>
+                    <p class="font-medium text-gray-900 truncate">{{ product.name }}</p>
                     <p class="text-xs text-gray-500">{{ product.brand }}</p>
                   </div>
                 </div>
@@ -126,7 +126,7 @@
              <div class="grid grid-cols-2 gap-4">
               <div class="col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm <span class="text-red-500">*</span></label>
-                <input v-model="form.name" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" />
+                <input v-model="form.name" type="text" maxlength="50" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Loại sản phẩm</label>
