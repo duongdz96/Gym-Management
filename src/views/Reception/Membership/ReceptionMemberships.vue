@@ -92,6 +92,7 @@ onMounted(async () => {
                     <option value="">Mọi trạng thái</option>
                     <option value="Active">Còn hạn</option>
                     <option value="Expired">Hết hạn</option>
+                    <option value="Upgraded">Nâng cấp</option>
                 </select>
             </div>
         </div>
@@ -143,7 +144,7 @@ onMounted(async () => {
                                 'px-2 py-1 rounded-full text-xs',
                                 {
                                     'bg-green-100 text-green-800': membership.status === 'Active',
-                                    'bg-red-100 text-red-800': membership.status === 'Inactive',
+                                    'bg-red-100 text-red-800': membership.status === 'Expired',
                                     'bg-blue-100 text-blue-800': membership.status === 'Upgraded'
                                 }
                             ]">

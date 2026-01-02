@@ -4,9 +4,8 @@
     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     @click.self="closeModal"
   >
-    <div class="bg-white rounded-2xl w-full max-w-3xl shadow-2xl animate-fadeIn max-h-[90vh] overflow-y-auto">
-      <!-- Modal Header -->
-      <div class="sticky top-0 p-6 bg-gradient-to-r from-purple-600 to-purple-700 text-white flex justify-between items-center rounded-t-2xl z-10">
+    <div class="bg-white rounded-2xl w-full max-w-3xl shadow-2xl animate-fadeIn flex flex-col max-h-[90vh]">
+      <div class="sticky top-0 p-6 bg-gradient-to-r from-purple-600 to-purple-700 text-white flex justify-between items-center rounded-t-2xl shrink-0 z-10">
         <div>
           <h2 class="text-2xl font-bold flex items-center gap-2">
             <Calendar class="w-6 h-6" />
@@ -24,9 +23,7 @@
         </button>
       </div>
       
-      <!-- Modal Body -->
-      <div class="p-8 space-y-6">
-        <!-- Session Info Card -->
+      <div class="p-8 space-y-6 overflow-y-auto custom-scrollbar">
         <div class="p-4 bg-purple-50 border border-purple-200 rounded-xl">
           <div class="grid grid-cols-2 gap-3 text-sm">
             <div>
@@ -40,7 +37,6 @@
           </div>
         </div>
 
-        <!-- Time Range -->
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">
@@ -67,23 +63,31 @@
           </div>
         </div>
 
-        <!-- Room Selection -->
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2">
             <MapPin class="w-4 h-4 inline mr-1" />
             Phòng học *
+            <span v-if="loadingRooms" class="text-purple-600 text-xs ml-2 italic">
+              (Đang tìm phòng trống...)
+            </span>
           </label>
           <select 
             v-model="formData.roomId"
-            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-600 focus:ring-2 focus:ring-purple-100 outline-none transition-all"
+            :disabled="loadingRooms || !formData.startTime || !formData.endTime"
+            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-600 focus:ring-2 focus:ring-purple-100 outline-none transition-all disabled:bg-gray-100 disabled:text-gray-400"
           >
+            <option :value="null" disabled>-- Chọn phòng học --</option>
             <option v-for="room in rooms" :key="room.id" :value="room.id">
               {{ room.name }} (Sức chứa: {{ room.capacity }})
             </option>
           </select>
+          
+          <p v-if="!loadingRooms && rooms.length === 0 && formData.startTime && formData.endTime" class="text-red-500 text-sm mt-1">
+            <AlertTriangle class="w-4 h-4 inline mr-1"/>
+            Không có phòng nào trống trong khung giờ này.
+          </p>
         </div>
 
-        <!-- Status -->
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2">
             <Info class="w-4 h-4 inline mr-1" />
@@ -99,35 +103,27 @@
           </select>
         </div>
 
-        <!-- Note Field -->
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-2">
             <FileText class="w-4 h-4 inline mr-1" />
             Ghi chú thay đổi
-            <span class="text-gray-400 font-normal text-xs ml-2">(Không bắt buộc)</span>
           </label>
           <textarea 
             v-model="formData.note" 
             rows="3" 
-            placeholder="VD: Đổi giáo viên do giáo viên cũ ốm, Lùi giờ 30 phút do sự cố..."
             class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-600 focus:ring-2 focus:ring-purple-100 outline-none transition-all"
           ></textarea>
-          <p class="text-xs text-gray-500 mt-1">
-            Ghi chú sẽ được hiển thị cho học viên để thông báo thay đổi đột xuất
-          </p>
         </div>
 
-        <!-- Validation Warning -->
         <div v-if="!isValid" class="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
           <AlertTriangle class="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           <p class="text-sm text-red-800">
-            Vui lòng điền đầy đủ thông tin bắt buộc và đảm bảo giờ kết thúc sau giờ bắt đầu.
+            Vui lòng chọn đầy đủ thông tin. Giờ kết thúc phải sau giờ bắt đầu.
           </p>
         </div>
       </div>
       
-      <!-- Modal Footer -->
-      <div class="sticky bottom-0 p-6 bg-gray-50 border-t flex justify-end gap-3 rounded-b-2xl">
+      <div class="p-6 bg-gray-50 border-t flex justify-end gap-3 rounded-b-2xl shrink-0">
         <button 
           @click="closeModal" 
           class="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all"
@@ -148,24 +144,19 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Calendar, Clock, MapPin, Info, FileText, X, Save, AlertTriangle } from 'lucide-vue-next';
 import api from '@/services/api';
 import { formatDate as formatDisplayDate } from '@/views/Test/dateUtils.js';
 import { useToast } from 'vue-toastification';
 
 const props = defineProps({
-  show: {
-    type: Boolean,
-    default: false
-  },
-  session: {
-    type: Object,
-    default: null
-  }
+  show: { type: Boolean, default: false },
+  session: { type: Object, default: null }
 });
 
 const emit = defineEmits(['close', 'updated']);
+const toast = useToast();
 
 const formData = ref({
   startTime: '',
@@ -177,75 +168,102 @@ const formData = ref({
 
 const rooms = ref([]);
 const saving = ref(false);
-const toast = useToast();
+const loadingRooms = ref(false);
 
 const isValid = computed(() => {
-  if (!formData.value.startTime || !formData.value.endTime || !formData.value.roomId) {
-    return false;
-  }
+  if (!formData.value.startTime || !formData.value.endTime || !formData.value.roomId) return false;
   
-  // Check if end time is after start time
   const start = new Date(`2000-01-01T${formData.value.startTime}`);
   const end = new Date(`2000-01-01T${formData.value.endTime}`);
   
   return end > start;
 });
 
-// Load rooms
-onMounted(async () => {
-  try {
-    const response = await api.get('/room');
-    rooms.value = response.data;
-  } catch (error) {
-    console.error('Error loading rooms:', error);
-  }
-});
-
-// Watch for prop changes to populate form
-watch(() => props.session, (newSession) => {
-  if (newSession) {
-    // Parse time from startTime and endTime (can be ISO string or time string)
-    const parseTime = (timeStr) => {
-      if (!timeStr) return '';
-      // If it's ISO format (2024-12-28T12:00:00)
-      if (timeStr.includes('T')) {
-        return new Date(timeStr).toTimeString().substring(0, 5);
-      }
-      // If it's already time format (12:00)
-      if (timeStr.match(/^\d{2}:\d{2}/)) {
-        return timeStr.substring(0, 5);
-      }
-      return timeStr;
-    };
-
-    formData.value = {
-      startTime: parseTime(newSession.startTime),
-      endTime: parseTime(newSession.endTime),
-      roomId: newSession.roomId || null,
-      status: newSession.status || 'OPEN',
-      note: newSession.note || ''
-    };
-  }
-}, { immediate: true });
-
+// Hàm format hiển thị ngày
 const formatDate = (dateStr) => {
   if (!dateStr) return 'N/A';
   return formatDisplayDate(dateStr);
 };
 
-const closeModal = () => {
-  emit('close');
+// --- LOGIC MỚI: Gọi API lấy phòng trống ---
+const fetchAvailableRooms = async () => {
+  // Chỉ gọi khi có đủ 2 mốc thời gian và props.session đã sẵn sàng
+  if (!formData.value.startTime || !formData.value.endTime || !props.session) {
+    rooms.value = [];
+    return;
+  }
+
+  // Validate đơn giản trước khi gọi
+  const start = new Date(`2000-01-01T${formData.value.startTime}`);
+  const end = new Date(`2000-01-01T${formData.value.endTime}`);
+  if (end <= start) return; // Không gọi nếu giờ sai
+
+  loadingRooms.value = true;
+  try {
+    const date = props.session.date; // YYYY-MM-DD
+    const params = {
+      startTime: `${date}T${formData.value.startTime}:00`,
+      endTime: `${date}T${formData.value.endTime}:00`,
+      excludeSessionId: props.session.id // Quan trọng: Trừ buổi học hiện tại ra
+    };
+
+    const response = await api.get('/room/available', { params });
+    rooms.value = response.data;
+
+    // Check logic: Nếu phòng đang chọn không còn nằm trong list mới -> Reset về null
+    if (formData.value.roomId) {
+      const isStillAvailable = rooms.value.some(r => r.id === formData.value.roomId);
+      if (!isStillAvailable) {
+        formData.value.roomId = null;
+        // Optional: toast.warning('Phòng cũ không còn trống trong giờ mới này!');
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching rooms:', error);
+    toast.error('Không thể tải danh sách phòng trống');
+  } finally {
+    loadingRooms.value = false;
+  }
 };
+
+// --- Watchers ---
+
+// 1. Khi mở modal (session thay đổi) -> Fill data và load phòng lần đầu
+watch(() => props.session, (newSession) => {
+  if (newSession) {
+    const parseTime = (timeStr) => {
+      if (!timeStr) return '';
+      if (timeStr.includes('T')) return new Date(timeStr).toTimeString().substring(0, 5);
+      return timeStr.substring(0, 5);
+    };
+
+    formData.value = {
+      startTime: parseTime(newSession.startTime),
+      endTime: parseTime(newSession.endTime),
+      roomId: newSession.roomId || (newSession.room ? newSession.room.id : null),
+      status: newSession.status || 'OPEN',
+      note: newSession.note || ''
+    };
+    
+    // Gọi ngay lập tức để lấy list phòng cho giờ hiện tại
+    fetchAvailableRooms();
+  }
+}, { immediate: true });
+
+// 2. Khi user thay đổi giờ -> Load lại list phòng
+watch([() => formData.value.startTime, () => formData.value.endTime], () => {
+  // Dùng debounce nếu muốn (ở đây gọi trực tiếp cho đơn giản)
+  fetchAvailableRooms();
+});
+
+const closeModal = () => emit('close');
 
 const saveChanges = async () => {
   if (!isValid.value || !props.session) return;
   
   saving.value = true;
   try {
-    // Build the update payload
-    // Need to combine date from session with new time
-    const sessionDate = props.session.date; // YYYY-MM-DD format
-    
+    const sessionDate = props.session.date;
     const startDateTime = `${sessionDate}T${formData.value.startTime}:00`;
     const endDateTime = `${sessionDate}T${formData.value.endTime}:00`;
     
@@ -255,7 +273,7 @@ const saveChanges = async () => {
       room: { id: formData.value.roomId },
       status: formData.value.status,
       note: formData.value.note || null,
-      // Keep other fields from original session
+      // Các field khác giữ nguyên logic cũ
       fitnessClass: props.session.fitnessClass ? { id: props.session.fitnessClass.id || props.session.fitnessClassId } : null,
       schedulePattern: props.session.schedulePattern ? { id: props.session.schedulePattern.id } : null,
       capacity: props.session.capacity
@@ -268,13 +286,17 @@ const saveChanges = async () => {
       startTime: startDateTime,
       endTime: endDateTime,
       roomId: formData.value.roomId,
+      room: rooms.value.find(r => r.id === formData.value.roomId), // Cập nhật cả object room để hiển thị UI bên ngoài
       status: formData.value.status,
       note: formData.value.note
     });
     
     closeModal();
+    toast.success('Cập nhật thành công!');
   } catch (error) {
-    toast.error('Lỗi khi cập nhật buổi học');
+    // Nếu BE trả về 409 hoặc 400
+    const msg = error.response?.data || 'Lỗi khi cập nhật buổi học';
+    toast.error(msg);
   } finally {
     saving.value = false;
   }
@@ -282,19 +304,15 @@ const saveChanges = async () => {
 </script>
 
 <style scoped>
+/* CSS cho scrollbar và animation */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
-}
+.animate-fadeIn { animation: fadeIn 0.3s ease-out; }
 </style>
-
