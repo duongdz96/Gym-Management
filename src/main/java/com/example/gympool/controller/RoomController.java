@@ -4,9 +4,11 @@ import com.example.gympool.entity.Room;
 import com.example.gympool.entity.SchedulePattern;
 import com.example.gympool.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -48,5 +50,21 @@ public class RoomController {
     @PostMapping("/available-for-pattern")
     public ResponseEntity<List<Room>> getAvailableRooms(@RequestBody SchedulePattern pattern) {
         return ResponseEntity.ok(roomService.getAvailableRoomsForPattern(pattern));
-    } 
+    }
+
+    @GetMapping("/available")
+    public ResponseEntity<?> getAvailableRooms(
+            @RequestParam("startTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam("endTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @RequestParam(value = "excludeSessionId", required = false) Long excludeSessionId) {
+
+        try {
+            List<Room> availableRooms = roomService.getAvailableRooms(startTime, endTime, excludeSessionId);
+            return ResponseEntity.ok(availableRooms);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Lỗi server khi tìm phòng trống.");
+        }
+    }
 }

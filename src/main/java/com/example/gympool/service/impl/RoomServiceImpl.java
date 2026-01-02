@@ -91,4 +91,14 @@ public class RoomServiceImpl implements RoomService {
                 .filter(room -> !busyRoomIds.contains(room.getId()))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Room> getAvailableRooms(LocalDateTime startTime, LocalDateTime endTime, Long excludeSessionId) {
+
+        if (startTime != null && endTime != null && endTime.isBefore(startTime)) {
+            throw new IllegalArgumentException("Thời gian kết thúc không thể trước thời gian bắt đầu");
+        }
+
+        return roomRepository.findAvailableRooms(startTime, endTime, excludeSessionId);
+    }
 }
