@@ -76,8 +76,8 @@
               <span class="text-gray-800">{{ cls.difficulty }}</span>
             </div>
             <div>
-              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Users class="w-4 h-4" /> Sức chứa:</span>
-              <span class="text-gray-800">{{ getEnrolledCount(cls.id) }}/{{ cls.maxStudents }}</span>
+              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Calendar class="w-4 h-4" /> Số buổi học:</span>
+              <span class="text-gray-800">{{ getSessionCount(cls.id) }}</span>
             </div>
             <div>
               <span class="text-gray-500 font-semibold block flex items-center gap-1"><MapPin class="w-4 h-4" /> Phòng:</span>
@@ -523,8 +523,8 @@
       <div class="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fadeIn">
         <!-- Modal Header -->
         <div class="sticky top-0 p-6 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white flex justify-between items-start rounded-t-2xl z-50">
-          <div>
-            <h2 class="text-2xl font-bold mb-1">{{ selectedClass.name }}</h2>
+          <div class="max-w-[500px]">
+            <h2 class="text-2xl font-bold mb-1 truncate">{{ selectedClass.name }}</h2>
             <div class="flex items-center gap-2 text-emerald-100 text-sm">
               <component :is="getStatusIcon(selectedClass.status)" class="w-4 h-4" />
               {{ getStatusText(selectedClass.status) }}
@@ -566,16 +566,14 @@
                 </div>
               </div>
               <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center gap-3">
-                <Users class="w-8 h-8 text-green-500 bg-green-100 p-1.5 rounded-lg" />
+                <Calendar class="w-8 h-8 text-emerald-500 bg-emerald-100 p-1.5 rounded-lg" />
                 <div>
-                  <div class="text-xs text-gray-500 font-semibold uppercase">Sĩ số</div>
-                  <div class="font-bold text-gray-800">
-                    {{ getEnrolledCount(selectedClass.id) }}/{{ selectedClass.maxStudents }}
-                  </div>
+                  <div class="text-xs text-gray-500 font-semibold uppercase">Số buổi học</div>
+                  <div class="font-bold text-gray-800">{{ selectedClassSessions.length }} buổi</div>
                 </div>
               </div>
               <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center gap-3">
-                <MapPin class="w-8 h-8 text-emerald-500 bg-emerald-100 p-1.5 rounded-lg" />
+                <MapPin class="w-8 h-8 text-blue-500 bg-blue-100 p-1.5 rounded-lg" />
                 <div>
                   <div class="text-xs text-gray-500 font-semibold uppercase">Phòng học</div>
                   <div class="font-bold text-gray-800">{{ getRoomName(selectedClass.roomId) }}</div>
@@ -643,6 +641,10 @@
                 <div class="flex-1">
                   <div class="font-bold text-gray-800">{{ formatDate(session.date) }}</div>
                   <div class="text-sm text-gray-500">{{ formatScheduleTime(session.startTime) }} - {{ formatScheduleTime(session.endTime) }}</div>
+                  <div class="text-sm font-semibold mt-1 flex items-center gap-1 text-gray-600">
+                    <Users class="w-4 h-4" />
+                    Sĩ số: {{ getSessionEnrollment(session.id) }}/{{ session.capacity || 0 }}
+                  </div>
                   <div v-if="session.note" class="text-xs text-orange-600 mt-1 flex items-center gap-1">
                     <Info class="w-3 h-3" /> {{ session.note }}
                   </div>
@@ -675,7 +677,7 @@
           <div>
             <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
               <Users class="w-5 h-5 text-emerald-600" />
-              Danh sách học viên ({{ selectedClassStudents.length }})
+              Danh sách học viên đã đăng ký ít nhất 1 buổi: ({{ selectedClassStudents.length }})
             </h3>
             
             <div v-if="selectedClassStudents.length > 0" class="overflow-x-auto">
@@ -789,6 +791,7 @@ const roomConflicts = ref({});
 const tempDate = ref('');
 const loadingSessionsDetails = ref(false);
 const selectedClassSessions = ref([]);
+const classSessionsMap = ref(new Map()); // Map<classId, sessions[]> - lưu sessions cho tất cả classes
 
 // Edit modals state
 const showEditClassModal = ref(false);
@@ -863,8 +866,11 @@ const canProceed = computed(() => {
 
 const selectedClassStudents = computed(() => {
   if (!selectedClass.value) return [];
-  // Get all student registrations and filter by class
-  const registrations = registrationsData.value.filter(r => r.classId === selectedClass.value.id && r.status === 'active');
+  
+  // Lấy tất cả học viên đã đăng ký ít nhất 1 buổi của lớp này
+  const registrations = registrationsData.value.filter(r => 
+    r.classId === selectedClass.value.id && r.status === 'active'
+  );
   
   // Dùng Map để loại bỏ học viên trùng lặp (vì 1 học viên có thể đăng ký nhiều buổi)
   const uniqueStudentsMap = new Map();
@@ -894,13 +900,23 @@ const loadData = async () => {
   teachersData.value = await unifiedApi.getTeachers();
   studentsData.value = await unifiedApi.getStudents();
   
-  // Load all registrations (for student list in details)
-  // In real app, we'd load per class, but for simplicity load all
   registrationsData.value = [];
   for (const student of studentsData.value) {
     const studentRegs = await unifiedApi.getStudentRegistrations(student.id);
     registrationsData.value.push(...studentRegs);
   }
+  console.log('Registrations loaded:', registrationsData.value);
+  // Fetch sessions cho tất cả các classes ngay từ đầu
+  const sessionsMap = new Map();
+  for (const cls of classes.value) {
+    try {
+      const sessions = await unifiedApi.getSessions(cls.id);
+      sessionsMap.set(cls.id, sessions.sort((a, b) => new Date(a.date) - new Date(b.date)));
+    } catch (error) {
+      sessionsMap.set(cls.id, []);
+    }
+  }
+  classSessionsMap.value = sessionsMap;
 };
 
 const onPatternTypeChange = () => {
@@ -1005,6 +1021,17 @@ const getEnrolledCount = (classId) => {
   const uniqueStudents = new Set(studentIds);
   
   return uniqueStudents.size;
+};
+
+const getSessionCount = (classId) => {
+  const sessions = classSessionsMap.value.get(classId);
+  return sessions ? sessions.length : 0;
+};
+
+const getSessionEnrollment = (sessionId) => {
+  return registrationsData.value.filter(r => 
+    r.scheduleId === sessionId
+  ).length;
 };
 
 const getScheduleText = (cls) => {
@@ -1257,16 +1284,11 @@ const createClass = async () => {
 const viewDetails = async (cls) => {
   selectedClass.value = cls;
   showDetailsModal.value = true;
-  loadingSessionsDetails.value = true;
-  selectedClassSessions.value = [];
+  loadingSessionsDetails.value = false;
   
-  try {
-    const sessions = await unifiedApi.getSessions(cls.id);
-    selectedClassSessions.value = sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
-  } catch (error) {
-  } finally {
-    loadingSessionsDetails.value = false;
-  }
+  // Lấy sessions từ map đã load sẵn
+  const sessions = classSessionsMap.value.get(cls.id) || [];
+  selectedClassSessions.value = sessions;
 };
 
 // Edit handlers
