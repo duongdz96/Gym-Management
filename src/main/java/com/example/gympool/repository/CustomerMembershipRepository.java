@@ -19,11 +19,11 @@ public interface CustomerMembershipRepository extends JpaRepository<CustomerMemb
     
     List<CustomerMembership> findByMembershipPlan_MembershipTier_Name(String tiername);
 
-    @Query("SELECT MembershipDistributionDTO(" +
-           "cm.membershipPlan.membershipTier.name, COUNT(cm), 0.0) " +
-           "FROM CustomerMembership cm " +
-           "WHERE cm.status = 'Active' " +
-           "GROUP BY cm.membershipPlan.membershipTier.name")
+    @Query("SELECT new com.example.gympool.dto.MembershipDistributionDTO(" +
+            "cm.membershipPlan.membershipTier.name, COUNT(cm), 0.0) " +
+            "FROM CustomerMembership cm " +
+            "WHERE cm.status = 'Active' " +
+            "GROUP BY cm.membershipPlan.membershipTier.name")
     List<MembershipDistributionDTO> getMembershipDistribution();
 
     Optional<CustomerMembership> findFirstByMemberIdOrderByIdDesc(Long memberId);
