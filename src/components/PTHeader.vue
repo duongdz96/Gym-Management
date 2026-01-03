@@ -1,62 +1,99 @@
 <script setup>
 import { ref } from "vue";
-import { useRoute, RouterLink } from "vue-router";
+import { useRoute, useRouter, RouterLink } from "vue-router";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useToast } from "vue-toastification";
+import { ChevronDown, Dumbbell, Users, Calendar, Clock, GraduationCap, UserIcon, Settings, LogOut } from "lucide-vue-next";
 
 const route = useRoute();
 const isMenuOpen = ref(false);
 const isAccountOpen = ref(false);
-
+const isWorkoutOpen = ref(false);
+const authStore = useAuthStore();
+const router = useRouter();
+const toast = useToast();
 const openAccountMenu = () => (isAccountOpen.value = true);
 const closeAccountMenu = () => (isAccountOpen.value = false);
+const openWorkoutMenu = () => (isWorkoutOpen.value = true);
+const closeWorkoutMenu = () => (isWorkoutOpen.value = false);
+
+const handleLogout = () => {
+  authStore.logout();
+  toast.success("Đăng xuất thành công!");
+  router.push("/login");
+};
 </script>
 
 <template>
-  <header class="w-full bg-stone-900 relative z-50">
-    <div class="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
+  <header class="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 shadow-lg relative z-50">
+    <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-transparent to-cyan-500/20"></div>
+    <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between relative z-10">
       <!-- Logo -->
       <div class="flex items-center gap-3">
-        <RouterLink to="/pt" class="inline-flex items-center gap-2">
-          <span class="h-8 w-8 rounded-full bg-red-600 inline-block"></span>
+        <RouterLink to="/pt" class="inline-flex items-center gap-2 hover:opacity-90 transition">
+          <div class="h-8 w-8 rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-500 flex items-center justify-center shadow-lg">
+            <Dumbbell class="h-5 w-5 text-white" />
+          </div>
           <span class="font-bold text-white tracking-wider uppercase"
-            >Gym Management</span
+            >Quản lý Gym</span
           >
         </RouterLink>
       </div>
 
       <!-- Navigation (desktop) -->
-      <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
         <RouterLink
           to="/pt/schedule"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="
-            route.path === '/pt/schedule'
-              ? 'text-red-600 border-b-2 border-red-600 pb-1'
-              : 'text-white'
-          "
-          >Schedule</RouterLink
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-yellow-300 transition-colors duration-300 rounded-md"
         >
+          <Calendar class="h-4 w-4" />
+          Lịch trình
+        </RouterLink>
+
+        <!-- Workout Dropdown -->
+        <div
+          class="relative"
+          @mouseenter="openWorkoutMenu"
+          @mouseleave="closeWorkoutMenu"
+        >
+          <button
+            class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-orange-300 transition-colors duration-300 rounded-md"
+          >
+            <Dumbbell class="h-4 w-4" />
+            <span>Bài tập</span>
+            <ChevronDown class="w-4 h-4" />
+          </button>
+
+          <transition name="fade">
+            <div
+              v-if="isWorkoutOpen"
+              class="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-gray-200 z-50"
+            >
+              <RouterLink
+                to="/pt/workout/exercises"
+                class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100 transition"
+              >
+                <Dumbbell class="w-4 h-4" />
+                Bài tập
+              </RouterLink>
+              <RouterLink
+                to="/pt/workout/routines"
+                class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100 transition"
+              >
+                <Users class="w-4 h-4" />
+                Cộng đồng
+              </RouterLink>
+            </div>
+          </transition>
+        </div>
 
         <RouterLink
-          to="/pt/profile"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="
-            route.path === '/pt/profile'
-              ? 'text-red-600 border-b-2 border-red-600 pb-1'
-              : 'text-white'
-          "
-          >Profile</RouterLink
+          to="/pt/sessions"
+          class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-pink-300 transition-colors duration-300 rounded-md"
         >
-
-        <RouterLink
-          to="/pt/members"
-          class="uppercase tracking-wider hover:text-red-600"
-          :class="
-            route.path === '/pt/members'
-              ? 'text-red-600 border-b-2 border-red-600 pb-1'
-              : 'text-white'
-          "
-          >Members</RouterLink
-        >
+          <Clock class="h-4 w-4" />
+          Buổi tập
+        </RouterLink>
       </nav>
 
       <!-- Account dropdown (desktop) -->
@@ -65,29 +102,43 @@ const closeAccountMenu = () => (isAccountOpen.value = false);
         @mouseenter="openAccountMenu"
         @mouseleave="closeAccountMenu"
       >
-        <button class="text-white uppercase tracking-wider hover:text-red-600">
-          Account
+        <button class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-cyan-300 transition-colors duration-300 rounded-md">
+          <UserIcon class="w-5 h-5" />
+          <span>{{ authStore.user?.fullName || 'Tài khoản' }}</span>
         </button>
 
         <transition name="fade">
           <div
             v-if="isAccountOpen"
-            class="absolute right-0 mt-2 w-44 bg-white rounded shadow-md z-50 border border-gray-200"
+            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50"
           >
             <RouterLink
-              to="/pt/profile"
-              class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-              >Profile</RouterLink
+              to="/profile"
+              class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
+              <UserIcon class="w-4 h-4" />
+              Hồ sơ cá nhân
+            </RouterLink>
+            <RouterLink
+              to="/pt/attendance-history"
+              class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100"
+            >
+              <Clock class="w-4 h-4" />
+              Lịch sử điểm danh
+            </RouterLink>
             <RouterLink
               to="/pt/setting"
-              class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-              >Settings</RouterLink
+              class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
+              <Settings class="w-4 h-4" />
+              Cài đặt
+            </RouterLink>
             <button
-              class="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+              @click="handleLogout"
+              class="flex items-center gap-2 w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
-              Logout
+              <LogOut class="w-4 h-4" />
+              Đăng xuất
             </button>
           </div>
         </transition>
@@ -119,28 +170,21 @@ const closeAccountMenu = () => (isAccountOpen.value = false);
     <transition name="slide">
       <div
         v-if="isMenuOpen"
-        class="md:hidden bg-stone-800 px-6 py-4 border-t border-stone-700"
+        class="md:hidden bg-emerald-800 px-6 py-4 border-t border-emerald-700"
       >
         <nav class="flex flex-col gap-4">
           <RouterLink
             to="/pt/schedule"
-            class="uppercase tracking-wider text-white hover:text-red-600"
+            class="uppercase tracking-wider text-white hover:text-emerald-400"
             @click="isMenuOpen = false"
-            >Schedule</RouterLink
+            >Lịch trình</RouterLink
           >
 
           <RouterLink
-            to="/pt/profile"
-            class="uppercase tracking-wider text-white hover:text-red-600"
+            to="/pt/sessions"
+            class="uppercase tracking-wider text-white hover:text-emerald-400"
             @click="isMenuOpen = false"
-            >Profile</RouterLink
-          >
-
-          <RouterLink
-            to="/pt/members"
-            class="uppercase tracking-wider text-white hover:text-red-600"
-            @click="isMenuOpen = false"
-            >Members</RouterLink
+            >Buổi tập</RouterLink
           >
         </nav>
       </div>

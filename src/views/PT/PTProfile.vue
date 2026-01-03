@@ -1,211 +1,151 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
+import api from "@/services/api";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useToast } from "vue-toastification";
 
-const isEditing = ref(false);
-const profile = ref({
-  name: "Nguyễn Văn PT",
-  email: "pt@gym.com",
-  phone: "0123-456-789",
-  specialization: "Yoga & Fitness",
-  experience: "5 năm",
-  certifications: ["Yoga Instructor", "Personal Trainer"],
-  birthDate: "15/05/1990",
-  address: "Phường 1, Thành phố Hồ Chí Minh",
-  avatar: "https://via.placeholder.com/150", // Placeholder avatar
-});
+const authStore = useAuthStore();
+const toast = useToast();
 
-const editedProfile = ref({ ...profile.value });
+const profile = ref(null);
+const isLoading = ref(true);
 
-const startEditing = () => {
-  editedProfile.value = { ...profile.value };
-  isEditing.value = true;
+// Hàm format tiền tệ
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 };
 
-const saveChanges = () => {
-  profile.value = { ...editedProfile.value };
-  isEditing.value = false;
-  // TODO: Call API to save changes
-  console.log("Profile updated:", profile.value);
-};
-
-const cancelEditing = () => {
-  isEditing.value = false;
-};
-
-onMounted(() => {
-  console.log("PT Profile loaded");
+onMounted(async () => {
+  try {
+    isLoading.value = true;
+    const res = await api.get("/pts");
+    const staffs = Array.isArray(res.data) ? res.data : [];
+    
+    // Lưu ý: Logic này đang lấy toàn bộ danh sách rồi mới lọc client-side (xem phần nhận xét bên dưới)
+    const currentStaff = staffs.find(staff => staff.id === authStore.user.id);
+    
+    if (currentStaff) {
+      profile.value = {
+        id: currentStaff.id,
+        fullName: currentStaff.fullName,
+        email: currentStaff.email,
+        phone: currentStaff.phone,
+        dob: new Date(currentStaff.dob).toLocaleDateString('vi-VN'), // Format ngày kiểu VN
+        gender: currentStaff.gender,
+        position: currentStaff.position,
+        specialize: currentStaff.specialize,
+        hirePrice: currentStaff.hirePrice,
+        avatar: 'https://randomuser.me/api/portraits/men/32.jpg', // Có thể thay bằng logic ảnh thật
+      };
+    }
+  } catch (error) {
+    toast.error("Không thể tải thông tin hồ sơ.");
+  } finally {
+    isLoading.value = false;
+  }
 });
 </script>
 
 <template>
-  <div class="p-6 space-y-8">
-    <!-- Title -->
-    <h1 class="text-3xl font-bold text-stone-800 mb-6">Personal Information</h1>
+  <div class="max-w-4xl mx-auto p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Hồ Sơ Cá Nhân</h1>
+      <button 
+        v-if="profile"
+        class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm font-medium text-sm"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+        Chỉnh sửa
+      </button>
+    </div>
 
-    <!-- Thông tin cá nhân -->
-    <section class="bg-white rounded-xl shadow-lg p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-semibold text-gray-800">PT Profile</h2>
-        <div class="flex gap-3">
-          <button
-            v-if="!isEditing"
-            @click="startEditing"
-            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-          >
-            <svg
-              class="w-4 h-4 inline mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              ></path>
-            </svg>
-            Edit
-          </button>
-          <button
-            v-if="isEditing"
-            @click="saveChanges"
-            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-          >
-            <svg
-              class="w-4 h-4 inline mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              ></path>
-            </svg>
-            Save
-          </button>
-          <button
-            v-if="isEditing"
-            @click="cancelEditing"
-            class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-          >
-            <svg
-              class="w-4 h-4 inline mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              ></path>
-            </svg>
-            Cancel
-          </button>
+    <div v-if="isLoading" class="animate-pulse bg-white shadow-lg rounded-2xl overflow-hidden">
+      <div class="h-32 bg-gray-200"></div>
+      <div class="px-8 pb-8">
+        <div class="relative flex items-end -mt-12 mb-6">
+          <div class="w-24 h-24 bg-gray-300 rounded-full border-4 border-white"></div>
+        </div>
+        <div class="space-y-4">
+          <div class="h-6 bg-gray-200 rounded w-1/4"></div>
+          <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+             <div class="h-24 bg-gray-100 rounded-xl"></div>
+             <div class="h-24 bg-gray-100 rounded-xl"></div>
+          </div>
         </div>
       </div>
-      <div
-        class="flex flex-col md:flex-row items-start space-y-6 md:space-y-0 md:space-x-8"
-      >
-        <!-- Avatar bên trái -->
-        <div class="flex-shrink-0">
-          <div
-            class="w-32 h-40 rounded-lg border-4 border-gray-200 shadow-md"
-            :style="{
-              backgroundImage: `url(${profile.avatar})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-            }"
-          ></div>
+    </div>
+
+    <div v-else-if="profile" class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+      
+      <div class="h-32 bg-gradient-to-r from-indigo-500 to-purple-600 relative"></div>
+
+      <div class="px-8 pb-8">
+        <div class="relative flex flex-col md:flex-row md:items-end -mt-12 mb-8 gap-4">
+          <img
+            :src="profile.avatar"
+            alt="Avatar"
+            class="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover bg-white"
+          />
+          <div class="mb-1">
+            <h2 class="text-2xl font-bold text-gray-900">{{ profile.fullName }}</h2>
+            <p class="text-indigo-600 font-medium">{{ profile.position }}</p>
+          </div>
         </div>
-        <!-- Thông tin bên phải -->
-        <div class="flex-1 grid md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Full Name</label
-            >
-            <p class="mt-1 text-lg text-gray-900 font-medium">
-              {{ profile.name }}
-            </p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              v-if="isEditing"
-              v-model="editedProfile.email"
-              type="email"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-            <p v-else class="mt-1 text-lg text-gray-900">{{ profile.email }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Phone Number</label
-            >
-            <input
-              v-if="isEditing"
-              v-model="editedProfile.phone"
-              type="tel"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
-            <p v-else class="mt-1 text-lg text-gray-900">{{ profile.phone }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Date of Birth</label
-            >
-            <p class="mt-1 text-lg text-gray-900">{{ profile.birthDate }}</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Address</label
-            >
-            <textarea
-              v-if="isEditing"
-              v-model="editedProfile.address"
-              rows="3"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            ></textarea>
-            <p v-else class="mt-1 text-lg text-gray-900">
-              {{ profile.address }}
-            </p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Specialization</label
-            >
-            <p class="mt-1 text-lg text-gray-900">
-              {{ profile.specialization }}
-            </p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Experience</label
-            >
-            <p class="mt-1 text-lg text-gray-900">{{ profile.experience }}</p>
-          </div>
-          <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700"
-              >Certifications</label
-            >
-            <ul class="mt-1 text-lg text-gray-900 list-disc list-inside">
-              <li
-                v-for="cert in profile.certifications"
-                :key="cert"
-                class="mb-1"
-              >
-                {{ cert }}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          <div class="space-y-6">
+            <h3 class="text-gray-900 font-semibold border-b pb-2">Thông tin liên hệ</h3>
+            <ul class="space-y-4">
+              <li class="flex items-center gap-3 text-gray-600">
+                <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                </div>
+                <span>{{ profile.email }}</span>
+              </li>
+              <li class="flex items-center gap-3 text-gray-600">
+                <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                </div>
+                <span>{{ profile.phone }}</span>
+              </li>
+              <li class="flex items-center gap-3 text-gray-600">
+                <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                </div>
+                <span>{{ profile.gender }} - {{ profile.dob }}</span>
               </li>
             </ul>
           </div>
+
+          <div class="space-y-6">
+            <h3 class="text-gray-900 font-semibold border-b pb-2">Thông tin công việc</h3>
+            <div class="bg-gray-50 rounded-xl p-4 space-y-4 border border-gray-100">
+              <div>
+                <span class="text-sm text-gray-500 block mb-1">Chuyên môn chính</span>
+                <span class="inline-block bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
+                  {{ profile.specialize }}
+                </span>
+              </div>
+              
+              <div>
+                <span class="text-sm text-gray-500 block mb-1">Giá thuê (mỗi giờ/buổi)</span>
+                <span class="text-xl font-bold text-green-600">
+                  {{ formatCurrency(profile.hirePrice) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
-    </section>
+    </div>
+
+    <div v-else class="text-center py-12 bg-white rounded-xl shadow-sm">
+      <p class="text-gray-500">Không tìm thấy thông tin hồ sơ.</p>
+    </div>
   </div>
 </template>

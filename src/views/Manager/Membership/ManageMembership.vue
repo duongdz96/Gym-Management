@@ -2,6 +2,7 @@
 import { computed, ref, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import api from '@/services/api';
+import { useToast } from 'vue-toastification';
 
 type MembershipTier = {
     id: number,
@@ -25,6 +26,7 @@ const membershipTiers = ref<MembershipTier[]>([])
 
 const search = ref('')
 const membershipType = ref('')
+const toast = useToast();
 
 const filteredMembershipPlans = computed(() => {
     return membershipPlans.value.filter(plan => {
@@ -44,11 +46,8 @@ onMounted(async () => {
         const planRes = await api.get("/membershipplan");
         membershipPlans.value = planRes.data;
 
-        console.log("Membership tiers loaded:", membershipTiers.value);
-        console.log("Membership plans loaded:", membershipPlans.value);
     } catch (error) {
-        console.error('Failed to load memberships:', error);
-        alert("Failed to load memberships. Please try again.");
+        toast.error("Failed to load memberships. Please try again.");
     }
 })
 </script>
@@ -57,21 +56,20 @@ onMounted(async () => {
     <div class="space-y-4 p-4">
         <!-- Toolbar -->
         <div class="justify-between flex">
-             <h1 class="text-xl font-semibold">Membership Plans</h1>
+             <h1 class="text-xl font-semibold">Gói hội viên</h1>
              <div>
-                <input type="text" v-model="search" placeholder="Search for package name" class="px-3 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-200 mr-2">
+                <input type="text" v-model="search" placeholder="Tìm kiếm theo tên" class="px-3 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-200 mr-2">
 
                 <select v-model="membershipType" class="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 mr-2">
-                    <option value="">All tiers</option>
-                 <option value="platinum">Platinum</option>
-                 <option value="gold">Gold</option>
-                 <option value="silver">Silver</option>
-                 <option value="basic">Basic</option>
+                 <option value="">Tất cả các cấp</option>
+                 <option value="vip">VIP</option>
+                 <option value="standard">Thường</option>
+                 <option value="basic">Cơ bản</option>
                 </select>
              </div>
              <div>
-                <RouterLink :to="{ name: 'membership.add' }" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:opacity-90 mr-2">Add Plan</RouterLink>
-                <RouterLink :to="{ name: 'membership.add-tier' }" class="px-3 py-2 rounded-lg bg-green-600 text-white hover:opacity-90">Add Tier</RouterLink>
+                <RouterLink :to="{ name: 'membership.add' }" class="px-3 py-2 rounded-lg bg-blue-600 text-white hover:opacity-90 mr-2">Thêm gói</RouterLink>
+                <RouterLink :to="{ name: 'membership.add-tier' }" class="px-3 py-2 rounded-lg bg-green-600 text-white hover:opacity-90">Thêm cấp</RouterLink>
              </div>
         </div>
 
@@ -84,22 +82,22 @@ onMounted(async () => {
                             <span>ID</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Name</span>
+                            <span>Tên gói hội viên</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Tier</span>
+                            <span>Cấp</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Duration</span>
+                            <span>Thời lượng</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Price</span>
+                            <span>Giá</span>
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Benefits</span>
+                            <span>Lợi ích</span>
                         </th>
                         <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <span>Status</span>
+                            <span>Trạng thái</span>
                         </th>
                     </tr>
                 </thead>

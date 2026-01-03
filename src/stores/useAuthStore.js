@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref,computed } from "vue";
+import { ref, computed } from "vue";
 import api from "@/services/api";
 
 export const useAuthStore = defineStore("auth", () => {
@@ -29,7 +29,12 @@ export const useAuthStore = defineStore("auth", () => {
     localStorage.removeItem("refreshToken");
   };
 
+  const updateUser = (userData) => {
+    user.value = userData;
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
   const isLoggedIn = computed(() => !!accessToken.value);
 
-  return { user, accessToken, refreshToken, login, logout, isLoggedIn };
+  return { user, accessToken, refreshToken, login, logout, updateUser, isLoggedIn };
 });

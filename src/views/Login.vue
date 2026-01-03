@@ -1,33 +1,42 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-black to-gray-900 p-8">
-    <div class="w-full max-w-4xl grid md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl">
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-100 via-teal-50 to-cyan-100 p-8 relative overflow-hidden">
+    <!-- Decorative circles -->
+    <div class="absolute top-20 left-20 w-72 h-72 bg-gradient-to-br from-pink-300 to-purple-400 rounded-full opacity-20 blur-3xl"></div>
+    <div class="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full opacity-20 blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-cyan-300 to-blue-400 rounded-full opacity-10 blur-3xl"></div>
+    
+    <div class="w-full max-w-4xl grid md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl relative z-10">
       <!-- Left Panel -->
-      <div class="hidden md:flex flex-col justify-center gap-6 bg-black text-white p-10">
-        <div class="flex items-center gap-3">
+      <div class="hidden md:flex flex-col justify-center gap-6 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 text-white p-10 relative overflow-hidden">
+        <!-- Decorative elements -->
+        <div class="absolute top-0 right-0 w-40 h-40 bg-yellow-400 rounded-full opacity-10 blur-2xl"></div>
+        <div class="absolute bottom-0 left-0 w-32 h-32 bg-pink-400 rounded-full opacity-10 blur-2xl"></div>
+        
+        <div class="flex items-center gap-3 relative z-10">
           <div
-            class="w-14 h-14 rounded-lg bg-gradient-to-br from-red-600 to-red-400 flex items-center justify-center font-bold text-white text-lg shadow-lg">
+            class="w-14 h-14 rounded-lg bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-500 flex items-center justify-center font-bold text-white text-lg shadow-lg">
             GY
           </div>
           <div>
             <div class="text-xl font-bold tracking-wide">IRON HAVEN</div>
-            <div class="text-sm text-gray-400">Strength • Cardio • Community</div>
+            <div class="text-sm text-emerald-100">Strength • Cardio • Community</div>
           </div>
         </div>
 
         <h2 class="text-3xl font-bold">Chào mừng quay lại</h2>
-        <p class="text-gray-300 max-w-sm">Đăng nhập để bắt đầu buổi tập của bạn. Cùng chinh phục giới hạn!</p>
+        <p class="text-emerald-50 max-w-sm">Đăng nhập để bắt đầu buổi tập của bạn. Cùng chinh phục giới hạn!</p>
 
-        <ul class="space-y-3 mt-4 text-sm text-gray-300">
+        <ul class="space-y-3 mt-4 text-sm text-emerald-50 relative z-10">
           <li class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-600 shadow-md"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 shadow-md"></span>
             Ghi nhận check-in tự động
           </li>
           <li class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-600 shadow-md"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-pink-400 to-purple-500 shadow-md"></span>
             Theo dõi lịch tập và tiến độ
           </li>
           <li class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-600 shadow-md"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 shadow-md"></span>
             Ưu đãi và sự kiện đặc biệt
           </li>
         </ul>
@@ -49,7 +58,7 @@
               v-model="email"
               placeholder="ex: your.email@example.com"
               required
-              class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-red-500 focus:outline-none"
+              class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 focus:outline-none transition-all"
             />
           </div>
 
@@ -61,7 +70,7 @@
               v-model="password"
               placeholder="Nhập mật khẩu"
               required
-              class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-red-500 focus:outline-none"
+              class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 focus:outline-none transition-all"
             />
           </div>
 
@@ -69,18 +78,18 @@
             <label class="flex items-center gap-2 text-gray-500">
               <input type="checkbox" class="rounded border-gray-300" /> Ghi nhớ tôi
             </label>
-            <a href="#" class="text-red-600 font-medium hover:underline">Quên mật khẩu?</a>
+            <a href="#" class="text-cyan-600 font-medium hover:text-cyan-700 hover:underline transition-colors">Quên mật khẩu?</a>
           </div>
 
           <button
             type="submit"
-            class="w-full py-3 rounded-lg bg-gradient-to-r from-red-600 to-red-400 text-white font-bold shadow-lg hover:opacity-90 transition">
+            class="w-full py-3 rounded-lg bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-white font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
             Đăng nhập
           </button>
 
           <div class="text-center text-sm text-gray-500 mt-3">
             Chưa có tài khoản?
-            <a href="#" class="text-red-600 font-semibold hover:underline">Đăng ký ngay</a>
+            <a href="#" class="text-purple-600 font-semibold hover:text-purple-700 hover:underline transition-colors">Đăng ký ngay</a>
           </div>
         </form>
       </div>
@@ -117,14 +126,18 @@ const loginUser = async () => {
       case "receptionist":
         router.push("/reception");
         break;
+      case "pt":
+        router.push("/pt");
+        break;
+      case "teacher":
+        router.push("/teacher");
+        break;
       default:
         router.push("/"); // fallback nếu không có role
         break;
     }
   } catch (err) {
-    console.error("Login error:", err);
     const msg =
-      err.response?.data?.message ||
       "Sai thông tin đăng nhập hoặc lỗi máy chủ!";
     toast.error(msg);
   }

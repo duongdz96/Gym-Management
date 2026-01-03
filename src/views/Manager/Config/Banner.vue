@@ -189,7 +189,7 @@ const handleFileChange = (e: Event) => {
 // upload banner
 const uploadBanner = async () => {
   if (!selectedFile.value) {
-    toast.warning("Please select an image file first!");
+    toast.warning("Vui lòng chọn ảnh!");
     return;
   }
 

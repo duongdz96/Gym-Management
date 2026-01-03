@@ -1,0 +1,530 @@
+@Table(name = "fitness_class")
+public class FitnessClass {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String name;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(length = 50)
+    private String difficultyLevel;
+
+    private String status;
+
+    @OneToMany(mappedBy = "fitnessClass", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<ClassSchedule> classSchedule;
+}
+@Table(name = "classschedule")
+public class ClassSchedule {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private Integer capacity;
+
+    @Column(length = 20)
+    private String status;   //"OPEN", "CLOSED", "CANCELLED"
+
+    @ManyToOne
+    @JoinColumn(name = "fitness_class_id", nullable = true)
+    @JsonBackReference
+    private FitnessClass fitnessClass;
+
+    @ManyToOne
+    @JoinColumn(name = "schedule_pattern_id", nullable = true)
+    private SchedulePattern schedulePattern;
+
+    @ManyToOne
+    @JoinColumn(name = "room_id", nullable = true)
+    private Room room;
+}
+@Table(name = "schedule_pattern")
+public class SchedulePattern {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String daysOfWeek; // Ví dụ: "MONDAY,WEDNESDAY,FRIDAY" (lưu dạng chuỗi)
+
+    @Column(nullable = false)
+    private LocalTime timeStart;
+
+    @Column(nullable = false)
+    private LocalTime timeEnd;
+
+    @Column(nullable = false)
+    private LocalDate classStartDate; // Bắt đầu áp dụng từ ngày
+
+    @Column(nullable = false)
+    private LocalDate classEndDate;   // Kết thúc áp dụng vào ngày
+}
+@Override
+    @Transactional
+    public List<ClassSchedule> generateSchedulesFromPattern(ClassSchedule classSchedule) {
+        if (classSchedule.getSchedulePattern() == null || classSchedule.getSchedulePattern().getId() == null) {
+            throw new IllegalArgumentException("Schedule pattern ID is required for batch generation");
+        }
+
+        Long patternId = classSchedule.getSchedulePattern().getId();
+        Long templateId = classSchedule.getFitnessClass().getId();
+        Long roomId = classSchedule.getRoom().getId();
+
+        SchedulePattern pattern = schedulePatternRepository.findById(patternId)
+                .orElseThrow(() -> new RuntimeException("Schedule pattern not found"));
+        FitnessClass fitnessClass = fitnessClassRepository.findById(templateId)
+                .orElseThrow(() -> new RuntimeException("Class template not found"));
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+
+        //check date 6 month
+        LocalDate startDate = pattern.getClassStartDate();
+        LocalDate endDate = pattern.getClassEndDate();
+
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("The end date cannot be less than the start date.");
+        }
+
+        if (endDate.isAfter(startDate.plusMonths(6))) {
+            throw new IllegalArgumentException("The calendar creation period must not exceed 6 months.");
+        }
+
+        List<DayOfWeek> days = Arrays.stream(pattern.getDaysOfWeek().split(","))
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .map(DayOfWeek::valueOf)
+                .toList();
+
+        LocalDate patternDate = pattern.getClassStartDate();
+        List<ClassSchedule> generated = new ArrayList<>();
+
+        while (!patternDate.isAfter(pattern.getClassEndDate())) {
+            if (days.contains(patternDate.getDayOfWeek())) {
+                LocalDateTime start = LocalDateTime.of(patternDate, pattern.getTimeStart());
+                LocalDateTime end = LocalDateTime.of(patternDate, pattern.getTimeEnd());
+
+                // Lấy tất cả lịch cùng phòng trong ngày đó
+                LocalDateTime startOfDay = patternDate.atStartOfDay();
+                LocalDateTime endOfDay = patternDate.atTime(23, 59, 59);
+                List<ClassSchedule> existingSchedules =
+                        classScheduleRepository.findSchedulesForRoomAndDate(roomId, startOfDay, endOfDay);
+
+                // Kiểm tra trùng thời gian
+                boolean conflict = existingSchedules.stream().anyMatch(existing ->
+                        !(end.isBefore(existing.getStartTime()) || start.isAfter(existing.getEndTime()))
+                );
+
+                if (conflict) {
+                    throw new RuntimeException(String.format(
+                            "Lịch trùng phòng! Phòng '%s' đã có lớp khác từ %s đến %s vào ngày %s",
+                            room.getName(), start, end, patternDate
+                    ));
+                }
+
+                ClassSchedule schedule = new ClassSchedule();
+                schedule.setStartTime(start);
+                schedule.setEndTime(end);
+                schedule.setStatus("OPEN");
+                schedule.setFitnessClass(fitnessClass);
+                schedule.setSchedulePattern(pattern);
+                schedule.setRoom(room);
+                schedule.setCapacity(classSchedule.getCapacity());
+
+                generated.add(schedule);
+            }
+            patternDate = patternDate.plusDays(1);
+        }
+
+        return classScheduleRepository.saveAll(generated);
+    }
+@Table(name = "room")
+public class Room {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private String note;
+    private String location;
+}
+
+@Table(name = "member_registration")
+public class MemberRegistration {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Date followDate;
+
+    @ManyToOne
+    @JoinColumn(name = "class_schedule_id", nullable = false)
+    private ClassSchedule classSchedule;
+
+    @ManyToOne
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+}
+@Table(name = "class_registration")
+public class ClassRegistration {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "staff_id", nullable = false)
+    private Teacher teacher;
+
+    @ManyToOne
+    @JoinColumn(name = "class_template_id", nullable = false)
+    private FitnessClass fitnessClass;
+
+    private String description;
+}
+@Table(name="teacher")
+public class Teacher extends User {
+    private String position;
+    private String specialize;
+}
+@Table(name="members")
+public class Member extends User {
+    private String membership;
+    private Date joinDate;
+    private String status;
+    private String faceId;
+    private String cardId;
+}
+@Table(name="users")
+@Inheritance(strategy = InheritanceType.JOINED)
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 50)
+    private String email;
+
+    @Column(nullable = false, length = 255)
+    private String password;
+
+    @Column(nullable = false, length = 50)
+    private String fullName;
+
+    @Column(nullable = false, length = 50)
+    private Date dob;
+
+    @Column(nullable = false, length = 50)
+    private String gender;
+
+    @Column(nullable = false, length = 50)
+    private String phone;
+
+    private String role;
+
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "boolean default false")
+    private boolean isDeleted = false;
+}
+API URL : 
+@RequestMapping("/api/fitness_class")
+@RequestMapping("/api/classschedule")
+    @GetMapping("/by-fitness_class/{fitnessClassId}")
+    public ResponseEntity<List<ClassSchedule>> getByFitnessClassId(@PathVariable Long fitnessClassId) {
+        List<ClassSchedule> schedules = classScheduleService.getByFitnessClassId(fitnessClassId);
+        return ResponseEntity.ok(schedules);
+    }
+    @PostMapping("/generate")
+    public ResponseEntity<List<ClassSchedule>> generateSchedules(@RequestBody ClassSchedule classSchedule) {
+        List<ClassSchedule> result = classScheduleService.generateSchedulesFromPattern(classSchedule);
+        return ResponseEntity.ok(result);
+    }
+    @Override
+    @Transactional
+    public List<ClassSchedule> generateSchedulesFromPattern(ClassSchedule classSchedule) {
+        if (classSchedule.getSchedulePattern() == null || classSchedule.getSchedulePattern().getId() == null) {
+            throw new IllegalArgumentException("Schedule pattern ID is required for batch generation");
+        }
+
+        Long patternId = classSchedule.getSchedulePattern().getId();
+        Long templateId = classSchedule.getFitnessClass().getId();
+        Long roomId = classSchedule.getRoom().getId();
+
+        SchedulePattern pattern = schedulePatternRepository.findById(patternId)
+                .orElseThrow(() -> new RuntimeException("Schedule pattern not found"));
+        FitnessClass fitnessClass = fitnessClassRepository.findById(templateId)
+                .orElseThrow(() -> new RuntimeException("Class template not found"));
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+
+        //check date 6 month
+        LocalDate startDate = pattern.getClassStartDate();
+        LocalDate endDate = pattern.getClassEndDate();
+
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("The end date cannot be less than the start date.");
+        }
+
+        if (endDate.isAfter(startDate.plusMonths(6))) {
+            throw new IllegalArgumentException("The calendar creation period must not exceed 6 months.");
+        }
+
+        List<DayOfWeek> days = Arrays.stream(pattern.getDaysOfWeek().split(","))
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .map(DayOfWeek::valueOf)
+                .toList();
+
+        LocalDate patternDate = pattern.getClassStartDate();
+        List<ClassSchedule> generated = new ArrayList<>();
+
+        while (!patternDate.isAfter(pattern.getClassEndDate())) {
+            if (days.contains(patternDate.getDayOfWeek())) {
+                LocalDateTime start = LocalDateTime.of(patternDate, pattern.getTimeStart());
+                LocalDateTime end = LocalDateTime.of(patternDate, pattern.getTimeEnd());
+
+                // Lấy tất cả lịch cùng phòng trong ngày đó
+                LocalDateTime startOfDay = patternDate.atStartOfDay();
+                LocalDateTime endOfDay = patternDate.atTime(23, 59, 59);
+                List<ClassSchedule> existingSchedules =
+                        classScheduleRepository.findSchedulesForRoomAndDate(roomId, startOfDay, endOfDay);
+
+                // Kiểm tra trùng thời gian
+                boolean conflict = existingSchedules.stream().anyMatch(existing ->
+                        !(end.isBefore(existing.getStartTime()) || start.isAfter(existing.getEndTime()))
+                );
+
+                if (conflict) {
+                    throw new RuntimeException(String.format(
+                            "Lịch trùng phòng! Phòng '%s' đã có lớp khác từ %s đến %s vào ngày %s",
+                            room.getName(), start, end, patternDate
+                    ));
+                }
+
+                ClassSchedule schedule = new ClassSchedule();
+                schedule.setStartTime(start);
+                schedule.setEndTime(end);
+                schedule.setStatus("OPEN");
+                schedule.setFitnessClass(fitnessClass);
+                schedule.setSchedulePattern(pattern);
+                schedule.setRoom(room);
+
+                generated.add(schedule);
+            }
+            patternDate = patternDate.plusDays(1);
+        }
+
+        return classScheduleRepository.saveAll(generated);
+    }
+@RequestMapping("/api/class-registrations")
+public class ClassRegistrationController {
+
+    private final ClassRegistrationService classRegistrationService;
+
+    public ClassRegistrationController(ClassRegistrationService classRegistrationService) {
+        this.classRegistrationService = classRegistrationService;
+    }
+
+    // Lấy danh sách lớp mà staff đã đăng ký dạy
+    @GetMapping("/teacher/{staffId}")
+    public ResponseEntity<List<ClassRegistration>> getByTeacher(@PathVariable Long staffId) {
+        return ResponseEntity.ok(classRegistrationService.getByTeacher(staffId));
+    }
+
+    // Lấy danh sách giáo viên đã đăng ký cho class template
+    @GetMapping("/fitness_class/{templateId}")
+    public ResponseEntity<List<ClassRegistration>> getByFitnessClass(@PathVariable Long templateId) {
+        return ResponseEntity.ok(classRegistrationService.getByFitnessClass(templateId));
+    }
+
+    // Staff đăng ký dạy 1 lớp
+    @PostMapping
+    public ResponseEntity<ClassRegistration> registerTeaching(@RequestBody Long staffId, ClassRegistration reg) {
+        return ResponseEntity.ok(classRegistrationService.registerTeaching(staffId,reg));
+    }
+
+    // Staff hủy đăng ký dạy
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> unregisterTeaching(@PathVariable Long staffId ,Long registrationId) { // Dùng @PathVariable
+        classRegistrationService.unregisterTeachingById(staffId, registrationId); // Gọi một service mới theo ID
+        return ResponseEntity.ok("Teaching registration removed successfully");
+    }
+}
+    @Override
+    public ClassRegistration registerTeaching(Long staffId, ClassRegistration reg) {
+        Teacher teacher = teacherRepository.findById(reg.getTeacher().getId())
+                .orElseThrow(() -> new RuntimeException("Staff not found with id: " + reg.getTeacher().getId()));
+        if(!teacher.getId().equals(staffId)) throw new AccessDeniedException("You cannot change other's people schedule");
+        FitnessClass template = fitnessClassRepository.findById(reg.getFitnessClass().getId())
+                .orElseThrow(() -> new RuntimeException("ClassTemplate not found with id: " + reg.getFitnessClass().getId()));
+
+        // Kiểm tra lớp đã có người đăng ký chưa
+        List<ClassRegistration> existing = classRegistrationRepository.findByFitnessClass(template);
+        if (!existing.isEmpty()) {
+            throw new RuntimeException("This class template already has a teacher registered.");
+        }
+
+        reg.setTeacher(teacher);
+        reg.setFitnessClass(template);
+
+        return classRegistrationRepository.save(reg);
+    }
+@RequestMapping("/api/member-registrations")
+public class MemberRegistrationController {
+
+    private final MemberRegistrationService memberRegistrationService;
+
+    public MemberRegistrationController(MemberRegistrationService memberRegistrationService) {
+        this.memberRegistrationService = memberRegistrationService;
+    }
+
+    @GetMapping("/member/{memberId}")
+    public ResponseEntity<List<MemberRegistration>> getByMember(@PathVariable Long memberId) {
+        return ResponseEntity.ok(memberRegistrationService.getByMember(memberId));
+    }
+
+    @GetMapping("/schedule/{scheduleId}")
+    public ResponseEntity<List<MemberRegistration>> getByClassSchedule(@PathVariable Long scheduleId) {
+        return ResponseEntity.ok(memberRegistrationService.getByClassSchedule(scheduleId));
+    }
+
+    @PostMapping
+    public ResponseEntity<?> registerClass(@RequestBody MemberRegistration memberRegistration) {
+        try {
+            Long memberId = memberRegistration.getMember().getId();
+            Long scheduleId = memberRegistration.getClassSchedule().getId();
+            return ResponseEntity.ok(memberRegistrationService.registerForClass(memberId, scheduleId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> cancelRegistration(@PathVariable Long registrationId, Long memberId) {
+        try {
+            memberRegistrationService.cancelRegistration(registrationId, memberId);
+            return ResponseEntity.ok("Cancelled successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/bulk-register")
+    public ResponseEntity<?> registerBulkClass(@RequestBody ClassRegistrationRequest request) {
+        try {
+            List<MemberRegistration> results = memberRegistrationService.registerBulk(
+                    request.getMemberId(),
+                    request.getScheduleIds()
+            );
+            return ResponseEntity.ok(results);
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Đăng ký thất bại: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/bulk-cancel")
+    public ResponseEntity<?> cancelBulkClass(@RequestBody CancelRegistrationRequest request) {
+        try {
+            memberRegistrationService.cancelBulkRegistration(
+                    request.getRegistrationIds(),
+                    request.getMemberId()
+            );
+            return ResponseEntity.ok("Đã hủy thành công các lịch đăng ký.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+}
+@Data
+public class ClassRegistrationRequest {
+    private Long memberId;
+    private List<Long> scheduleIds;
+}
+    @Override
+    @Transactional
+    public MemberRegistration registerForClass(Long memberId, Long scheduleId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy học viên với id: " + memberId));
+
+        ClassSchedule schedule = classScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch học với id: " + scheduleId));
+
+        int capacity = (schedule.getCapacity() != null) ? schedule.getCapacity() : 1;
+
+        boolean alreadyRegistered = memberRegistrationRepository.findByMemberAndClassSchedule(member, schedule).isPresent();
+        if (alreadyRegistered) {
+            throw new RuntimeException("Học viên đã đăng ký lớp học này rồi.");
+        }
+
+        //cái này để tăng, về cơ bản là select count(*)
+        int currentRegistrations = memberRegistrationRepository.countByClassScheduleId(scheduleId);
+
+        if (currentRegistrations >= capacity) {
+            throw new RuntimeException("Lớp học đã đầy! Sức chứa tối đa: " + capacity);
+        }
+
+        MemberRegistration newRegistration = new MemberRegistration();
+        newRegistration.setClassSchedule(schedule);
+        newRegistration.setMember(member);
+        newRegistration.setFollowDate(Date.from(Instant.now()));
+
+        return memberRegistrationRepository.save(newRegistration);
+    }
+        @Override
+    public List<MemberRegistration> registerBulk(Long memberId, List<Long> scheduleIds) {
+        List<MemberRegistration> resultList = new ArrayList<>();
+        for(Long scheduleId : scheduleIds){
+            MemberRegistration reg = this.registerForClass(memberId, scheduleId);
+            resultList.add(reg);
+        }
+        return resultList;
+    }
+@RequestMapping("/api/members")
+@RequestMapping("/api/teachers")
+@RequestMapping("/api/room")
+    @PostMapping("/available-for-pattern")
+    public ResponseEntity<List<Room>> getAvailableRooms(@RequestBody SchedulePattern pattern) {
+        return ResponseEntity.ok(roomService.getAvailableRoomsForPattern(pattern));
+    } 
+@Override
+    public List<Room> getAvailableRoomsForPattern(SchedulePattern pattern) {
+        List<Room> allRooms = roomRepository.findAll();
+
+        if (allRooms.isEmpty()) return new ArrayList<>();
+
+        Set<Long> busyRoomIds = new HashSet<>();
+
+        LocalDate currentDate = pattern.getClassStartDate();
+        List<DayOfWeek> days = Arrays.stream(pattern.getDaysOfWeek().split(","))
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .map(DayOfWeek::valueOf)
+                .toList();
+
+        while (!currentDate.isAfter(pattern.getClassEndDate())) {
+            if (days.contains(currentDate.getDayOfWeek())) {
+                LocalDateTime start = LocalDateTime.of(currentDate, pattern.getTimeStart());
+                LocalDateTime end = LocalDateTime.of(currentDate, pattern.getTimeEnd());
+
+                List<ClassSchedule> conflicts = classScheduleRepository.findOverlappingSchedules(start, end);
+
+                for (ClassSchedule s : conflicts) {
+                    if (s.getRoom() != null) {
+                        busyRoomIds.add(s.getRoom().getId());
+                    }
+                }
+            }
+            currentDate = currentDate.plusDays(1);
+        }
+
+        return allRooms.stream()
+                .filter(room -> !busyRoomIds.contains(room.getId()))
+                .collect(Collectors.toList());
+    }

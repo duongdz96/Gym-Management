@@ -2,8 +2,10 @@
 import { ref, computed, onMounted, watch } from "vue";
 import api from "@/services/api";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useToast } from "vue-toastification";
 
 const authStore = useAuthStore();
+const toast = useToast();
 
 const searchQuery = ref("");
 const members = ref([]);
@@ -11,6 +13,8 @@ const members = ref([]);
 const selectedMember = ref(null);
 const isEditingWeight = ref(false);
 const tempCurrentWeight = ref(0);
+const upcomingSessions = ref([]);
+const memberPackages = ref([]);
 
 const filteredMembers = computed(() => {
   if (!searchQuery.value) {
@@ -25,6 +29,8 @@ const selectMember = (member) => {
   selectedMember.value = member;
   isEditingWeight.value = false;
   tempCurrentWeight.value = member.weight;
+  fetchUpcomingSessions(member.memberId);
+  fetchMemberPackages(member.memberId);
 };
 
 const startEditingWeight = () => {
@@ -42,10 +48,9 @@ const saveCurrentWeight = async () => {
       await api.put(`/studentprofile/${selectedMember.value.id}`, payload);
       selectedMember.value.weight = tempCurrentWeight.value;
       isEditingWeight.value = false;
-      alert("Weight updated successfully!");
+      toast.success("Cân nặng cập nhật thành công!");
     } catch (error) {
-      console.error("Error updating weight:", error);
-      alert("Failed to update weight. Please try again.");
+      toast.error("Cân nặng cập nhật thất bại. Vui lòng thử lại sau!");
     }
   }
 };
@@ -53,6 +58,64 @@ const saveCurrentWeight = async () => {
 const cancelEditingWeight = () => {
   tempCurrentWeight.value = selectedMember.value.currentWeight;
   isEditingWeight.value = false;
+};
+
+function formatTimeRange(startIso, endIso) {
+  const s = new Date(startIso);
+  const e = new Date(endIso);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${pad(s.getHours())}:${pad(s.getMinutes())} - ${pad(
+    e.getHours()
+  )}:${pad(e.getMinutes())}`;
+}
+
+const fetchUpcomingSessions = async (memberId) => {
+  try {
+    const res = await api.get("/appointment");
+    const data = Array.isArray(res.data) ? res.data : [];
+    // Filter appointments for the member
+    const memberAppts = data.filter(appt => appt.ptPackageIssued?.member?.id === memberId);
+    // Filter future appointments
+    const now = new Date();
+    const futureAppts = memberAppts.filter(appt => new Date(appt.startTime) > now);
+    // Sort by startTime
+    futureAppts.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+    // Take first 3
+    upcomingSessions.value = futureAppts.slice(0, 3);
+  } catch (error) {
+    console.error("Error fetching upcoming sessions:", error);
+    upcomingSessions.value = [];
+  }
+};
+
+const fetchMemberPackages = async (memberId) => {
+  try {
+    const res = await api.get("/packageissued");
+    const data = Array.isArray(res.data) ? res.data : [];
+    
+    // Filter packages for the selected member
+    const memberIssuedPackages = data.filter(pkg => pkg.member?.id === memberId);
+    
+    // Map to the expected format
+    memberPackages.value = memberIssuedPackages.map(pkg => {
+      const totalSessions = pkg.ptPackage?.sessions || 0;
+      const remainingSessions = pkg.remainingSessions || 0;
+      const usedSessions = totalSessions - remainingSessions;
+      
+      return {
+        id: pkg.id,
+        name: pkg.ptPackage?.name || 'Gói PT',
+        totalSessions: totalSessions,
+        usedSessions: usedSessions,
+        remainingSessions: remainingSessions,
+        status: pkg.ptPackage?.status === 'Active' ? 'active' : 'expired',
+        expiryDate: null // API doesn't provide expiry date
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching member packages:", error);
+    memberPackages.value = [];
+  }
 };
 
 // Watch for changes in filtered members to update selected member
@@ -65,14 +128,20 @@ watch(filteredMembers, (newFilteredMembers) => {
       if (newFilteredMembers.length > 0) {
         selectedMember.value = newFilteredMembers[0];
         tempCurrentWeight.value = newFilteredMembers[0].weight;
+        fetchUpcomingSessions(newFilteredMembers[0].memberId);
+        fetchMemberPackages(newFilteredMembers[0].memberId);
       } else {
         selectedMember.value = null;
+        upcomingSessions.value = [];
+        memberPackages.value = [];
       }
     }
   } else if (newFilteredMembers.length > 0) {
     // If no member selected but filtered list has members, select first
     selectedMember.value = newFilteredMembers[0];
     tempCurrentWeight.value = newFilteredMembers[0].weight;
+    fetchUpcomingSessions(newFilteredMembers[0].memberId);
+    fetchMemberPackages(newFilteredMembers[0].memberId);
   }
 });
 
@@ -81,40 +150,41 @@ onMounted(async () => {
     const res = await api.get("/studentprofile");
     const data = Array.isArray(res.data) ? res.data : [];
     // Filter profiles for the current PT
-    const ptProfiles = data.filter(profile => profile.staff.id === authStore.user.id);
+    const ptProfiles = data.filter(profile => profile.pt && profile.pt.id === authStore.user.id);
     // Map to member objects
     members.value = ptProfiles.map(profile => ({
       id: profile.id,
+      memberId: profile.member.id,
       name: profile.member.fullName,
       email: profile.member.email,
       height: profile.height,
       weight: profile.weight,
       trainingPlan: profile.trainingPlan,
     }));
-    console.log("PT Members loaded:", members.value);
   } catch (error) {
-    console.error('Failed to load PT members:', error);
-    alert("Failed to load members. Please try again.");
+    toast.error("Không thể tải thành viên. Vui lòng thử lại sau");
   }
 
   // Auto select first member
   if (members.value.length > 0) {
     selectedMember.value = members.value[0];
     tempCurrentWeight.value = members.value[0].weight;
+    fetchUpcomingSessions(members.value[0].memberId);
+    fetchMemberPackages(members.value[0].memberId);
   }
 });
 </script>
 
 <template>
-  <div class="p-6 space-y-8">
+  <div class="p-4 sm:p-6 space-y-4 sm:space-y-8">
     <!-- Title -->
-    <h1 class="text-2xl font-bold text-stone-800">Member List</h1>
+    <h1 class="text-xl sm:text-2xl font-bold text-stone-800">Danh sách học viên</h1>
 
     <!-- Layout chính -->
-    <div class="flex gap-6 h-screen">
+    <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
       <!-- Bên trái: Danh sách học viên -->
-      <div class="w-1/3 bg-white rounded-xl shadow p-5 overflow-y-auto">
-        <h2 class="text-xl font-semibold mb-4">My Members</h2>
+      <div class="w-full lg:w-1/3 bg-white rounded-xl shadow p-4 sm:p-5 max-h-[400px] lg:max-h-screen overflow-y-auto">
+        <h2 class="text-xl font-semibold mb-4">Học viên của tôi</h2>
 
         <!-- Search Bar -->
         <div class="mb-4">
@@ -127,8 +197,8 @@ onMounted(async () => {
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search members by name..."
-              class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Tìm kiếm học viên theo tên..."
+              class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
             />
           </div>
         </div>
@@ -141,26 +211,26 @@ onMounted(async () => {
             :class="[
               'p-4 rounded-lg cursor-pointer transition-colors border',
               selectedMember?.id === member.id
-                ? 'bg-blue-100 border-blue-300'
+                ? 'bg-emerald-100 border-emerald-300'
                 : 'bg-gray-50 hover:bg-gray-100',
             ]"
           >
             <div class="font-medium text-gray-900">{{ member.name }}</div>
             <div class="text-sm text-gray-500">{{ member.email }}</div>
-            <div class="text-sm text-gray-500">Height: {{ member.height }} cm</div>
-            <div class="text-sm text-gray-500">Weight: {{ member.weight }} kg</div>
+            <div class="text-sm text-gray-500">Chiều cao: {{ member.height }} cm</div>
+            <div class="text-sm text-gray-500">Cân nặng: {{ member.weight }} kg</div>
           </div>
         </div>
       </div>
 
       <!-- Bên phải: Thông tin chi tiết -->
-      <div class="w-2/3 bg-white rounded-xl shadow p-5">
-        <h2 class="text-xl font-semibold mb-4">Detailed Information</h2>
+      <div class="w-full lg:w-2/3 bg-white rounded-xl shadow p-4 sm:p-5 max-h-[600px] lg:max-h-screen overflow-y-auto">
+        <h2 class="text-xl font-semibold mb-4">Thông tin chi tiết</h2>
         <div v-if="selectedMember" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Full Name</label
+                >Họ và tên</label
               >
               <p class="mt-1 text-lg font-semibold text-gray-900">
                 {{ selectedMember.name }}
@@ -176,46 +246,46 @@ onMounted(async () => {
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Weight</label
+                >Cân nặng</label
               >
-              <div class="mt-1 flex items-center space-x-2">
+              <div class="mt-1 flex flex-wrap items-center gap-2">
                 <input
                   v-if="isEditingWeight"
                   v-model.number="tempCurrentWeight"
                   type="number"
-                  class="text-lg text-gray-900 border border-gray-300 rounded px-2 py-1 w-20"
+                  class="text-base sm:text-lg text-gray-900 border border-gray-300 rounded px-2 py-1 w-20"
                   min="0"
                   step="0.1"
                 />
-                <span v-else class="text-lg text-gray-900"
+                <span v-else class="text-base sm:text-lg text-gray-900"
                   >{{ selectedMember.weight }} kg</span
                 >
                 <button
                   v-if="!isEditingWeight"
                   @click="startEditingWeight"
-                  class="text-blue-600 hover:text-blue-800 text-sm"
+                  class="text-emerald-600 hover:text-emerald-800 text-xs sm:text-sm"
                 >
-                  Edit
+                  Chỉnh sửa
                 </button>
-                <div v-if="isEditingWeight" class="flex space-x-1">
+                <div v-if="isEditingWeight" class="flex gap-2">
                   <button
                     @click="saveCurrentWeight"
-                    class="text-green-600 hover:text-green-800 text-sm"
+                    class="text-green-600 hover:text-green-800 text-xs sm:text-sm px-2 py-1 border border-green-600 rounded"
                   >
-                    Save
+                    Lưu
                   </button>
                   <button
                     @click="cancelEditingWeight"
-                    class="text-red-600 hover:text-red-800 text-sm"
+                    class="text-red-600 hover:text-red-800 text-xs sm:text-sm px-2 py-1 border border-red-600 rounded"
                   >
-                    Cancel
+                    Hủy
                   </button>
                 </div>
               </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700"
-                >Height</label
+                >Chiều cao</label
               >
               <p class="mt-1 text-lg text-gray-900">
                 {{ selectedMember.height }} cm
@@ -224,16 +294,57 @@ onMounted(async () => {
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >Training Plan</label
+              >Kế hoạch tập luyện</label
             >
             <p class="mt-1 text-lg text-gray-900">
               {{ selectedMember.trainingPlan }}
             </p>
           </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Gói tập đã đăng ký</label
+            >
+            <div v-if="memberPackages.length === 0" class="text-gray-500">Chưa đăng ký gói nào</div>
+            <div v-else class="space-y-2">
+              <div v-for="pkg in memberPackages" :key="pkg.id" class="border rounded-lg p-3 bg-emerald-50">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{{ pkg.name }}</p>
+                    <p class="text-xs text-gray-600">Còn lại: {{ pkg.remainingSessions }} buổi</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-semibold text-emerald-600">{{ pkg.usedSessions }}/{{ pkg.totalSessions }} buổi</p>
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      {{ pkg.status === 'active' ? 'Đang hoạt động' : 'Hết hạn' }}
+                    </span>
+                  </div>
+                </div>
+                <div class="mt-2 bg-gray-200 rounded-full h-2">
+                  <div
+                    class="bg-emerald-600 h-2 rounded-full"
+                    :style="{ width: `${(pkg.usedSessions / pkg.totalSessions) * 100}%` }"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700"
+              >Buổi tập sắp tới</label
+            >
+            <div v-if="upcomingSessions.length === 0" class="mt-1 text-gray-500">Không có buổi tập sắp tới</div>
+            <div v-else class="mt-1 space-y-2">
+              <div v-for="session in upcomingSessions" :key="session.id" class="border rounded p-2 sm:p-3 bg-gray-50">
+                <p class="text-xs sm:text-sm font-medium">{{ new Date(session.startTime).toLocaleDateString() }}</p>
+                <p class="text-xs sm:text-sm text-gray-600">{{ formatTimeRange(session.startTime, session.endTime) }}</p>
+                <p class="text-xs sm:text-sm text-gray-600">{{ session.ptPackageIssued?.ptPackage?.name || 'Session' }}</p>
+              </div>
+            </div>
+          </div>
 
         </div>
         <div v-else class="text-center text-gray-500">
-          Select a member to view detailed information
+          Chọn một học viên để xem thông tin chi tiết
                     </div>
           </div>
         </div>
@@ -243,8 +354,8 @@ onMounted(async () => {
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No members found</h3>
-          <p class="mt-1 text-sm text-gray-500">Try adjusting your search terms.</p>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Không tìm thấy học viên</h3>
+          <p class="mt-1 text-sm text-gray-500">Thử điều chỉnh từ khóa tìm kiếm.</p>
         </div>
       </div>
 </template>

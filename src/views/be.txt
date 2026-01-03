@@ -1,0 +1,82 @@
+public class FitnessClass {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String name;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(length = 50)
+    private String difficultyLevel;
+
+    private String status;
+
+    @OneToMany(mappedBy = "fitnessClass", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<ClassSchedule> classSchedule;
+}
+public class ClassSchedule {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private Integer capacity;
+
+    @Column(length = 20)
+    private String status;   //"OPEN", "CLOSED", "CANCELLED"
+
+    @ManyToOne
+    @JoinColumn(name = "fitness_class_id", nullable = true)
+    @JsonIgnoreProperties({"schedules", "registrations"})
+    private FitnessClass fitnessClass;
+
+    @ManyToOne
+    @JoinColumn(name = "schedule_pattern_id", nullable = true)
+    private SchedulePattern schedulePattern;
+
+    @ManyToOne
+    @JoinColumn(name = "room_id", nullable = true)
+    private Room room;
+
+    private String note;
+}
+public class MemberRegistration {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Date followDate;
+
+    @ManyToOne
+    @JoinColumn(name = "class_schedule_id", nullable = false)
+    private ClassSchedule classSchedule;
+
+    @ManyToOne
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+}
+public class ClassRegistration {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "teacher_id", nullable = false)
+    private Teacher teacher;
+
+    @ManyToOne
+    @JoinColumn(name = "class_template_id", nullable = false)
+    private FitnessClass fitnessClass;
+
+    private String description;
+    
+    private String status; // PENDING, APPROVED, REJECTED
+}
