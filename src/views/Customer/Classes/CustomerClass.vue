@@ -70,7 +70,7 @@
         <!-- Card Header -->
         <div class="p-4 sm:p-5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
           <div class="flex justify-between items-start gap-2">
-            <h3 class="text-lg sm:text-xl font-bold">{{ cls.name }}</h3>
+            <h3 class="text-lg sm:text-xl font-bold trun">{{ cls.name }}</h3>
             <span 
               class="px-2 py-1 sm:px-3 rounded-full text-xs font-semibold flex-shrink-0"
               :class="{
@@ -90,54 +90,60 @@
           
           <!-- Teacher Info -->
           <div class="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-xl">
-            <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0">
-              <User class="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-            <div class="min-w-0">
-              <div class="font-bold text-sm sm:text-base text-gray-800 truncate">{{ getTeacher(cls.teacherId).name }}</div>
-              <div class="text-xs text-gray-500 truncate">{{ getTeacher(cls.teacherId).specialties.join(', ') }}</div>
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <span class="text-gray-500 font-semibold text-xs sm:text-sm block flex items-center gap-1"><Users class="w-3 h-3 sm:w-4 sm:h-4" /> Chỗ trống:</span>
-              <span 
-                class="font-bold text-sm sm:text-base"
-                :class="getAvailableSlots(cls) < 5 ? 'text-orange-600' : 'text-gray-800'"
-              >
-                {{ getAvailableSlots(cls) }}/{{ cls.maxStudents }}
-              </span>
-            </div>
-            <div>
-              <span class="text-gray-500 font-semibold text-xs sm:text-sm block flex items-center gap-1"><MapPin class="w-3 h-3 sm:w-4 sm:h-4" /> Phòng:</span>
-              <span class="text-gray-800 text-sm sm:text-base">{{ getRoomName(cls.roomId) }}</span>
-            </div>
-            <div>
-              <span class="text-gray-500 font-semibold text-xs sm:text-sm block flex items-center gap-1"><Clock class="w-3 h-3 sm:w-4 sm:h-4" /> Thời gian:</span>
-              <span class="text-gray-800 text-xs sm:text-sm">{{ cls.startTime }} - {{ cls.endTime }}</span>
-            </div>
-            <div>
-              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Calendar class="w-4 h-4" /> Lịch:</span>
-              <div class="flex items-center gap-2">
-                <span class="text-gray-800">{{ getScheduleText(cls) }}</span>
-                <button 
-                  @click.stop="viewSessions(cls)" 
-                  class="text-emerald-600 hover:text-emerald-800 text-xs font-bold underline flex items-center gap-1"
-                >
-                  <Eye class="w-3 h-3" /> Chi tiết
-                </button>
-              </div>
-            </div>
-            <div>
-              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Calendar class="w-4 h-4" /> Bắt đầu:</span>
-              <span class="text-gray-800">{{ formatDate(cls.startDate) }}</span>
-            </div>
-            <div>
-              <span class="text-gray-500 font-semibold block flex items-center gap-1"><Calendar class="w-4 h-4" /> Kết thúc:</span>
-              <span class="text-gray-800">{{ formatDate(cls.endDate) }}</span>
-            </div>
-          </div>
+  <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0">
+    <User class="w-5 h-5 sm:w-6 sm:h-6" />
+  </div>
+  <div class="min-w-0">
+    <div class="font-bold text-sm sm:text-base text-gray-800 truncate">{{ getTeacher(cls.teacherId).name }}</div>
+    <div class="text-xs text-gray-500 truncate">{{ getTeacher(cls.teacherId).specialties.join(', ') }}</div>
+  </div>
+</div>
+
+<div class="grid grid-cols-2 gap-4 text-sm mt-4">
+  <div class="space-y-1">
+    <span class="text-gray-500 font-medium flex items-center gap-1.5 text-xs">
+      <MapPin class="w-3.5 h-3.5" /> PHÒNG
+    </span>
+    <div class="text-gray-800 font-bold bg-gray-100 px-2.5 py-1.5 rounded-lg inline-block">
+      {{ getRoomName(cls.roomId) }}
+    </div>
+  </div>
+
+  <div class="space-y-1">
+    <span class="text-gray-500 font-medium flex items-center gap-1.5 text-xs">
+      <Clock class="w-3.5 h-3.5" /> GIỜ HỌC
+    </span>
+    <div class="text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1.5 rounded-lg inline-block border border-emerald-100">
+      {{ cls.startTime }} - {{ cls.endTime }}
+    </div>
+  </div>
+
+  <div class="col-span-2 space-y-1">
+    <span class="text-gray-500 font-medium flex items-center gap-1.5 text-xs">
+      <Calendar class="w-3.5 h-3.5" /> LỊCH TRÌNH
+    </span>
+    <div class="flex items-center gap-3 bg-gray-50 p-2 rounded-xl border border-dashed border-gray-300">
+      <span class="text-gray-800 font-bold ml-1">{{ getScheduleText(cls) }}</span>
+      <button 
+        @click.stop="viewSessions(cls)" 
+        class="ml-auto bg-white hover:bg-emerald-50 text-emerald-600 border border-emerald-200 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
+      >
+        <Eye class="w-3 h-3" /> Chi tiết buổi học
+      </button>
+    </div>
+  </div>
+
+  <div class="col-span-2 grid grid-cols-2 gap-2 mt-2">
+    <div class="flex flex-col p-2 bg-orange-50 rounded-lg border border-orange-100">
+      <span class="text-[10px] text-orange-600 font-bold uppercase">Ngày bắt đầu</span>
+      <span class="text-gray-800 font-bold">{{ formatDate(cls.startDate) }}</span>
+    </div>
+    <div class="flex flex-col p-2 bg-blue-50 rounded-lg border border-blue-100">
+      <span class="text-[10px] text-blue-600 font-bold uppercase">Ngày kết thúc</span>
+      <span class="text-gray-800 font-bold">{{ formatDate(cls.endDate) }}</span>
+    </div>
+  </div>
+</div>
 
           <!-- VIP Early Registration Notice -->
           <div v-if="isVIPEarlyAccess(cls)" class="p-3 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-400 rounded-xl text-amber-700 font-semibold text-sm flex items-start gap-2">
