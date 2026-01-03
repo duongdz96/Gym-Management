@@ -39,7 +39,7 @@ public class PTAppointmentController {
                                      @RequestBody PTAppointment PTAppointment) {
         ptAppointmentService.updatePTAppointment(id, PTAppointment);
     }
-    @GetMapping("member/{id}/next")
+    @GetMapping("/member/{id}/next")
     public List<PTAppointment> getNext5ForMember(@PathVariable("id") Long id) {
         return ptAppointmentService.getUpcomingMemberAppointment(id);
     }
