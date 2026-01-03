@@ -284,9 +284,12 @@ def delete_employee_embeddings(user_id):
 # COMBINED OPERATIONS
 # ============================================================
 
-def get_all_embeddings():
+def get_all_embeddings(user_type=None):
     """
-    Load TẤT CẢ embeddings (cả members và employees)
+    Load embeddings theo loại user
+    
+    Args:
+        user_type: 'member', 'employee', hoặc None (load tất cả)
     
     Returns:
         dict: {
@@ -295,14 +298,20 @@ def get_all_embeddings():
             ...
         }
     """
-    member_embs = get_all_member_embeddings()
-    employee_embs = get_all_employee_embeddings()
-    
-    # Merge hai dicts
-    all_embeddings = {**member_embs, **employee_embs}
-    
-    print(f"✅ Loaded {len(member_embs)} members + {len(employee_embs)} employees = {len(all_embeddings)} total")
-    return all_embeddings
+    if user_type == 'member':
+        return get_all_member_embeddings()
+    elif user_type == 'employee':
+        return get_all_employee_embeddings()
+    else:
+        # Load tất cả
+        member_embs = get_all_member_embeddings()
+        employee_embs = get_all_employee_embeddings()
+        
+        # Merge hai dicts
+        all_embeddings = {**member_embs, **employee_embs}
+        
+        print(f"✅ Loaded {len(member_embs)} members + {len(employee_embs)} employees = {len(all_embeddings)} total")
+        return all_embeddings
 
 
 def get_stats():

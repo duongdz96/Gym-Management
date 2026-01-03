@@ -494,8 +494,8 @@ class FaceRecognitionWindow:
         self.required_matches = 3  # 3 frames liên tiếp
         
         self.center_window()
-        self.load_embeddings()
-        self.setup_ui()
+        self.setup_ui()          # ← Setup UI trước (tạo status_text)
+        self.load_embeddings()   # ← Load embeddings sau (dùng status_text)
         self.start_camera()
         
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)

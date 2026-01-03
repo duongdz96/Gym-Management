@@ -275,26 +275,32 @@ def create_info_panel(frame, info_dict):
     # Panel background
     cv2.rectangle(canvas, (width, 0), (width + panel_width, height), (30, 30, 30), -1)
 
-    # Header
+    # Header with gradient background (blue theme)
     header_height = 80
     cv2.rectangle(canvas, (width + 10, 10), (width + panel_width - 10, header_height),
-                  (50, 50, 50), -1)
+                  (100, 50, 0), -1)  # Blue gradient
     cv2.putText(canvas, "FACE RECOGNITION", (width + 40, 45),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
     cv2.putText(canvas, f"Model: {config.FACE_MODEL}", (width + 60, 70),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 255, 255), 1)
 
     # Person info
     if info_dict.get('person_detected'):
         y_offset = 120
         box_height = 220
 
-        # Info box
-        color = config.COLOR_RECOGNIZED if info_dict.get('status') == 'active' else config.COLOR_INACTIVE
+        # Info box with colored background
+        if info_dict.get('status') == 'active':
+            color = config.COLOR_RECOGNIZED
+            bg_color = (20, 50, 20)  # Dark green background
+        else:
+            color = config.COLOR_INACTIVE
+            bg_color = (40, 40, 40)  # Dark gray background
+        
         cv2.rectangle(canvas, (width + 20, y_offset),
-                     (width + panel_width - 20, y_offset + box_height), (40, 40, 40), -1)
+                     (width + panel_width - 20, y_offset + box_height), bg_color, -1)
         cv2.rectangle(canvas, (width + 20, y_offset),
-                     (width + panel_width - 20, y_offset + box_height), color, 2)
+                     (width + panel_width - 20, y_offset + box_height), color, 3)
 
         # Display info
         y_text = y_offset + 35
@@ -303,7 +309,6 @@ def create_info_panel(frame, info_dict):
         lines = [
             f"ID: {info_dict.get('id', 'N/A')}",
             f"Name: {info_dict.get('name', 'Unknown')}",
-            f"Confidence: {info_dict.get('confidence', 0):.1f}%",
             f"Status: {info_dict.get('status', 'N/A')}",
         ]
 
@@ -311,11 +316,14 @@ def create_info_panel(frame, info_dict):
             lines.append(f"Action: Check-{info_dict.get('check_type', 'in')}")
 
         if info_dict.get('confirmed'):
-            lines.append("✓ CONFIRMED")
+            lines.append("[CONFIRMED]")
 
+        # Text color based on status
+        text_color = (100, 255, 100) if info_dict.get('status') == 'active' else (255, 255, 255)
+        
         for line in lines:
             cv2.putText(canvas, line, (width + 35, y_text),
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.65, text_color, 2)
             y_text += line_height
 
     elif info_dict.get('unknown'):
@@ -329,14 +337,14 @@ def create_info_panel(frame, info_dict):
         cv2.putText(canvas, info_dict.get('time', ''), (width + 60, y_offset + 80),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
 
-    # FPS and stats
+    # FPS and stats với màu cyan nổi bật
     y_stats = height - 120
     cv2.putText(canvas, f"FPS: {info_dict.get('fps', 0):.1f}",
-               (width + 30, y_stats), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 1)
+               (width + 30, y_stats), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 100), 2)
     cv2.putText(canvas, f"Latency: {info_dict.get('latency', 0):.0f}ms",
-               (width + 30, y_stats + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 1)
+               (width + 30, y_stats + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 100), 2)
     cv2.putText(canvas, f"Threshold: {config.RECOGNITION_THRESHOLD}",
-               (width + 30, y_stats + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+               (width + 30, y_stats + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 255, 255), 1)
 
     # Instructions
     cv2.putText(canvas, "Press 'q' to quit",
@@ -451,26 +459,23 @@ def main():
                         # Temporal smoothing
                         is_confirmed, avg_confidence = recognizer.add_to_buffer(person_id, confidence)
 
-                        # Color based on status
+                        # Color based on status - màu xanh lá cho cả đang nhận diện và thành công
                         if status == 'active':
-                            if is_confirmed:
-                                color = config.COLOR_RECOGNIZED
-                            else:
-                                color = config.COLOR_PROCESSING
+                            color = config.COLOR_RECOGNIZED  # Màu xanh lá cho cả 2 trường hợp
                         else:
                             color = config.COLOR_INACTIVE
 
-                        # Draw rectangle
-                        cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
-                        cv2.rectangle(frame, (x, y-35), (x+w, y), color, -1)
+                        # Draw rectangle with thicker border for better visibility
+                        cv2.rectangle(frame, (x, y), (x+w, y+h), color, 3)
+                        cv2.rectangle(frame, (x, y-40), (x+w, y), color, -1)
 
-                        # Label
-                        label = f"{name} ({avg_confidence:.0f}%)"
+                        # Label - chỉ hiển thị tên, không hiển thị %
+                        label = f"{name}"
                         if is_confirmed:
-                            label += " ✓"
+                            label += " [OK]"
 
-                        cv2.putText(frame, label, (x+5, y-10),
-                                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                        cv2.putText(frame, label, (x+5, y-12),
+                                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
                         # Update info dict
                         info_dict.update({
@@ -562,11 +567,11 @@ def main():
                                     continue
 
                     else:
-                        # Unknown person
-                        cv2.rectangle(frame, (x, y), (x+w, y+h), config.COLOR_UNKNOWN, 2)
-                        cv2.rectangle(frame, (x, y-35), (x+w, y), config.COLOR_UNKNOWN, -1)
-                        cv2.putText(frame, f"Unknown ({distance:.2f})", (x+5, y-10),
-                                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                        # Unknown person - chỉ hiển thị Unknown
+                        cv2.rectangle(frame, (x, y), (x+w, y+h), config.COLOR_UNKNOWN, 3)
+                        cv2.rectangle(frame, (x, y-40), (x+w, y), config.COLOR_UNKNOWN, -1)
+                        cv2.putText(frame, "Unknown", (x+5, y-12),
+                                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
                         # Show unknown info (with cooldown)
                         ts = time.time()
