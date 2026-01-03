@@ -1,7 +1,6 @@
 package com.example.gympool.repository;
 
 import com.example.gympool.entity.ClassSchedule;
-import com.example.gympool.entity.ClassTemplate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, Long> {
-    List<ClassSchedule> findByClassTemplateId(Long classTemplateId);
+    List<ClassSchedule> findByFitnessClassId(Long classTemplateId);
     List<ClassSchedule> findByStatus(String status);
     List<ClassSchedule> findByStartTimeBetween(LocalDateTime start, LocalDateTime end);
     @Query("SELECT s FROM ClassSchedule s WHERE s.room.id = :roomId AND s.startTime BETWEEN :startOfDay AND :endOfDay")
@@ -20,4 +19,19 @@ public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, Lo
                                                     @Param("startOfDay") LocalDateTime startOfDay,
                                                     @Param("endOfDay") LocalDateTime endOfDay);
 
+    @Query("SELECT s FROM ClassSchedule s " +
+            "WHERE s.startTime < :endTime AND s.endTime > :startTime " +
+            "AND s.status <> 'CANCELLED'")
+    List<ClassSchedule> findOverlappingSchedules(
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime
+    );
+    
+    // Query method for Reception Dashboard - upcoming classes in next 7 days
+    @Query("SELECT s FROM ClassSchedule s " +
+            "WHERE s.startTime > CURRENT_TIMESTAMP " +
+            "AND s.startTime <= :endDate " +
+            "AND s.status = 'OPEN' " +
+            "ORDER BY s.startTime ASC")
+    List<ClassSchedule> findUpcomingClasses(@Param("endDate") LocalDateTime endDate);
 }

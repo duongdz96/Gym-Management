@@ -6,7 +6,6 @@ import com.example.gympool.service.BillService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,123 +16,122 @@ public class BillServiceImpl implements BillService {
 
     private final BillRepository billRepository;
     private final ProductRepository productRepository;
-    private final StaffRepository staffRepository;
+    private final TeacherRepository teacherRepository;
     private final ReceptionistRepository receptionistRepository;
     private final MemberRepository memberRepository;
     private final IssuedCouponRepository issuedCouponRepository;
 
     public BillServiceImpl(BillRepository billRepository,
                            ProductRepository productRepository,
-                           StaffRepository staffRepository,
+                           TeacherRepository teacherRepository,
                            MemberRepository memberRepository,
                            ReceptionistRepository receptionistRepository,
                            IssuedCouponRepository issuedCouponRepository) {
         this.billRepository = billRepository;
         this.productRepository = productRepository;
-        this.staffRepository = staffRepository;
+        this.teacherRepository = teacherRepository;
         this.receptionistRepository = receptionistRepository;
         this.memberRepository = memberRepository;
         this.issuedCouponRepository = issuedCouponRepository;
     }
 
     @Override
+    @Transactional
     public Bill createBill(Bill bill) {
-        // reception id
-        Receptionist receptionist = receptionistRepository.findById(bill.getReceptionist().getId())
-                .orElseThrow(() -> new RuntimeException("Receptionist not found"));
+
+        // ---------------------------
+        // 1. Receptionist
+        // ---------------------------
+        Receptionist receptionist = receptionistRepository.findById(
+                bill.getReceptionist().getId()
+        ).orElseThrow(() -> new RuntimeException("Receptionist not found"));
         bill.setReceptionist(receptionist);
-        // member id
+
+        // ---------------------------
+        // 2. Member (optional)
+        // ---------------------------
         if (bill.getMember() != null && bill.getMember().getId() != null) {
-            Member member = memberRepository.findById(bill.getMember().getId())
-                    .orElseThrow(() -> new RuntimeException("Member not found"));
+            Member member = memberRepository.findById(
+                    bill.getMember().getId()
+            ).orElseThrow(() -> new RuntimeException("Member not found"));
             bill.setMember(member);
         } else {
             bill.setMember(null);
         }
 
-        // product id
+        // ---------------------------
+        // 3. Products
+        // ---------------------------
         List<Long> productIds = bill.getListSoldProduct().stream()
                 .map(sp -> sp.getProduct().getId())
                 .toList();
+
         Map<Long, Product> productMap = productRepository.findAllById(productIds)
                 .stream().collect(Collectors.toMap(Product::getId, p -> p));
 
         bill.getListSoldProduct().forEach(sp -> {
             Product product = productMap.get(sp.getProduct().getId());
             if (product == null) throw new RuntimeException("Product not found");
+
             sp.setProduct(product);
             sp.setBill(bill);
 
-            int newQuantity = product.getQuantity() - sp.getQuantity();
-            if (newQuantity < 0) throw new RuntimeException("Not enough stock for product: " + product.getName());
-            product.setQuantity(newQuantity);
-            productRepository.save(product);
+            if (!"PT".equalsIgnoreCase(product.getType()) && !"Membership".equalsIgnoreCase(product.getType())) {
+
+                if (product.getQuantity() == null)
+                    throw new RuntimeException("Product quantity is null: " + product.getName());
+
+                int newQuantity = product.getQuantity() - sp.getQuantity();
+                if (newQuantity < 0)
+                    throw new RuntimeException("Not enough stock for product: " + product.getName());
+
+                product.setQuantity(newQuantity);
+                productRepository.save(product);
+            }
+            sp.setSoldPrice(product.getPrice());
         });
 
-        // staff id
-        if (bill.getListStaffAssigned() != null) {
-            bill.getListStaffAssigned().forEach(sa -> {
-                Staff staff = staffRepository.findById(sa.getStaff().getId())
-                        .orElseThrow(() -> new RuntimeException("Staff not found"));
-                sa.setStaff(staff);
-                sa.setBill(bill);
-            });
+
+        // ---------------------------
+        // 5. Handle Issued Coupon (optional)
+        // ---------------------------
+        // ======================= ISSUED COUPON ===========================
+        if (bill.getCoupon() != null && bill.getCoupon().getId() != null) {
+
+            Long memberId = bill.getMember().getId();               // member luôn có
+            Long couponId = bill.getCoupon().getId();               // lấy từ object coupon FE gửi lên
+
+            IssuedCoupon issued = issuedCouponRepository
+                    .findByMemberIdAndCouponId(memberId, couponId)
+                    .orElseThrow(() -> new RuntimeException(
+                            "Issued coupon not found for memberId=" + memberId + " and couponId=" + couponId
+                    ));
+
+            issued.setRemainingUses(issued.getRemainingUses() - 1);
+
+            if (issued.getRemainingUses() <= 0) {
+                issued.setStatus("UNAVAILABLE");
+            }
+
+            issuedCouponRepository.save(issued);
+
+            bill.setIssuedCoupon(issued);
         }
 
-        // tong tien tam thoi
-        double subtotal = bill.getListSoldProduct().stream()
-                .mapToDouble(sp -> sp.getProduct().getPrice() * sp.getQuantity())
-                .sum();
-        //coupon
-        double discount = 0.0;
-        if (bill.getIssuedCoupon() != null && bill.getIssuedCoupon().getId() != null) {
-            IssuedCoupon issuedCoupon = issuedCouponRepository.findById(bill.getIssuedCoupon().getId())
-                    .orElseThrow(() -> new RuntimeException("Issued Coupon not found with ID: " + bill.getIssuedCoupon().getId()));
-            //ngoai le
-            Coupon coupon = issuedCoupon.getCoupon();
-            if (coupon == null) {
-                throw new RuntimeException("Coupon template not found for the issued coupon.");
-            }
-            if (!"AVAILABLE".equalsIgnoreCase(issuedCoupon.getStatus())) {
-                throw new RuntimeException("This coupon is no longer available. Status: " + issuedCoupon.getStatus());
-            }
-            if (issuedCoupon.getRemainingUses() <= 0) {
-                throw new RuntimeException("This coupon has no remaining uses.");
-            }
-            if (!"ACTIVE".equalsIgnoreCase(coupon.getStatus())) {
-                throw new RuntimeException("The coupon promotion is no longer active.");
-            }
-            Date now = new Date();
-            if (now.before(coupon.getStartDate()) || now.after(coupon.getEndDate())) {
-                throw new RuntimeException("The coupon is not valid at this time.");
-            }
+        // ---------------------------
+        // 6. Set final total (đã giảm giá)
+        // FE gửi:
+        // - total       = tổng tiền trước giảm
+        // - totalPrice  = tổng tiền sau giảm
+        // ---------------------------
+        bill.setTotal(bill.getTotalPrice()); // totalPrice FE map vào field total
 
-            String discountType = coupon.getDiscountType();
-            double discountValue = coupon.getDiscountValue();
-
-            if ("PERCENTAGE".equalsIgnoreCase(discountType)) {
-                discount = subtotal * (discountValue / 100.0);
-            } else if ("FIXED_AMOUNT".equalsIgnoreCase(discountType)) {
-                discount = discountValue;
-            } else {
-                throw new RuntimeException("Unsupported discount type: " + discountType);
-            }
-
-            // Tru luot dung
-            issuedCoupon.setRemainingUses(issuedCoupon.getRemainingUses() - 1);
-            if (issuedCoupon.getRemainingUses() == 0) {
-                issuedCoupon.setStatus("USED");
-            }
-            issuedCouponRepository.save(issuedCoupon);
-
-            bill.setIssuedCoupon(issuedCoupon);
-        }
-
-        double finalTotal = subtotal - discount;
-        bill.setTotal(Math.max(0, finalTotal)); // Đảm bảo tổng tiền không bị âm
-
+        // ---------------------------
+        // 7. Save bill
+        // ---------------------------
         return billRepository.save(bill);
     }
+
 
     @Override
     public Bill updateBill(Long id, Bill billDetails) {
@@ -161,7 +159,6 @@ public class BillServiceImpl implements BillService {
         });
 
         bill.getListSoldProduct().clear();
-        bill.getListStaffAssigned().clear();
 
         //update-info
         bill.setPaymentMethod(billDetails.getPaymentMethod());
@@ -190,17 +187,6 @@ public class BillServiceImpl implements BillService {
                 sp.setProduct(product);
                 sp.setBill(bill);
                 bill.getListSoldProduct().add(sp);
-            });
-        }
-
-        //staff
-        if (billDetails.getListStaffAssigned() != null) {
-            billDetails.getListStaffAssigned().forEach(sa -> {
-                Staff staff = staffRepository.findById(sa.getStaff().getId())
-                        .orElseThrow(() -> new RuntimeException("Staff not found"));
-                sa.setStaff(staff);
-                sa.setBill(bill);
-                bill.getListStaffAssigned().add(sa);
             });
         }
 
@@ -267,5 +253,14 @@ public class BillServiceImpl implements BillService {
     @Override
     public List<Bill> getBillByMemberId(Long memberId) {
         return billRepository.findByMember_id(memberId);
+    }
+
+    @Override
+    @Transactional
+    public Bill updateBillPaymentStatus(Long id, String paymentStatus) {
+        Bill bill = billRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Bill not found with id: " + id));
+        bill.setPaymentStatus(paymentStatus);
+        return billRepository.save(bill);
     }
 }

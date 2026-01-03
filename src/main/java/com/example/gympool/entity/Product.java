@@ -19,7 +19,7 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 50, unique = true)
     private String name;
 
     @Column(nullable = false, length = 50)
@@ -28,10 +28,20 @@ public class Product {
     @Column(nullable = false)
     private Double price;
 
-    private Double importPrice;
-
     @Column(length = 50)
     private String brand;
 
     private Integer quantity;
+
+    @Column(name = "import_date")
+    private Date importDate;
+
+    @Column(length = 255)
+    private String image;
+
+    @Column(length = 50)
+    private String unit;
+
+    @Column(name = "status", nullable = false, columnDefinition = "boolean default false")
+    private boolean status = false;     //isDeleted
 }

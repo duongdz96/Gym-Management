@@ -18,6 +18,6 @@ public class Room {
     private Long id;
 
     private String name;
-    private String note;
-    private String location;
+    private String description;
+    private Integer capacity;
 }

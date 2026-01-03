@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/studentprofile")
+@RequestMapping("/api/studentprofile")
 @RequiredArgsConstructor
 public class StudentProfileController {
     private final StudentProfileService studentProfileService;
@@ -26,9 +26,9 @@ public class StudentProfileController {
     public StudentProfile findStudentProfileByCustomerName(@RequestParam("name") String name) {
         return studentProfileService.getStudentProfileByCustomerName(name);
     }
-    @GetMapping("/{staff}")
-    public StudentProfile findStudentProfileByStaffName(@RequestParam("name") String name) {
-        return studentProfileService.getStudentProfileByStaffName(name);
+    @GetMapping("/{pt}")
+    public StudentProfile findStudentProfileByPTName(@RequestParam("name") String name) {
+        return studentProfileService.getStudentProfileByPTName(name);
     }
     @PostMapping()
     public void addStudentProfile(@RequestBody StudentProfile studentProfile) {

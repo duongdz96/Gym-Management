@@ -7,6 +7,7 @@ import com.example.gympool.service.PTAppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -34,7 +35,6 @@ public class PTAppointmentServiceImpl implements PTAppointmentService {
         if (PTAppointmentUpd.getStartTime() != null) PTAppointment.setStartTime(PTAppointmentUpd.getStartTime());
         if (PTAppointmentUpd.getEndTime() != null) PTAppointment.setEndTime(PTAppointmentUpd.getEndTime());
         if (PTAppointmentUpd.getStaff() != null) PTAppointment.setStaff(PTAppointmentUpd.getStaff());
-        if (PTAppointmentUpd.getMember() != null) PTAppointment.setMember(PTAppointmentUpd.getMember());
         if (PTAppointmentUpd.getStatus() != null) PTAppointment.setStatus(PTAppointmentUpd.getStatus());
         return ptAppointmentRepository.save(PTAppointment);
     }
@@ -44,8 +44,15 @@ public class PTAppointmentServiceImpl implements PTAppointmentService {
                 .orElseThrow(() -> new IllegalArgumentException("PTAppointment not found with MemberName: " + name));
     }
     @Override
-    public PTAppointment getPTAppointmentByStaffName(String name){
+    public PTAppointment getPTAppointmentByPTName(String name){
         return ptAppointmentRepository.findByStaffName(name)
                 .orElseThrow(() -> new IllegalArgumentException("PTAppointment not found with StaffName: " + name));
+    }
+    @Override
+    public List<PTAppointment> getUpcomingPTAppointment(Long staffId){
+        return ptAppointmentRepository.findTop5ByStaffIdAndStartTimeAfterOrderByStartTimeAsc(staffId,LocalDateTime.now());
+    }
+    public List<PTAppointment> getUpcomingMemberAppointment(Long memberId){
+        return ptAppointmentRepository.findTop5ByPtPackageIssuedMemberIdAndStartTimeAfterOrderByStartTimeAsc(memberId,LocalDateTime.now());
     }
 }

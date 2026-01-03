@@ -24,13 +24,11 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    // Bean PasswordEncoder để encode/check password
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Bean AuthenticationManager để login
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
@@ -43,14 +41,13 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // dùng JWT, không dùng session
                 .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/api/auth/**").permitAll()   // cho phép login/register không cần token
-//                        .anyRequest().authenticated()                  // các request khác cần xác thực
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/**").permitAll()
+                        .requestMatchers(("/image/**")).permitAll()// cho phép login/register không cần token
+                        .anyRequest().authenticated()                  // các request khác cần xác thực
 
-                           .requestMatchers("/api/auth/me").authenticated()
-                           .anyRequest().permitAll()
                 );
 
-        // Thêm JwtAuthenticationFilter vào trước UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -59,7 +56,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173")); // FE Vue
+        config.setAllowedOriginPatterns(List.of("*")); // Allow all origins with credentials
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH",  "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);

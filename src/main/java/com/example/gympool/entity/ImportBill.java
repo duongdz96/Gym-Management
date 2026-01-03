@@ -39,4 +39,5 @@ public class ImportBill {
     @JoinColumn(name = "manager_id", nullable = false)
     private Manager manager;
 
+    private String status;
 }

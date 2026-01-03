@@ -24,12 +24,12 @@ public class IssuedCouponController {
         return ResponseEntity.ok(issuedCouponService.getAllIssuedCoupons());
     }
 
-    @GetMapping("/member/{memberId}")
-    public ResponseEntity<List<IssuedCoupon>> getIssuedCouponsByMember(@PathVariable Long memberId) {
-        Member member = new Member();
-        member.setId(memberId);
-        return ResponseEntity.ok(issuedCouponService.getIssuedCouponsByMember(member));
+    @GetMapping("/find")
+    public ResponseEntity<List<IssuedCoupon>> getIssuedCoupons(@RequestParam Long memberId) {
+        List<IssuedCoupon> list = issuedCouponService.getIssuedCouponsByMember(memberId);
+        return ResponseEntity.ok(list);
     }
+
 
     @GetMapping("/coupon/{couponId}")
     public ResponseEntity<List<IssuedCoupon>> getIssuedCouponsByCoupon(@PathVariable Long couponId) {
@@ -44,6 +44,23 @@ public class IssuedCouponController {
         return ResponseEntity.ok(saved);
     }
 
+
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateIssuedCouponStatus(@PathVariable Long id, @RequestParam String status) {
+        try {
+            IssuedCoupon issuedCoupon = issuedCouponService.getIssuedCouponById(id);
+            if (issuedCoupon == null) {
+                return ResponseEntity.status(404).body("Issued coupon not found");
+            }
+            
+            issuedCoupon.setStatus(status);
+            issuedCouponService.updateIssuedCoupon(issuedCoupon);
+            return ResponseEntity.ok("Status updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteIssuedCoupon(@PathVariable Long id) {

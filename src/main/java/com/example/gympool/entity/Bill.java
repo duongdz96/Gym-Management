@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.Date;
 import java.util.List;
+import com.example.gympool.dto.CouponDTO;
 
 @Entity
 @Table(name = "bill")
@@ -20,10 +21,10 @@ public class Bill {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "payment_method", nullable = false, length = 50)
+    @Column(name = "payment_method", nullable = false)
     private String paymentMethod;
 
-    @Column(name = "payment_status", nullable = false, length = 50)
+    @Column(name = "payment_status", nullable = false)
     private String paymentStatus;
 
     @Column(name = "date", nullable = false)
@@ -40,9 +41,6 @@ public class Bill {
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SoldProduct> listSoldProduct;
 
-    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<StaffAssigned> listStaffAssigned;
-
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
@@ -50,4 +48,11 @@ public class Bill {
     @ManyToOne
     @JoinColumn(name = "issuedcoupon_id")
     private IssuedCoupon issuedCoupon;
+
+    @Transient
+    private
+    CouponDTO coupon;
+
+    @Transient
+    private double totalPrice;
 }

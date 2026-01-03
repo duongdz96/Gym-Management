@@ -18,15 +18,15 @@ public class ClassRegistrationController {
     }
 
     // Lấy danh sách lớp mà staff đã đăng ký dạy
-    @GetMapping("/staff/{staffId}")
-    public ResponseEntity<List<ClassRegistration>> getByStaff(@PathVariable Long staffId) {
-        return ResponseEntity.ok(classRegistrationService.getByStaff(staffId));
+    @GetMapping("/teacher/{staffId}")
+    public ResponseEntity<List<ClassRegistration>> getByTeacher(@PathVariable Long staffId) {
+        return ResponseEntity.ok(classRegistrationService.getByTeacher(staffId));
     }
 
-    // Lấy danh sách giáo viên đã đăng ký cho class template
-    @GetMapping("/classtemplate/{templateId}")
-    public ResponseEntity<List<ClassRegistration>> getByClassTemplate(@PathVariable Long templateId) {
-        return ResponseEntity.ok(classRegistrationService.getByClassTemplate(templateId));
+    // Lấy danh sách đã đăng ký cho fitness class
+    @GetMapping("/fitness_class/{fitnessClassId}")
+    public ResponseEntity<List<ClassRegistration>> getByFitnessClass(@PathVariable Long fitnessClassId) {
+        return ResponseEntity.ok(classRegistrationService.getByFitnessClass(fitnessClassId));
     }
 
     // Staff đăng ký dạy 1 lớp
@@ -36,9 +36,24 @@ public class ClassRegistrationController {
     }
 
     // Staff hủy đăng ký dạy
-    @DeleteMapping
-    public ResponseEntity<String> unregisterTeaching(@RequestBody ClassRegistration reg) {
-        classRegistrationService.unregisterTeaching(reg);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> unregisterTeaching(@PathVariable Long staffId ,Long registrationId) { // Dùng @PathVariable
+        classRegistrationService.unregisterTeachingById(staffId, registrationId); // Gọi một service mới theo ID
         return ResponseEntity.ok("Teaching registration removed successfully");
+    }
+
+    // Manager approve teacher registration
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<ClassRegistration> approveTeacher(@PathVariable Long id) {
+        return ResponseEntity.ok(classRegistrationService.approveRegistration(id));
+    }
+
+    // Manager reject teacher registration
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<ClassRegistration> rejectTeacher(
+            @PathVariable Long id,
+            @RequestParam(required = false) String reason
+    ) {
+        return ResponseEntity.ok(classRegistrationService.rejectRegistration(id, reason));
     }
 }

@@ -28,9 +28,7 @@ public class ManagerController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Manager> getManagerById(@PathVariable Long id) {
-        Optional<Manager> manager = managerService.getManagerById(id);
-        return manager.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok( managerService.getManagerById(id));
     }
 
     @PutMapping("/{id}")
@@ -42,7 +40,7 @@ public class ManagerController {
         return ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping("/{id}/delete")
     public ResponseEntity<Void> deleteManager(@PathVariable Long id) {
         managerService.deleteManager(id);
         return ResponseEntity.noContent().build();

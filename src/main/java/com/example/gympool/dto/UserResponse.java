@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,6 +17,7 @@ public class UserResponse {
     private String gender;
     private String phone;
     private String role;
+    private Date dob;
 
     public UserResponse(User user) {
         this.id = user.getId();
@@ -23,5 +26,6 @@ public class UserResponse {
         this.gender = user.getGender();
         this.phone = user.getPhone();
         this.role = user.getRole();
+        this.dob = user.getDob();
     }
 }

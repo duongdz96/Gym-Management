@@ -6,7 +6,7 @@ ImportBill: /api/import-bills	put, get, delete:/{id}	post: /upload
 Bill: /api/bills	put, get, delete:/{id}	get: /receptionist/{receptionistId}
 ClassTemplate : /api/classtemplate 	put, get, delete:/{id}
 ClassSchedule: /api/classschedule	put, get, delete:/{id}
-ClassRegistration: /api/class-registrations	put, get, delete:/{id} 	get:/staff/{staffId}		/classschedule/{scheduleId}
+ClassRegistration: /api/class-registrations	put, get, delete:/{id} 	get:/teacher/{staffId}		/classschedule/{scheduleId}
 FollowClass: /api/follow-classes	put, get, delete:/{id} 	get:/member/{memberId}		/classschedule/{scheduleId}
 
 Json
@@ -127,7 +127,7 @@ Receptionist
 Manager
 {
   "email": "manager@example.com",
-  "password": "StrongPassword123",
+  "password": "123456",
   "fullName": "Nguyen Van A",
   "dob": "1980-05-15",
   "gender": "Male",
@@ -207,7 +207,7 @@ Bill
   ],
   "listStaffAssigned": [
     {
-      "staff": {
+      "teacher": {
         "id": 4
       },
       "trainingSession": 12
@@ -237,7 +237,7 @@ Bill
   ],
   "listStaffAssigned": [
     {
-      "staff": {
+      "teacher": {
         "id": 4
       },
       "trainingSession": 8
@@ -277,7 +277,7 @@ Bill
   "listSoldProduct": [],
   "listStaffAssigned": [
     {
-      "staff": {
+      "teacher": {
         "id": 4
       },
       "trainingSession": 15
@@ -317,7 +317,7 @@ ClassSchedule
   "endTime": "2025-10-02T09:30:00",
   "location": "Phòng 101",
   "status": "OPEN",
-  "classTemplate": {
+  "fitnessClass": {
     "id": 1
   }
 }
@@ -326,7 +326,7 @@ ClassSchedule
   "endTime": "2025-10-02T19:00:00",
   "location": "Studio 2",
   "status": "OPEN",
-  "classTemplate": {
+  "fitnessClass": {
     "id": 2
   }
 }
@@ -335,7 +335,7 @@ ClassSchedule
   "endTime": "2025-10-03T08:00:00",
   "location": "Bể bơi trong nhà",
   "status": "CANCELLED",
-  "classTemplate": {
+  "fitnessClass": {
     "id": 4
   }
 }
@@ -344,14 +344,14 @@ ClassSchedule
   "endTime": "2025-10-03T21:00:00",
   "location": "Phòng 202",
   "status": "CLOSED",
-  "classTemplate": {
+  "fitnessClass": {
     "id": 3
   }
 }
 
 ClassRegis
 {
-  "staff": {
+  "teacher": {
     "id": 5
   },
   "classSchedule": {
@@ -360,7 +360,7 @@ ClassRegis
   "description": "Teacher Nguyen Thi Teacher dạy BodyPump nâng cao"
 }
 {
-  "staff": {
+  "teacher": {
     "id": 2
   },
   "classSchedule": {

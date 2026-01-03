@@ -1,7 +1,7 @@
 package com.example.gympool.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,14 +22,15 @@ public class ClassSchedule {
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private Integer capacity;
 
     @Column(length = 20)
     private String status;   //"OPEN", "CLOSED", "CANCELLED"
 
     @ManyToOne
-    @JoinColumn(name = "classtemplate_id", nullable = true)
-    @JsonBackReference
-    private ClassTemplate classTemplate;
+    @JoinColumn(name = "fitness_class_id", nullable = true)
+    @JsonIgnoreProperties({"schedules", "registrations"})
+    private FitnessClass fitnessClass;
 
     @ManyToOne
     @JoinColumn(name = "schedule_pattern_id", nullable = true)
@@ -38,4 +39,6 @@ public class ClassSchedule {
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = true)
     private Room room;
+
+    private String note;
 }

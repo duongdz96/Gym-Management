@@ -9,7 +9,7 @@ public interface PTPackageIssuedService {
     List<PTPackageIssued> getAllPTPackageIssued();
     PTPackageIssued getPTPackageIssuedById(Long id);
     PTPackageIssued getPTPackageIssuedByCustomerName(String name);
-    PTPackageIssued getPTPackageIssuedByStaffName(String name);
+    PTPackageIssued getPTPackageIssuedByPTName(String name);
     PTPackageIssued registerPTPackage(PTPackageIssued ptPackageIssued);
     PTPackageIssued updatePTPackageIssued(Long id, PTPackageIssued ptPackageIssued);
 }

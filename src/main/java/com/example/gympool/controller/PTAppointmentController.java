@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/appointment")
+@RequestMapping("/api/appointment")
 @RequiredArgsConstructor
 public class PTAppointmentController {
     private final PTAppointmentService ptAppointmentService;
@@ -26,9 +26,9 @@ public class PTAppointmentController {
     public PTAppointment findPTAppointmentByCustomerName(@RequestParam("name") String name) {
         return ptAppointmentService.getPTAppointmentByCustomerName(name);
     }
-    @GetMapping("/staff")
-    public PTAppointment findPTAppointmentByStaffName(@RequestParam("name") String name) {
-        return ptAppointmentService.getPTAppointmentByStaffName(name);
+    @GetMapping("/pt")
+    public PTAppointment findPTAppointmentByPTName(@RequestParam("name") String name) {
+        return ptAppointmentService.getPTAppointmentByPTName(name);
     }
     @PostMapping()
     public void addPTAppointment(@RequestBody PTAppointment PTAppointment) {
@@ -38,5 +38,13 @@ public class PTAppointmentController {
     public void updateStudentProfile(@PathVariable("id") Long id,
                                      @RequestBody PTAppointment PTAppointment) {
         ptAppointmentService.updatePTAppointment(id, PTAppointment);
+    }
+    @GetMapping("/member/{id}/next")
+    public List<PTAppointment> getNext5ForMember(@PathVariable("id") Long id) {
+        return ptAppointmentService.getUpcomingMemberAppointment(id);
+    }
+    @GetMapping("/PT/{id}/next")
+    public List<PTAppointment> getNext5ForPT(@PathVariable("id") Long id) {
+        return ptAppointmentService.getUpcomingPTAppointment(id);
     }
 }

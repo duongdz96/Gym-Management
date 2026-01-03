@@ -15,12 +15,14 @@ public class ClassRegistration {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "staff_id", nullable = false)
-    private Staff staff;
+    @JoinColumn(name = "teacher_id", nullable = false)
+    private Teacher teacher;
 
     @ManyToOne
     @JoinColumn(name = "class_template_id", nullable = false)
-    private ClassTemplate classTemplate;
+    private FitnessClass fitnessClass;
 
     private String description;
+    
+    private String status; // PENDING, APPROVED, REJECTED
 }

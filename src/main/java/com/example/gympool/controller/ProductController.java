@@ -1,50 +1,66 @@
 package com.example.gympool.controller;
 
+import com.example.gympool.dto.ProductDTO;
 import com.example.gympool.entity.Product;
 import com.example.gympool.service.ProductService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
 @RestController
-@RequestMapping("/api/product")
+@RequestMapping("/api/products")
+@CrossOrigin(origins = "*")
 public class ProductController {
 
-    private final ProductService productService;
+    @Autowired
+    private ProductService productService;
 
     @Autowired
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
-
-    @PostMapping
-    public void addProduct(@RequestBody Product product) {
-        productService.addProduct(product);
-    }
-
-    @PutMapping("/{id}")
-    public void updateProduct(@PathVariable Long id, @RequestBody Product product) {
-        product.setId(id); // đảm bảo update đúng id
-        productService.updateProduct(product);
-    }
-
-    @DeleteMapping("/{id}")
-    public void deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
-    }
-
-    @GetMapping("/{id}")
-    public Product getProductById(@PathVariable Long id) {
-        return productService.getProductById(id);
-    }
-
-    @GetMapping("/name/{name}")
-    public Product getProductByName(@PathVariable String name) {
-        return productService.getProductByName(name);
-    }
+    private ObjectMapper objectMapper;
 
     @GetMapping
     public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+        // Return all products (including active/inactive ones for admin management)
+        return productService.getAllProductsForAdmin();
+    }
+
+    @GetMapping("/exclude-types")
+    public List<Product> getProductsExcludeTypes(@RequestParam List<String> types) {
+        return productService.getAllAvailableProductsByTypeNot(types);
+    }
+
+    @GetMapping("/include-types")
+    public List<Product> getProductsIncludeTypes(@RequestParam List<String> types) {
+        return productService.getAllAvailableProductsByTypeIn(types);
+    }
+
+    @PostMapping
+    public ResponseEntity<Product> createProduct(@RequestParam("product") String productJson,
+                                                 @RequestParam(value = "image", required = false) MultipartFile image) {
+        try {
+            Product product = objectMapper.readValue(productJson, Product.class);
+            Product createdProduct = productService.addProduct(product, image);
+            return ResponseEntity.ok(createdProduct);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating product", e);
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
+        product.setId(id);
+        Product updatedProduct = productService.updateProduct(product);
+        return ResponseEntity.ok(updatedProduct);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        // We use soft delete logic here
+        productService.softDeleteProduct(id);
+        return ResponseEntity.ok().build();
     }
 }

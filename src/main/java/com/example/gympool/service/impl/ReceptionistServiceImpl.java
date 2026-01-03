@@ -54,9 +54,8 @@ public class ReceptionistServiceImpl implements ReceptionistService {
 
     @Override
     public void deleteReceptionist(Long id) {
-        if (!receptionistRepository.existsById(id)) {
-            throw new IllegalArgumentException("Receptionist not found with id: " + id);
-        }
-        receptionistRepository.deleteById(id);
+        Receptionist receptionist = getReceptionistById(id);
+        receptionist.setDeleted(true);
+        receptionistRepository.save(receptionist);
     }
 }

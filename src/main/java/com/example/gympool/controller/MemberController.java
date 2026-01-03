@@ -28,6 +28,15 @@ public class MemberController {
         return ResponseEntity.ok(memberService.getMemberById(id));
     }
 
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkEmail(@RequestParam String email) {
+        Member member = memberService.getMemberByEmail(email);
+        if (member != null) {
+            return ResponseEntity.ok(member);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping
     public ResponseEntity<Member> createMember(@RequestBody Member member) {
         Member saved = memberService.createMember(member);
@@ -41,7 +50,7 @@ public class MemberController {
         return ResponseEntity.ok(memberService.updateMember(id, member));
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping("/{id}/delete")
     public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
         memberService.deleteMember(id);
         return ResponseEntity.noContent().build();
