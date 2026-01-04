@@ -559,7 +559,7 @@ const getSessionStatus = (session) => {
 };
 
 const availableClasses = computed(() => {
-  return classes.value.filter(c => c.status === 'ready_for_students');
+  return classes.value.filter(c => c.status === 'open');
 });
 
 const filteredClasses = computed(() => {

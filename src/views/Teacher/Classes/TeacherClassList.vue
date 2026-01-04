@@ -1,12 +1,34 @@
 <template>
   <div class="p-3 sm:p-6">
     <!-- Header -->
-    <div class="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-8">
+    <div class="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
       <BookOpen class="w-8 h-8 sm:w-10 sm:h-10 text-emerald-600" />
       <h1
         class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-600 bg-clip-text text-transparent">
         Lớp Học Của Tôi
       </h1>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="flex flex-col sm:flex-row gap-3 mb-4 sm:mb-6">
+      <div class="relative flex-1">
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Tìm kiếm lớp học..."
+          class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 outline-none transition-all"
+        />
+      </div>
+      <select
+        v-model="filterStatus"
+        class="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 outline-none transition-all bg-white"
+      >
+        <option value="">Tất cả trạng thái</option>
+        <option value="open">Đang mở</option>
+        <option value="cancelled">Đã hủy</option>
+        <option value="completed">Hoàn thành</option>
+      </select>
     </div>
 
     <!-- Loading State -->
@@ -16,9 +38,21 @@
     </div>
 
     <!-- Classes Grid -->
-    <div v-else-if="myClasses.length > 0" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
-      <div v-for="cls in myClasses" :key="cls.id"
-        class="bg-white rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+    <div v-else-if="filteredClasses.length > 0" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
+      <div v-for="cls in filteredClasses" :key="cls.id"
+        class="bg-white rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+        :class="{
+          'opacity-60': cls.status === 'cancelled' || cls.status === 'completed',
+          'border-2 border-red-300': cls.status === 'cancelled'
+        }">
+        <!-- Cancelled Badge -->
+        <div v-if="cls.status === 'cancelled' || cls.status === 'completed'" 
+          class="px-3 py-1.5 text-center text-sm font-bold flex items-center justify-center gap-2"
+          :class="cls.status === 'cancelled' ? 'bg-red-500 text-white' : 'bg-gray-500 text-white'">
+          <XCircle class="w-4 h-4" />
+          {{ cls.status === 'cancelled' ? 'Lớp đã bị hủy' : 'Lớp đã hoàn thành' }}
+        </div>
+        
         <!-- Card Header -->
         <div class="p-3 sm:p-5 bg-gradient-to-r from-emerald-500 to-emerald-500 text-white">
           <div class="flex justify-between items-start gap-2">
@@ -178,7 +212,9 @@ import {
   CalendarIcon,
   CheckSquare,
   Inbox,
-  X
+  X,
+  Search,
+  XCircle
 } from 'lucide-vue-next';
 import { useToast } from 'vue-toastification';
 
@@ -192,10 +228,32 @@ const roomsData = ref([]);
 const showScheduleModal = ref(false);
 const selectedClass = ref(null);
 const selectedClassSessions = ref([]);
+const searchQuery = ref('');
+const filterStatus = ref('');
 
 const currentTeacherId = computed(() => {
   const user = authStore.user;
   return user?.id || null;
+});
+
+const filteredClasses = computed(() => {
+  let result = myClasses.value;
+  
+  // Filter by status
+  if (filterStatus.value) {
+    result = result.filter(c => c.status === filterStatus.value);
+  }
+  
+  // Filter by search query
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    result = result.filter(c => 
+      c.name.toLowerCase().includes(query) ||
+      c.description.toLowerCase().includes(query)
+    );
+  }
+  
+  return result;
 });
 
 const loadData = async () => {

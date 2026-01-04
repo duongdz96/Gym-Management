@@ -3,26 +3,24 @@ import { ref, computed } from 'vue'
 import api from '@/services/api'
 import { useRouter } from 'vue-router'
 import { useToast } from "vue-toastification";
+
 // --- State cho Form ---
 const email = ref('')
 const password = ref('')
 const fullName = ref('')
-const dob = ref('') // Input type="date" sẽ trả về string YYYY-MM-DD
-const gender = ref('Male') // Giá trị mặc định
+const dob = ref('') // Input type="date" trả về string YYYY-MM-DD
+const gender = ref('Nam') // Giá trị mặc định
 const phone = ref('')
 const role = ref('STAFF') // Mặc định là STAFF
 
-// --- Các trường dành riêng cho STAFF ---
+// --- Các trường dành riêng cho GIÁO VIÊN ---
 const position = ref('')
 const specialize = ref('')
 
 // --- State xử lý UI ---
 const isLoading = ref(false)
-const error = ref<string | null>(null)
-const success = ref<string | null>(null)
 const toast = useToast();
 const router = useRouter()
-
 
 const handleSubmit = async () => {
   isLoading.value = true
@@ -37,6 +35,7 @@ const handleSubmit = async () => {
     role: role.value,
   }
 
+  // Nếu là giáo viên thì thêm các trường chuyên biệt
   if (role.value === 'TEACHER') {
     payload = {
       ...payload,
@@ -50,6 +49,7 @@ const handleSubmit = async () => {
     
     toast.success("Thêm nhân viên thành công!");
     
+    // Reset form
     email.value = ''
     password.value = ''
     fullName.value = ''
@@ -78,74 +78,73 @@ const handleCancel = () => {
 
 <template>
   <div class="p-6 max-w-4xl mx-auto bg-white rounded-lg shadow-md">
-    <h1 class="text-2xl font-semibold mb-6">Add New Employee</h1>
+    <h1 class="text-2xl font-semibold mb-6">Thêm Nhân Viên Mới</h1>
 
     <form @submit.prevent="handleSubmit">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         <div>
-          <label class="block text-sm font-medium text-gray-700">Full Name</label>
-          <input v-model="fullName" type="text" maxlength="50" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
+          <label class="block text-sm font-medium text-gray-700">Họ và Tên</label>
+          <input v-model="fullName" type="text" maxlength="50" required placeholder="Nhập họ tên đầy đủ" class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700">Email</label>
-          <input v-model="email" type="email" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
+          <input v-model="email" type="email" required placeholder="example@gmail.com" class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700">Password</label>
-          <input v-model="password" type="password" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
+          <label class="block text-sm font-medium text-gray-700">Mật khẩu</label>
+          <input v-model="password" type="password" required placeholder="Nhập mật khẩu" class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700">Phone</label>
-          <input v-model="phone" type="tel" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
+          <label class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+          <input v-model="phone" type="tel" required placeholder="Nhập số điện thoại" class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
+          <label class="block text-sm font-medium text-gray-700">Ngày sinh</label>
           <input v-model="dob" type="date" required class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700">Gender</label>
+          <label class="block text-sm font-medium text-gray-700">Giới tính</label>
           <select v-model="gender" class="mt-1 p-2 w-full border rounded-md shadow-sm bg-white focus:ring-emerald-500 focus:border-emerald-500">
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
+            <option value="Male">Nam</option>
+            <option value="Female">Nữ</option>
+            <option value="Other">Khác</option>
           </select>
         </div>
 
         <div class="md:col-span-2">
-          <label class="block text-sm font-medium text-gray-700">Role</label>
+          <label class="block text-sm font-medium text-gray-700">Vai trò</label>
           <select v-model="role" class="mt-1 p-2 w-full border rounded-md shadow-sm bg-white focus:ring-emerald-500 focus:border-emerald-500">
-            <option value="TEACHER">Teacher</option>
-            <option value="PT">PT</option>
-            <option value="RECEPTIONIST">Receptionist</option>
-            <option value="MANAGER">Manager</option>
+            <option value="TEACHER">Giáo viên (Teacher)</option>
+            <option value="PT">Huấn luyện viên cá nhân (PT)</option>
+            <option value="RECEPTIONIST">Lễ tân</option>
+            <option value="MANAGER">Quản lý</option>
           </select>
         </div>
 
         <template v-if="role === 'TEACHER'">
           <hr class="md:col-span-2 my-2" />
           
-          <div class="md:col-span-2 text-sm font-medium text-gray-600">
-            Only for Teacher roles
+          <div class="md:col-span-2 text-sm font-medium text-emerald-600">
+            Thông tin dành riêng cho Giáo viên
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Position</label>
-            <input v-model="position" type="text" placeholder="e.g., Senior Trainer" class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+            <label class="block text-sm font-medium text-gray-700">Chức danh / Vị trí</label>
+            <input v-model="position" type="text" placeholder="VD: Huấn luyện viên cao cấp" class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700">Specialize</label>
-            <input v-model="specialize" type="text" placeholder="e.g., Yoga, HIIT, Cardio" class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+            <label class="block text-sm font-medium text-gray-700">Chuyên môn</label>
+            <input v-model="specialize" type="text" placeholder="VD: Yoga, HIIT, Cardio" class="mt-1 p-2 w-full border rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500" />
           </div>
-
         </template>
-        </div>
+      </div>
 
       <div class="mt-8 flex justify-end space-x-4">
         <button 
@@ -153,14 +152,14 @@ const handleCancel = () => {
           @click="handleCancel"
           class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition"
         >
-          Cancel
+          Hủy bỏ
         </button>
         <button
           type="submit"
           :disabled="isLoading"
           class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 transition"
         >
-          {{ isLoading ? 'Saving...' : 'Add Employee' }}
+          {{ isLoading ? 'Đang lưu...' : 'Thêm nhân viên' }}
         </button>
       </div>
     </form>
