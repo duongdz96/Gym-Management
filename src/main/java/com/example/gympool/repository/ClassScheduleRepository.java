@@ -34,4 +34,7 @@ public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, Lo
             "AND s.status = 'OPEN' " +
             "ORDER BY s.startTime ASC")
     List<ClassSchedule> findUpcomingClasses(@Param("endDate") LocalDateTime endDate);
+
+    long countByFitnessClassIdAndStatus(Long fitnessClassId, String status);
+    List<ClassSchedule> findByEndTimeBeforeAndStatus(LocalDateTime dateTime, String status);
 }

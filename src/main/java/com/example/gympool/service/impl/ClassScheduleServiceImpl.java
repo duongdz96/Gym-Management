@@ -148,4 +148,45 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         return classScheduleRepository.saveAll(generated);
     }
 
+    @Transactional
+    @Override
+    public ClassSchedule closeSchedule(Long scheduleId) {
+        ClassSchedule schedule = classScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy buổi học"));
+
+        schedule.setStatus("CLOSED");
+        ClassSchedule updatedSchedule = classScheduleRepository.save(schedule);
+
+        FitnessClass fitnessClass = schedule.getFitnessClass();
+        if (fitnessClass != null) {
+            long openSchedulesCount = classScheduleRepository.countByFitnessClassIdAndStatus(
+                    fitnessClass.getId(), "OPEN"
+            );
+
+            if (openSchedulesCount == 0) {
+                fitnessClass.setStatus("completed");
+                fitnessClassRepository.save(fitnessClass);
+            }
+        }
+
+        return updatedSchedule;
+    }
+
+    @Transactional
+    @Override
+    public void scanAndCloseExpiredSchedules() {
+        LocalDateTime now = LocalDateTime.now();
+        List<ClassSchedule> expiredSchedules = classScheduleRepository
+                .findByEndTimeBeforeAndStatus(now, "OPEN");
+        if (expiredSchedules.isEmpty()) {
+            return;
+        }
+        for (ClassSchedule schedule : expiredSchedules) {
+            try {
+                this.closeSchedule(schedule.getId());
+            } catch (Exception e) {
+                System.err.println("Lỗi khi đóng lịch ID: " + schedule.getId() + " - " + e.getMessage());
+            }
+        }
+    }
 }

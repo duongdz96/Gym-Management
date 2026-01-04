@@ -13,4 +13,6 @@ public interface ClassScheduleService {
     void delete(Long id);
     List<ClassSchedule> getByFitnessClassId(Long id);
     List<ClassSchedule> generateSchedulesFromPattern(ClassSchedule classSchedule);
+    ClassSchedule closeSchedule(Long scheduleId);
+    void scanAndCloseExpiredSchedules();
 }

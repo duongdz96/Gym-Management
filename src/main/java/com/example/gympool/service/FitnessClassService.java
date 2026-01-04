@@ -1,6 +1,8 @@
 package com.example.gympool.service;
 
 import com.example.gympool.entity.FitnessClass;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,4 +13,6 @@ public interface FitnessClassService {
     FitnessClass create(FitnessClass fitnessClass);
     FitnessClass update(Long id, FitnessClass fitnessClass);
     void delete(Long id);
+    FitnessClass updateStatus(Long id, String status);
+    Page<FitnessClass> getClassesForManager(String status, Pageable pageable);
 }

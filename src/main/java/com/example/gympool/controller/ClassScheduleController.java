@@ -58,4 +58,8 @@ public class ClassScheduleController {
         return ResponseEntity.ok(result);
     }
 
+    @PutMapping("/{id}/close")
+    public ResponseEntity<ClassSchedule> closeSchedule(@PathVariable Long id) {
+        return ResponseEntity.ok(classScheduleService.closeSchedule(id));
+    }
 }

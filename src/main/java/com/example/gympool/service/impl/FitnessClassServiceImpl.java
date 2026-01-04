@@ -3,6 +3,8 @@ package com.example.gympool.service.impl;
 import com.example.gympool.entity.FitnessClass;
 import com.example.gympool.repository.FitnessClassRepository;
 import com.example.gympool.service.FitnessClassService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -50,8 +52,24 @@ public class FitnessClassServiceImpl implements FitnessClassService {
         FitnessClass fitnessClass = fitnessClassRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("FitnessClass not found with id " + id));
 
-        fitnessClass.setStatus("INACTIVE");
+        fitnessClass.setStatus("cancelled");
 
         fitnessClassRepository.save(fitnessClass);
+    }
+
+    @Override
+    public Page<FitnessClass> getClassesForManager(String status, Pageable pageable) {
+        if (status == null || status.equalsIgnoreCase("all")) {
+            return fitnessClassRepository.findAll(pageable);
+        }
+        return fitnessClassRepository.findByStatus(status, pageable);
+    }
+
+    @Override
+    public FitnessClass updateStatus(Long id, String status) {
+        FitnessClass fitnessClass = fitnessClassRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("FitnessClass not found with id " + id));
+        fitnessClass.setStatus(status);
+        return fitnessClassRepository.save(fitnessClass);
     }
 }
