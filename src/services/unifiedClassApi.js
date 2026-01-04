@@ -606,11 +606,6 @@ export const unifiedApi = {
         // Get fitnessClassId from the response
         const fitnessClassId = updatedRegistration.fitnessClass?.id;
 
-        // Update FitnessClass status back to pending_teacher
-        if (fitnessClassId) {
-          await apiService.fitnessClass.updateClassStatus(fitnessClassId, 'pending_teacher');
-        }
-
         return {
           id: applicationId,
           status: 'rejected',
