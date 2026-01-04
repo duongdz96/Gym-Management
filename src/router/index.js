@@ -83,6 +83,7 @@ import ManagerBlogList from "@/views/Manager/Blog/BlogList.vue";
 import BlogCreate from "@/views/Manager/Blog/BlogCreate.vue";
 import BlogEdit from "@/views/Manager/Blog/BlogEdit.vue";
 import TeacherClassList from "@/views/Teacher/Classes/TeacherClassList.vue";
+import PTPackageList from "@/views/Manager/PT-Package/PTPackageList.vue";
 
 const routes = [
     {
@@ -140,6 +141,7 @@ const routes = [
             { path: "blog", name: "manager.blog", component: ManagerBlogList },
             { path: "blog/create", name: "manager.blog.create", component: BlogCreate },
             { path: "blog/edit/:id", name: "manager.blog.edit", component: BlogEdit },
+            { path: "pt-package", name: "manager.pt-package", component: PTPackageList },
 
         ],
     },

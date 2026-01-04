@@ -122,9 +122,9 @@ const submitPTAssignment = async () => {
     
     // Payload gửi đi
     const payload = {
-      memberId: selectedMember.value.id,
-      ptId: selectedPT.value.id,
-      packageId: selectedPackage.value.id,
+      member: { id: selectedMember.value.id },
+      pt: { id: selectedPT.value.id },
+      ptPackage: { id: selectedPackage.value.id },
       remainingSessions: remainingSessions.value
     };
 

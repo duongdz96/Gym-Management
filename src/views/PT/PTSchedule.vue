@@ -75,19 +75,34 @@ async function fetchSchedule(query = "") {
       res = await api.get("/appointment");
     }
     const data = Array.isArray(res.data) ? res.data : [];
+    
+    console.log('Total appointments from API:', data.length);
+    console.log('Current PT ID:', authStore.user.id);
+    console.log('First appointment structure:', data[0]); // Log full structure
 
-    // Filter appointments for the current PT
-    const ptAppointments = data.filter(appt => appt.pt && appt.pt.id === authStore.user.id);
+    // Filter appointments for the current PT (PT is inside ptPackageIssued)
+    const ptAppointments = data.filter(appt => {
+      const ptIdFromPackage = appt.ptPackageIssued?.pt?.id;
+      const isPTMatch = ptIdFromPackage === authStore.user.id;
+      
+      if (!isPTMatch) {
+        console.log('Filtered out appointment:', appt.id, 'PT ID from package:', ptIdFromPackage);
+      }
+      return isPTMatch;
+    });
+    
+    console.log('PT appointments after filter:', ptAppointments.length);
 
     // Map backend appointment shape to the calendar event shape expected by this component
     schedule.value = ptAppointments.map((appt) => {
       const start = appt.startTime;
       const end = appt.endTime;
+      const dateStr = toDateStr(start);
 
-      return {
+      const event = {
         id: appt.id,
         // calendar uses a date string YYYY-MM-DD to group events per day
-        date: toDateStr(start),
+        date: dateStr,
         // user-facing time range
         time: formatTimeRange(start, end),
         // show member name (fallback to package/member or pt if missing)
@@ -105,7 +120,12 @@ async function fetchSchedule(query = "") {
         remainingSessions: appt.ptPackageIssued?.remainingSessions ?? null,
         raw: appt,
       };
+      
+      console.log('Mapped event:', event.id, 'Date:', dateStr, 'Name:', event.name);
+      return event;
     });
+    
+    console.log('Total events in schedule:', schedule.value.length);
 
   } catch (error) {
     schedule.value = [];
@@ -554,15 +574,17 @@ async function registerNewClass() {
     const endDateTime = new Date(registerDate.value);
     endDateTime.setHours(endHours, endMinutes, 0, 0);
     
-    // Prepare payload - try without ptId first (backend may get it from token)
+    // Prepare payload with nested objects (PT is also the staff creating the appointment)
     const payload = {
-      packageIssuedId: selectedPackage.value.id,
+      ptPackageIssued: { id: selectedPackage.value.id },
+      pt: { id: authStore.user.id },
+      staff: { id: authStore.user.id },
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
       status: "Scheduled"
     };
     
-    console.log("Creating appointment (without ptId):", payload);
+    console.log("Creating appointment:", payload);
     console.log("Auth user:", authStore.user);
     console.log("Selected package:", selectedPackage.value);
     
@@ -572,9 +594,17 @@ async function registerNewClass() {
     
     toast.success(`Đã đăng ký lớp cho ${selectedMember.value.name} vào ${registerDate.value.toLocaleDateString('vi-VN')} từ ${selectedStartTime.value} đến ${selectedEndTime.value}`);
     
-    // Close modal and refresh schedule
+    // Close modal first
     closeRegisterModal();
+    
+    // Refresh schedule and force calendar update
     await fetchSchedule();
+    
+    // Force calendar to re-render by updating currentDate
+    const tempDate = currentDate.value;
+    currentDate.value = new Date(tempDate);
+    
+    console.log('Schedule refreshed, total events:', schedule.value.length);
   } catch (error) {
     console.error('Error creating appointment:', error);
     toast.error("Không thể đăng ký lớp. Vui lòng thử lại!");
