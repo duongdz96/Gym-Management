@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router'
 import api from '@/services/api'
 import { useToast } from 'vue-toastification'
 
-// Type không đổi
 type UserDetail = {
   id: number;
   fullName: string;
@@ -18,18 +17,16 @@ type UserDetail = {
   hirePrice?: number;
 }
 
-// --- State ---
-const user = ref<UserDetail | null>(null) // Dữ liệu gốc (để hiển thị)
-const editData = ref<any>(null) // Dữ liệu khi chỉnh sửa (bản sao)
+const user = ref<UserDetail | null>(null)
+const editData = ref<any>(null)
 const isLoading = ref(true)
 const isSaving = ref(false)
-const isEditing = ref(false) // <-- State quan trọng để chuyển chế độ
+const isEditing = ref(false)
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
-// --- Lấy dữ liệu ban đầu ---
 onMounted(async () => {
   const userId = route.params.id
   if (!userId) {
@@ -49,9 +46,8 @@ onMounted(async () => {
   }
 })
 
-// --- Hàm Helper ---
 const formatDate = (dateString: string) => {
-  if (!dateString) return 'N/A'
+  if (!dateString) return 'Chưa cập nhật'
   try {
     const date = new Date(dateString)
     return date.toLocaleDateString('vi-VN')
@@ -59,58 +55,43 @@ const formatDate = (dateString: string) => {
 }
 
 const formatPrice = (price?: number) => {
-  if (price === undefined || price === null) return 'N/A'
+  if (price === undefined || price === null) return 'Chưa cập nhật'
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 }
 
-// Hàm mới: Chuyển đổi Date (ISO/string) sang YYYY-MM-DD cho input
 const formatToInputDate = (dateString: string) => {
   if (!dateString) return '';
   try {
     const date = new Date(dateString);
-    // Lấy YYYY-MM-DD từ chuỗi ISO
     return date.toISOString().split('T')[0];
   } catch (e) {
-    return ''; // Trả về rỗng nếu ngày không hợp lệ
+    return '';
   }
 }
 
-// --- Các hàm xử lý Edit/Save/Cancel ---
-
-// Khi nhấn nút "Edit"
 const startEditing = () => {
   if (!user.value) return;
-  // Tạo 1 bản sao (deep copy) để chỉnh sửa
-  // Chuyển đổi `dob` sang định dạng YYYY-MM-DD
   editData.value = {
     ...JSON.parse(JSON.stringify(user.value)),
-    dob: formatToInputDate(user.value.dob) // Quan trọng
+    dob: formatToInputDate(user.value.dob)
   };
   isEditing.value = true;
 }
 
-// Khi nhấn nút "Cancel"
 const handleCancel = () => {
   isEditing.value = false;
-  editData.value = null; // Hủy bản sao
+  editData.value = null;
 }
 
-// Khi nhấn nút "Save"
 const handleSave = async () => {
   if (!editData.value || !user.value) return;
 
   isSaving.value = true;
   try {
-    // Gọi API PUT/PATCH để cập nhật
-    // Giả sử endpoint là /users/{id} với method PUT
     const response = await api.put(`/users/${user.value.id}`, editData.value);
-
-    // Cập nhật lại dữ liệu gốc (user) với dữ liệu mới
     user.value = response.data;
-
-    isEditing.value = false; // Quay về chế độ "chỉ đọc"
+    isEditing.value = false;
     toast.success("Cập nhật thông tin thành công!");
-
   } catch (err: any) {
     toast.error("Cập nhật thất bại.");
   } finally {
@@ -118,7 +99,6 @@ const handleSave = async () => {
   }
 }
 
-// Khi nhấn nút "Back"
 const goBack = () => {
   router.back()
 }
@@ -129,11 +109,8 @@ const goBack = () => {
   width: 100%;
   padding: 0.5rem 0.75rem;
   border: 1px solid #D1D5DB;
-  /* gray-300 */
   border-radius: 0.375rem;
-  /* rounded-md */
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  /* shadow-sm */
   background-color: white;
 }
 
@@ -141,20 +118,17 @@ const goBack = () => {
   outline: 2px solid transparent;
   outline-offset: 2px;
   border-color: #059669;
-  /* emerald-600 */
   box-shadow: 0 0 0 2px #A7F3D0;
-  /* ring-emerald-200 */
 }
 </style>
 
 <template>
   <div class="p-6 max-w-4xl mx-auto">
     <div v-if="isLoading" class="text-center py-10">
-      <p class="text-lg text-gray-500">Loading staff information...</p>
+      <p class="text-lg text-gray-500">Đang tải thông tin nhân viên...</p>
     </div>
 
     <div v-else-if="user" class="bg-white rounded-lg shadow-md overflow-hidden">
-
       <div class="p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center gap-4">
         <div class="flex-1 min-w-0">
           <h1 class="text-xl sm:text-2xl font-semibold text-gray-900 truncate"
@@ -176,23 +150,32 @@ const goBack = () => {
           <template v-if="!isEditing">
             <button @click="goBack"
               class="px-3 sm:px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition mr-2 text-sm sm:text-base">
-              Back
+              Quay lại
             </button>
             <button @click="startEditing"
               class="px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition text-sm sm:text-base">
-              Edit
+              Chỉnh sửa
+            </button>
+          </template>
+          <template v-else>
+            <button @click="handleCancel"
+              class="px-3 sm:px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition mr-2 text-sm sm:text-base">
+              Hủy
+            </button>
+            <button @click="handleSave" :disabled="isSaving"
+              class="px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition text-sm sm:text-base disabled:opacity-50">
+              {{ isSaving ? 'Đang lưu...' : 'Lưu thay đổi' }}
             </button>
           </template>
         </div>
       </div>
 
       <div class="p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Thông tin cá nhân</h3>
 
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-
           <div>
-            <dt class="text-sm font-medium text-gray-500 mb-1">Full Name</dt>
+            <dt class="text-sm font-medium text-gray-500 mb-1">Họ và Tên</dt>
             <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900">{{ user.fullName }}</dd>
             <input v-else v-model="editData.fullName" type="text" maxlength="50" class="form-input" />
           </div>
@@ -204,66 +187,62 @@ const goBack = () => {
           </div>
 
           <div>
-            <dt class="text-sm font-medium text-gray-500 mb-1">Phone</dt>
+            <dt class="text-sm font-medium text-gray-500 mb-1">Số điện thoại</dt>
             <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900">{{ user.phone }}</dd>
             <input v-else v-model="editData.phone" type="tel" class="form-input" />
           </div>
 
           <div>
-            <dt class="text-sm font-medium text-gray-500 mb-1">Date of Birth</dt>
+            <dt class="text-sm font-medium text-gray-500 mb-1">Ngày sinh</dt>
             <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900">{{ formatDate(user.dob) }}</dd>
             <input v-else v-model="editData.dob" type="date" class="form-input" />
           </div>
 
           <div>
-            <dt class="text-sm font-medium text-gray-500 mb-1">Gender</dt>
-            <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900">{{ user.gender }}</dd>
+            <dt class="text-sm font-medium text-gray-500 mb-1">Giới tính</dt>
+            <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900">{{ user.gender === 'Male' ? 'Nam' : user.gender === 'Female' ? 'Nữ' : 'Khác' }}</dd>
             <select v-else v-model="editData.gender" class="form-input">
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
+              <option value="Male">Nam</option>
+              <option value="Female">Nữ</option>
+              <option value="Other">Khác</option>
             </select>
           </div>
 
           <div>
-            <dt class="text-sm font-medium text-gray-500 mb-1">Role</dt>
+            <dt class="text-sm font-medium text-gray-500 mb-1">Vai trò</dt>
             <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900">{{ user.role }}</dd>
             <select v-else v-model="editData.role" class="form-input">
-              <option value="STAFF">Staff (Trainer)</option>
-              <option value="RECEPTIONIST">Receptionist</option>
-              <option value="MANAGER">Manager</option>
+              <option value="STAFF">Nhân viên (HLV)</option>
+              <option value="RECEPTIONIST">Lễ tân</option>
+              <option value="MANAGER">Quản lý</option>
             </select>
           </div>
-
         </dl>
 
         <template v-if="(isEditing ? editData.role : user.role) === 'STAFF'">
           <hr class="my-6" />
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Professional Information</h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Thông tin chuyên môn</h3>
           <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-
             <div>
-              <dt class="text-sm font-medium text-gray-500 mb-1">Position</dt>
-              <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900">{{ user.position || 'N/A' }}</dd>
+              <dt class="text-sm font-medium text-gray-500 mb-1">Vị trí / Chức danh</dt>
+              <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900">{{ user.position || 'Chưa cập nhật' }}</dd>
               <input v-else v-model="editData.position" type="text" class="form-input" />
             </div>
 
             <div>
-              <dt class="text-sm font-medium text-gray-500 mb-1">Specialize</dt>
-              <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900">{{ user.specialize || 'N/A' }}</dd>
+              <dt class="text-sm font-medium text-gray-500 mb-1">Chuyên môn</dt>
+              <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900">{{ user.specialize || 'Chưa cập nhật' }}</dd>
               <input v-else v-model="editData.specialize" type="text" class="form-input" />
             </div>
 
             <div class="md:col-span-2">
-              <dt class="text-sm font-medium text-gray-500 mb-1">Hire Price</dt>
+              <dt class="text-sm font-medium text-gray-500 mb-1">Giá thuê (giờ)</dt>
               <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900 font-semibold text-emerald-600">{{
                 formatPrice(user.hirePrice) }}</dd>
               <input v-else v-model.number="editData.hirePrice" type="number" min="0" class="form-input" />
             </div>
-
           </dl>
         </template>
-
       </div>
     </div>
   </div>

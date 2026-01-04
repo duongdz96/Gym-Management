@@ -86,12 +86,12 @@ const handleMobileNavigate = (path) => {
           <Dumbbell class="h-4 w-4" /> Lớp học
         </RouterLink>
 
-        <RouterLink to="/customer/billhistory" class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-pink-300 transition-colors duration-300 rounded-md">
-          <DollarSign class="h-4 w-4" /> Hoá đơn
-        </RouterLink>
-
         <RouterLink to="/customer/calendar" class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-pink-300 transition-colors duration-300 rounded-md">
           <Calendar class="h-4 w-4" /> Lịch
+        </RouterLink>
+
+        <RouterLink to="/customer/billhistory" class="flex items-center gap-2 px-3 py-2 text-white uppercase tracking-wider hover:text-pink-300 transition-colors duration-300 rounded-md">
+          <DollarSign class="h-4 w-4" /> Hoá đơn
         </RouterLink>
 
         <div class="relative" @mouseenter="openWorkoutMenu" @mouseleave="closeWorkoutMenu">

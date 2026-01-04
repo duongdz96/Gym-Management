@@ -7,6 +7,8 @@ import Login from "@/views/Login.vue";
 import Forbidden from "@/views/Forbidden.vue";
 import ChangePassword from "@/views/ChangePassword.vue";
 import Profile from "@/views/Profile.vue";
+import BlogList from "@/views/BlogList.vue";
+import BlogDetail from "@/views/BlogDetail.vue";
 
 import ManagerLayout from "@/layout/ManagerLayout.vue";
 import Coupon from "@/views/Manager/Coupon/Coupon.vue";
@@ -77,10 +79,9 @@ import TeacherApprovalList from "@/views/Manager/Classes/TeacherApprovalList.vue
 import ManagerLeaveApproval from "@/views/Manager/Classes/ManagerLeaveApproval.vue";
 import TeacherAttendance from "@/views/Teacher/Classes/TeacherAttendance.vue";
 import StaffInformation from "@/views/Manager/Staff/StaffInformation.vue";
-import BlogList from "@/views/Manager/Blog/BlogList.vue";
+import ManagerBlogList from "@/views/Manager/Blog/BlogList.vue";
 import BlogCreate from "@/views/Manager/Blog/BlogCreate.vue";
 import BlogEdit from "@/views/Manager/Blog/BlogEdit.vue";
-import CustomerBlogList from "@/views/Customer/CustomerBlogList.vue";
 import TeacherClassList from "@/views/Teacher/Classes/TeacherClassList.vue";
 
 const routes = [
@@ -97,7 +98,9 @@ const routes = [
             { path: "forbidden", name: "forbidden", component: Forbidden },
             { path: "test", component: Test },
             { path: "/profile", name: "profile", component: Profile },
-            { path: "change-password", component: ChangePassword }
+            { path: "change-password", component: ChangePassword },
+            { path: "blogs", name: "public.blogs", component: BlogList },
+            { path: "blog/:id", name: "public.blog.detail", component: BlogDetail }
         ],
     },
 
@@ -134,7 +137,7 @@ const routes = [
             { path: "teacher-approval", name: "manager.teacher-approval", component: TeacherApprovalList },
             { path: "leave-approval", name: "manager.leave-approval", component: ManagerLeaveApproval },
             { path: "banner", name: "banner", component: Banner },
-            { path: "blog", name: "manager.blog", component: BlogList },
+            { path: "blog", name: "manager.blog", component: ManagerBlogList },
             { path: "blog/create", name: "manager.blog.create", component: BlogCreate },
             { path: "blog/edit/:id", name: "manager.blog.edit", component: BlogEdit },
 
@@ -158,8 +161,6 @@ const routes = [
             { path: "billhistory", name: "customer.billhistory", component: CustomerBillHistory },
             { path: "activity-history", name: "customer.activity-history", component: CustomerActivityHistory },
             { path: "notifications", name: "customer.notifications", component: CustomerNotifications },
-            { path: "blogs", name: "customer.blogs", component: CustomerBlogList },
-            // Workout Management Routes
             {
                 path: "workout/exercises",
                 name: "customer.workout.exercises",

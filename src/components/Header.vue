@@ -16,6 +16,14 @@ const handleLogout = () => {
   toast.success("Đăng xuất thành công!");
   router.push("/login");
 };
+
+// Smooth scroll function
+const smoothScrollTo = (sectionId) => {
+  const element = document.getElementById(sectionId);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+};
 </script>
 
 <template>
@@ -26,19 +34,54 @@ const handleLogout = () => {
       <div class="flex items-center gap-3">
         <RouterLink to="/" class="inline-flex items-center gap-2">
           <span class="h-8 w-8 rounded-full bg-gradient-to-br from-yellow-400 via-orange-500 to-pink-500 inline-block shadow-lg"></span>
-          <span class="font-bold text-white tracking-wider uppercase"
-            >Gym Management</span
-          >
+          <span class="font-bold text-white tracking-wider uppercase">Gym Management</span>
         </RouterLink>
       </div>
 
       <!-- Navigation -->
       <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-white">
-        <a href="#classes" class="uppercase hover:text-yellow-300 transition-colors duration-300">Dịch vụ</a>
-        <a href="#clubs" class="uppercase hover:text-orange-300 transition-colors duration-300">Câu lạc bộ</a>
-        <a href="#schedule" class="uppercase hover:text-pink-300 transition-colors duration-300">Lịch tập</a>
-        <a href="#pricing" class="uppercase hover:text-cyan-300 transition-colors duration-300">Bảng giá</a>
-        <a href="#gifts" class="uppercase hover:text-purple-300 transition-colors duration-300">Quà tặng</a>
+        <a 
+          href="#pricing" 
+          @click.prevent="smoothScrollTo('pricing')"
+          class="uppercase hover:text-yellow-300 transition-colors duration-300 cursor-pointer"
+        >
+          Bảng giá
+        </a>
+        <a 
+          href="#classes" 
+          @click.prevent="smoothScrollTo('classes')"
+          class="uppercase hover:text-orange-300 transition-colors duration-300 cursor-pointer"
+        >
+          Dịch vụ
+        </a>
+        <a 
+          href="#clubs" 
+          @click.prevent="smoothScrollTo('clubs')"
+          class="uppercase hover:text-pink-300 transition-colors duration-300 cursor-pointer"
+        >
+          Câu lạc bộ
+        </a>
+        <a 
+          href="#feedbacks" 
+          @click.prevent="smoothScrollTo('feedbacks')"
+          class="uppercase hover:text-cyan-300 transition-colors duration-300 cursor-pointer"
+        >
+          Đánh giá
+        </a>
+        <a 
+          href="#blog" 
+          @click.prevent="smoothScrollTo('blog')"
+          class="uppercase hover:text-purple-300 transition-colors duration-300 cursor-pointer"
+        >
+          Blog
+        </a>
+        <a 
+          href="#trial" 
+          @click.prevent="smoothScrollTo('trial')"
+          class="uppercase hover:text-yellow-300 transition-colors duration-300 cursor-pointer"
+        >
+          Đăng ký
+        </a>
       </nav>
 
       <!-- Auth / User -->
@@ -73,6 +116,7 @@ const handleLogout = () => {
               <RouterLink
                 to="/profile"
                 class="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                @click="isMenuOpen = false"
               >
                 Chỉnh sửa thông tin cá nhân
               </RouterLink>
@@ -93,6 +137,111 @@ const handleLogout = () => {
           </div>
         </template>
       </div>
+
+      <!-- Mobile menu button -->
+      <button
+        class="md:hidden text-white focus:outline-none"
+        @click="isMenuOpen = !isMenuOpen"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile menu -->
+    <div
+      v-if="isMenuOpen"
+      class="md:hidden bg-gradient-to-r from-emerald-700 via-teal-700 to-cyan-700 text-white px-6 py-4 space-y-3"
+    >
+      <a
+        href="#pricing"
+        @click.prevent="smoothScrollTo('pricing'); isMenuOpen = false"
+        class="block hover:text-yellow-300 transition-colors cursor-pointer"
+      >
+        Bảng giá
+      </a>
+      <a
+        href="#classes"
+        @click.prevent="smoothScrollTo('classes'); isMenuOpen = false"
+        class="block hover:text-orange-300 transition-colors cursor-pointer"
+      >
+        Dịch vụ
+      </a>
+      <a
+        href="#clubs"
+        @click.prevent="smoothScrollTo('clubs'); isMenuOpen = false"
+        class="block hover:text-pink-300 transition-colors cursor-pointer"
+      >
+        Câu lạc bộ
+      </a>
+      <a
+        href="#feedbacks"
+        @click.prevent="smoothScrollTo('feedbacks'); isMenuOpen = false"
+        class="block hover:text-cyan-300 transition-colors cursor-pointer"
+      >
+        Đánh giá
+      </a>
+      <a
+        href="#blog"
+        @click.prevent="smoothScrollTo('blog'); isMenuOpen = false"
+        class="block hover:text-purple-300 transition-colors cursor-pointer"
+      >
+        Blog
+      </a>
+      <a
+        href="#trial"
+        @click.prevent="smoothScrollTo('trial'); isMenuOpen = false"
+        class="block hover:text-yellow-300 transition-colors cursor-pointer"
+      >
+        Đăng ký
+      </a>
+
+      <hr class="border-white/20 my-3" />
+
+      <template v-if="authStore.user">
+        <RouterLink
+          to="/profile"
+          class="block hover:text-yellow-300 transition-colors"
+          @click="isMenuOpen = false"
+        >
+          Thông tin cá nhân
+        </RouterLink>
+        <RouterLink
+          to="/change-password"
+          class="block hover:text-yellow-300 transition-colors"
+          @click="isMenuOpen = false"
+        >
+          Đổi mật khẩu
+        </RouterLink>
+        <button
+          @click="handleLogout"
+          class="block text-left w-full hover:text-yellow-300 transition-colors"
+        >
+          Đăng xuất
+        </button>
+      </template>
+
+      <template v-else>
+        <RouterLink
+          :to="{ name: 'login' }"
+          class="block hover:text-yellow-300 transition-colors"
+          @click="isMenuOpen = false"
+        >
+          Đăng nhập
+        </RouterLink>
+      </template>
     </div>
   </header>
 </template>

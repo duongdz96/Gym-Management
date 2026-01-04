@@ -216,7 +216,7 @@ export const unifiedApi = {
           description: fc.description,
           difficulty: fc.difficultyLevel,
           maxStudents: maxStudents,
-          status: teacherId ? 'ready_for_students' : 'pending_teacher',
+          status: fc.status,
           roomId: roomId,
           teacherId: teacherId,
           patternType: patternType,
@@ -233,6 +233,112 @@ export const unifiedApi = {
       return classes;
     } else {
       return fitnessClassesData.map(fc => getFitnessClassWithTeacher(fc.id)).filter(c => c !== null);
+    }
+  },
+
+  getClassesPaged: async (status = null, page = 0, size = 6) => {
+    if (USE_REAL_API) {
+      const pageData = await apiService.fitnessClass.getPaged(status, page, size);
+      const classes = [];
+
+      for (const fc of pageData.content) {
+        // Get APPROVED teacher registration for this class
+        let teacherId = null;
+        try {
+          const registrations = await apiService.classRegistration.getByFitnessClass(fc.id);
+          const approvedReg = registrations.find(r => r.status === 'APPROVED' || r.status === 'approved');
+          if (approvedReg) {
+            teacherId = approvedReg.teacher?.id || approvedReg.staffId;
+          }
+        } catch (e) {
+          // No teacher registered yet
+        }
+
+        // Get schedules to determine maxStudents and schedule info
+        let maxStudents = 20;
+        let startTime = '07:00';
+        let endTime = '08:30';
+        let daysOfWeek = [];
+        let startDate = '';
+        let endDate = '';
+        let roomId = null;
+        let patternType = 'weekly';
+
+        try {
+          const schedules = await apiService.classSchedule.getByFitnessClass(fc.id);
+          if (schedules.length > 0) {
+            maxStudents = Math.max(...schedules.map(s => s.capacity || 20));
+            const firstSchedule = schedules[0];
+            roomId = firstSchedule.room?.id || firstSchedule.roomId;
+
+            if (firstSchedule.schedulePattern) {
+              const pattern = firstSchedule.schedulePattern;
+              startTime = pattern.timeStart?.substring(0, 5) || '07:00';
+              endTime = pattern.timeEnd?.substring(0, 5) || '08:30';
+              startDate = pattern.classStartDate || '';
+              endDate = pattern.classEndDate || '';
+
+              if (pattern.daysOfWeek) {
+                const dayMap = { 'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3, 'THURSDAY': 4, 'FRIDAY': 5, 'SATURDAY': 6, 'SUNDAY': 0 };
+                daysOfWeek = pattern.daysOfWeek.split(',').map(d => dayMap[d.trim()]).filter(d => d !== undefined);
+              }
+            }
+
+            if (schedules.length > 0 && daysOfWeek.length === 0) {
+              patternType = 'no_repeat';
+              const scheduleDates = schedules.map(s => s.startTime.split('T')[0]).sort();
+              if (scheduleDates.length > 0) {
+                startDate = scheduleDates[0];
+                endDate = scheduleDates[scheduleDates.length - 1];
+              }
+            } else if (daysOfWeek.length > 0) {
+              patternType = 'weekly';
+            }
+          }
+        } catch (e) {
+          // No schedules yet
+        }
+
+        classes.push({
+          id: fc.id,
+          name: fc.name,
+          description: fc.description,
+          difficulty: fc.difficultyLevel,
+          maxStudents: maxStudents,
+          status: fc.status,
+          roomId: roomId,
+          teacherId: teacherId,
+          patternType: patternType,
+          startTime: startTime,
+          endTime: endTime,
+          daysOfWeek: daysOfWeek,
+          startDate: startDate,
+          endDate: endDate,
+          createdBy: 'manager',
+          createdAt: fc.createdAt || new Date().toISOString()
+        });
+      }
+
+      return {
+        content: classes,
+        totalPages: pageData.totalPages,
+        totalElements: pageData.totalElements,
+        currentPage: pageData.number,
+        pageSize: pageData.size
+      };
+    } else {
+      // Mock pagination
+      const allClasses = fitnessClassesData.map(fc => getFitnessClassWithTeacher(fc.id)).filter(c => c !== null);
+      const filtered = status ? allClasses.filter(c => c.status === status) : allClasses;
+      const start = page * size;
+      const end = start + size;
+      return {
+        content: filtered.slice(start, end),
+        totalPages: Math.ceil(filtered.length / size),
+        totalElements: filtered.length,
+        currentPage: page,
+        pageSize: size
+      };
     }
   },
 
@@ -360,6 +466,10 @@ export const unifiedApi = {
       };
       // Backend expects staffId in request body along with ClassRegistration
       const result = await apiService.classRegistration.registerTeaching(teacherId, data);
+
+      // Update FitnessClass status to waiting_approval
+      await apiService.fitnessClass.updateClassStatus(fitnessClassId, 'waiting_approval');
+
       return {
         id: result.id,
         classId: fitnessClassId,
@@ -384,6 +494,13 @@ export const unifiedApi = {
         description: 'Pending approval'
       };
       classRegistrationsData.push(registration);
+
+      // Update FitnessClass status
+      const fcIndex = fitnessClassesData.findIndex(fc => fc.id === fitnessClassId);
+      if (fcIndex !== -1) {
+        fitnessClassesData[fcIndex].status = 'waiting_approval';
+      }
+
       return {
         id: registration.id,
         classId: fitnessClassId,
@@ -439,8 +556,12 @@ export const unifiedApi = {
   approveTeacher: async (applicationId, managerId) => {
     if (USE_REAL_API) {
       try {
-        // Approve the registration - backend returns the updated registration
         const updatedRegistration = await apiService.classRegistration.approve(applicationId);
+
+        const fitnessClassId = updatedRegistration.fitnessClass?.id;
+        if (fitnessClassId) {
+          await apiService.fitnessClass.updateClassStatus(fitnessClassId, 'open');
+        }
 
         return {
           id: applicationId,
@@ -456,6 +577,13 @@ export const unifiedApi = {
       const registration = classRegistrationsData.find(cr => cr.id === applicationId);
       if (!registration) throw new Error('Application not found');
       registration.description = 'Approved';
+
+      // Update FitnessClass status
+      const fcIndex = fitnessClassesData.findIndex(fc => fc.id === registration.fitnessClassId);
+      if (fcIndex !== -1) {
+        fitnessClassesData[fcIndex].status = 'open';
+      }
+
       return {
         id: applicationId,
         classId: registration.fitnessClassId,
@@ -473,7 +601,15 @@ export const unifiedApi = {
     if (USE_REAL_API) {
       try {
         // Reject the registration with reason
-        await apiService.classRegistration.reject(applicationId, reason);
+        const updatedRegistration = await apiService.classRegistration.reject(applicationId, reason);
+
+        // Get fitnessClassId from the response
+        const fitnessClassId = updatedRegistration.fitnessClass?.id;
+
+        // Update FitnessClass status back to pending_teacher
+        if (fitnessClassId) {
+          await apiService.fitnessClass.updateClassStatus(fitnessClassId, 'pending_teacher');
+        }
 
         return {
           id: applicationId,
@@ -493,6 +629,13 @@ export const unifiedApi = {
       if (index !== -1) {
         classRegistrationsData.splice(index, 1);
       }
+
+      // Update FitnessClass status back to pending_teacher
+      const fcIndex = fitnessClassesData.findIndex(fc => fc.id === registration.fitnessClassId);
+      if (fcIndex !== -1) {
+        fitnessClassesData[fcIndex].status = 'pending_teacher';
+      }
+
       return {
         id: applicationId,
         classId: registration.fitnessClassId,

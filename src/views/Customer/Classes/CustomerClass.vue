@@ -150,7 +150,8 @@
             <Crown class="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
               <div class="font-bold mb-1">Đăng ký sớm VIP (còn {{ getWeeksUntilStart(cls.startDate) }} tuần)</div>
-              <div class="text-xs font-normal">Vui lòng ra quầy Lễ tân để đăng ký sớm cho lớp này</div>
+              <div class="text-xs font-normal" v-if="currentStudent.membershipTier === 'VIP'">Bạn có thể đăng ký sớm cho lớp này</div>
+              <div class="text-xs font-normal" v-else>Chỉ thành viên VIP mới có thể đăng ký sớm</div>
             </div>
           </div>
 
@@ -173,23 +174,15 @@
             Hủy đăng ký
           </button>
           
-          <!-- VIP Early Access - Go to Reception -->
-          <button 
-            v-else-if="isVIPEarlyAccess(cls)"
-            disabled
-            class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl font-semibold opacity-75 cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            <Crown class="w-4 h-4 sm:w-5 sm:h-5" />
-            <span class="hidden sm:inline">Ra quầy Lễ tân để đăng ký</span>
-            <span class="sm:hidden">Chỉ VIP</span>
-          </button>
-          
-          <!-- Register Button if Not VIP Early Access -->
+          <!-- Register Button -->
           <button 
             v-else
             @click="openScheduleSelection(cls)" 
-            :disabled="getAvailableSlots(cls) <= 0"
+            :disabled="!canRegister(cls)"
             class="w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            :class="{
+              'from-yellow-400 to-orange-500': isVIPEarlyAccess(cls) && currentStudent.membershipTier === 'VIP'
+            }"
           >
             <component 
               :is="getRegisterButtonIcon(cls)" 
@@ -559,7 +552,7 @@ const getSessionStatus = (session) => {
 };
 
 const availableClasses = computed(() => {
-  return classes.value.filter(c => c.status === 'ready_for_students');
+  return classes.value.filter(c => c.status === 'open');
 });
 
 const filteredClasses = computed(() => {
@@ -690,8 +683,12 @@ const canRegister = (cls) => {
 const getRegisterButtonText = (cls) => {
   if (isRegistered(cls.id)) return 'Đã đăng ký';
   if (getAvailableSlots(cls) <= 0) return 'Đã đầy';
-  if (isVIPEarlyAccess(cls) && currentStudent.value.membershipTier !== 'VIP') {
-    return 'Chỉ VIP';
+  if (isVIPEarlyAccess(cls)) {
+    if (currentStudent.value.membershipTier === 'VIP') {
+      return 'Đăng ký sớm (VIP)';
+    } else {
+      return 'Chỉ VIP được đăng ký sớm';
+    }
   }
   return 'Đăng ký';
 };

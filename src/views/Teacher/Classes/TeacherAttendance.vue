@@ -352,7 +352,8 @@ const loadClassData = async () => {
 
     const approvedClasses = allRegistrations
       .filter(reg => reg.status === 'APPROVED')
-      .map(reg => reg.fitnessClass);
+      .map(reg => reg.fitnessClass)
+      .filter(fClass => fClass && fClass.status !== 'cancelled' && fClass.status !== 'completed'); // Filter out soft-deleted classes
 
     if (approvedClasses.length === 0) {
       upcomingSessions.value = [];
@@ -408,7 +409,7 @@ const loadClassData = async () => {
           status: s.status
         }));
 
-        allSessionsList.push(...mappedSchedules.filter(s => new Date(s.date) >= now));
+        allSessionsList.push(...mappedSchedules.filter(s => new Date(s.date) >= now && s.status !== 'CANCELLED'));
       } catch (err) {
         console.warn(`Lỗi lớp ${fClass.name}:`, err);
       }
@@ -576,19 +577,21 @@ const updateNotes = async (student) => {
 };
 
 const autoAbsent = async () => {
-  if (!confirm('Đánh dấu VẮNG (Absent) cho tất cả học viên chưa được điểm danh?\n\nBạn chắc chắn chứ?')) {
+  if (!confirm('Đánh dấu VẮNG và KẾT THÚC buổi học này?')) {
     return;
   }
 
   finalizing.value = true;
   try {
-    const response = await api.post(`/class-attendance/students/auto-absent/${selectedSession.value.id}`);
+    const sessionId = selectedSession.value.id;
+    await api.post(`/class-attendance/students/auto-absent/${sessionId}`);
+    await api.put(`/classschedule/${sessionId}/close`);
+    toast.success('Đã điểm danh vắng và đóng buổi học thành công');
+    await loadSessionData(); 
 
-    toast.success('Đánh dấu thành công');
-
-    await loadSessionData(); // Tải lại để thấy danh sách những người vừa bị đánh vắng
   } catch (error) {
-    toast.error('Có lỗi xảy ra');
+    console.error(error);
+    toast.error('Có lỗi khi kết thúc buổi học');
   } finally {
     finalizing.value = false;
   }

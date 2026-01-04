@@ -261,7 +261,7 @@ const selectedDateSessions = computed(() => {
   // SỬA: Dùng ngày local để so sánh
   const dateStr = toLocalISOString(selectedDate.value);
   return sessions.value
-    .filter(s => s.date === dateStr)
+    .filter(s => s.date === dateStr && s.status !== 'CANCELLED')
     .sort((a, b) => (a.startTime || '00:00').localeCompare(b.startTime || '00:00'));
 });
 
@@ -310,40 +310,55 @@ const loadSchedule = async () => {
       };
     });
     
-    // Fetch thông tin teacher cho student schedule (vì MemberRegistration không có teacher)
-    if (props.role === 'student' && sessions.value.length > 0) {
-      
+    // Filter cancelled/completed classes and fetch teacher info
+    if (sessions.value.length > 0) {
       // Lấy danh sách unique fitnessClassId
       const uniqueFitnessClassIds = [...new Set(sessions.value.map(s => s.fitnessClassId || s.classId).filter(Boolean))];
       
-      // Tạo map để lưu teacher theo fitnessClassId
+      // Tạo map để lưu teacher theo fitnessClassId (chỉ cho student)
       const teacherMap = new Map();
       
-      // Fetch teacher info cho từng fitness class
+      // Fetch class info và teacher info cho từng fitness class
       for (const fitnessClassId of uniqueFitnessClassIds) {
         try {
           const classRegistrations = await unifiedApi.getTeachersByFitnessClass(fitnessClassId);
           
-          // Lấy teacher đầu tiên (hoặc teacher có status APPROVED)
-          const approvedReg = classRegistrations.find(r => r.status === 'APPROVED') || classRegistrations[0];
-          if (approvedReg && approvedReg.teacher) {
-            teacherMap.set(fitnessClassId, approvedReg.teacher.fullName || approvedReg.teacher.name);
+          // Check if class is cancelled or completed from registration data (không cần fetch getClass nữa)
+          const firstReg = classRegistrations[0];
+          if (firstReg && firstReg.fitnessClass) {
+            const classStatus = firstReg.fitnessClass.status;
+            if (classStatus === 'cancelled' || classStatus === 'completed') {
+              // Bỏ toàn bộ buổi học của lớp bị hủy/hoàn thành
+              sessions.value = sessions.value.filter(s => 
+                (s.fitnessClassId || s.classId) !== fitnessClassId
+              );
+              continue; // Skip to next class
+            }
+          }
+          
+          // Fetch teacher info (chỉ cho student schedule)
+          if (props.role === 'student') {
+            const approvedReg = classRegistrations.find(r => r.status === 'APPROVED') || classRegistrations[0];
+            if (approvedReg && approvedReg.teacher) {
+              teacherMap.set(fitnessClassId, approvedReg.teacher.fullName || approvedReg.teacher.name);
+            }
           }
         } catch (error) {
-          console.error(`Error fetching teacher for class ${fitnessClassId}:`, error);
+          console.error(`Error fetching info for class ${fitnessClassId}:`, error);
         }
       }
       
-      // Merge teacher info vào sessions
-      sessions.value = sessions.value.map(s => {
-        const fitnessClassId = s.fitnessClassId || s.classId;
-        const teacherName = teacherMap.get(fitnessClassId);
-        return {
-          ...s,
-          teacherName: teacherName || s.teacherName || 'Chưa có giáo viên'
-        };
-      });
-      
+      // Merge teacher info vào sessions (chỉ cho student)
+      if (props.role === 'student') {
+        sessions.value = sessions.value.map(s => {
+          const fitnessClassId = s.fitnessClassId || s.classId;
+          const teacherName = teacherMap.get(fitnessClassId);
+          return {
+            ...s,
+            teacherName: teacherName || s.teacherName || 'Chưa có giáo viên'
+          };
+        });
+      }
     }
   } catch (error) {
     console.error('Error loading schedule:', error);
@@ -391,7 +406,7 @@ const getSessionsForDate = (date) => {
   // SỬA: Dùng ngày local để filter hiển thị dấu chấm trên lịch
   const dateStr = toLocalISOString(date); 
   return sessions.value
-    .filter(s => s.date === dateStr)
+    .filter(s => s.date === dateStr && s.status !== 'CANCELLED')
     .sort((a, b) => (a.startTime || '00:00').localeCompare(b.startTime || '00:00'));
 };
 
@@ -408,11 +423,11 @@ const formatDate = (date) => {
 const upcomingSessions = computed(() => {
   const now = new Date();
   
-  // 1. Lọc các buổi học có thời gian trong tương lai
+  // 1. Lọc các buổi học có thời gian trong tương lai và không bị hủy
   const futureSessions = sessions.value.filter(s => {
     // Tạo object Date từ date string và time string của session
     const sessionTime = new Date(`${s.date}T${s.startTime}`);
-    return sessionTime > now;
+    return sessionTime > now && s.status !== 'CANCELLED';
   });
 
   // 2. Sắp xếp theo thời gian gần nhất trước

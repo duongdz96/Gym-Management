@@ -62,9 +62,12 @@
           </label>
           <select v-model="formData.status"
             class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none transition-all">
-            <option value="ACTIVE">Đang hoạt động</option>
-            <option value="INACTIVE">Không hoạt động</option>
-            <option value="PENDING">Chờ duyệt</option>
+            <option value="draft">Nháp</option>
+            <option value="pending_teacher">Chờ giáo viên</option>
+            <option value="waiting_approval">Chờ duyệt</option>
+            <option value="open">Đang mở</option>
+            <option value="completed">Hoàn thành</option>
+            <option value="cancelled">Đã hủy</option>
           </select>
         </div>
       </div>
@@ -110,7 +113,7 @@ const formData = ref({
   name: '',
   description: '',
   difficultyLevel: 'Beginner',
-  status: 'ACTIVE'
+  status: 'draft'
 });
 
 const saving = ref(false);

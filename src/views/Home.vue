@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useToast } from 'vue-toastification'
 
@@ -92,6 +93,13 @@ onMounted(async () => {
     // Error loading blogs
   }
 })
+
+// ================== Blog Navigation ==================
+const router = useRouter()
+
+const viewBlogDetail = (blogId) => {
+  router.push(`/blog/${blogId}`)
+}
 
 // ================== Smooth Scroll ==================
 function scrollToTrial() {
@@ -592,6 +600,13 @@ function scrollToTrial() {
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-8">
                     <h3 class="text-3xl font-bold text-gray-900">ĐỪNG BỎ LỠ BÀI VIẾT HỮU ÍCH</h3>
+                    <router-link
+                        v-if="blogs.length > 0"
+                        to="/blogs"
+                        class="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700 transition-colors"
+                    >
+                        Xem tất cả →
+                    </router-link>
                 </div>
                 
                 <div v-if="blogs.length === 0" class="text-center py-12">
@@ -602,7 +617,8 @@ function scrollToTrial() {
                     <div
                         v-for="blog in blogs"
                         :key="blog.id"
-                        class="block rounded-xl overflow-hidden border-2 border-gray-300 hover:border-red-500 transition-all hover:shadow-lg bg-white cursor-pointer"
+                        @click="viewBlogDetail(blog.id)"
+                        class="block rounded-xl overflow-hidden border-2 border-gray-300 hover:border-red-500 transition-all hover:shadow-lg bg-white cursor-pointer transform hover:-translate-y-1"
                     >
                         <img
                             v-if="blog.coverImagePath"
@@ -632,5 +648,86 @@ function scrollToTrial() {
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Prose styles for blog content */
+:deep(.prose) {
+  color: #374151;
+}
+
+:deep(.prose h1) {
+  font-size: 2em;
+  font-weight: 700;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+:deep(.prose h2) {
+  font-size: 1.5em;
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+:deep(.prose p) {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  line-height: 1.75;
+}
+
+:deep(.prose img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1.5em 0;
+}
+
+:deep(.prose a) {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+:deep(.prose ul),
+:deep(.prose ol) {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+:deep(.prose li) {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+:deep(.prose blockquote) {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1em;
+  font-style: italic;
+  color: #6b7280;
+  margin: 1.5em 0;
+}
+
+:deep(.prose code) {
+  background-color: #f3f4f6;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+:deep(.prose pre) {
+  background-color: #1f2937;
+  color: #f9fafb;
+  padding: 1em;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1.5em 0;
 }
 </style>
