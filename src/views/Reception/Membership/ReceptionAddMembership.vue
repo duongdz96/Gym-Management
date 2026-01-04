@@ -54,7 +54,7 @@ const newCustomerForm = ref({
   gender: "Male" as string,
   phone: "",
   membershipPlanId: "",
-  startDate: new Date().toISOString().split("T")[0],
+  startDate: new Date().toLocaleDateString('en-GB'),
 });
 
 // Email check state
@@ -151,7 +151,7 @@ const checkEmail = async () => {
     const response = await api.get(`/members/check-email`, {
       params: { email: newCustomerForm.value.email },
     });
-    
+
     if (response.status === 200 && response.data) {
       emailCheckState.value.exists = true;
       emailCheckState.value.existingMember = response.data;
@@ -256,46 +256,79 @@ watch(
   }
 );
 
+const formatDateToISO = (dateStr) => {
+  if (!dateStr) return null;
+  const [day, month, year] = dateStr.split('/');
+  return `${year}-${month}-${day}`;
+};
+const isValidDate = (dateStr) => {
+  const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+  if (!dateStr.match(regex)) return false;
+  const [d, m, y] = dateStr.split('/').map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+};
 // Submit new customer
 const submitNewCustomer = async () => {
+  // 1. Validate Email tồn tại
   if (emailCheckState.value.exists) {
-    alert("Email này đã tồn tại. Vui lòng chuyển sang tab Khách Hàng Cũ để gia hạn.");
+    toast.error("Email này đã tồn tại. Vui lòng chuyển sang tab Khách Hàng Cũ.");
+    return;
+  }
+
+  // 2. Validate Họ tên (không trống và < 50 ký tự)
+  const fullName = newCustomerForm.value.fullName?.trim();
+  if (!fullName || fullName.length > 50) {
+    toast.warning("Họ tên không được để trống và phải dưới 50 ký tự.");
+    return;
+  }
+
+  // 3. Validate Định dạng ngày tháng (Ngày sinh & Ngày bắt đầu)
+  if (!isValidDate(newCustomerForm.value.dob)) {
+    toast.warning("Ngày sinh không hợp lệ (DD/MM/YYYY).");
+    return;
+  }
+  if (!isValidDate(newCustomerForm.value.startDate)) {
+    toast.warning("Ngày bắt đầu không hợp lệ (DD/MM/YYYY).");
+    return;
+  }
+
+  // 4. Validate Gói thành viên
+  const plan = membershipPlans.value.find(
+    (p) => p.id === parseInt(newCustomerForm.value.membershipPlanId)
+  );
+  if (!plan) {
+    toast.warning("Vui lòng chọn gói thành viên.");
     return;
   }
 
   try {
-    const plan = membershipPlans.value.find(
-      (p) => p.id === parseInt(newCustomerForm.value.membershipPlanId)
-    );
-    if (!plan) {
-      alert("Vui lòng chọn gói thành viên");
-      return;
-    }
-
-    const startDate = new Date(newCustomerForm.value.startDate);
-    const endDate = addDuration(startDate, plan.duration);
+    // Chuyển đổi ngày từ DD/MM/YYYY sang Object Date để tính toán
+    const isoStartDateStr = formatDateToISO(newCustomerForm.value.startDate);
+    const startDateObj = new Date(isoStartDateStr);
+    const endDateObj = addDuration(startDateObj, plan.duration);
 
     const payload = {
       member: {
-        fullName: newCustomerForm.value.fullName,
+        fullName: fullName,
         email: newCustomerForm.value.email,
-        dob: newCustomerForm.value.dob,
+        dob: formatDateToISO(newCustomerForm.value.dob),
         gender: newCustomerForm.value.gender,
         phone: newCustomerForm.value.phone,
-        password: "123456", // Default password
+        password: "123456",
         role: "MEMBER",
       },
       membershipPlanId: parseInt(newCustomerForm.value.membershipPlanId),
-      startDate: startDate.toISOString().split("T")[0],
-      endDate: endDate.toISOString().split("T")[0],
+      startDate: isoStartDateStr,
+      endDate: endDateObj.toISOString().split("T")[0],
     };
 
     await api.post("/membership", payload);
-    alert("Thêm thành viên mới thành công!");
+    toast.success("Thêm thành viên mới thành công!");
     router.push({ name: "reception.memberships" });
   } catch (error) {
     console.error("Error adding new customer:", error);
-    alert("Có lỗi xảy ra. Vui lòng thử lại.");
+    toast.error(error.response?.data?.message || "Có lỗi xảy ra. Vui lòng thử lại.");
   }
 };
 
@@ -359,10 +392,8 @@ loadData();
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">
         Thêm Mới Thành Viên
       </h1>
-      <RouterLink
-        :to="{ name: 'reception.memberships' }"
-        class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
-      >
+      <RouterLink :to="{ name: 'reception.memberships' }"
+        class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors">
         Danh sách thành viên
       </RouterLink>
     </div>
@@ -370,26 +401,20 @@ loadData();
     <!-- Tabs -->
     <div class="mb-6">
       <div class="flex gap-2 border-b border-gray-300 dark:border-gray-700">
-        <button
-          @click="activeTab = 'new'"
-          :class="[
-            'px-6 py-3 font-medium transition-all',
-            activeTab === 'new'
-              ? 'border-b-2 border-emerald-600 text-emerald-600'
-              : 'text-gray-600 dark:text-gray-400 hover:text-emerald-500',
-          ]"
-        >
+        <button @click="activeTab = 'new'" :class="[
+          'px-6 py-3 font-medium transition-all',
+          activeTab === 'new'
+            ? 'border-b-2 border-emerald-600 text-emerald-600'
+            : 'text-gray-600 dark:text-gray-400 hover:text-emerald-500',
+        ]">
           Khách Hàng Mới
         </button>
-        <button
-          @click="activeTab = 'existing'"
-          :class="[
-            'px-6 py-3 font-medium transition-all',
-            activeTab === 'existing'
-              ? 'border-b-2 border-emerald-600 text-emerald-600'
-              : 'text-gray-600 dark:text-gray-400 hover:text-emerald-500',
-          ]"
-        >
+        <button @click="activeTab = 'existing'" :class="[
+          'px-6 py-3 font-medium transition-all',
+          activeTab === 'existing'
+            ? 'border-b-2 border-emerald-600 text-emerald-600'
+            : 'text-gray-600 dark:text-gray-400 hover:text-emerald-500',
+        ]">
           Khách Hàng Cũ (Gia hạn & Đổi gói)
         </button>
       </div>
@@ -397,10 +422,7 @@ loadData();
 
     <!-- Tab 1: New Customer -->
     <div v-show="activeTab === 'new'" class="space-y-6">
-      <form
-        @submit.prevent="submitNewCustomer"
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
-      >
+      <form @submit.prevent="submitNewCustomer" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
           Thông tin khách hàng
         </h2>
@@ -411,13 +433,9 @@ loadData();
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Họ và tên <span class="text-red-500">*</span>
             </label>
-            <input
-              v-model="newCustomerForm.fullName"
-              type="text"
-              required
+            <input v-model="newCustomerForm.fullName" type="text" required maxlength="50"
               class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="Nhập họ và tên"
-            />
+              placeholder="Nhập họ và tên" />
           </div>
 
           <!-- Email -->
@@ -425,28 +443,18 @@ loadData();
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Email <span class="text-red-500">*</span>
             </label>
-            <input
-              v-model="newCustomerForm.email"
-              @blur="checkEmail"
-              type="email"
-              required
+            <input v-model="newCustomerForm.email" @blur="checkEmail" type="email" required
               class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="Nhập email"
-            />
+              placeholder="Nhập email" />
             <!-- Email check warning -->
-            <div
-              v-if="emailCheckState.exists && emailCheckState.existingMember"
-              class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-md"
-            >
+            <div v-if="emailCheckState.exists && emailCheckState.existingMember"
+              class="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-md">
               <p class="text-sm text-yellow-800 dark:text-yellow-300 mb-2">
                 Email này đã thuộc về khách hàng:
                 <strong>{{ emailCheckState.existingMember.fullName }}</strong>
               </p>
-              <button
-                type="button"
-                @click="switchToExistingCustomer"
-                class="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium"
-              >
+              <button type="button" @click="switchToExistingCustomer"
+                class="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium">
                 Chuyển sang Gia hạn
               </button>
             </div>
@@ -457,12 +465,8 @@ loadData();
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Ngày sinh <span class="text-red-500">*</span>
             </label>
-            <input
-              v-model="newCustomerForm.dob"
-              type="date"
-              required
-              class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
+            <input v-model="newCustomerForm.dob" v-mask="'##/##/####'" type="text" placeholder="DD/MM/YYYY" required
+              class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
           </div>
 
           <!-- Gender -->
@@ -470,11 +474,8 @@ loadData();
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Giới tính <span class="text-red-500">*</span>
             </label>
-            <select
-              v-model="newCustomerForm.gender"
-              required
-              class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
+            <select v-model="newCustomerForm.gender" required
+              class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
               <option value="Male">Nam</option>
               <option value="Female">Nữ</option>
             </select>
@@ -485,13 +486,9 @@ loadData();
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Số điện thoại <span class="text-red-500">*</span>
             </label>
-            <input
-              v-model="newCustomerForm.phone"
-              type="tel"
-              required
+            <input v-model="newCustomerForm.phone" type="tel" required
               class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="Nhập số điện thoại"
-            />
+              placeholder="Nhập số điện thoại" />
           </div>
 
           <!-- Membership Plan -->
@@ -499,11 +496,8 @@ loadData();
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Gói thành viên <span class="text-red-500">*</span>
             </label>
-            <select
-              v-model="newCustomerForm.membershipPlanId"
-              required
-              class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
+            <select v-model="newCustomerForm.membershipPlanId" required
+              class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
               <option value="" disabled>Chọn gói thành viên</option>
               <option v-for="plan in membershipPlans" :key="plan.id" :value="plan.id.toString()">
                 {{ plan.name }} - {{ formatCurrency(plan.price) }} ({{ plan.duration }})
@@ -516,12 +510,9 @@ loadData();
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Ngày bắt đầu <span class="text-red-500">*</span>
             </label>
-            <input
-              v-model="newCustomerForm.startDate"
-              type="date"
+            <input v-model="newCustomerForm.startDate" v-mask="'##/##/####'" placeholder="DD/MM/YYYY" type="text"
               required
-              class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
+              class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
           </div>
         </div>
 
@@ -534,10 +525,8 @@ loadData();
 
         <!-- Submit Button -->
         <div class="mt-6 flex gap-3">
-          <button
-            type="submit"
-            class="px-6 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
-          >
+          <button type="submit"
+            class="px-6 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors">
             Thêm Mới Thành Viên
           </button>
         </div>
@@ -556,25 +545,14 @@ loadData();
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Tìm theo Email hoặc Số điện thoại
           </label>
-          <input
-            v-model="existingCustomerState.searchQuery"
-            type="text"
-            placeholder="Nhập email hoặc số điện thoại..."
-            class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
+          <input v-model="existingCustomerState.searchQuery" type="text" placeholder="Nhập email hoặc số điện thoại..."
+            class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
 
           <!-- Autocomplete dropdown -->
-          <div
-            v-if="filteredMembers.length > 0 && !existingCustomerState.selectedMember"
-            class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto"
-          >
-            <button
-              v-for="member in filteredMembers"
-              :key="member.id"
-              @click="selectMember(member)"
-              type="button"
-              class="w-full text-left px-4 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600 last:border-b-0"
-            >
+          <div v-if="filteredMembers.length > 0 && !existingCustomerState.selectedMember"
+            class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <button v-for="member in filteredMembers" :key="member.id" @click="selectMember(member)" type="button"
+              class="w-full text-left px-4 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
               <div class="font-medium">{{ member.fullName }}</div>
               <div class="text-sm text-gray-600 dark:text-gray-400">
                 {{ member.email }} - {{ member.phone }}
@@ -584,27 +562,19 @@ loadData();
         </div>
 
         <!-- Clear selection button -->
-        <button
-          v-if="existingCustomerState.selectedMember"
-          @click="
-            existingCustomerState.selectedMember = null;
-            existingCustomerState.currentMembership = null;
-            existingCustomerState.searchQuery = '';
-            existingCustomerState.selectedPlanId = '';
-            previewEndDate = '';
-          "
-          type="button"
-          class="mt-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-        >
+        <button v-if="existingCustomerState.selectedMember" @click="
+          existingCustomerState.selectedMember = null;
+        existingCustomerState.currentMembership = null;
+        existingCustomerState.searchQuery = '';
+        existingCustomerState.selectedPlanId = '';
+        previewEndDate = '';
+        " type="button" class="mt-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium">
           Chọn khách hàng khác
         </button>
       </div>
 
       <!-- Current Membership Card -->
-      <div
-        v-if="existingCustomerState.selectedMember"
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
-      >
+      <div v-if="existingCustomerState.selectedMember" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
           Thông tin thành viên hiện tại
         </h2>
@@ -629,7 +599,8 @@ loadData();
             </div>
           </div>
 
-          <div class="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300 dark:border-emerald-700 rounded-lg">
+          <div
+            class="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300 dark:border-emerald-700 rounded-lg">
             <h3 class="font-semibold text-emerald-800 dark:text-emerald-300 mb-2">
               Gói hiện tại
             </h3>
@@ -648,14 +619,12 @@ loadData();
               </div>
               <div class="flex justify-between">
                 <span class="text-sm text-gray-700 dark:text-gray-300">Trạng thái:</span>
-                <span
-                  :class="[
-                    'font-medium px-2 py-1 rounded text-sm',
-                    existingCustomerState.currentMembership.status === 'Active'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                  ]"
-                >
+                <span :class="[
+                  'font-medium px-2 py-1 rounded text-sm',
+                  existingCustomerState.currentMembership.status === 'Active'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                ]">
                   {{
                     existingCustomerState.currentMembership.status === "Active"
                       ? "Hoạt động"
@@ -675,11 +644,8 @@ loadData();
       </div>
 
       <!-- Select New Plan -->
-      <form
-        v-if="existingCustomerState.selectedMember && existingCustomerState.currentMembership"
-        @submit.prevent="submitExistingCustomer"
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
-      >
+      <form v-if="existingCustomerState.selectedMember && existingCustomerState.currentMembership"
+        @submit.prevent="submitExistingCustomer" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
           Chọn gói mới
         </h2>
@@ -690,11 +656,8 @@ loadData();
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Gói thành viên <span class="text-red-500">*</span>
             </label>
-            <select
-              v-model="existingCustomerState.selectedPlanId"
-              required
-              class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
+            <select v-model="existingCustomerState.selectedPlanId" required
+              class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
               <option value="" disabled>Chọn gói thành viên</option>
               <option v-for="plan in membershipPlans" :key="plan.id" :value="plan.id.toString()">
                 {{ plan.name }} - {{ formatCurrency(plan.price) }} ({{ plan.duration }})
@@ -703,13 +666,16 @@ loadData();
           </div>
 
           <!-- Action Type Badge -->
-          <div v-if="actionType" class="p-4 rounded-lg" :class="actionType === 'renew' ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700' : 'bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700'">
+          <div v-if="actionType" class="p-4 rounded-lg"
+            :class="actionType === 'renew' ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700' : 'bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700'">
             <div>
               <div>
-                <p class="font-semibold" :class="actionType === 'renew' ? 'text-blue-800 dark:text-blue-300' : 'text-purple-800 dark:text-purple-300'">
+                <p class="font-semibold"
+                  :class="actionType === 'renew' ? 'text-blue-800 dark:text-blue-300' : 'text-purple-800 dark:text-purple-300'">
                   {{ actionType === "renew" ? "Gia hạn gói hiện tại" : "Đổi gói" }}
                 </p>
-                <p class="text-sm" :class="actionType === 'renew' ? 'text-blue-700 dark:text-blue-400' : 'text-purple-700 dark:text-purple-400'">
+                <p class="text-sm"
+                  :class="actionType === 'renew' ? 'text-blue-700 dark:text-blue-400' : 'text-purple-700 dark:text-purple-400'">
                   {{
                     actionType === "renew"
                       ? "Thời gian sẽ được cộng thêm vào ngày hết hạn hiện tại"
@@ -721,7 +687,8 @@ loadData();
           </div>
 
           <!-- Preview End Date -->
-          <div v-if="previewEndDate" class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
+          <div v-if="previewEndDate"
+            class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
             <h3 class="font-semibold text-green-800 dark:text-green-300 mb-2">
               Ngày hết hạn mới dự kiến
             </h3>
@@ -733,10 +700,8 @@ loadData();
 
         <!-- Submit Button -->
         <div class="mt-6 flex gap-3">
-          <button
-            type="submit"
-            class="px-6 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors"
-          >
+          <button type="submit"
+            class="px-6 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors">
             {{ actionType === "renew" ? "Xác nhận Gia hạn" : "Xác nhận Nâng cấp" }}
           </button>
         </div>
@@ -750,13 +715,16 @@ loadData();
 .overflow-y-auto::-webkit-scrollbar {
   width: 8px;
 }
+
 .overflow-y-auto::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
+
 .overflow-y-auto::-webkit-scrollbar-thumb {
   background: #059669;
   border-radius: 4px;
 }
+
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #047857;
 }

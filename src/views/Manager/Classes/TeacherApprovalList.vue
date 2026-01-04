@@ -528,7 +528,6 @@ const autoReject = async (app) => {
 };
 
 const approve = async (app) => {
-  // Check for conflicts before confirming
   if (conflictMap.value[app.id] && conflictMap.value[app.id].length > 0) {
     toast.error('Không thể duyệt! Giáo viên có lịch trùng với lớp khác.');
     return;

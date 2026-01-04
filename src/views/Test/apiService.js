@@ -23,8 +23,24 @@ export const fitnessClassApi = {
     return res.data;
   },
 
+  updateClassStatus: async (id, newStatus) => {
+    const res = await api.put(`/fitness_class/status/${id}`, null, {
+      params: { status: newStatus }
+    });
+    return res.data;
+  },
+
   delete: async (id) => {
     const res = await api.delete(`/fitness_class/${id}`);
+    return res.data;
+  },
+
+  getPaged: async (status = null, page = 0, size = 6) => {
+    const params = { page, size };
+    if (status) {
+      params.status = status;
+    }
+    const res = await api.get('/fitness_class/paged', { params });
     return res.data;
   }
 };
