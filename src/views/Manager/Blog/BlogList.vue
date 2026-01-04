@@ -141,7 +141,12 @@ onMounted(() => {
 
               <!-- Tiêu đề -->
               <td class="px-6 py-4">
-                <div class="text-sm font-medium text-gray-900">{{ blog.title }}</div>
+                <div 
+                  class="text-sm font-medium text-gray-900 max-w-xs truncate" 
+                  :title="blog.title"
+                >
+                  {{ blog.title }}
+                </div>
               </td>
 
               <!-- Người đăng -->
