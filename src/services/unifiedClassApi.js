@@ -466,10 +466,10 @@ export const unifiedApi = {
       };
       // Backend expects staffId in request body along with ClassRegistration
       const result = await apiService.classRegistration.registerTeaching(teacherId, data);
-      
+
       // Update FitnessClass status to waiting_approval
       await apiService.fitnessClass.updateClassStatus(fitnessClassId, 'waiting_approval');
-      
+
       return {
         id: result.id,
         classId: fitnessClassId,
@@ -494,13 +494,13 @@ export const unifiedApi = {
         description: 'Pending approval'
       };
       classRegistrationsData.push(registration);
-      
+
       // Update FitnessClass status
       const fcIndex = fitnessClassesData.findIndex(fc => fc.id === fitnessClassId);
       if (fcIndex !== -1) {
         fitnessClassesData[fcIndex].status = 'waiting_approval';
       }
-      
+
       return {
         id: registration.id,
         classId: fitnessClassId,
@@ -557,7 +557,7 @@ export const unifiedApi = {
     if (USE_REAL_API) {
       try {
         const updatedRegistration = await apiService.classRegistration.approve(applicationId);
-        
+
         const fitnessClassId = updatedRegistration.fitnessClass?.id;
         if (fitnessClassId) {
           await apiService.fitnessClass.updateClassStatus(fitnessClassId, 'open');
@@ -577,13 +577,13 @@ export const unifiedApi = {
       const registration = classRegistrationsData.find(cr => cr.id === applicationId);
       if (!registration) throw new Error('Application not found');
       registration.description = 'Approved';
-      
+
       // Update FitnessClass status
       const fcIndex = fitnessClassesData.findIndex(fc => fc.id === registration.fitnessClassId);
       if (fcIndex !== -1) {
         fitnessClassesData[fcIndex].status = 'open';
       }
-      
+
       return {
         id: applicationId,
         classId: registration.fitnessClassId,
@@ -600,14 +600,12 @@ export const unifiedApi = {
   rejectTeacher: async (applicationId, managerId, reason) => {
     if (USE_REAL_API) {
       try {
-        // Get registration info before rejecting
-        const registrations = await apiService.classRegistration.getByFitnessClass();
-        const registration = registrations.find(r => r.id === applicationId);
-        const fitnessClassId = registration?.fitnessClass?.id;
-        
         // Reject the registration with reason
-        await apiService.classRegistration.reject(applicationId, reason);
-        
+        const updatedRegistration = await apiService.classRegistration.reject(applicationId, reason);
+
+        // Get fitnessClassId from the response
+        const fitnessClassId = updatedRegistration.fitnessClass?.id;
+
         // Update FitnessClass status back to pending_teacher
         if (fitnessClassId) {
           await apiService.fitnessClass.updateClassStatus(fitnessClassId, 'pending_teacher');
@@ -631,13 +629,13 @@ export const unifiedApi = {
       if (index !== -1) {
         classRegistrationsData.splice(index, 1);
       }
-      
+
       // Update FitnessClass status back to pending_teacher
       const fcIndex = fitnessClassesData.findIndex(fc => fc.id === registration.fitnessClassId);
       if (fcIndex !== -1) {
         fitnessClassesData[fcIndex].status = 'pending_teacher';
       }
-      
+
       return {
         id: applicationId,
         classId: registration.fitnessClassId,
