@@ -433,7 +433,7 @@ onMounted(() => {
     <!-- Delete Confirmation Modal -->
     <div
       v-if="showDeleteModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4"
+      class="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4"
       @click="cancelDelete"
     >
       <div
@@ -465,7 +465,7 @@ onMounted(() => {
     <!-- Assign Modal -->
     <div
       v-if="showAssignModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4"
+      class="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4"
       @click="closeAssignModal"
     >
       <div
