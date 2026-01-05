@@ -130,8 +130,7 @@ const getInitials = (name: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'Thành công': return 'text-green-600 bg-green-50'
-    case 'Muộn': return 'text-orange-600 bg-orange-50'
-    case 'Vắng': return 'text-red-600 bg-red-50'
+    case 'Thất bại': return 'text-red-600 bg-red-50'
     default: return 'text-gray-600 bg-gray-50'
   }
 }
@@ -283,8 +282,7 @@ const getStatusColor = (status: string) => {
                    >
                       <option value="">Tất cả trạng thái</option>
                       <option value="Thành công">Thành công</option>
-                      <option value="Muộn">Muộn</option>
-                      <option value="Vắng">Vắng</option>
+                      <option value="Thất bại">Thất bại</option>
                    </select>
                 </div>
              </div>
@@ -305,7 +303,7 @@ const getStatusColor = (status: string) => {
                       <td class="px-6 py-3 text-sm text-gray-600">{{ item.time }}</td>
                       <td class="px-6 py-3 text-right">
                          <span :class="['inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full', getStatusColor(item.status)]">
-                            <span :class="['w-1.5 h-1.5 rounded-full', item.status === 'Thành công' ? 'bg-green-500' : item.status === 'Muộn' ? 'bg-orange-500' : 'bg-red-500']"></span>
+                            <span :class="['w-1.5 h-1.5 rounded-full', item.status === 'Thành công' ? 'bg-green-500' : 'bg-red-500']"></span>
                             {{ item.status }}
                          </span>
                       </td>
