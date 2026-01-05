@@ -2,12 +2,12 @@
   <div class="p-6">
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold text-gray-800">Banner List</h1>
+      <h1 class="text-2xl font-bold text-gray-800">Danh sách Banner</h1>
 
       <select v-model="statusFilter" class="px-3 py-2 border border-gray-200 rounded-lg bg-white">
-        <option value="">All Status</option>
-        <option value="1">Public</option>
-        <option value="0">Private</option>
+        <option value="">Tất cả trạng thái</option>
+        <option value="1">Công khai</option>
+        <option value="0">Riêng tư</option>
       </select>
 
       <!-- Nút mở modal -->
@@ -16,7 +16,7 @@
         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow flex items-center"
       >
         <Plus class="w-5 h-5 mr-1" />
-        Add Banner
+        Thêm Banner
       </button>
     </div>
 
@@ -27,13 +27,13 @@
     >
       <TriangleAlert class="w-4 h-4 mr-1" />
       <span>
-        You should from {{ MAX_PUBLIC }} to {{ MAX_PUBLIC + 1 }} public banners ({{ publicCount }} currently).
+        Bạn nên có từ {{ MAX_PUBLIC }} đến {{ MAX_PUBLIC + 1 }} banner công khai (hiện tại có {{ publicCount }}).
       </span>
     </div>
 
     <!-- Thông báo khi chưa có banner -->
     <div v-if="banners.length === 0" class="text-center text-gray-500 my-6">
-      No banners available. Please add some banners.
+      Chưa có banner nào. Vui lòng thêm banner.
     </div>
 
     <!-- Grid hiển thị banner -->
@@ -47,7 +47,7 @@
           class="absolute top-2 right-2 px-2 py-1 text-xs font-semibold rounded-full"
           :class="banner.isPublic ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'"
         >
-          {{ banner.isPublic ? 'Public' : 'Private' }}
+          {{ banner.isPublic ? 'Công khai' : 'Riêng tư' }}
         </span>
 
         <img :src="banner.value" alt="Banner" class="w-full h-40 object-cover" />
@@ -60,14 +60,14 @@
               ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
               : 'bg-green-100 text-green-700 hover:bg-green-200'"
           >
-            {{ banner.isPublic ? 'Make Private' : 'Make Public' }}
+            {{ banner.isPublic ? 'Chuyển thành riêng tư' : 'Chuyển thành công khai' }}
           </button>
 
           <button
             @click="deleteBanner(banner.id)"
             class="bg-red-100 text-red-700 hover:bg-red-200 px-3 py-1 rounded-lg text-sm font-medium transition"
           >
-            Delete
+            Xóa
           </button>
         </div>
       </div>
@@ -79,17 +79,17 @@
       class="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50"
     >
       <div class="bg-white p-6 rounded-xl shadow-lg w-96 relative">
-        <h2 class="text-xl font-bold mb-4">Upload New Banner</h2>
+        <h2 class="text-xl font-bold mb-4">Tải lên Banner mới</h2>
 
         <!-- Nhập tên banner -->
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            Banner Name (optional)
+            Tên Banner (tùy chọn)
           </label>
           <input
             type="text"
             v-model="bannerName"
-            placeholder="Enter a name for this banner"
+            placeholder="Nhập tên cho banner này"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200"
           />
         </div>
@@ -108,7 +108,7 @@
             @click="fileInput?.click()"
             class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg border border-gray-300"
           >
-            Choose Image
+            Chọn ảnh
           </button>
 
           <!-- Preview -->
@@ -120,7 +120,7 @@
             />
           </div>
 
-          <p v-else class="text-gray-500 text-sm mt-4">Choose file to preview</p>
+          <p v-else class="text-gray-500 text-sm mt-4">Chọn file để xem trước</p>
         </div>
 
         <!-- Actions -->
@@ -129,13 +129,13 @@
             @click="closeModal"
             class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100"
           >
-            Cancel
+            Hủy
           </button>
           <button
             @click="uploadBanner"
             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow"
           >
-            Add
+            Thêm
           </button>
         </div>
       </div>
@@ -213,26 +213,26 @@ const uploadBanner = async () => {
     };
 
     banners.value.push(newBanner);
-    toast.success("Banner uploaded successfully!");
+    toast.success("Tải lên banner thành công!");
     closeModal();
   } catch (error: any) {
-    toast.error(error.response?.data?.message || "Error occurred!");
+    toast.error(error.response?.data?.message || "Đã xảy ra lỗi!");
   }
 };
 
 // toggle public/private
 const togglePublic = async (banner: Banner) => {
   if (!banner.isPublic && publicCount.value >= MAX_PUBLIC) {
-    toast.error(`You can only have up to ${MAX_PUBLIC} public banners.`);
+    toast.error(`Bạn chỉ có thể có tối đa ${MAX_PUBLIC} banner công khai.`);
     return;
   }
 
   try {
     const res = await api.patch(`/config/banner/${banner.id}/toggle`);
     banner.isPublic = res.data.public; // map lại
-    toast.success("Updated banner visibility!");
+    toast.success("Đã cập nhật trạng thái banner!");
   } catch (error: any) {
-    toast.error(error.response?.data?.message || "Failed to update banner!");
+    toast.error(error.response?.data?.message || "Cập nhật banner thất bại!");
   }
 };
 
@@ -241,9 +241,9 @@ const deleteBanner = async (id: number) => {
   try {
     await api.delete(`/config/banner/${id}`);
     banners.value = banners.value.filter(b => b.id !== id);
-    toast.success("Banner deleted!");
+    toast.success("Đã xóa banner!");
   } catch (error: any) {
-    toast.error(error.response?.data?.message || "Failed to delete banner!");
+    toast.error(error.response?.data?.message || "Xóa banner thất bại!");
   }
 };
 
@@ -258,7 +258,7 @@ const fetchBanners = async () => {
       isPublic: b.public // map đúng field
     }));
   } catch (error: any) {
-    toast.error("Failed to fetch banners!");
+    toast.error("Tải danh sách banner thất bại!");
   }
 };
 
