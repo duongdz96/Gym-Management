@@ -108,7 +108,19 @@ public class CouponServiceImpl implements CouponService {
 
         return couponRepository.findById(id).map(coupon -> {
 
-            boolean scopeChanged = !coupon.getScope().equals(updatedCoupon.getScope());
+            // Safe comparison for scope (handle null and empty strings)
+            String oldScope = coupon.getScope();
+            String newScope = updatedCoupon.getScope();
+            
+            // Normalize empty strings to null for consistent comparison
+            if (oldScope != null && oldScope.trim().isEmpty()) {
+                oldScope = null;
+            }
+            if (newScope != null && newScope.trim().isEmpty()) {
+                newScope = null;
+            }
+            
+            boolean scopeChanged = !java.util.Objects.equals(oldScope, newScope);
 
             // Cập nhật các field
             coupon.setCode(updatedCoupon.getCode());
@@ -117,7 +129,7 @@ public class CouponServiceImpl implements CouponService {
             coupon.setStartDate(updatedCoupon.getStartDate());
             coupon.setEndDate(updatedCoupon.getEndDate());
             coupon.setStatus(updatedCoupon.getStatus());
-            coupon.setScope(updatedCoupon.getScope());
+            coupon.setScope(newScope);  // Use normalized scope
 
             Coupon saved = couponRepository.save(coupon);
 
@@ -129,21 +141,25 @@ public class CouponServiceImpl implements CouponService {
                 // 1. Xóa toàn bộ IssuedCoupon trước đó
                 issuedCouponRepository.deleteByCoupon(saved);
 
-                // 2. Tìm các CustomerMembership phù hợp scope mới
-                List<CustomerMembership> matchedMemberships =
-                        customerMembershipRepository.findByMembershipPlan_MembershipTier_Name(
-                                updatedCoupon.getScope()
-                        );
+                // 2. Chỉ tạo lại IssuedCoupon nếu scope mới không null/empty
+                if (newScope != null && !newScope.isEmpty()) {
+                    // Tìm các CustomerMembership phù hợp scope mới
+                    List<CustomerMembership> matchedMemberships =
+                            customerMembershipRepository.findByMembershipPlan_MembershipTier_Name(newScope);
 
-                // 3. Tạo lại IssuedCoupon mới
-                for (CustomerMembership cm : matchedMemberships) {
-                    IssuedCoupon issued = new IssuedCoupon();
-                    issued.setCoupon(saved);
-                    issued.setMember(cm.getMember());
-                    issued.setRemainingUses(3);  // hoặc dynamic
-                    issued.setStatus("AVAILABLE");
-                    issuedCouponRepository.save(issued);
+                    // 3. Tạo lại IssuedCoupon mới
+                    Integer totalUses = saved.getTotalUses() != null ? saved.getTotalUses() : 3;
+                    for (CustomerMembership cm : matchedMemberships) {
+                        IssuedCoupon issued = new IssuedCoupon();
+                        issued.setCoupon(saved);
+                        issued.setMember(cm.getMember());
+                        issued.setRemainingUses(totalUses);
+                        issued.setStatus("AVAILABLE");
+                        issuedCouponRepository.save(issued);
+                    }
                 }
+                // Note: Nếu scope mới là null/empty, nghĩa là chuyển sang chế độ gán riêng lẻ
+                // Trong trường hợp này, IssuedCoupon sẽ được tạo riêng qua API khác
             }
 
             return saved;
