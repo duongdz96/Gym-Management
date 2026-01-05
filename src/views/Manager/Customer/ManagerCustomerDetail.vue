@@ -4,28 +4,25 @@ import { useRoute } from 'vue-router'
 import api from '@/services/api'
 
 // --- Interfaces ---
-type StudentProfile = {
+type MemberDetail = {
   id: number
-  height: number
-  weight: number
-  trainingPlan: string
-  member: {
-    id: number
-    email: string
-    password: string
-    fullName: string
-    dob: string
-    gender: string
-    phone: string
-    role: string
-    membership: string
-    joinDate: string
-    status: string
-    faceId: string | null
-    cardId: string | null
-    deleted: boolean
-  }
-  pt: {
+  email: string
+  fullName: string
+  dob: string
+  gender: string
+  phone: string
+  role: string
+  membership: string
+  joinDate: string
+  status: string
+  faceId: string | null
+  cardId: string | null
+  deleted: boolean
+  // Optional fields from StudentProfile
+  height?: number
+  weight?: number
+  trainingPlan?: string
+  pt?: {
     id: number
     email: string
     fullName: string
@@ -36,7 +33,7 @@ type StudentProfile = {
 // --- State ---
 const route = useRoute()
 const customerId = route.params.id as string
-const profile = ref<StudentProfile | null>(null)
+const profile = ref<MemberDetail | null>(null)
 const checkinHistory = ref<Array<{date: string, time: string, status: string}>>([])
 const isLoading = ref(true)
 
@@ -48,27 +45,62 @@ const statusFilter = ref('')
 onMounted(async () => {
   try {
     isLoading.value = true
-    // WARNING: Logic lấy toàn bộ list rồi filter rất tệ cho performance.
-    // Nên đổi thành API get detail: api.get(`/studentprofile/${customerId}`)
-    const res = await api.get('/studentprofile')
-    const profiles: StudentProfile[] = res.data
-    profile.value = profiles.find(p => p.member.id === parseInt(customerId)) || null
+    
+    // 1. Get basic member info from /membership (always available)
+    const membershipRes = await api.get('/membership')
+    const memberships = membershipRes.data || []
+    const membershipData = memberships.find((m: any) => m.member.id === parseInt(customerId))
+    
+    if (!membershipData) {
+      console.error('Member not found')
+      isLoading.value = false
+      return
+    }
+    
+    // Initialize profile with membership data
+    profile.value = {
+      ...membershipData.member
+    }
+    
+    // 2. Try to get additional info from /studentprofile (may not exist)
+    try {
+      const studentProfileRes = await api.get('/studentprofile')
+      const profiles = studentProfileRes.data || []
+      const studentProfile = profiles.find((p: any) => p.member.id === parseInt(customerId))
+      
+      if (studentProfile) {
+        // Merge student profile data
+        profile.value = {
+          ...profile.value,
+          height: studentProfile.height,
+          weight: studentProfile.weight,
+          trainingPlan: studentProfile.trainingPlan,
+          pt: studentProfile.pt
+        }
+      }
+    } catch (studentProfileErr) {
+      console.warn('No student profile found for this member', studentProfileErr)
+    }
 
-    // Mock Checkin Data
-    checkinHistory.value = [
-      { date: '2025-12-14', time: '08:30', status: 'Thành công' },
-      { date: '2025-12-13', time: '09:15', status: 'Thành công' },
-      { date: '2025-12-12', time: '07:45', status: 'Muộn' },
-      { date: '2025-12-11', time: '10:00', status: 'Thành công' },
-      { date: '2025-12-10', time: '08:20', status: 'Thành công' },
-      { date: '2025-12-09', time: '09:30', status: 'Vắng' },
-      { date: '2025-12-08', time: '07:50', status: 'Thành công' },
-      { date: '2025-12-07', time: '10:15', status: 'Muộn' },
-      { date: '2025-12-06', time: '08:45', status: 'Thành công' },
-      { date: '2025-12-05', time: '09:00', status: 'Thành công' }
-    ]
+    // 3. Fetch check-in history
+    try {
+      const accessLogRes = await api.get(`/accesslog/${customerId}`)
+      const accessLogs = accessLogRes.data || []
+      
+      checkinHistory.value = accessLogs.map((log: any) => {
+        const accessTime = new Date(log.accessTime)
+        return {
+          date: accessTime.toISOString().split('T')[0],
+          time: accessTime.toTimeString().split(' ')[0],
+          status: 'Thành công'
+        }
+      }).sort((a: any, b: any) => new Date(b.date + ' ' + b.time).getTime() - new Date(a.date + ' ' + a.time).getTime())
+    } catch (accessLogErr) {
+      console.warn('No access log found for this member', accessLogErr)
+    }
+    
   } catch (err) {
-    console.error('Error fetching profile:', err)
+    console.error('Error fetching member info:', err)
   } finally {
     isLoading.value = false
   }
@@ -125,12 +157,12 @@ const getStatusColor = (status: string) => {
          <span
             :class="[
               'px-3 py-1 rounded-full text-xs font-semibold border',
-              profile.member.status === 'Active'
+              profile.status === 'Active'
                 ? 'bg-green-50 text-green-700 border-green-200'
                 : 'bg-red-50 text-red-700 border-red-200'
             ]"
           >
-            {{ profile.member.status === 'Active' ? 'Đang hoạt động' : 'Dừng hoạt động' }}
+            {{ profile.status === 'Active' ? 'Đang hoạt động' : 'Dừng hoạt động' }}
           </span>
       </div>
     </div>
@@ -148,32 +180,32 @@ const getStatusColor = (status: string) => {
           <div class="px-6 pb-6">
             <div class="relative flex justify-between items-end -mt-10 mb-4">
               <div class="w-20 h-20 rounded-full border-4 border-white bg-gray-200 flex items-center justify-center text-xl font-bold text-gray-500 shadow-md">
-                {{ getInitials(profile.member.fullName) }}
+                {{ getInitials(profile.fullName) }}
               </div>
             </div>
 
             <div class="mb-6">
-              <h2 class="text-xl font-bold text-gray-900">{{ profile.member.fullName }}</h2>
-              <p class="text-sm text-gray-500">{{ profile.member.email }}</p>
+              <h2 class="text-xl font-bold text-gray-900">{{ profile.fullName }}</h2>
+              <p class="text-sm text-gray-500">{{ profile.email }}</p>
             </div>
 
             <div class="space-y-3 pt-4 border-t border-gray-100">
                <div class="flex justify-between items-center text-sm">
                   <span class="text-gray-500">Số điện thoại</span>
-                  <span class="font-medium text-gray-900">{{ profile.member.phone }}</span>
+                  <span class="font-medium text-gray-900">{{ profile.phone }}</span>
                </div>
                <div class="flex justify-between items-center text-sm">
                   <span class="text-gray-500">Ngày sinh</span>
-                  <span class="font-medium text-gray-900">{{ formatDate(profile.member.dob) }}</span>
+                  <span class="font-medium text-gray-900">{{ formatDate(profile.dob) }}</span>
                </div>
                <div class="flex justify-between items-center text-sm">
                   <span class="text-gray-500">Giới tính</span>
-                  <span class="font-medium text-gray-900">{{ profile.member.gender }}</span>
+                  <span class="font-medium text-gray-900">{{ profile.gender }}</span>
                </div>
                <div class="flex justify-between items-center text-sm">
                   <span class="text-gray-500">Gói tập</span>
                   <span class="inline-block px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs font-bold uppercase">
-                    {{ profile.member.membership }}
+                    {{ profile.membership }}
                   </span>
                </div>
             </div>
@@ -185,7 +217,7 @@ const getStatusColor = (status: string) => {
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               PT Phụ trách
            </h3>
-           <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-100">
+           <div v-if="profile.pt" class="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-100">
               <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
                 PT
               </div>
@@ -193,6 +225,9 @@ const getStatusColor = (status: string) => {
                 <p class="text-sm font-semibold text-gray-900">{{ profile.pt.fullName }}</p>
                 <p class="text-xs text-gray-500">{{ profile.pt.phone }}</p>
               </div>
+           </div>
+           <div v-else class="text-center py-4 text-gray-500 text-sm bg-gray-50 rounded-lg border border-gray-100">
+              Chưa có PT phụ trách
            </div>
         </div>
       </div>
@@ -203,7 +238,10 @@ const getStatusColor = (status: string) => {
            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
               <div>
                  <p class="text-xs text-gray-500 uppercase font-semibold">Cân nặng</p>
-                 <p class="text-2xl font-bold text-gray-800 mt-1">{{ profile.weight }} <span class="text-sm font-normal text-gray-400">kg</span></p>
+                 <p class="text-2xl font-bold text-gray-800 mt-1">
+                   <span v-if="profile.weight">{{ profile.weight }} <span class="text-sm font-normal text-gray-400">kg</span></span>
+                   <span v-else class="text-base text-gray-400">Chưa cập nhật</span>
+                 </p>
               </div>
               <div class="bg-blue-50 p-2 rounded-lg text-blue-600">
                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.30.42-8.42z"/></svg>
@@ -212,7 +250,10 @@ const getStatusColor = (status: string) => {
            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
               <div>
                  <p class="text-xs text-gray-500 uppercase font-semibold">Chiều cao</p>
-                 <p class="text-2xl font-bold text-gray-800 mt-1">{{ profile.height }} <span class="text-sm font-normal text-gray-400">cm</span></p>
+                 <p class="text-2xl font-bold text-gray-800 mt-1">
+                   <span v-if="profile.height">{{ profile.height }} <span class="text-sm font-normal text-gray-400">cm</span></span>
+                   <span v-else class="text-base text-gray-400">Chưa cập nhật</span>
+                 </p>
               </div>
               <div class="bg-teal-50 p-2 rounded-lg text-teal-600">
                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.55 16.55-1.11 1.11a4.13 4.13 0 0 1-5.83 0L12 15l-2.61 2.61a4.13 4.13 0 0 1-5.83-5.83l1.11-1.11"/><path d="m10.89 10.89 1.11 1.11"/></svg>
