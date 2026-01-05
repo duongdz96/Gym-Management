@@ -198,6 +198,7 @@ async function startClass(eventId) {
     const event = schedule.value.find(e => e.id === eventId);
     if (!event) return;
     
+    // 1. Update appointment status
     const payload = {
       id: event.id,
       startTime: event.raw.startTime,
@@ -213,12 +214,24 @@ async function startClass(eventId) {
     };
     
     await api.put(`/appointment/${eventId}`, payload);
+    
+    // 2. Start training session
+    await api.post(`/trainingsession/${eventId}/start`, null, {
+      params: {
+        note: '' // Empty note, can be customized later
+      }
+    });
+    
     event.status = 'In Progress';
     toast.success("Đã bắt đầu buổi tập!");
     await fetchSchedule();
   } catch (error) {
     console.error('Error starting class:', error);
-    toast.error("Không thể bắt đầu buổi tập. Vui lòng thử lại!");
+    if (error.response?.status === 500) {
+      toast.error("Lỗi server khi bắt đầu buổi tập. Vui lòng thử lại!");
+    } else {
+      toast.error("Không thể bắt đầu buổi tập. Vui lòng thử lại!");
+    }
   }
 }
 

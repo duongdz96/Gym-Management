@@ -13,8 +13,10 @@ const members = ref([]);
 const selectedMember = ref(null);
 const isEditingWeight = ref(false);
 const isEditingHeight = ref(false);
+const isEditingTrainingPlan = ref(false);
 const tempCurrentWeight = ref(0);
 const tempCurrentHeight = ref(0);
+const tempTrainingPlan = ref('');
 const upcomingSessions = ref([]);
 const memberPackages = ref([]);
 
@@ -31,8 +33,10 @@ const selectMember = (member) => {
   selectedMember.value = member;
   isEditingWeight.value = false;
   isEditingHeight.value = false;
+  isEditingTrainingPlan.value = false;
   tempCurrentWeight.value = member.weight;
   tempCurrentHeight.value = member.height;
+  tempTrainingPlan.value = member.trainingPlan;
   fetchUpcomingSessions(member.memberId);
   fetchMemberPackages(member.memberId);
 };
@@ -165,6 +169,70 @@ const cancelEditingHeight = () => {
   isEditingHeight.value = false;
 };
 
+const startEditingTrainingPlan = () => {
+  if (selectedMember.value) {
+    isEditingTrainingPlan.value = true;
+  }
+};
+
+const saveTrainingPlan = async () => {
+  if (selectedMember.value) {
+    try {
+      // Kiểm tra xem member này có student profile chưa
+      const profileRes = await api.get("/studentprofile");
+      const profileData = Array.isArray(profileRes.data) ? profileRes.data : [];
+      const existingProfile = profileData.find(p => 
+        p.member?.id === selectedMember.value.memberId && 
+        p.pt?.id === authStore.user.id
+      );
+      
+      if (existingProfile) {
+        // Update existing profile
+        const payload = { trainingPlan: tempTrainingPlan.value };
+        await api.put(`/studentprofile/${existingProfile.id}`, payload);
+        selectedMember.value.trainingPlan = tempTrainingPlan.value;
+        isEditingTrainingPlan.value = false;
+        toast.success("Mục tiêu cập nhật thành công!");
+      } else {
+        // Create new profile - cần tìm ptPackageIssued
+        const packageRes = await api.get("/packageissued");
+        const packages = Array.isArray(packageRes.data) ? packageRes.data : [];
+        const memberPackage = packages.find(pkg => 
+          pkg.member?.id === selectedMember.value.memberId && 
+          pkg.pt?.id === authStore.user.id
+        );
+        
+        if (!memberPackage) {
+          toast.error("Không tìm thấy gói PT cho học viên này!");
+          return;
+        }
+        
+        const payload = {
+          member: { id: selectedMember.value.memberId },
+          pt: { id: authStore.user.id },
+          ptPackageIssued: { id: memberPackage.id },
+          height: selectedMember.value.height || 0,
+          weight: selectedMember.value.weight || 0,
+          trainingPlan: tempTrainingPlan.value
+        };
+        const createRes = await api.post("/studentprofile", payload);
+        selectedMember.value.id = createRes.data.id;
+        selectedMember.value.trainingPlan = tempTrainingPlan.value;
+        isEditingTrainingPlan.value = false;
+        toast.success("Mục tiêu cập nhật thành công!");
+      }
+    } catch (error) {
+      console.error("Error saving training plan:", error);
+      toast.error("Mục tiêu cập nhật thất bại. Vui lòng thử lại sau!");
+    }
+  }
+};
+
+const cancelEditingTrainingPlan = () => {
+  tempTrainingPlan.value = selectedMember.value.trainingPlan;
+  isEditingTrainingPlan.value = false;
+};
+
 function formatTimeRange(startIso, endIso) {
   const s = new Date(startIso);
   const e = new Date(endIso);
@@ -234,6 +302,7 @@ watch(filteredMembers, (newFilteredMembers) => {
         selectedMember.value = newFilteredMembers[0];
         tempCurrentWeight.value = newFilteredMembers[0].weight;
         tempCurrentHeight.value = newFilteredMembers[0].height;
+        tempTrainingPlan.value = newFilteredMembers[0].trainingPlan;
         fetchUpcomingSessions(newFilteredMembers[0].memberId);
         fetchMemberPackages(newFilteredMembers[0].memberId);
       } else {
@@ -245,7 +314,10 @@ watch(filteredMembers, (newFilteredMembers) => {
   } else if (newFilteredMembers.length > 0) {
     // If no member selected but filtered list has members, select first
     selectedMember.value = newFilteredMembers[0];
-    tempCurrentWeight.value = newFilteredMembers[0].weight;    tempCurrentHeight.value = newFilteredMembers[0].height;    fetchUpcomingSessions(newFilteredMembers[0].memberId);
+    tempCurrentWeight.value = newFilteredMembers[0].weight;
+    tempCurrentHeight.value = newFilteredMembers[0].height;
+    tempTrainingPlan.value = newFilteredMembers[0].trainingPlan;
+    fetchUpcomingSessions(newFilteredMembers[0].memberId);
     fetchMemberPackages(newFilteredMembers[0].memberId);
   }
 });
@@ -294,6 +366,7 @@ onMounted(async () => {
     selectedMember.value = members.value[0];
     tempCurrentWeight.value = members.value[0].weight;
     tempCurrentHeight.value = members.value[0].height;
+    tempTrainingPlan.value = members.value[0].trainingPlan;
     fetchUpcomingSessions(members.value[0].memberId);
     fetchMemberPackages(members.value[0].memberId);
   }
@@ -449,12 +522,41 @@ onMounted(async () => {
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Kế hoạch tập luyện</label
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Mục tiêu của học viên</label
             >
-            <p class="mt-1 text-lg text-gray-900">
-              {{ selectedMember.trainingPlan }}
-            </p>
+            <div v-if="isEditingTrainingPlan" class="space-y-2">
+              <textarea
+                v-model="tempTrainingPlan"
+                class="w-full text-base text-gray-900 border border-gray-300 rounded px-3 py-2 min-h-[100px] focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                placeholder="Nhập mục tiêu của học viên..."
+              ></textarea>
+              <div class="flex gap-2">
+                <button
+                  @click="saveTrainingPlan"
+                  class="text-green-600 hover:text-green-800 text-sm px-3 py-1.5 border border-green-600 rounded hover:bg-green-50"
+                >
+                  Lưu
+                </button>
+                <button
+                  @click="cancelEditingTrainingPlan"
+                  class="text-red-600 hover:text-red-800 text-sm px-3 py-1.5 border border-red-600 rounded hover:bg-red-50"
+                >
+                  Hủy
+                </button>
+              </div>
+            </div>
+            <div v-else class="mt-1">
+              <p class="text-base text-gray-900 whitespace-pre-wrap min-h-[60px] p-3 bg-gray-50 rounded border border-gray-200">
+                {{ selectedMember.trainingPlan || 'Chưa có mục tiêu' }}
+              </p>
+              <button
+                @click="startEditingTrainingPlan"
+                class="mt-2 text-emerald-600 hover:text-emerald-800 text-sm"
+              >
+                Chỉnh sửa
+              </button>
+            </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2"
