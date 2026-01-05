@@ -1,9 +1,11 @@
 package com.example.gympool.service.impl;
 
 import com.example.gympool.entity.PTAppointment;
+import com.example.gympool.entity.PTPackageIssued;
 import com.example.gympool.entity.TrainingSession;
 import com.example.gympool.entity.TrainingSession;
 import com.example.gympool.repository.PTAppointmentRepository;
+import com.example.gympool.repository.PTPackageIssuedRepository;
 import com.example.gympool.repository.TrainingSessionRepository;
 import com.example.gympool.service.TrainingSessionService;
 import jakarta.transaction.Transactional;
@@ -18,6 +20,7 @@ import java.util.List;
 public class TrainingSessionServiceImpl implements TrainingSessionService {
     private final TrainingSessionRepository trainingSessionRepository;
     private final PTAppointmentRepository ptAppointmentRepository;
+    private final PTPackageIssuedRepository ptPackageIssuedRepository;
     @Override
     public List<TrainingSession> getAllTrainingSession(){
         return trainingSessionRepository.findAll();
@@ -46,6 +49,13 @@ public class TrainingSessionServiceImpl implements TrainingSessionService {
     public TrainingSession startSession(Long appointmentId, String note){
         PTAppointment appointment = ptAppointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
+        PTPackageIssued ptPackageIssued = appointment.getPtPackageIssued();
+        Integer remaining = ptPackageIssued.getRemainingSessions();
+        if (remaining == null || remaining <= 0) {
+            throw new RuntimeException("No remaining sessions in this PT package");
+        }
+        ptPackageIssued.setRemainingSessions(remaining - 1);
+        ptPackageIssuedRepository.save(ptPackageIssued);
         TrainingSession session = new TrainingSession();
         session.setPtAppointment(appointment);
         session.setStartAt(LocalDateTime.now());

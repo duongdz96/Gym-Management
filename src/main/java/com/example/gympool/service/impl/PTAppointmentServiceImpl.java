@@ -39,6 +39,12 @@ public class PTAppointmentServiceImpl implements PTAppointmentService {
         return ptAppointmentRepository.save(PTAppointment);
     }
     @Override
+    public PTAppointment cancelAppointment(Long id){
+        PTAppointment PTAppointment = getPTAppointmentById(id);
+        PTAppointment.setStatus("CANCELLED");
+        return ptAppointmentRepository.save(PTAppointment);
+    }
+    @Override
     public PTAppointment getPTAppointmentByCustomerName(String name){
         return ptAppointmentRepository.findByMemberName(name)
                 .orElseThrow(() -> new IllegalArgumentException("PTAppointment not found with MemberName: " + name));

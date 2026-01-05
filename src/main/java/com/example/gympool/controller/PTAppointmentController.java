@@ -39,6 +39,10 @@ public class PTAppointmentController {
                                      @RequestBody PTAppointment PTAppointment) {
         ptAppointmentService.updatePTAppointment(id, PTAppointment);
     }
+    @PutMapping("/cancel/{id}")
+    public void cancelAppointment(@PathVariable("id") Long id) {
+        ptAppointmentService.cancelAppointment(id);
+    }
     @GetMapping("/member/{id}/next")
     public List<PTAppointment> getNext5ForMember(@PathVariable("id") Long id) {
         return ptAppointmentService.getUpcomingMemberAppointment(id);
