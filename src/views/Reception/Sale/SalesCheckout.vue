@@ -131,7 +131,34 @@ const checkCoupon = async () => {
         });
 
         if (res.data) {
-            appliedCoupon.value = res.data;
+            const couponData = res.data;
+            const now = new Date();
+            
+            // Check status
+            if (couponData.status !== 'ACTIVE') {
+                toast.error("Mã giảm giá không còn hiệu lực");
+                appliedCoupon.value = null;
+                return;
+            }
+            
+            // Check start date
+            const startDate = new Date(couponData.startDate);
+            if (now < startDate) {
+                toast.error(`Mã giảm giá chưa có hiệu lực. Có hiệu lực từ ${startDate.toLocaleDateString('vi-VN')}`);
+                appliedCoupon.value = null;
+                return;
+            }
+            
+            // Check end date
+            const endDate = new Date(couponData.endDate);
+            if (now > endDate) {
+                toast.error(`Mã giảm giá đã hết hạn vào ${endDate.toLocaleDateString('vi-VN')}`);
+                appliedCoupon.value = null;
+                return;
+            }
+            
+            // All validations passed
+            appliedCoupon.value = couponData;
             toast.success("Áp dụng mã giảm giá thành công!");
         } else {
             // Backend returns false if invalid or not found
