@@ -113,7 +113,7 @@ const submitPTAssignment = async () => {
   }
 
   if (!remainingSessions.value || remainingSessions.value <= 0) {
-    toast.warning("Vui lòng nhập số buổi còn lại hợp lệ!");
+    toast.warning("Vui lòng chọn gói PT trước!");
     return;
   }
 
@@ -122,9 +122,9 @@ const submitPTAssignment = async () => {
     
     // Payload gửi đi
     const payload = {
-      memberId: selectedMember.value.id,
-      ptId: selectedPT.value.id,
-      packageId: selectedPackage.value.id,
+      member: { id: selectedMember.value.id },
+      pt: { id: selectedPT.value.id },
+      ptPackage: { id: selectedPackage.value.id },
       remainingSessions: remainingSessions.value
     };
 
@@ -256,11 +256,11 @@ const submitPTAssignment = async () => {
                   type="number"
                   v-model.number="remainingSessions"
                   min="1"
-                  placeholder="Ví dụ: 12"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  required
+                  placeholder="Chọn gói PT để hiển thị số buổi"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-700 cursor-not-allowed"
+                  readonly
                 />
-                <p class="text-xs text-gray-500 mt-1">Thường bằng số buổi của gói đã chọn</p>
+                <p class="text-xs text-gray-500 mt-1">Tự động điền theo số buổi của gói PT đã chọn</p>
               </div>
 
               <!-- Submit Button -->

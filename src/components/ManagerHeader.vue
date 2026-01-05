@@ -112,7 +112,13 @@ const handleLogout = () => {
                 to="/manager/membership"
                 class="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition"
               >
-                Quản lý hội viên
+                Quản lý gói hội viên
+              </RouterLink>
+              <RouterLink
+                to="/manager/pt-package"
+                class="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition"
+              >
+                Quản lý gói PT
               </RouterLink>
             </div>
           </transition>

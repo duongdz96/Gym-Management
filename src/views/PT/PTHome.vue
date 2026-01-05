@@ -142,8 +142,8 @@ const fetchPTData = async () => {
     const studentProfilesRes = await api.get('/studentprofile');
     const studentProfiles = Array.isArray(studentProfilesRes.data) ? studentProfilesRes.data : [];
 
-    const appointmentsRes = await api.get('/appointment');
-    const appointments = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : [];
+    const trainingSessionsRes = await api.get('/trainingsession');
+    const trainingSessions = Array.isArray(trainingSessionsRes.data) ? trainingSessionsRes.data : [];
 
     const packageIssuedRes = await api.get('/packageissued');
     const packageIssued = Array.isArray(packageIssuedRes.data) ? packageIssuedRes.data : [];
@@ -152,15 +152,6 @@ const fetchPTData = async () => {
     const ptStudents = studentProfiles.filter(profile => profile.pt && profile.pt.id === authStore.user.id);
 
     studentProgress.value = ptStudents.slice(0, 2).map(profile => {
-      // Find appointments for this member
-      const memberAppointments = appointments.filter(appt =>
-        appt.ptPackageIssued?.member?.id === profile.member.id &&
-        appt.pt?.id === authStore.user.id
-      );
-
-      // Calculate completed sessions
-      const completedSessions = memberAppointments.filter(appt => appt.status === 'Completed').length;
-
       // Get package info for this member
       const memberPackages = packageIssued.filter(pkg => pkg.member?.id === profile.member.id);
       
@@ -176,35 +167,41 @@ const fetchPTData = async () => {
         remainingSessions = 12;
       }
 
-      // Calculate progress based on used sessions
+      // Calculate used sessions from package data (same as PTMembers.vue)
       const usedSessions = totalSessions - remainingSessions;
       const progress = totalSessions > 0 ? Math.round((usedSessions / totalSessions) * 100) : 0;
 
-      // Find last session date
-      const completedAppts = memberAppointments
-        .filter(appt => appt.status === 'Completed')
-        .sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+      // Find last session date from completed training sessions
+      const memberSessions = trainingSessions.filter(session =>
+        session.ptAppointment?.ptPackageIssued?.member?.id === profile.member.id &&
+        session.ptAppointment?.ptPackageIssued?.pt?.id === authStore.user.id &&
+        session.endAt !== null // Only count completed sessions
+      );
 
       let lastSession = 'Chưa có buổi tập';
-      if (completedAppts.length > 0) {
-        const lastApptDate = new Date(completedAppts[0].startTime);
+      if (memberSessions.length > 0) {
+        // Sort by endAt to get the most recent completed session
+        const sortedSessions = memberSessions.sort((a, b) => new Date(b.endAt) - new Date(a.endAt));
+        const lastSessionDate = new Date(sortedSessions[0].endAt);
         const now = new Date();
-        const diffTime = Math.abs(now - lastApptDate);
+        const diffTime = Math.abs(now - lastSessionDate);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        if (diffDays === 1) {
+        if (diffDays === 0) {
+          lastSession = 'Hôm nay';
+        } else if (diffDays === 1) {
           lastSession = '1 ngày trước';
         } else if (diffDays < 7) {
           lastSession = `${diffDays} ngày trước`;
         } else {
-          lastSession = lastApptDate.toLocaleDateString('vi-VN');
+          lastSession = lastSessionDate.toLocaleDateString('vi-VN');
         }
       }
 
       return {
         name: profile.member?.fullName || 'Unknown',
         progress: Math.max(0, Math.min(100, progress)), // Ensure progress is between 0-100
-        sessions: completedSessions,
+        sessions: usedSessions, // Used sessions from package data (same as PTMembers.vue)
         lastSession: lastSession,
         totalSessions: totalSessions,
         remainingSessions: remainingSessions
@@ -426,8 +423,11 @@ onMounted(() => {
                     <div class="bg-gradient-to-r from-emerald-500 to-emerald-500 h-2 rounded-full transition-all" :style="{ width: student.progress + '%' }"></div>
                   </div>
                   <div class="flex items-center justify-between text-xs text-gray-600">
-                    <span>{{ student.sessions }} buổi tập</span>
-                    <span>Lần cuối: {{ student.lastSession }}</span>
+                    <span>{{ student.sessions }}/{{ student.totalSessions }} buổi</span>
+                    <span>Còn lại: {{ student.remainingSessions }} buổi</span>
+                  </div>
+                  <div class="text-xs text-gray-500 mt-1">
+                    Lần cuối: {{ student.lastSession }}
                   </div>
                 </div>
               </div>
