@@ -130,7 +130,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Loại sản phẩm</label>
-                <select v-model="form.type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-white">
+                <select v-model="form.type" :disabled="isEditingMembership" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed">
                   <option value="" disabled>Chọn loại</option>
                   <option v-for="type in availableProductTypes" :key="type" :value="type">{{ type }}</option>
                 </select>
@@ -286,19 +286,19 @@ const filteredProducts = computed(() => {
 const productTypes = ['Thực phẩm bổ sung', 'Phụ kiện', 'Quần áo', 'Thiết bị', 'PT', 'Membership', 'Khác'];
 const unitOptions = ['Cái', 'Hộp', 'Đôi', 'Bộ', 'Gói', 'Khác'];
 
-// Computed: Loại bỏ Membership khi tạo mới
-const availableProductTypes = computed(() => {
-  if (isEditing.value && form.type === 'Membership') {
-    // Khi edit Membership, vẫn hiển thị tất cả nhưng sẽ disable
-    return productTypes;
-  }
-  // Khi tạo mới, loại bỏ Membership
-  return productTypes.filter(type => type !== 'Membership');
-});
-
 // Computed: Kiểm tra có phải đang edit Membership không
 const isEditingMembership = computed(() => {
   return isEditing.value && form.type === 'Membership';
+});
+
+// Computed: Danh sách loại sản phẩm có thể chọn
+const availableProductTypes = computed(() => {
+  if (isEditingMembership.value) {
+    // Khi edit Membership, chỉ hiển thị Membership
+    return ['Membership'];
+  }
+  // Khi thêm mới hoặc edit sản phẩm khác: loại bỏ Membership
+  return productTypes.filter(type => type !== 'Membership');
 });
 
 const form = reactive({
@@ -374,12 +374,6 @@ const getImageUrl = (imagePath) => {
 const handleSubmit = async () => {
   if (!form.name) {
     toast.error("Vui lòng nhập tên sản phẩm!");
-    return;
-  }
-
-  // Validation: Không cho tạo mới với type = Membership
-  if (!isEditing.value && form.type === 'Membership') {
-    toast.error("Không thể tạo sản phẩm với loại Membership!");
     return;
   }
 

@@ -87,10 +87,6 @@
             Đăng nhập
           </button>
 
-          <div class="text-center text-sm text-gray-500 mt-3">
-            Chưa có tài khoản?
-            <a href="#" class="text-purple-600 font-semibold hover:text-purple-700 hover:underline transition-colors">Đăng ký ngay</a>
-          </div>
         </form>
       </div>
     </div>

@@ -158,7 +158,7 @@
           <button @click="autoAbsent" :disabled="finalizing"
             class="w-full sm:w-auto px-3 sm:px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base">
             <AlertTriangle class="w-3 h-3 sm:w-4 sm:h-4" />
-            Auto Vắng
+            Chốt sổ
           </button>
         </div>
 
@@ -247,6 +247,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/useAuthStore';
 import unifiedApi from '@/services/unifiedClassApi.js';
+import Swal from 'sweetalert2';
 import api from '@/services/api.js';
 import { formatDate } from '@/views/Test/dateUtils.js';
 import {
@@ -577,21 +578,47 @@ const updateNotes = async (student) => {
 };
 
 const autoAbsent = async () => {
-  if (!confirm('Đánh dấu VẮNG và KẾT THÚC buổi học này?')) {
-    return;
-  }
+  // 1. Thay thế confirm bằng Modal đẹp
+  const result = await Swal.fire({
+    title: 'Xác nhận kết thúc?',
+    text: "Hệ thống sẽ đánh dấu VẮNG và ĐÓNG buổi học này!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33', 
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Đồng ý, kết thúc!',
+    cancelButtonText: 'Hủy',
+    reverseButtons: true
+  });
+
+  if (!result.isConfirmed) return;
 
   finalizing.value = true;
+  
+  Swal.fire({
+    title: 'Đang xử lý...',
+    allowOutsideClick: false,
+    didOpen: () => { Swal.showLoading(); }
+  });
+
   try {
     const sessionId = selectedSession.value.id;
     await api.post(`/class-attendance/students/auto-absent/${sessionId}`);
     await api.put(`/classschedule/${sessionId}/close`);
-    toast.success('Đã điểm danh vắng và đóng buổi học thành công');
+
+    // 3. Thay toast bằng Modal thành công
+    await Swal.fire({
+      icon: 'success',
+      title: 'Thành công!',
+      text: 'Đã điểm danh vắng và đóng buổi học.',
+      timer: 2000,
+      showConfirmButton: false
+    });
+
     await loadSessionData(); 
 
   } catch (error) {
-    console.error(error);
-    toast.error('Có lỗi khi kết thúc buổi học');
+    Swal.fire('Lỗi!', 'Có lỗi xảy ra khi kết thúc buổi học.', 'error');
   } finally {
     finalizing.value = false;
   }
