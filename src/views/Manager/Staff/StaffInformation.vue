@@ -212,7 +212,8 @@ const goBack = () => {
             <dt class="text-sm font-medium text-gray-500 mb-1">Vai trò</dt>
             <dd v-if="!isEditing" class="mt-1 text-sm text-gray-900">{{ user.role }}</dd>
             <select v-else v-model="editData.role" class="form-input">
-              <option value="STAFF">Nhân viên (HLV)</option>
+              <option value="TEACHER">Giáo viên (Teacher)</option>
+              <option value="PT">Huấn luyện viên cá nhân (PT)</option>
               <option value="RECEPTIONIST">Lễ tân</option>
               <option value="MANAGER">Quản lý</option>
             </select>

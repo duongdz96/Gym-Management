@@ -54,7 +54,7 @@ const newCustomerForm = ref({
   gender: "Male" as string,
   phone: "",
   membershipPlanId: "",
-  startDate: new Date().toLocaleDateString('en-GB'),
+  startDate: new Date().toISOString().split('T')[0],
 });
 
 // Email check state
@@ -256,18 +256,6 @@ watch(
   }
 );
 
-const formatDateToISO = (dateStr) => {
-  if (!dateStr) return null;
-  const [day, month, year] = dateStr.split('/');
-  return `${year}-${month}-${day}`;
-};
-const isValidDate = (dateStr) => {
-  const regex = /^\d{2}\/\d{2}\/\d{4}$/;
-  if (!dateStr.match(regex)) return false;
-  const [d, m, y] = dateStr.split('/').map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
-};
 // Submit new customer
 const submitNewCustomer = async () => {
   // 1. Validate Email tồn tại
@@ -283,17 +271,7 @@ const submitNewCustomer = async () => {
     return;
   }
 
-  // 3. Validate Định dạng ngày tháng (Ngày sinh & Ngày bắt đầu)
-  if (!isValidDate(newCustomerForm.value.dob)) {
-    toast.warning("Ngày sinh không hợp lệ (DD/MM/YYYY).");
-    return;
-  }
-  if (!isValidDate(newCustomerForm.value.startDate)) {
-    toast.warning("Ngày bắt đầu không hợp lệ (DD/MM/YYYY).");
-    return;
-  }
-
-  // 4. Validate Gói thành viên
+  // 3. Validate Gói thành viên
   const plan = membershipPlans.value.find(
     (p) => p.id === parseInt(newCustomerForm.value.membershipPlanId)
   );
@@ -303,23 +281,21 @@ const submitNewCustomer = async () => {
   }
 
   try {
-    // Chuyển đổi ngày từ DD/MM/YYYY sang Object Date để tính toán
-    const isoStartDateStr = formatDateToISO(newCustomerForm.value.startDate);
-    const startDateObj = new Date(isoStartDateStr);
+    const startDateObj = new Date(newCustomerForm.value.startDate);
     const endDateObj = addDuration(startDateObj, plan.duration);
 
     const payload = {
       member: {
         fullName: fullName,
         email: newCustomerForm.value.email,
-        dob: formatDateToISO(newCustomerForm.value.dob),
+        dob: newCustomerForm.value.dob,
         gender: newCustomerForm.value.gender,
         phone: newCustomerForm.value.phone,
         password: "123456",
         role: "MEMBER",
       },
       membershipPlanId: parseInt(newCustomerForm.value.membershipPlanId),
-      startDate: isoStartDateStr,
+      startDate: newCustomerForm.value.startDate,
       endDate: endDateObj.toISOString().split("T")[0],
     };
 
@@ -465,7 +441,7 @@ loadData();
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Ngày sinh <span class="text-red-500">*</span>
             </label>
-            <input v-model="newCustomerForm.dob" v-mask="'##/##/####'" type="text" placeholder="DD/MM/YYYY" required
+            <input v-model="newCustomerForm.dob" type="date" required
               class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
           </div>
 
@@ -510,8 +486,7 @@ loadData();
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Ngày bắt đầu <span class="text-red-500">*</span>
             </label>
-            <input v-model="newCustomerForm.startDate" v-mask="'##/##/####'" placeholder="DD/MM/YYYY" type="text"
-              required
+            <input v-model="newCustomerForm.startDate" type="date" required
               class="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
           </div>
         </div>
