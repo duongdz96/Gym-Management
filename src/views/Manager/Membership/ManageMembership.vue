@@ -62,9 +62,9 @@ onMounted(async () => {
 
                 <select v-model="membershipType" class="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 mr-2">
                  <option value="">Tất cả các cấp</option>
-                 <option value="vip">VIP</option>
-                 <option value="standard">Thường</option>
                  <option value="basic">Cơ bản</option>
+                 <option value="standard">Tiêu chuẩn</option>
+                 <option value="vip">VIP</option>
                 </select>
              </div>
              <div>
