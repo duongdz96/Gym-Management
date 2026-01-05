@@ -95,8 +95,8 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
             throw new IllegalArgumentException("The end date cannot be less than the start date.");
         }
 
-        if (endDate.isAfter(startDate.plusMonths(6))) {
-            throw new IllegalArgumentException("The calendar creation period must not exceed 6 months.");
+        if (endDate.isAfter(startDate.plusMonths(12))) {
+            throw new IllegalArgumentException("The calendar creation period must not exceed 12 months.");
         }
 
         List<DayOfWeek> days = Arrays.stream(pattern.getDaysOfWeek().split(","))
