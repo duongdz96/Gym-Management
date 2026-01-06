@@ -86,6 +86,8 @@ import BlogCreate from "@/views/Manager/Blog/BlogCreate.vue";
 import BlogEdit from "@/views/Manager/Blog/BlogEdit.vue";
 import TeacherClassList from "@/views/Teacher/Classes/TeacherClassList.vue";
 import PTPackageList from "@/views/Manager/PT-Package/PTPackageList.vue";
+import TeacherDashboard from "@/views/Teacher/TeacherDashboard.vue";
+import StaffAttendanceHistory from "@/views/Manager/Staff/StaffAttendanceHistory.vue";
 
 const routes = [
     {
@@ -117,6 +119,7 @@ const routes = [
             { path: "staff", name: "staff", component: Staff },
             { path: "staff/add", name: "staff.add", component: AddStaff },
             { path: "staff/:id", name: "staff.information", component: StaffInformation },
+            { path: "staff/:id/attendance-history", name: "staff.attendance-history", component: StaffAttendanceHistory },
             { path: "customer", name: "customer", component: Customer },
             { path: "customer/:id", name: "manager.customer-detail", component: ManagerCustomerDetail },
             { path: "customer-checkin-history", name: "manager.customer-checkin-history", component: ManagerCustomerCheckinHistory },
@@ -324,6 +327,7 @@ const routes = [
             { path: "/teacher/attendance", name: "teacher.attendance", component: TeacherAttendance },
             { path: "/teacher/attendance-history", name: "teacher.attendance-history", component: TeacherAttendanceHistory },
             { path: "/teacher/classes", name: "teacher.classlist", component: TeacherClassList },
+            { path: "", name: "teacher.dashboard", component: TeacherDashboard}
         ],
     },
 ]
