@@ -490,7 +490,7 @@ def main():
                         })
 
                         # Trigger action if confirmed
-                        if is_confirmed and status == 'active':
+                        if is_confirmed and status.lower() == 'active':
                             ts = time.time()
                             date = datetime.fromtimestamp(ts).strftime("%d-%m-%Y")
                             timestamp = datetime.fromtimestamp(ts).strftime("%H:%M-%S")
