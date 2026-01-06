@@ -11,6 +11,7 @@ import time
 from datetime import datetime
 from collections import deque
 from PIL import Image, ImageDraw, ImageFont
+import threading
 
 # Import modules
 from database import (get_member_status, get_employee_status,
@@ -35,6 +36,23 @@ except:
     def speak(text):
         pass
     TTS_AVAILABLE = False
+
+
+def speak_async(text, callback=None):
+    """
+    Speak trong background thread không block camera
+    
+    Args:
+        text: Text cần nói
+        callback: Function gọi sau khi speak xong
+    """
+    def _speak():
+        speak(text)
+        if callback:
+            callback()
+    
+    thread = threading.Thread(target=_speak, daemon=True)
+    thread.start()
 
 
 def put_text_vietnamese(img, text, position, font_size=20, color=(255, 255, 255)):
@@ -75,6 +93,49 @@ def put_text_vietnamese(img, text, position, font_size=20, color=(255, 255, 255)
     return img
 
 
+def draw_processing_overlay(frame, message):
+    """
+    Vẽ overlay "Đang check-in, vui lòng đợi..." lên frame
+    
+    Args:
+        frame: OpenCV frame
+        message: Thông báo hiển thị
+    
+    Returns:
+        frame với overlay
+    """
+    height, width = frame.shape[:2]
+    overlay = frame.copy()
+    
+    # Semi-transparent background
+    cv2.rectangle(overlay, (0, 0), (width, height), (0, 0, 0), -1)
+    cv2.addWeighted(overlay, 0.3, frame, 0.7, 0, frame)
+    
+    # Message box
+    box_width = 500
+    box_height = 120
+    box_x = (width - box_width) // 2
+    box_y = (height - box_height) // 2
+    
+    # Orange/yellow background for waiting state
+    cv2.rectangle(frame, (box_x, box_y), 
+                 (box_x + box_width, box_y + box_height), (0, 165, 255), -1)
+    cv2.rectangle(frame, (box_x, box_y), 
+                 (box_x + box_width, box_y + box_height), (0, 200, 255), 3)
+    
+    # Message text using PIL for Vietnamese
+    frame = put_text_vietnamese(frame, message, (box_x + 60, box_y + 35), 
+                               font_size=30, color=(255, 255, 255))
+    
+    # Animated dots
+    dots_count = int((time.time() * 2) % 4)
+    dots = "." * dots_count
+    frame = put_text_vietnamese(frame, dots, (box_x + box_width - 80, box_y + 35),
+                               font_size=30, color=(255, 255, 255))
+    
+    return frame
+
+
 class FaceRecognizer:
     """
     Face recognizer với maximum accuracy
@@ -111,6 +172,11 @@ class FaceRecognizer:
         self.last_log_times = {}  # person_id -> timestamp
         self.last_log_ids = {}    # person_id -> log_id (for members)
         self.last_unknown_time = 0
+        
+        # Flag để tạm dừng nhận diện khi đang process check-in
+        self.is_processing_checkin = False
+        self.processing_message = ""
+        self.processing_start_time = 0
 
         print(f"\nConfiguration:")
         print(f"  Model: {self.model_name}")
@@ -459,212 +525,220 @@ def main():
         }
 
         detected_persons.clear()
-
-        # PERFORMANCE OPTIMIZATION: Frame skipping
-        # Chỉ process mỗi N frames, các frame khác dùng kết quả cũ
-        should_process = (frame_count % config.FRAME_SKIP_REALTIME == 0)
-
-        if should_process:
-            # Resize frame để process nhanh hơn
-            process_frame = cv2.resize(frame,
-                                      (config.RECOGNITION_WIDTH, config.RECOGNITION_HEIGHT))
-
-            try:
-                # Detect faces với detector nhẹ hơn
-                face_objs = DeepFace.extract_faces(
-                    process_frame,
-                    detector_backend=config.FACE_DETECTOR_REALTIME,  # opencv thay vì retinaface
-                    enforce_detection=False,
-                    align=config.ALIGN_FACE
-                )
-
+        
+        # Nếu đang process check-in, vẽ overlay và skip nhận diện
+        if recognizer.is_processing_checkin:
+            # Vẽ overlay thông báo
+            frame = draw_processing_overlay(frame, recognizer.processing_message)
+            
+            # Tính elapsed time (tự động clear flag sau 5 giây nếu callback fail)
+            if time.time() - recognizer.processing_start_time > 5.0:
+                recognizer.is_processing_checkin = False
                 if config.VERBOSE:
-                    print(f"\n[DETECT] Found {len(face_objs)} face(s)")
+                    print("[TIMEOUT] Auto-cleared processing flag after 5s")
+        else:
+            # PERFORMANCE OPTIMIZATION: Frame skipping
+            # Chỉ process mỗi N frames, các frame khác dùng kết quả cũ
+            should_process = (frame_count % config.FRAME_SKIP_REALTIME == 0)
 
-                # Scale lại tọa độ về frame gốc
-                scale_x = frame.shape[1] / config.RECOGNITION_WIDTH
-                scale_y = frame.shape[0] / config.RECOGNITION_HEIGHT
+            if should_process:
+                # Resize frame để process nhanh hơn
+                process_frame = cv2.resize(frame,
+                                          (config.RECOGNITION_WIDTH, config.RECOGNITION_HEIGHT))
 
-                for face_obj in face_objs:
-                    facial_area = face_obj['facial_area']
-                    # Scale coordinates về frame gốc
-                    x = int(facial_area['x'] * scale_x)
-                    y = int(facial_area['y'] * scale_y)
-                    w = int(facial_area['w'] * scale_x)
-                    h = int(facial_area['h'] * scale_y)
-
-                    # Get face image
-                    face_img = face_obj['face']
-                    if face_img.dtype in [np.float32, np.float64]:
-                        face_img = (face_img * 255).astype(np.uint8)
-
-                    # PERFORMANCE: Bỏ quality check trong real-time recognition
-                    # (Quality đã được check khi collect data)
-
-                    # Recognize
-                    person_id, confidence, distance = recognizer.recognize_face(face_img)
+                try:
+                    # Detect faces với detector nhẹ hơn
+                    face_objs = DeepFace.extract_faces(
+                        process_frame,
+                        detector_backend=config.FACE_DETECTOR_REALTIME,  # opencv thay vì retinaface
+                        enforce_detection=False,
+                        align=config.ALIGN_FACE
+                    )
 
                     if config.VERBOSE:
-                        if person_id:
-                            print(f"[RECOGNIZE] ✓ Match: {person_id} | Confidence: {confidence:.1f}% | Distance: {distance:.4f}")
-                        else:
-                            print(f"[RECOGNIZE] ✗ No match | Best distance: {distance:.4f} | Threshold: {recognizer.threshold}")
+                        print(f"\n[DETECT] Found {len(face_objs)} face(s)")
 
-                    if person_id is not None:
-                        # Person recognized
-                        detected_persons.add(person_id)
-                        name, is_employee, status, check_type = recognizer.get_person_info(person_id)
+                    # Scale lại tọa độ về frame gốc
+                    scale_x = frame.shape[1] / config.RECOGNITION_WIDTH
+                    scale_y = frame.shape[0] / config.RECOGNITION_HEIGHT
 
-                        # Temporal smoothing
-                        is_confirmed, avg_confidence = recognizer.add_to_buffer(person_id, confidence)
+                    for face_obj in face_objs:
+                        facial_area = face_obj['facial_area']
+                        # Scale coordinates về frame gốc
+                        x = int(facial_area['x'] * scale_x)
+                        y = int(facial_area['y'] * scale_y)
+                        w = int(facial_area['w'] * scale_x)
+                        h = int(facial_area['h'] * scale_y)
+
+                        # Get face image
+                        face_img = face_obj['face']
+                        if face_img.dtype in [np.float32, np.float64]:
+                            face_img = (face_img * 255).astype(np.uint8)
+
+                        # PERFORMANCE: Bỏ quality check trong real-time recognition
+                        # (Quality đã được check khi collect data)
+
+                        # Recognize
+                        person_id, confidence, distance = recognizer.recognize_face(face_img)
 
                         if config.VERBOSE:
-                            buffer_len = len(recognizer.detection_buffer.get(person_id, []))
-                            print(f"[BUFFER] {name} | Buffer: {buffer_len}/{recognizer.buffer_size} frames | Avg confidence: {avg_confidence:.1f}% | Confirmed: {is_confirmed}")
+                            if person_id:
+                                print(f"[RECOGNIZE] ✓ Match: {person_id} | Confidence: {confidence:.1f}% | Distance: {distance:.4f}")
+                            else:
+                                print(f"[RECOGNIZE] ✗ No match | Best distance: {distance:.4f} | Threshold: {recognizer.threshold}")
 
-                        # Color based on status - màu xanh lá cho cả đang nhận diện và thành công
-                        if status == 'active':
-                            color = config.COLOR_RECOGNIZED  # Màu xanh lá cho cả 2 trường hợp
-                        else:
-                            color = config.COLOR_INACTIVE
+                        if person_id is not None:
+                            # Person recognized
+                            detected_persons.add(person_id)
+                            name, is_employee, status, check_type = recognizer.get_person_info(person_id)
 
-                        # Draw rectangle with thicker border for better visibility
-                        cv2.rectangle(frame, (x, y), (x+w, y+h), color, 3)
-                        cv2.rectangle(frame, (x, y-40), (x+w, y), color, -1)
-
-                        # Label - chỉ hiển thị tên, không hiển thị %
-                        label = f"{name}"
-                        if is_confirmed:
-                            label += " [OK]"
-
-                        # Sử dụng PIL để vẽ text tiếng Việt
-                        frame = put_text_vietnamese(frame, label, (x+5, y-35), font_size=20, color=(255, 255, 255))
-
-                        # Update info dict
-                        info_dict.update({
-                            'person_detected': True,
-                            'id': person_id,
-                            'name': name,
-                            'confidence': avg_confidence,
-                            'status': status,
-                            'is_employee': is_employee,
-                            'check_type': check_type if is_employee else None,
-                            'confirmed': is_confirmed
-                        })
-
-                        # Trigger action if confirmed
-                        if config.VERBOSE:
-                            print(f"[CHECK] is_confirmed={is_confirmed} | status={status} | active={status.lower() == 'active'}")
-                        
-                        if is_confirmed and status.lower() == 'active':
-                            ts = time.time()
-                            date = datetime.fromtimestamp(ts).strftime("%d-%m-%Y")
-                            timestamp = datetime.fromtimestamp(ts).strftime("%H:%M-%S")
-
-                            # Check cooldown
-                            last_log = recognizer.last_log_times.get(person_id, 0)
-                            cooldown_elapsed = ts - last_log
+                            # Temporal smoothing
+                            is_confirmed, avg_confidence = recognizer.add_to_buffer(person_id, confidence)
 
                             if config.VERBOSE:
-                                print(f"[COOLDOWN] Last log: {cooldown_elapsed:.1f}s ago | Required: {config.CHECK_IN_DELAY}s | Pass: {cooldown_elapsed > config.CHECK_IN_DELAY}")
+                                buffer_len = len(recognizer.detection_buffer.get(person_id, []))
+                                print(f"[BUFFER] {name} | Buffer: {buffer_len}/{recognizer.buffer_size} frames | Avg confidence: {avg_confidence:.1f}% | Confirmed: {is_confirmed}")
 
-                            if ts - last_log > config.CHECK_IN_DELAY:
-                                action_logged = False
-                                action_type = None
+                            # Color based on status - màu xanh lá cho cả đang nhận diện và thành công
+                            if status == 'active':
+                                color = config.COLOR_RECOGNIZED  # Màu xanh lá cho cả 2 trường hợp
+                            else:
+                                color = config.COLOR_INACTIVE
 
-                                if is_employee:
-                                    # Employee check-in/out
-                                    employee_id = int(person_id[4:])
-                                    if config.VERBOSE:
-                                        print(f"[LOG] Employee {employee_id} | Action: {check_type} | Time: {date} {timestamp}")
-                                    log_employee_access(employee_id, check_type, f"{date} {timestamp}")
-                                    speak(f"Employee check {check_type}")
-                                    print(f"✓ Employee {name} checked {check_type}")
-                                    action_logged = True
-                                    action_type = check_type
-                                else:
-                                    # Member check-in (ALWAYS allowed)
-                                    member_id = int(person_id)
+                            # Draw rectangle with thicker border for better visibility
+                            cv2.rectangle(frame, (x, y), (x+w, y+h), color, 3)
+                            cv2.rectangle(frame, (x, y-40), (x+w, y), color, -1)
 
-                                    # Check if this is a new check-in or update
-                                    if ts - last_log > config.MEMBER_COOLDOWN:
-                                        # NEW CHECK-IN: Last check-in was > 5 minutes ago
-                                        if config.VERBOSE:
-                                            print(f"[LOG] Member {member_id} | NEW check-in | Time: {date} {timestamp}")
-                                        log_id = log_access(member_id, f"{date} {timestamp}")
-                                        recognizer.last_log_ids[person_id] = log_id
-                                        speak("Attendance taken")
-                                        print(f"✓ Member {name} checked in (NEW)")
-                                        action_logged = True
-                                        action_type = "check-in"
-                                    else:
-                                        # UPDATE: Last check-in was < 5 minutes ago
-                                        # Update the existing log with new timestamp
-                                        log_id = recognizer.last_log_ids.get(person_id)
-                                        if log_id:
-                                            if config.VERBOSE:
-                                                print(f"[LOG] Member {member_id} | UPDATE check-in | log_id={log_id} | Time: {date} {timestamp}")
-                                            update_access_log(log_id, f"{date} {timestamp}")
-                                            speak("Check-in updated")
-                                            print(f"✓ Member {name} check-in updated ({int(ts - last_log)}s ago)")
-                                            action_logged = True
-                                            action_type = "check-in-updated"
-                                        else:
-                                            # No previous log found, create new one
-                                            if config.VERBOSE:
-                                                print(f"[LOG] Member {member_id} | NEW check-in (no previous log_id) | Time: {date} {timestamp}")
-                                            log_id = log_access(member_id, f"{date} {timestamp}")
-                                            recognizer.last_log_ids[person_id] = log_id
-                                            speak("Attendance taken")
-                                            print(f"✓ Member {name} checked in (NEW)")
-                                            action_logged = True
-                                            action_type = "check-in"
+                            # Label - chỉ hiển thị tên, không hiển thị %
+                            label = f"{name}"
+                            if is_confirmed:
+                                label += " [OK]"
 
-                                recognizer.last_log_times[person_id] = ts
-                                recognizer.clear_buffer(person_id)
+                            # Sử dụng PIL để vẽ text tiếng Việt
+                            frame = put_text_vietnamese(frame, label, (x+5, y-35), font_size=20, color=(255, 255, 255))
+
+                            # Update info dict
+                            info_dict.update({
+                                'person_detected': True,
+                                'id': person_id,
+                                'name': name,
+                                'confidence': avg_confidence,
+                                'status': status,
+                                'is_employee': is_employee,
+                                'check_type': check_type if is_employee else None,
+                                'confirmed': is_confirmed
+                            })
+
+                            # Trigger action if confirmed
+                            if config.VERBOSE:
+                                print(f"[CHECK] is_confirmed={is_confirmed} | status={status} | active={status.lower() == 'active'}")
+                        
+                            if is_confirmed and status.lower() == 'active':
+                                ts = time.time()
+                                date = datetime.fromtimestamp(ts).strftime("%d-%m-%Y")
+                                timestamp = datetime.fromtimestamp(ts).strftime("%H:%M-%S")
+
+                                # Check cooldown
+                                last_log = recognizer.last_log_times.get(person_id, 0)
+                                cooldown_elapsed = ts - last_log
 
                                 if config.VERBOSE:
-                                    print(f"[SUCCESS] Logged to database | Buffer cleared | Cooldown timer reset\n")
+                                    print(f"[COOLDOWN] Last log: {cooldown_elapsed:.1f}s ago | Required: {config.CHECK_IN_DELAY}s | Pass: {cooldown_elapsed > config.CHECK_IN_DELAY}")
 
-                                # Show success notification for 2-3 seconds (ALWAYS show)
-                                if action_logged:
-                                    # Create notification frame
-                                    success_frame = show_success_notification(
-                                        frame, name, action_type, is_employee
-                                    )
-                                    # Add info panel
-                                    display_success = create_info_panel(success_frame, info_dict)
+                                if ts - last_log > config.CHECK_IN_DELAY:
+                                    action_logged = False
+                                    action_type = None
+                                    speech_text = ""
 
-                                    # Show for configured duration
-                                    notification_duration = config.SUCCESS_NOTIFICATION_DURATION
-                                    notification_start = time.time()
+                                    if is_employee:
+                                        # Employee check-in/out
+                                        employee_id = int(person_id[4:])
+                                        
+                                        # Nếu là checkout, check thời gian tối thiểu từ check-in
+                                        if check_type == 'out':
+                                            time_since_checkin = ts - last_log
+                                            if time_since_checkin < config.EMPLOYEE_CHECKOUT_MIN_DURATION:
+                                                if config.VERBOSE:
+                                                    print(f"[SKIP] Employee {employee_id} | Checkout too soon: {time_since_checkin:.1f}s < {config.EMPLOYEE_CHECKOUT_MIN_DURATION}s")
+                                                # Skip checkout, continue recognition
+                                                continue
+                                        
+                                        if config.VERBOSE:
+                                            print(f"[LOG] Employee {employee_id} | Action: {check_type} | Time: {date} {timestamp}")
+                                        log_employee_access(employee_id, check_type, f"{date} {timestamp}")
+                                        speech_text = f"Employee check {check_type}"
+                                        print(f"✓ Employee {name} checked {check_type}")
+                                        action_logged = True
+                                        action_type = check_type
+                                    else:
+                                        # Member check-in: LUÔN tạo log mới
+                                        # Ghi hết tất cả lần check-in, không update log cũ
+                                        member_id = int(person_id)
+                                        
+                                        if config.VERBOSE:
+                                            print(f"[LOG] Member {member_id} | NEW check-in | Time: {date} {timestamp}")
+                                        
+                                        log_id = log_access(member_id, f"{date} {timestamp}")
+                                        recognizer.last_log_ids[person_id] = log_id
+                                        speech_text = "Attendance taken"
+                                        print(f"✓ Member {name} checked in")
+                                        action_logged = True
+                                        action_type = "check-in"
 
-                                    while (time.time() - notification_start) < notification_duration:
-                                        cv2.imshow("Face Recognition - DeepFace + ArcFace", display_success)
-                                        if cv2.waitKey(30) == ord('q'):
-                                            break
+                                    recognizer.last_log_times[person_id] = ts
+                                    recognizer.clear_buffer(person_id)
 
-                                    # Continue after notification
-                                    continue
+                                    if config.VERBOSE:
+                                        print(f"[SUCCESS] Logged to database | Buffer cleared | Cooldown timer reset\n")
 
-                    else:
-                        # Unknown person - chỉ hiển thị Unknown
-                        cv2.rectangle(frame, (x, y), (x+w, y+h), config.COLOR_UNKNOWN, 3)
-                        cv2.rectangle(frame, (x, y-40), (x+w, y), config.COLOR_UNKNOWN, -1)
-                        frame = put_text_vietnamese(frame, "Unknown", (x+5, y-35), font_size=20, color=(255, 255, 255))
+                                    # Set flag và message
+                                    if action_logged:
+                                        recognizer.is_processing_checkin = True
+                                        recognizer.processing_message = "Đang check-in, vui lòng đợi"
+                                        recognizer.processing_start_time = time.time()
+                                    
+                                        # Callback để clear flag sau khi speak xong
+                                        def on_speak_done():
+                                            recognizer.is_processing_checkin = False
+                                    
+                                        # Speak async không block camera
+                                        speak_async(speech_text, on_speak_done)
+                                    
+                                        # Show success notification trong 2 giây
+                                        success_frame = show_success_notification(
+                                            frame, name, action_type, is_employee
+                                        )
+                                        display_success = create_info_panel(success_frame, info_dict)
+                                    
+                                        notification_duration = config.SUCCESS_NOTIFICATION_DURATION
+                                        notification_start = time.time()
+                                    
+                                        while (time.time() - notification_start) < notification_duration:
+                                            cv2.imshow("Face Recognition - DeepFace + ArcFace", display_success)
+                                            if cv2.waitKey(30) == ord('q'):
+                                                recognizer.is_processing_checkin = False
+                                                break
+                                    
+                                        continue
 
-                        # Show unknown info (with cooldown)
-                        ts = time.time()
-                        if ts - recognizer.last_unknown_time > config.UNKNOWN_COOLDOWN:
-                            info_dict.update({
-                                'unknown': True,
-                                'time': datetime.fromtimestamp(ts).strftime("%H:%M:%S")
-                            })
-                            recognizer.last_unknown_time = ts
+                        else:
+                            # Unknown person - chỉ hiển thị Unknown
+                            cv2.rectangle(frame, (x, y), (x+w, y+h), config.COLOR_UNKNOWN, 3)
+                            cv2.rectangle(frame, (x, y-40), (x+w, y), config.COLOR_UNKNOWN, -1)
+                            frame = put_text_vietnamese(frame, "Unknown", (x+5, y-35), font_size=20, color=(255, 255, 255))
 
-            except Exception as e:
-                if config.VERBOSE and "Face could not be detected" not in str(e):
-                    print(f"Error: {e}")
+                            # Show unknown info (with cooldown)
+                            ts = time.time()
+                            if ts - recognizer.last_unknown_time > config.UNKNOWN_COOLDOWN:
+                                info_dict.update({
+                                    'unknown': True,
+                                    'time': datetime.fromtimestamp(ts).strftime("%H:%M:%S")
+                                })
+                                recognizer.last_unknown_time = ts
+
+                except Exception as e:
+                    if config.VERBOSE and "Face could not be detected" not in str(e):
+                        print(f"Error: {e}")
 
         # Clear buffers for persons not detected in this frame
         for person_id in list(recognizer.detection_buffer.keys()):

@@ -93,12 +93,15 @@ MIN_CONFIDENCE = 75  # Tăng lên 75% để đảm bảo check-in chính xác
 
 # Delay trước khi check-in/out (seconds)
 # Tránh check-in nhiều lần liên tiếp
-CHECK_IN_DELAY = 1.5
+CHECK_IN_DELAY = 10  # Cho phép check-in ngay
 
-# Cooldown period giữa các check-ins của cùng 1 người (seconds)
-# Nếu check-in lại trong thời gian này → update log cũ
-# Nếu > thời gian này → tạo log mới
-MEMBER_COOLDOWN = 300  # 5 phút - thời gian hợp lý cho gym
+# Member: Luôn tạo log mới cho mỗi lần check-in
+# (Không còn update log cũ, ghi hết tất cả lần check-in)
+MEMBER_COOLDOWN = 0  # Không dùng nữa
+
+# Employee: Thời gian tối thiểu từ check-in đến checkout (seconds)
+# Tránh checkout ngay sau khi check-in
+EMPLOYEE_CHECKOUT_MIN_DURATION = 60  # 1 phút
 
 # Unknown face display cooldown (seconds)
 # Tránh spam "Unknown" message
