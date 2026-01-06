@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/accesslog")
+@RequestMapping("/api/accesslog")
 public class AccessLogController {
     @Autowired
     private AccessLogService accessLogService;
