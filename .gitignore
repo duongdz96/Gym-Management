@@ -18,3 +18,5 @@ cov/report/
 *.csv
 node_modules/
 .vite/
+
+GUIDE.md
