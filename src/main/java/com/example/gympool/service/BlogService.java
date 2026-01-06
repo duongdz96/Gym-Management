@@ -27,4 +27,6 @@ public interface BlogService {
     
     // Lấy 4 blog mới nhất cho trang chủ
     List<BlogDTO> getPublicBlogs();
+
+    List<BlogDTO> get4PinnedBlogs();
 }

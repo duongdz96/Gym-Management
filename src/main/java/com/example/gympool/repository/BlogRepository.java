@@ -17,4 +17,9 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
     
     // Lấy 4 blog mới nhất cho trang chủ
     List<Blog> findTop4ByOrderByPublishDateDesc();
+
+    //lay 4 dua pinned
+    List<Blog> findTop4ByIsPinnedTrueOrderByPublishDateDesc();
+
+    long countByIsPinnedTrue();
 }

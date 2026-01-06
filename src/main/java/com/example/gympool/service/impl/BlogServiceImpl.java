@@ -109,10 +109,27 @@ public class BlogServiceImpl implements BlogService {
     public BlogDTO togglePin(Long id) {
         Blog blog = blogRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy blog"));
-        
-        blog.setIsPinned(!blog.getIsPinned());
+
+        if (!blog.getIsPinned()) {
+            long pinnedCount = blogRepository.countByIsPinnedTrue();
+            if (pinnedCount >= 4) {
+                throw new RuntimeException("Chỉ được ghim tối đa 4 bài viết. Vui lòng bỏ ghim bài khác trước.");
+            }
+            blog.setIsPinned(true);
+        } else {
+            blog.setIsPinned(false);
+        }
+
         Blog updatedBlog = blogRepository.save(blog);
         return convertToDTO(updatedBlog);
+    }
+
+    @Override
+    public List<BlogDTO> get4PinnedBlogs() {
+        List<Blog> pinnedBlogs = blogRepository.findTop4ByIsPinnedTrueOrderByPublishDateDesc();
+        return pinnedBlogs.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
