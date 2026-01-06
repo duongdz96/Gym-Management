@@ -73,12 +73,8 @@ const deleteStaff = async (user: User) => {
     <div class="flex justify-between items-center">
       <h1 class="text-xl font-semibold">Quản Lý Nhân Viên</h1>
       <div>
-        <input
-          v-model="search"
-          type="text"
-          placeholder="Tìm kiếm theo tên nhân viên"
-          class="px-3 py-2 border rounded-lg mr-2"
-        />
+        <input v-model="search" type="text" placeholder="Tìm kiếm theo tên nhân viên"
+          class="px-3 py-2 border rounded-lg mr-2" />
         <select v-model="roleFilter" class="px-3 py-2 border rounded-lg mr-2">
           <option value="">Tất cả vai trò</option>
           <option value="TEACHER">Giáo viên</option>
@@ -86,10 +82,7 @@ const deleteStaff = async (user: User) => {
           <option value="MANAGER">Quản lý</option>
           <option value="RECEPTIONIST">Lễ tân</option>
         </select>
-        <RouterLink
-          :to= "{name: 'staff.add'}"
-          class="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:opacity-90"
-        >
+        <RouterLink :to="{ name: 'staff.add' }" class="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:opacity-90">
           Thêm mới
         </RouterLink>
       </div>
@@ -102,7 +95,8 @@ const deleteStaff = async (user: User) => {
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Họ tên</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số điện thoại</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số điện thoại
+            </th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giới tính</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày sinh</th>
             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vai trò</th>
@@ -121,43 +115,48 @@ const deleteStaff = async (user: User) => {
             <td class="px-4 py-3 text-sm text-gray-600">{{ user.gender }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ formatDate(user.dob) }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">
-              <span
-                :class="[
-                  'px-2 py-0.5 rounded-full text-xs font-medium',
-                  user.role === 'MANAGER' ? 'bg-blue-100 text-blue-800' :
+              <span :class="[
+                'px-2 py-0.5 rounded-full text-xs font-medium',
+                user.role === 'MANAGER' ? 'bg-blue-100 text-blue-800' :
                   user.role === 'RECEPTIONIST' ? 'bg-purple-100 text-purple-800' :
-                  user.role === 'PT' ? 'bg-emerald-100 text-emerald-800' :
-                  user.role === 'TEACHER' ? 'bg-amber-100 text-amber-800' :
-                  'bg-gray-100 text-gray-800'
-                ]"
-              >
+                    user.role === 'PT' ? 'bg-emerald-100 text-emerald-800' :
+                      user.role === 'TEACHER' ? 'bg-amber-100 text-amber-800' :
+                        'bg-gray-100 text-gray-800'
+              ]">
                 {{ user.role }}
               </span>
             </td>
             <td class="px-4 py-3 text-sm text-center">
               <div class="flex items-center justify-center gap-2">
-                <!-- <RouterLink
-                  :to="`staff/${user.id}/edit`"
+                <RouterLink :to="`staff/${user.id}/attendance-history`"
                   class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                  title="Chỉnh sửa"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </RouterLink> -->
-
-                <RouterLink
-                  :to="`staff/${user.id}`"
-                  class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
-                  title="Xem chi tiết"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  title="Xem lịch sử điểm danh">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
                 </RouterLink>
 
-                <button
-                  @click="deleteStaff(user)"
-                  class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                  title="Xóa"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                <RouterLink :to="`staff/${user.id}`"
+                  class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors" title="Chỉnh sửa">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </RouterLink>
+
+                <button @click="deleteStaff(user)"
+                  class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Xóa">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18" />
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                    <line x1="10" x2="10" y1="11" y2="17" />
+                    <line x1="14" x2="14" y1="11" y2="17" />
+                  </svg>
                 </button>
               </div>
             </td>

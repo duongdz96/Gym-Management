@@ -84,7 +84,7 @@ const formatTime = (timeString: string) => {
       <!-- Bên trái: Danh sách Staffs -->
       <div class="lg:w-1/3 bg-white rounded-xl shadow-lg overflow-hidden">
         <div class="p-6 border-b border-gray-200">
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">Select a Staff</h2>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">Chọn nhân viên</h2>
           <div class="relative">
             <input
               type="text"
@@ -126,12 +126,12 @@ const formatTime = (timeString: string) => {
 
       <!-- Bên phải: Lịch sử Attendance -->
       <div class="lg:w-2/3 bg-white rounded-xl shadow-lg flex flex-col">
-        <h2 class="text-2xl font-bold text-gray-800 p-6 border-b border-gray-200">Attendance History</h2>
+        <h2 class="text-2xl font-bold text-gray-800 p-6 border-b border-gray-200">Lịch sử điểm danh</h2>
 
         <div class="flex-1 p-6">
           <div v-if="selectedStaff" class="space-y-6">
             <div class="bg-emerald-50 p-4 rounded-lg">
-              <h3 class="text-lg font-semibold text-gray-900">Selected Staff</h3>
+              <h3 class="text-lg font-semibold text-gray-900">Nhân viên đã chọn</h3>
               <p class="text-gray-700">{{ selectedStaff.fullName }}</p>
               <p class="text-gray-600">{{ selectedStaff.email }}</p>
             </div>
@@ -139,7 +139,7 @@ const formatTime = (timeString: string) => {
             <!-- Chọn tháng và năm -->
             <div class="flex gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Month</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tháng</label>
                 <select
                   v-model="selectedMonth"
                   @change="fetchAttendanceHistory"
@@ -149,7 +149,7 @@ const formatTime = (timeString: string) => {
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Year</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Năm</label>
                 <select
                   v-model="selectedYear"
                   @change="fetchAttendanceHistory"
