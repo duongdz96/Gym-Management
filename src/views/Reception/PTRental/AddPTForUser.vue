@@ -82,6 +82,10 @@ const filteredMembers = computed(() => {
   );
 });
 
+const activePTPackages = computed(() => {
+  return ptPackages.value.filter(pkg => pkg.status === "Active");
+});
+
 // Check if member already has a PT package assigned
 const getMemberPackage = (memberId: number) => {
   return packageIssued.value.find(pkg => pkg.member.id === memberId);
@@ -243,7 +247,7 @@ const submitPTAssignment = async () => {
                   required
                 >
                   <option :value="null">Chọn gói PT</option>
-                  <option v-for="pkg in ptPackages" :key="pkg.id" :value="pkg">
+                  <option v-for="pkg in activePTPackages" :key="pkg.id" :value="pkg">
                     {{ pkg.name }}
                   </option>
                 </select>
