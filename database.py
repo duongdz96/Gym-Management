@@ -307,6 +307,11 @@ def get_last_employee_check_type(user_id):
     Logic hỗ trợ NHIỀU LẦN check-in/out trong ngày:
     - 8:00 check-in → 12:00 check-out (ăn trưa)
     - 13:00 check-in → 17:00 check-out (tan làm)
+    
+    Logic xử lý cuối ngày:
+    - Nếu employee chưa checkout ngày hôm trước (check_out_time = NULL)
+    - Và đã qua 24h → Auto set check_out_time = 17:00 của ngày đó
+    - Sau đó return None để lần sau là check-in mới
     """
     conn = get_connection()
     if not conn:
@@ -316,7 +321,7 @@ def get_last_employee_check_type(user_id):
         cursor = conn.cursor()
         # Lấy record gần nhất
         cursor.execute('''
-            SELECT check_in_time, check_out_time 
+            SELECT id, check_in_time, check_out_time 
             FROM attendance
             WHERE user_id = %s
             ORDER BY id DESC
@@ -327,14 +332,40 @@ def get_last_employee_check_type(user_id):
         if not result:
             return None  # Chưa có record nào → Default: lần sau check-in
         
-        check_in, check_out = result
+        record_id, check_in, check_out = result
         
-        # Kiểm tra xem đã check-out chưa
-        # Logic: check_out_time = NULL → chưa checkout
-        #        check_out_time = timestamp → đã checkout
+        # Xử lý logic cuối ngày
         if check_out is None:
-            return 'in'  # ⏳ Chưa check-out (NULL)
+            # Check xem check_in_time có phải hôm nay không
+            from datetime import datetime, timedelta
+            today = datetime.now().date()
+            check_in_date = check_in.date()
+            
+            # Nếu check_in không phải hôm nay (đã qua ngày)
+            if check_in_date < today:
+                # Auto checkout lúc 17:00 của ngày check_in
+                auto_checkout_time = datetime.combine(
+                    check_in_date, 
+                    datetime.strptime("17:00:00", "%H:%M:%S").time()
+                )
+                
+                # Update check_out_time
+                cursor.execute('''
+                    UPDATE attendance 
+                    SET check_out_time = %s
+                    WHERE id = %s
+                ''', (auto_checkout_time, record_id))
+                conn.commit()
+                
+                print(f"[AUTO-CHECKOUT] Employee {user_id} auto checked-out at {auto_checkout_time} (old date: {check_in_date})")
+                
+                # Return None → Lần sau nên check-in
+                return None
+            else:
+                # Check_in hôm nay và chưa checkout → Lần sau nên check-out
+                return 'in'  # ⏳ Chưa check-out (NULL)
         else:
+            # Đã check-out → Lần sau nên check-in
             return 'out'  # ✅ Đã check-out (có timestamp)
             
     except Error as e:
