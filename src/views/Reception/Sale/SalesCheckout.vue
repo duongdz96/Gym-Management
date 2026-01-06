@@ -34,7 +34,7 @@ const showQRModal = ref(false);
 
 // QR Payment variables
 const bankCode = "MB";
-const accountNumber = "2666677888";
+const accountNumber = "0975308619";
 const accountName = "VAN NGOC LONG";
 const qrUrl = ref("");
 const paymentStatus = ref("Pending");
@@ -584,23 +584,20 @@ const handlePrint = () => {
                         </span>
                      </div>
                  </div>
-
-                 <!-- Simulate Button -->
-                 <button 
-                    @click="simulatePayment" 
-                    v-if="paymentStatus === 'Pending'"
-                    class="mt-8 w-full py-3 bg-gray-900 hover:bg-black text-white rounded-xl font-bold text-sm transition-all shadow-lg flex items-center justify-center gap-2"
-                 >
-                     <CheckCircleIcon class="w-5 h-5" />
-                     (Dev) Giả lập thanh toán thành công
-                 </button>
-
-                 <div v-else class="mt-8 w-full">
+                     
+                 <div v-if="paymentStatus === 'Paid'" class="mt-8 w-full">
                       <div class="text-green-600 font-bold text-center mb-4 flex items-center justify-center gap-2">
                           <CheckCircleIcon class="w-6 h-6" /> Đã nhận tiền!
                       </div>
                       <button @click="showQRModal = false" class="w-full py-3 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl font-bold text-sm transition-colors">
                           Đóng
+                      </button>
+                 </div>
+                 
+                 <div v-else class="mt-8 w-full text-center text-gray-500 text-sm">
+                      <p class="mb-2">Đang chờ khách hàng chuyển khoản...</p>
+                      <button @click="showQRModal = false" class="w-full py-3 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-xl font-medium text-sm transition-colors">
+                          Đóng (chưa thanh toán)
                       </button>
                  </div>
              </div>
