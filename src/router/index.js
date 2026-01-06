@@ -86,6 +86,7 @@ import BlogCreate from "@/views/Manager/Blog/BlogCreate.vue";
 import BlogEdit from "@/views/Manager/Blog/BlogEdit.vue";
 import TeacherClassList from "@/views/Teacher/Classes/TeacherClassList.vue";
 import PTPackageList from "@/views/Manager/PT-Package/PTPackageList.vue";
+import TeacherDashboard from "@/views/Teacher/TeacherDashboard.vue";
 
 const routes = [
     {
@@ -324,6 +325,7 @@ const routes = [
             { path: "/teacher/attendance", name: "teacher.attendance", component: TeacherAttendance },
             { path: "/teacher/attendance-history", name: "teacher.attendance-history", component: TeacherAttendanceHistory },
             { path: "/teacher/classes", name: "teacher.classlist", component: TeacherClassList },
+            { path: "", name: "teacher.dashboard", component: TeacherDashboard}
         ],
     },
 ]
