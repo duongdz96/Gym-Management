@@ -168,11 +168,11 @@ async function loadMemberPackages(memberId) {
     const data = Array.isArray(res.data) ? res.data : [];
     
     // Filter packages for the selected member and current PT
+    // Note: Allow packages even if ptPackage.status is Inactive, as long as the user has remaining sessions
     memberPackages.value = data.filter(pkg => 
       pkg.member?.id === memberId && 
       pkg.pt?.id === authStore.user.id &&
-      pkg.remainingSessions > 0 &&
-      pkg.ptPackage?.status === 'Active'
+      pkg.remainingSessions > 0
     );
     
     // Auto-select first package if available
