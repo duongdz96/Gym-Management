@@ -1,71 +1,61 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/useAuthStore'
+import api from '@/services/api'
 
 type AttendanceRecord = {
   id: number
   date: string
   checkIn: string
   checkOut: string | null
-  status: 'Present' | 'Late' | 'Absent'
-  workingHours: number | null
+  status: 'Thành công' | 'Thất bại'
 }
 
 const authStore = useAuthStore()
 const attendanceRecords = ref<AttendanceRecord[]>([])
 const dateFilter = ref('')
 const statusFilter = ref('')
+const isLoading = ref(true)
 
-// Mock data
-const generateMockData = () => {
-  const records: AttendanceRecord[] = []
-  const today = new Date()
-
-  for (let i = 0; i < 30; i++) {
-    const date = new Date(today)
-    date.setDate(today.getDate() - i)
-
-    const isWeekend = date.getDay() === 0 || date.getDay() === 6
-    const isPresent = !isWeekend && Math.random() > 0.1 // 90% present on weekdays
-
-    let checkIn = null
-    let checkOut = null
-    let status: 'Present' | 'Late' | 'Absent' = 'Absent'
-    let workingHours = null
-
-    if (isPresent) {
-      // Random check-in time between 8:00 and 9:30
-      const checkInHour = 8 + Math.floor(Math.random() * 2)
-      const checkInMinute = Math.floor(Math.random() * 60)
-      checkIn = `${checkInHour.toString().padStart(2, '0')}:${checkInMinute.toString().padStart(2, '0')}`
-
-      // Check-out time: 8 hours later
-      const checkOutHour = checkInHour + 8
-      const checkOutMinute = checkInMinute
-      checkOut = `${checkOutHour.toString().padStart(2, '0')}:${checkOutMinute.toString().padStart(2, '0')}`
-
-      // Calculate working hours
-      workingHours = 8
-
-      // Determine status
-      if (checkInHour > 8 || (checkInHour === 8 && checkInMinute > 30)) {
-        status = 'Late'
-      } else {
-        status = 'Present'
+// Fetch attendance data from API
+const fetchAttendanceData = async () => {
+  try {
+    isLoading.value = true
+    const userId = authStore.user.id
+    const response = await api.get(`/attendance/${userId}`)
+    const data = Array.isArray(response.data) ? response.data : []
+    
+    // Transform API response to match our AttendanceRecord format
+    const records: AttendanceRecord[] = data.map((item: any) => {
+      const checkInDate = new Date(item.checkInTime)
+      const checkOutDate = item.checkOutTime ? new Date(item.checkOutTime) : null
+      
+      // Extract time strings
+      const checkIn = checkInDate.toTimeString().split(' ')[0].substring(0, 5) // HH:MM format
+      const checkOut = checkOutDate ? checkOutDate.toTimeString().split(' ')[0].substring(0, 5) : null
+      
+      // Determine status - Thành công if has both check-in and check-out, Thất bại otherwise
+      const status: 'Thành công' | 'Thất bại' = checkOutDate ? 'Thành công' : 'Thất bại'
+      
+      return {
+        id: item.id,
+        date: checkInDate.toISOString().split('T')[0],
+        checkIn,
+        checkOut,
+        status
       }
-    }
-
-    records.push({
-      id: i + 1,
-      date: date.toISOString().split('T')[0],
-      checkIn,
-      checkOut,
-      status,
-      workingHours
     })
+    
+    // Sort by date descending (newest first)
+    attendanceRecords.value = records.sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    )
+  } catch (error) {
+    console.error('Error fetching attendance data:', error)
+    attendanceRecords.value = []
+  } finally {
+    isLoading.value = false
   }
-
-  return records
 }
 
 const filteredRecords = computed(() => {
@@ -87,15 +77,14 @@ const formatDate = (dateString: string) => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'Present': return 'text-green-600 bg-green-50'
-    case 'Late': return 'text-orange-600 bg-orange-50'
-    case 'Absent': return 'text-emerald-600 bg-emerald-50'
+    case 'Thành công': return 'text-green-600 bg-green-50'
+    case 'Thất bại': return 'text-red-600 bg-red-50'
     default: return 'text-gray-600 bg-gray-50'
   }
 }
 
 onMounted(() => {
-  attendanceRecords.value = generateMockData()
+  fetchAttendanceData()
 })
 </script>
 
@@ -136,20 +125,19 @@ onMounted(() => {
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
         >
           <option value="">Tất cả trạng thái</option>
-          <option value="Present">Có mặt</option>
-          <option value="Late">Đến muộn</option>
-          <option value="Absent">Vắng mặt</option>
+          <option value="Thành công">Thành công</option>
+          <option value="Thất bại">Thất bại</option>
         </select>
       </div>
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
       <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-600">Tổng ngày làm việc</p>
-            <p class="text-2xl font-bold text-gray-800">{{ attendanceRecords.filter(r => r.status !== 'Absent').length }}</p>
+            <p class="text-2xl font-bold text-gray-800">{{ attendanceRecords.length }}</p>
           </div>
           <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600">
@@ -165,8 +153,8 @@ onMounted(() => {
       <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600">Ngày đến đúng giờ</p>
-            <p class="text-2xl font-bold text-green-600">{{ attendanceRecords.filter(r => r.status === 'Present').length }}</p>
+            <p class="text-sm text-gray-600">Thành công</p>
+            <p class="text-2xl font-bold text-green-600">{{ attendanceRecords.filter(r => r.status === 'Thành công').length }}</p>
           </div>
           <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-600">
@@ -179,26 +167,11 @@ onMounted(() => {
       <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600">Ngày đến muộn</p>
-            <p class="text-2xl font-bold text-orange-600">{{ attendanceRecords.filter(r => r.status === 'Late').length }}</p>
+            <p class="text-sm text-gray-600">Thất bại</p>
+            <p class="text-2xl font-bold text-red-600">{{ attendanceRecords.filter(r => r.status === 'Thất bại').length }}</p>
           </div>
-          <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-600">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12,6 12,12 16,14"></polyline>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-600">Ngày vắng mặt</p>
-            <p class="text-2xl font-bold text-emerald-600">{{ attendanceRecords.filter(r => r.status === 'Absent').length }}</p>
-          </div>
-          <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
+          <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-600">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -221,7 +194,6 @@ onMounted(() => {
               <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Ngày</th>
               <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Check-in</th>
               <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Check-out</th>
-              <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Giờ làm việc</th>
               <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Trạng thái</th>
             </tr>
           </thead>
@@ -246,10 +218,6 @@ onMounted(() => {
                 </span>
                 <span v-else class="text-gray-400">-</span>
               </td>
-              <td class="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600">
-                <span v-if="record.workingHours">{{ record.workingHours }}h</span>
-                <span v-else class="text-gray-400">-</span>
-              </td>
               <td class="px-4 sm:px-6 py-3 sm:py-4">
                 <span
                   :class="[
@@ -260,16 +228,15 @@ onMounted(() => {
                   <span
                     :class="[
                       'w-2 h-2 rounded-full',
-                      record.status === 'Present' ? 'bg-green-500' :
-                      record.status === 'Late' ? 'bg-orange-500' : 'bg-emerald-500'
+                      record.status === 'Thành công' ? 'bg-green-500' : 'bg-red-500'
                     ]"
                   ></span>
-                  {{ record.status === 'Present' ? 'Có mặt' : record.status === 'Late' ? 'Đến muộn' : 'Vắng mặt' }}
+                  {{ record.status }}
                 </span>
               </td>
             </tr>
             <tr v-if="filteredRecords.length === 0">
-              <td colspan="5" class="px-4 sm:px-6 py-6 sm:py-8 text-center text-gray-500 text-xs sm:text-sm">
+              <td colspan="4" class="px-4 sm:px-6 py-6 sm:py-8 text-center text-gray-500 text-xs sm:text-sm">
                 Không có dữ liệu điểm danh phù hợp với bộ lọc
               </td>
             </tr>
