@@ -128,9 +128,9 @@ const deleteStaff = async (user: User) => {
             </td>
             <td class="px-4 py-3 text-sm text-center">
               <div class="flex items-center justify-center gap-2">
-                <RouterLink :to="`staff/${user.id}/attendance-history`"
+                <RouterLink :to="`staff/${user.id}`"
                   class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                  title="Xem lịch sử điểm danh">
+                  title="Xem chi tiết">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
@@ -138,7 +138,7 @@ const deleteStaff = async (user: User) => {
                   </svg>
                 </RouterLink>
 
-                <RouterLink :to="`staff/${user.id}`"
+                <RouterLink :to="`staff/${user.id}/info`"
                   class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors" title="Chỉnh sửa">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
