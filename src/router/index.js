@@ -79,6 +79,7 @@ import RoomManagement from "@/views/Manager/Classes/RoomManagement.vue";
 import TeacherApprovalList from "@/views/Manager/Classes/TeacherApprovalList.vue";
 import ManagerLeaveApproval from "@/views/Manager/Classes/ManagerLeaveApproval.vue";
 import TeacherAttendance from "@/views/Teacher/Classes/TeacherAttendance.vue";
+import TeacherAttendanceHistory from "@/views/Teacher/TeacherAttendanceHistory.vue";
 import StaffInformation from "@/views/Manager/Staff/StaffInformation.vue";
 import ManagerBlogList from "@/views/Manager/Blog/BlogList.vue";
 import BlogCreate from "@/views/Manager/Blog/BlogCreate.vue";
@@ -321,6 +322,7 @@ const routes = [
             { path: "/teacher/registerclass", name: "teacher.register", component: TeacherRegister },
             { path: "/teacher/calendar", name: "teacher.calendar", component: TeacherPersonalCalendar },
             { path: "/teacher/attendance", name: "teacher.attendance", component: TeacherAttendance },
+            { path: "/teacher/attendance-history", name: "teacher.attendance-history", component: TeacherAttendanceHistory },
             { path: "/teacher/classes", name: "teacher.classlist", component: TeacherClassList },
         ],
     },
