@@ -10,6 +10,7 @@ from scipy.spatial.distance import cosine
 import time
 from datetime import datetime
 from collections import deque
+from PIL import Image, ImageDraw, ImageFont
 
 # Import modules
 from database import (get_member_status, get_employee_status,
@@ -34,6 +35,44 @@ except:
     def speak(text):
         pass
     TTS_AVAILABLE = False
+
+
+def put_text_vietnamese(img, text, position, font_size=20, color=(255, 255, 255)):
+    """
+    Vẽ text tiếng Việt lên OpenCV image sử dụng PIL
+    
+    Args:
+        img: OpenCV image (BGR)
+        text: Text tiếng Việt có dấu
+        position: (x, y) tuple
+        font_size: Size của font
+        color: (B, G, R) tuple cho OpenCV
+    
+    Returns:
+        img: OpenCV image với text
+    """
+    # Convert BGR to RGB
+    img_pil = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    draw = ImageDraw.Draw(img_pil)
+    
+    # Load font (sử dụng font hệ thống hỗ trợ tiếng Việt)
+    try:
+        # Windows font
+        font = ImageFont.truetype("arial.ttf", font_size)
+    except:
+        # Fallback to default font
+        font = ImageFont.load_default()
+    
+    # Convert OpenCV BGR color to PIL RGB color
+    color_rgb = (color[2], color[1], color[0])
+    
+    # Draw text
+    draw.text(position, text, font=font, fill=color_rgb)
+    
+    # Convert back to BGR
+    img = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
+    
+    return img
 
 
 class FaceRecognizer:
@@ -265,9 +304,9 @@ def show_success_notification(frame, person_name, action_type, is_employee):
     cv2.putText(notification_frame, message, (box_x + 90, box_y + 180),
                cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 3)
 
-    # Person name
-    cv2.putText(notification_frame, person_name, (box_x + 80, box_y + 240),
-               cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 4)
+    # Person name - sử dụng PIL để vẽ tiếng Việt
+    notification_frame = put_text_vietnamese(notification_frame, person_name, (box_x + 80, box_y + 210), 
+                                            font_size=40, color=(255, 255, 255))
 
     return notification_frame
 
@@ -333,8 +372,8 @@ def create_info_panel(frame, info_dict):
         text_color = (100, 255, 100) if info_dict.get('status') == 'active' else (255, 255, 255)
         
         for line in lines:
-            cv2.putText(canvas, line, (width + 35, y_text),
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.65, text_color, 2)
+            canvas = put_text_vietnamese(canvas, line, (width + 35, y_text - 20),
+                                        font_size=18, color=text_color)
             y_text += line_height
 
     elif info_dict.get('unknown'):
@@ -498,8 +537,8 @@ def main():
                         if is_confirmed:
                             label += " [OK]"
 
-                        cv2.putText(frame, label, (x+5, y-12),
-                                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+                        # Sử dụng PIL để vẽ text tiếng Việt
+                        frame = put_text_vietnamese(frame, label, (x+5, y-35), font_size=20, color=(255, 255, 255))
 
                         # Update info dict
                         info_dict.update({
@@ -612,8 +651,7 @@ def main():
                         # Unknown person - chỉ hiển thị Unknown
                         cv2.rectangle(frame, (x, y), (x+w, y+h), config.COLOR_UNKNOWN, 3)
                         cv2.rectangle(frame, (x, y-40), (x+w, y), config.COLOR_UNKNOWN, -1)
-                        cv2.putText(frame, "Unknown", (x+5, y-12),
-                                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+                        frame = put_text_vietnamese(frame, "Unknown", (x+5, y-35), font_size=20, color=(255, 255, 255))
 
                         # Show unknown info (with cooldown)
                         ts = time.time()
