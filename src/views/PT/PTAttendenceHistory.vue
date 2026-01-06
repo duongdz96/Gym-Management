@@ -8,7 +8,7 @@ type AttendanceRecord = {
   date: string
   checkIn: string
   checkOut: string | null
-  status: 'Thành công' | 'Thất bại'
+  status: 'Thành công' | 'Chưa check out'
 }
 
 const authStore = useAuthStore()
@@ -34,8 +34,8 @@ const fetchAttendanceData = async () => {
       const checkIn = checkInDate.toTimeString().split(' ')[0].substring(0, 5) // HH:MM format
       const checkOut = checkOutDate ? checkOutDate.toTimeString().split(' ')[0].substring(0, 5) : null
       
-      // Determine status - Thành công if has both check-in and check-out, Thất bại otherwise
-      const status: 'Thành công' | 'Thất bại' = checkOutDate ? 'Thành công' : 'Thất bại'
+      // Determine status - Thành công if has both check-in and check-out, Chưa check out otherwise
+      const status: 'Thành công' | 'Chưa check out' = checkOutDate ? 'Thành công' : 'Chưa check out'
       
       return {
         id: item.id,
@@ -78,7 +78,7 @@ const formatDate = (dateString: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'Thành công': return 'text-green-600 bg-green-50'
-    case 'Thất bại': return 'text-red-600 bg-red-50'
+    case 'Chưa check out': return 'text-red-600 bg-red-50'
     default: return 'text-gray-600 bg-gray-50'
   }
 }
@@ -126,7 +126,7 @@ onMounted(() => {
         >
           <option value="">Tất cả trạng thái</option>
           <option value="Thành công">Thành công</option>
-          <option value="Thất bại">Thất bại</option>
+          <option value="Chưa check out">Chưa check out</option>
         </select>
       </div>
     </div>
@@ -167,8 +167,8 @@ onMounted(() => {
       <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm text-gray-600">Thất bại</p>
-            <p class="text-2xl font-bold text-red-600">{{ attendanceRecords.filter(r => r.status === 'Thất bại').length }}</p>
+            <p class="text-sm text-gray-600">Chưa check out</p>
+            <p class="text-2xl font-bold text-red-600">{{ attendanceRecords.filter(r => r.status === 'Chưa check out').length }}</p>
           </div>
           <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-600">
