@@ -27,12 +27,28 @@ const fetchBlogs = async () => {
 
 // Toggle ghim
 const togglePin = async (id) => {
+  const blog = blogs.value.find(b => b.id === id)
+  if (!blog) return
+
+  if (!blog.isPinned) {
+    const pinnedCount = blogs.value.filter(b => b.isPinned).length
+    
+    if (pinnedCount >= 4) {
+      toast.warning('Chỉ được ghim tối đa 4 bài viết. Vui lòng bỏ ghim bài cũ trước.')
+      return 
+    }
+  }
+
   try {
     await axios.patch(`http://localhost:8080/api/blogs/${id}/pin`)
     toast.success('Cập nhật trạng thái ghim thành công')
-    fetchBlogs()
+    fetchBlogs() 
   } catch (error) {
-    toast.error('Lỗi khi cập nhật trạng thái ghim')
+    if (error.response && error.response.data) {
+       toast.error(error.response.data.message || 'Lỗi khi cập nhật trạng thái ghim')
+    } else {
+       toast.error('Lỗi hệ thống')
+    }
     console.error(error)
   }
 }
