@@ -25,6 +25,7 @@ import Customer from "@/views/Manager/Customer/Customer.vue";
 import ManagerCustomerDetail from "@/views/Manager/Customer/ManagerCustomerDetail.vue";
 import ManagerCustomerCheckinHistory from "@/views/Manager/Customer/ManagerCustomerCheckinHistory.vue";
 import Attendance from "@/views/Manager/Attendance/Attendance.vue";
+import ManagerAttendanceHistory from "@/views/Manager/Attendance/ManagerAttendanceHistory.vue";
 import ManagerClassList from "@/views/Manager/Classes/ManagerClassList.vue";
 import Banner from "@/views/Manager/Config/Banner.vue";
 import ManageMembership from "@/views/Manager/Membership/ManageMembership.vue";
@@ -119,6 +120,7 @@ const routes = [
             { path: "customer/:id", name: "manager.customer-detail", component: ManagerCustomerDetail },
             { path: "customer-checkin-history", name: "manager.customer-checkin-history", component: ManagerCustomerCheckinHistory },
             { path: "attendance", name: "attendance", component: Attendance },
+            { path: "attendance-history", name: "manager.attendance-history", component: ManagerAttendanceHistory },
             { path: "coupon", name: "coupon", component: Coupon },
             { path: "coupon/:id", name: "CouponDetail", component: CouponDetail },
             { path: "coupon/add", name: "coupon.add", component: AddCoupon },

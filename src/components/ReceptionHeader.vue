@@ -99,7 +99,7 @@ const handleLogout = () => {
               @click="isAccountMenuOpen = false"
             >
               <Clock class="w-4 h-4" />
-              Lịch sử điểm danh
+              Lịch sử chấm công
             </RouterLink>
             <RouterLink
               to="/change-password"

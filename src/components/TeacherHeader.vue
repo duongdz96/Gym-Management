@@ -71,7 +71,7 @@ const handleMobileNavigate = (path) => {
               <UserIcon class="w-4 h-4" /> Hồ sơ cá nhân
             </RouterLink>
             <RouterLink to="/teacher/attendance-history" class="flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition">
-              <Clock class="w-4 h-4" /> Lịch sử điểm danh
+              <Clock class="w-4 h-4" /> Lịch sử chấm công
             </RouterLink>
             <RouterLink to="/change-password" class="flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition">
               <Settings class="w-4 h-4" /> Thay đổi mật khẩu
@@ -115,7 +115,7 @@ const handleMobileNavigate = (path) => {
           </a>
 
           <a @click.prevent="handleMobileNavigate('/teacher/attendance-history')" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-teal-700 transition cursor-pointer select-none">
-            <Clock class="w-4 h-4" /> Lịch sử điểm danh
+            <Clock class="w-4 h-4" /> Lịch sử chấm công
           </a>
 
           <a @click.prevent="handleMobileNavigate('/change-password')" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-teal-700 transition cursor-pointer select-none">

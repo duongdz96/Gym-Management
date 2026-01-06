@@ -233,7 +233,7 @@ const handleLogout = () => {
               class="flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-emerald-600"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-              Lịch sử điểm danh
+              Lịch sử chấm công
             </RouterLink>
             <RouterLink to="/change-password" class="flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-emerald-600">
               <Settings class="w-4 h-4" /> Đổi mật khẩu

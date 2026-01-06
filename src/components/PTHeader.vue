@@ -124,7 +124,7 @@ const handleLogout = () => {
               class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100"
             >
               <Clock class="w-4 h-4" />
-              Lịch sử điểm danh
+              Lịch sử chấm công
             </RouterLink>
             <RouterLink
               to="/pt/setting"

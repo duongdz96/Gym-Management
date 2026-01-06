@@ -101,7 +101,7 @@ onMounted(() => {
       </div>
       <div>
         <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent">
-          Lịch Sử Điểm Danh
+          Lịch Sử Chấm Công
         </h1>
         <p class="text-gray-600 text-xs sm:text-sm">Theo dõi lịch sử check-in và check-out của bạn</p>
       </div>
