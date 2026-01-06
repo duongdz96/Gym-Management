@@ -269,11 +269,11 @@ def log_employee_access(user_id, check_type, log_time):
         mysql_datetime = dt.strftime("%Y-%m-%d %H:%M:%S")
         
         if check_type == 'in':
-            # Check-in: Tạo record mới với check_in_time
+            # Check-in: Tạo record mới, check_out_time = NULL (chưa checkout)
             cursor.execute('''
                 INSERT INTO attendance (user_id, check_in_time, check_out_time)
-                VALUES (%s, %s, %s)
-            ''', (user_id, mysql_datetime, mysql_datetime))
+                VALUES (%s, %s, NULL)
+            ''', (user_id, mysql_datetime))
         else:
             # Check-out: Update record gần nhất chưa có check_out proper
             cursor.execute('''
@@ -297,8 +297,16 @@ def log_employee_access(user_id, check_type, log_time):
 
 def get_last_employee_check_type(user_id):
     """
-    Lấy loại check cuối cùng của employee (in/out)
-    Để xác định lần sau nên check in hay out
+    Lấy loại check CUỐI CÙNG của employee (in/out)
+    
+    Returns:
+        'in': Lần cuối là check-in (chưa check-out) → Lần sau nên check-out
+        'out': Lần cuối là check-out (đã hoàn thành cặp in-out) → Lần sau nên check-in
+        None: Chưa có record nào → Lần sau nên check-in
+    
+    Logic hỗ trợ NHIỀU LẦN check-in/out trong ngày:
+    - 8:00 check-in → 12:00 check-out (ăn trưa)
+    - 13:00 check-in → 17:00 check-out (tan làm)
     """
     conn = get_connection()
     if not conn:
@@ -317,15 +325,17 @@ def get_last_employee_check_type(user_id):
         result = cursor.fetchone()
         
         if not result:
-            return None  # Chưa có record nào → lần sau là 'in'
+            return None  # Chưa có record nào → Default: lần sau check-in
         
         check_in, check_out = result
-        # Nếu check_out > check_in đủ nhiều → đã check out → lần sau là 'in'
-        # Nếu check_out == check_in hoặc gần bằng → chưa check out → lần sau là 'out'
-        if check_out and (check_out - check_in).total_seconds() > 60:
-            return 'out'  # Đã check out rồi → lần sau check in
+        
+        # Kiểm tra xem đã check-out chưa
+        # Logic: check_out_time = NULL → chưa checkout
+        #        check_out_time = timestamp → đã checkout
+        if check_out is None:
+            return 'in'  # ⏳ Chưa check-out (NULL)
         else:
-            return 'in'  # Chưa check out → lần sau check out
+            return 'out'  # ✅ Đã check-out (có timestamp)
             
     except Error as e:
         print(f"Error: {e}")

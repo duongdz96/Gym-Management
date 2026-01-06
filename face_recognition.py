@@ -167,11 +167,22 @@ class FaceRecognizer:
             confidences = [conf for conf, _ in self.detection_buffer[person_id]]
             avg_confidence = np.mean(confidences)
 
-            # Check if all recent detections are within time window (e.g., 2 seconds)
+            # Check if all recent detections are within time window
             times = [t for _, t in self.detection_buffer[person_id]]
-            if (max(times) - min(times)) < 2.0:  # All within 2 seconds
+            time_span = max(times) - min(times)
+            
+            # Time window: 5 giây (phù hợp với FPS thấp + frame skip)
+            if time_span < 5.0:
                 if avg_confidence >= config.MIN_CONFIDENCE:
+                    if config.VERBOSE:
+                        print(f"[TEMPORAL] ✓ Time span: {time_span:.2f}s < 5.0s | Avg conf: {avg_confidence:.1f}% >= {config.MIN_CONFIDENCE}%")
                     return True, avg_confidence
+                else:
+                    if config.VERBOSE:
+                        print(f"[TEMPORAL] ✗ Confidence too low: {avg_confidence:.1f}% < {config.MIN_CONFIDENCE}%")
+            else:
+                if config.VERBOSE:
+                    print(f"[TEMPORAL] ✗ Time span too long: {time_span:.2f}s >= 5.0s")
 
         return False, confidence
 
@@ -428,6 +439,9 @@ def main():
                     align=config.ALIGN_FACE
                 )
 
+                if config.VERBOSE:
+                    print(f"\n[DETECT] Found {len(face_objs)} face(s)")
+
                 # Scale lại tọa độ về frame gốc
                 scale_x = frame.shape[1] / config.RECOGNITION_WIDTH
                 scale_y = frame.shape[0] / config.RECOGNITION_HEIGHT
@@ -451,6 +465,12 @@ def main():
                     # Recognize
                     person_id, confidence, distance = recognizer.recognize_face(face_img)
 
+                    if config.VERBOSE:
+                        if person_id:
+                            print(f"[RECOGNIZE] ✓ Match: {person_id} | Confidence: {confidence:.1f}% | Distance: {distance:.4f}")
+                        else:
+                            print(f"[RECOGNIZE] ✗ No match | Best distance: {distance:.4f} | Threshold: {recognizer.threshold}")
+
                     if person_id is not None:
                         # Person recognized
                         detected_persons.add(person_id)
@@ -458,6 +478,10 @@ def main():
 
                         # Temporal smoothing
                         is_confirmed, avg_confidence = recognizer.add_to_buffer(person_id, confidence)
+
+                        if config.VERBOSE:
+                            buffer_len = len(recognizer.detection_buffer.get(person_id, []))
+                            print(f"[BUFFER] {name} | Buffer: {buffer_len}/{recognizer.buffer_size} frames | Avg confidence: {avg_confidence:.1f}% | Confirmed: {is_confirmed}")
 
                         # Color based on status - màu xanh lá cho cả đang nhận diện và thành công
                         if status == 'active':
@@ -490,6 +514,9 @@ def main():
                         })
 
                         # Trigger action if confirmed
+                        if config.VERBOSE:
+                            print(f"[CHECK] is_confirmed={is_confirmed} | status={status} | active={status.lower() == 'active'}")
+                        
                         if is_confirmed and status.lower() == 'active':
                             ts = time.time()
                             date = datetime.fromtimestamp(ts).strftime("%d-%m-%Y")
@@ -497,6 +524,10 @@ def main():
 
                             # Check cooldown
                             last_log = recognizer.last_log_times.get(person_id, 0)
+                            cooldown_elapsed = ts - last_log
+
+                            if config.VERBOSE:
+                                print(f"[COOLDOWN] Last log: {cooldown_elapsed:.1f}s ago | Required: {config.CHECK_IN_DELAY}s | Pass: {cooldown_elapsed > config.CHECK_IN_DELAY}")
 
                             if ts - last_log > config.CHECK_IN_DELAY:
                                 action_logged = False
@@ -505,6 +536,8 @@ def main():
                                 if is_employee:
                                     # Employee check-in/out
                                     employee_id = int(person_id[4:])
+                                    if config.VERBOSE:
+                                        print(f"[LOG] Employee {employee_id} | Action: {check_type} | Time: {date} {timestamp}")
                                     log_employee_access(employee_id, check_type, f"{date} {timestamp}")
                                     speak(f"Employee check {check_type}")
                                     print(f"✓ Employee {name} checked {check_type}")
@@ -517,6 +550,8 @@ def main():
                                     # Check if this is a new check-in or update
                                     if ts - last_log > config.MEMBER_COOLDOWN:
                                         # NEW CHECK-IN: Last check-in was > 5 minutes ago
+                                        if config.VERBOSE:
+                                            print(f"[LOG] Member {member_id} | NEW check-in | Time: {date} {timestamp}")
                                         log_id = log_access(member_id, f"{date} {timestamp}")
                                         recognizer.last_log_ids[person_id] = log_id
                                         speak("Attendance taken")
@@ -528,6 +563,8 @@ def main():
                                         # Update the existing log with new timestamp
                                         log_id = recognizer.last_log_ids.get(person_id)
                                         if log_id:
+                                            if config.VERBOSE:
+                                                print(f"[LOG] Member {member_id} | UPDATE check-in | log_id={log_id} | Time: {date} {timestamp}")
                                             update_access_log(log_id, f"{date} {timestamp}")
                                             speak("Check-in updated")
                                             print(f"✓ Member {name} check-in updated ({int(ts - last_log)}s ago)")
@@ -535,6 +572,8 @@ def main():
                                             action_type = "check-in-updated"
                                         else:
                                             # No previous log found, create new one
+                                            if config.VERBOSE:
+                                                print(f"[LOG] Member {member_id} | NEW check-in (no previous log_id) | Time: {date} {timestamp}")
                                             log_id = log_access(member_id, f"{date} {timestamp}")
                                             recognizer.last_log_ids[person_id] = log_id
                                             speak("Attendance taken")
@@ -544,6 +583,9 @@ def main():
 
                                 recognizer.last_log_times[person_id] = ts
                                 recognizer.clear_buffer(person_id)
+
+                                if config.VERBOSE:
+                                    print(f"[SUCCESS] Logged to database | Buffer cleared | Cooldown timer reset\n")
 
                                 # Show success notification for 2-3 seconds (ALWAYS show)
                                 if action_logged:

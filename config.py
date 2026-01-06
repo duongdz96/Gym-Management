@@ -62,7 +62,8 @@ FRAME_SKIP = 10
 
 # Blur detection threshold (Laplacian variance)
 # Higher = less blurry required
-BLUR_THRESHOLD = 100
+# 50 = Balanced for demo (dễ thu thập, quality vẫn ổn)
+BLUR_THRESHOLD = 50
 
 # Brightness range (0-255)
 MIN_BRIGHTNESS = 40
@@ -72,7 +73,7 @@ MAX_BRIGHTNESS = 220
 MIN_FACE_SIZE = 80
 
 # Contrast threshold (standard deviation)
-MIN_CONTRAST = 30
+MIN_CONTRAST = 25
 
 # Maximum similarity between consecutive samples
 # Đảm bảo diversity trong training data
