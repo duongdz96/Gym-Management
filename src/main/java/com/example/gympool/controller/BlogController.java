@@ -88,11 +88,4 @@ public class BlogController {
         List<BlogDTO> blogs = blogService.getPublicBlogs();
         return ResponseEntity.ok(blogs);
     }
-
-    //lay 4 dua dc pin
-    @GetMapping("/pinned")
-    public ResponseEntity<List<BlogDTO>> getPinnnedBlogs() {
-        List<BlogDTO> blogs = blogService.get4PinnedBlogs();
-        return ResponseEntity.ok(blogs);
-    }
 }

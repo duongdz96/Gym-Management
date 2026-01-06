@@ -1,6 +1,7 @@
 package com.example.gympool.repository;
 
 import com.example.gympool.entity.Blog;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,8 +19,7 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
     // Lấy 4 blog mới nhất cho trang chủ
     List<Blog> findTop4ByOrderByPublishDateDesc();
 
-    //lay 4 dua pinned
-    List<Blog> findTop4ByIsPinnedTrueOrderByPublishDateDesc();
+    List<Blog> findByIsPinnedFalseOrderByPublishDateDesc(Pageable pageable);
 
     long countByIsPinnedTrue();
 }

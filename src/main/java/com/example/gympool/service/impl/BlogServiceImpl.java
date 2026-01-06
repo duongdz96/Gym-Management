@@ -7,6 +7,7 @@ import com.example.gympool.repository.BlogRepository;
 import com.example.gympool.repository.UserRepository;
 import com.example.gympool.service.BlogService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,18 +126,20 @@ public class BlogServiceImpl implements BlogService {
         return convertToDTO(updatedBlog);
     }
 
-    @Override
-    public List<BlogDTO> get4PinnedBlogs() {
-        List<Blog> pinnedBlogs = blogRepository.findTop4ByIsPinnedTrueOrderByPublishDateDesc();
-        return pinnedBlogs.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
 
     @Override
     public List<BlogDTO> getPublicBlogs() {
-        return blogRepository.findTop4ByOrderByPublishDateDesc()
-                .stream()
+        List<Blog> pinnedBlogs = blogRepository.findByIsPinnedTrueOrderByPublishDateDesc();
+
+        List<Blog> resultList = new ArrayList<>(pinnedBlogs);
+
+        if (resultList.size() < 4) {
+            int needMore = 4 - resultList.size();
+            List<Blog> latestBlogs = blogRepository.findByIsPinnedFalseOrderByPublishDateDesc(PageRequest.of(0, needMore));
+            resultList.addAll(latestBlogs);
+        }
+
+        return resultList.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
