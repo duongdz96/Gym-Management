@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +18,13 @@ public interface MemberRegistrationRepository extends JpaRepository<MemberRegist
     List<MemberRegistration> findByClassSchedule(ClassSchedule classSchedule);
 
     Optional<MemberRegistration> findByMemberAndClassSchedule(Member member, ClassSchedule classSchedule);
+
     @Query("SELECT COUNT(m) FROM MemberRegistration m WHERE m.classSchedule.id = :scheduleId")
     int countByClassScheduleId(@Param("scheduleId") Long scheduleId);
 
+    @Query("SELECT mr FROM MemberRegistration mr " +
+            "JOIN mr.classSchedule cs " +
+            "WHERE cs.startTime BETWEEN :start AND :end " +
+            "AND mr.notificationSent = false")
+    List<MemberRegistration> findUpcomingClassRegistrations(LocalDateTime start, LocalDateTime end);
 }

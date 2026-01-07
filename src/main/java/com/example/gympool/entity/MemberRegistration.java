@@ -26,4 +26,6 @@ public class MemberRegistration {
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    private boolean notificationSent = false;
 }
