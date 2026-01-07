@@ -34,10 +34,19 @@ public class NotificationServiceImpl implements NotificationService {
     }
     @Override
     public void sendClassReminder(MemberRegistration registration) {
+        if (registration.getMember() == null || registration.getMember().getEmail() == null) {
+            throw new RuntimeException("Hội viên không có email! ID: " + registration.getMember().getId());
+        }
+
+        if (registration.getClassSchedule() == null || registration.getClassSchedule().getFitnessClass() == null) {
+            throw new RuntimeException("Lịch học không gắn với lớp học nào! Schedule ID: " + registration.getClassSchedule().getId());
+        }
         String memberEmail = registration.getMember().getEmail();
         String memberName = registration.getMember().getFullName();
         String className = registration.getClassSchedule().getFitnessClass().getName();
         LocalDateTime startTime = registration.getClassSchedule().getStartTime();
+
+        System.out.println(">>> Đang gửi mail cho: " + memberEmail + " - Lớp: " + className);
 
         emailService.sendEmail(
                 memberEmail,

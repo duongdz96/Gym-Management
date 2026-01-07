@@ -35,6 +35,7 @@ public class NotificationScheduler {
                 ptAppointmentRepository.save(appointment);
             } catch (Exception e) {
                 System.err.println("Lỗi gửi mail PT: " + appointment.getId());
+                e.printStackTrace();
             }
         }
     }
@@ -48,6 +49,7 @@ public class NotificationScheduler {
                 memberRegistrationRepository.save(reg);
             } catch (Exception e) {
                 System.err.println("Lỗi gửi mail lớp học: " + reg.getId());
+                e.printStackTrace();
             }
         }
     }
