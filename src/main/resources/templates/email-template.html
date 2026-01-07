@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>GymPool Notification</title>
+    <style>
+        /* Reset cơ bản */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0fdf4; /* emerald-50: nền tổng thể xanh rất nhạt */
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden; /* Để bo góc header không bị che */
+        }
+
+        /* Header Gradient giống App: from-emerald-600 via-teal-600 to-cyan-600 */
+        .header {
+            background: linear-gradient(90deg, #059669 0%, #0d9488 50%, #0891b2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .icon-gym {
+            font-size: 40px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .content {
+            padding: 30px;
+            line-height: 1.6;
+            color: #374151; /* gray-700 */
+        }
+
+        /* Box thông tin chính */
+        .info-box {
+            background-color: #ecfdf5; /* emerald-50 */
+            padding: 20px;
+            border-left: 5px solid #059669; /* emerald-600 */
+            border-radius: 4px;
+            margin: 25px 0;
+        }
+
+        .info-item {
+            margin-bottom: 10px;
+        }
+
+        .info-item strong {
+            color: #047857; /* emerald-700 */
+            display: inline-block;
+            width: 80px;
+        }
+
+        /* Nút kêu gọi hành động (nếu cần sau này) */
+        .btn {
+            display: inline-block;
+            background-color: #059669;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            padding: 20px;
+            background-color: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .highlight {
+            color: #059669; /* emerald-600 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <span class="icon-gym">🏋️‍♂️</span>
+        <h1>GymPool System</h1>
+    </div>
+
+    <div class="content">
+        <p>Xin chào <span class="highlight" th:text="${name}">Khách hàng</span>,</p>
+
+        <p th:text="${message}">Bạn có một thông báo mới từ hệ thống.</p>
+
+        <div class="info-box">
+            <div class="info-item">
+                <strong>📌 Hoạt động:</strong>
+                <span th:text="${activity}">Tên lớp/PT</span>
+            </div>
+            <div class="info-item">
+                <strong>⏰ Thời gian:</strong>
+                <span th:text="${time}">00:00</span>
+            </div>
+            <div class="info-item">
+                <strong>📍 Địa điểm:</strong>
+                <span>Phòng tập GymPool Center</span>
+            </div>
+        </div>
+
+        <p>Vui lòng đến trước <strong>10 phút</strong> để khởi động và chuẩn bị tốt nhất nhé! Chúc bạn có một buổi tập tràn đầy năng lượng.</p>
+
+        <p style="margin-top: 30px;">
+            Trân trọng,<br>
+            <b style="color: #059669;">Đội ngũ GymPool</b>
+        </p>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2026 GymPool System. All rights reserved.</p>
+        <p>Đây là email tự động, vui lòng không trả lời email này.</p>
+    </div>
+</div>
+</body>
+</html>
