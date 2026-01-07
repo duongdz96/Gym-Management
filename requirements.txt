@@ -8,3 +8,4 @@ pandas
 tqdm
 mysql-connector-python
 bcrypt
+tf-keras
