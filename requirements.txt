@@ -1,7 +1,7 @@
 numpy
 opencv-python
 scipy
-tensorflow[and-cuda]>=2.15.0
+tensorflow
 deepface
 pillow
 pandas
