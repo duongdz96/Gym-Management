@@ -55,6 +55,16 @@ const startEditingHeight = () => {
 
 const saveCurrentWeight = async () => {
   if (selectedMember.value) {
+    // Validate weight
+    if (!tempCurrentWeight.value || tempCurrentWeight.value <= 0) {
+      toast.error("Cân nặng phải lớn hơn 0 kg!");
+      return;
+    }
+    if (tempCurrentWeight.value > 500) {
+      toast.error("Cân nặng không hợp lệ (tối đa 500 kg)!");
+      return;
+    }
+    
     try {
       // Kiểm tra xem member này có student profile chưa
       const profileRes = await api.get("/studentprofile");
@@ -108,6 +118,16 @@ const saveCurrentWeight = async () => {
 
 const saveCurrentHeight = async () => {
   if (selectedMember.value) {
+    // Validate height
+    if (!tempCurrentHeight.value || tempCurrentHeight.value <= 0) {
+      toast.error("Chiều cao phải lớn hơn 0 cm!");
+      return;
+    }
+    if (tempCurrentHeight.value < 50 || tempCurrentHeight.value > 300) {
+      toast.error("Chiều cao không hợp lệ (từ 50-300 cm)!");
+      return;
+    }
+    
     try {
       // Kiểm tra xem member này có student profile chưa
       const profileRes = await api.get("/studentprofile");
@@ -452,8 +472,10 @@ onMounted(async () => {
                   v-model.number="tempCurrentWeight"
                   type="number"
                   class="text-base sm:text-lg text-gray-900 border border-gray-300 rounded px-2 py-1 w-20"
-                  min="0"
+                  min="1"
+                  max="500"
                   step="0.1"
+                  placeholder="kg"
                 />
                 <span v-else class="text-base sm:text-lg text-gray-900"
                   >{{ selectedMember.weight }} kg</span
@@ -491,8 +513,10 @@ onMounted(async () => {
                   v-model.number="tempCurrentHeight"
                   type="number"
                   class="text-base sm:text-lg text-gray-900 border border-gray-300 rounded px-2 py-1 w-20"
-                  min="0"
+                  min="50"
+                  max="300"
                   step="1"
+                  placeholder="cm"
                 />
                 <span v-else class="text-base sm:text-lg text-gray-900"
                   >{{ selectedMember.height }} cm</span
@@ -593,7 +617,7 @@ onMounted(async () => {
             <div v-if="upcomingSessions.length === 0" class="mt-1 text-gray-500">Không có buổi tập sắp tới</div>
             <div v-else class="mt-1 space-y-2">
               <div v-for="session in upcomingSessions" :key="session.id" class="border rounded p-2 sm:p-3 bg-gray-50">
-                <p class="text-xs sm:text-sm font-medium">{{ new Date(session.startTime).toLocaleDateString() }}</p>
+                <p class="text-xs sm:text-sm font-medium">{{ new Date(session.startTime).toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }) }}</p>
                 <p class="text-xs sm:text-sm text-gray-600">{{ formatTimeRange(session.startTime, session.endTime) }}</p>
                 <p class="text-xs sm:text-sm text-gray-600">{{ session.ptPackageIssued?.ptPackage?.name || 'Session' }}</p>
               </div>

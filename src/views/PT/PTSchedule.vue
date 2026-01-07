@@ -55,12 +55,18 @@ function getStatusText(status) {
 }
 
 function formatTimeRange(startIso, endIso) {
+  // Convert UTC to local time
   const s = new Date(startIso);
   const e = new Date(endIso);
   const pad = (n) => String(n).padStart(2, "0");
-  return `${pad(s.getHours())}:${pad(s.getMinutes())} - ${pad(
-    e.getHours()
-  )}:${pad(e.getMinutes())}`;
+  
+  // Get local hours and minutes
+  const startHours = s.getHours();
+  const startMinutes = s.getMinutes();
+  const endHours = e.getHours();
+  const endMinutes = e.getMinutes();
+  
+  return `${pad(startHours)}:${pad(startMinutes)} - ${pad(endHours)}:${pad(endMinutes)}`;
 }
 
 // Function to fetch schedule from backend
@@ -801,7 +807,7 @@ onMounted(async () => {
                 ]"
                 :title="isSelectedDatePast ? 'Không thể đăng ký lớp cho ngày trong quá khứ' : ''"
               >
-                + Đăng ký lớp mới
+                + Đăng ký buổi tập mới
               </button>
               <button
                 @click="closeModal"
@@ -881,7 +887,7 @@ onMounted(async () => {
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
               </svg>
-              Đăng ký lớp mới - {{ registerDate ? registerDate.toLocaleDateString("vi-VN") : "" }}
+              Đăng ký buổi tập mới - {{ registerDate ? registerDate.toLocaleDateString("vi-VN") : "" }}
             </h3>
             <button
               @click="closeRegisterModal"
@@ -1166,7 +1172,7 @@ onMounted(async () => {
                 Kết thúc lớp
               </button>
               <button
-                v-if="selectedTodayEvent.status !== 'Completed' && selectedTodayEvent.status !== 'Cancelled'"
+                v-if="selectedTodayEvent.status !== 'Completed' && selectedTodayEvent.status !== 'Cancelled' && selectedTodayEvent.status !== 'In Progress'"
                 @click="cancelClass(selectedTodayEvent.id); closeTodayModal()"
                 class="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
               >
