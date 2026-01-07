@@ -301,7 +301,7 @@ const fetchMemberPackages = async (memberId) => {
         totalSessions: totalSessions,
         usedSessions: usedSessions,
         remainingSessions: remainingSessions,
-        status: pkg.ptPackage?.status === 'Active' ? 'active' : 'expired',
+        status: remainingSessions > 0 ? 'active' : 'expired',
         expiryDate: null // API doesn't provide expiry date
       };
     });

@@ -35,6 +35,7 @@ const route = useRoute()
 const customerId = route.params.id as string
 const profile = ref<MemberDetail | null>(null)
 const checkinHistory = ref<Array<{date: string, time: string, status: string}>>([])
+const memberPackages = ref<Array<any>>([])
 const isLoading = ref(true)
 
 // --- Filters ---
@@ -97,6 +98,32 @@ onMounted(async () => {
       }).sort((a: any, b: any) => new Date(b.date + ' ' + b.time).getTime() - new Date(a.date + ' ' + a.time).getTime())
     } catch (accessLogErr) {
       console.warn('No access log found for this member', accessLogErr)
+    }
+
+    // 4. Fetch PT packages
+    try {
+      const packagesRes = await api.get('/packageissued')
+      const allPackages = packagesRes.data || []
+      
+      memberPackages.value = allPackages
+        .filter((pkg: any) => pkg.member?.id === parseInt(customerId))
+        .map((pkg: any) => {
+          const totalSessions = pkg.ptPackage?.sessions || 0
+          const remainingSessions = pkg.remainingSessions || 0
+          const usedSessions = totalSessions - remainingSessions
+          
+          return {
+            id: pkg.id,
+            name: pkg.ptPackage?.name || 'Gói PT',
+            totalSessions: totalSessions,
+            usedSessions: usedSessions,
+            remainingSessions: remainingSessions,
+            status: remainingSessions > 0 ? 'active' : 'expired',
+            ptName: pkg.pt?.fullName || 'N/A'
+          }
+        })
+    } catch (packagesErr) {
+      console.warn('No PT packages found for this member', packagesErr)
     }
     
   } catch (err) {
@@ -258,6 +285,36 @@ const getStatusColor = (status: string) => {
                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.55 16.55-1.11 1.11a4.13 4.13 0 0 1-5.83 0L12 15l-2.61 2.61a4.13 4.13 0 0 1-5.83-5.83l1.11-1.11"/><path d="m10.89 10.89 1.11 1.11"/></svg>
               </div>
            </div>
+        </div>
+
+        <div v-if="memberPackages.length > 0" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-sm font-bold text-gray-900 uppercase mb-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Gói PT đã đăng ký
+          </h3>
+          <div class="space-y-3">
+            <div v-for="pkg in memberPackages" :key="pkg.id" class="border rounded-lg p-4 bg-gray-50">
+              <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
+                <div>
+                  <p class="text-sm font-medium text-gray-900">{{ pkg.name }}</p>
+                  <p class="text-xs text-gray-600">PT: {{ pkg.ptName }}</p>
+                  <p class="text-xs text-gray-600">Còn lại: {{ pkg.remainingSessions }} / {{ pkg.totalSessions }} buổi</p>
+                </div>
+                <span :class="[
+                  'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                  pkg.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                ]">
+                  {{ pkg.status === 'active' ? 'Đang hoạt động' : 'Hết hạn' }}
+                </span>
+              </div>
+              <div class="bg-gray-200 rounded-full h-2">
+                <div
+                  class="bg-indigo-600 h-2 rounded-full transition-all"
+                  :style="{ width: `${(pkg.usedSessions / pkg.totalSessions) * 100}%` }"
+                ></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[500px]">
