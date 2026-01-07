@@ -114,8 +114,14 @@ def get_all_member_embeddings():
         
         embeddings_dict = {}
         for member_id, serialized in rows:
-            embeddings = pickle.loads(serialized)
-            embeddings_dict[str(member_id)] = embeddings
+            try:
+                embeddings = pickle.loads(serialized)
+                embeddings_dict[str(member_id)] = embeddings
+            except Exception as e:
+                print(f"⚠️ Warning: Failed to load embeddings for member {member_id}: {e}")
+                print(f"   → Record with member_id={member_id} has corrupt data. Please delete and re-collect faces.")
+                # Bỏ qua record lỗi, tiếp tục với records khác
+                continue
         
         return embeddings_dict
         
@@ -247,9 +253,15 @@ def get_all_employee_embeddings():
         
         embeddings_dict = {}
         for user_id, serialized in rows:
-            embeddings = pickle.loads(serialized)
-            # Prefix để phân biệt với members
-            embeddings_dict[f"emp_{user_id}"] = embeddings
+            try:
+                embeddings = pickle.loads(serialized)
+                # Prefix để phân biệt với members
+                embeddings_dict[f"emp_{user_id}"] = embeddings
+            except Exception as e:
+                print(f"⚠️ Warning: Failed to load embeddings for employee {user_id}: {e}")
+                print(f"   → Record with user_id={user_id} has corrupt data. Please delete and re-collect faces.")
+                # Bỏ qua record lỗi, tiếp tục với records khác
+                continue
         
         return embeddings_dict
         
