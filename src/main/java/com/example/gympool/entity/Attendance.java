@@ -19,10 +19,10 @@ public class Attendance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime checkInTime;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime checkOutTime;
 
     // FK tới Member

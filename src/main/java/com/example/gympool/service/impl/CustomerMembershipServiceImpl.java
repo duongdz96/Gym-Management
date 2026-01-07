@@ -148,18 +148,18 @@ public class CustomerMembershipServiceImpl implements CustomerMembershipService 
             long diffInMillies = oldMem.getEndDate().getTime() - today.getTime();
             long oldDaysRemaining = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
 
-            // Tính đơn giá ngày của gói cũ
+            // Tính ngày/giờ của gói cũ
             long oldDurationDays = getDurationInDays(oldMem.getMembershipPlan().getDuration());
             double oldPricePerDay = oldMem.getMembershipPlan().getPrice() / oldDurationDays;
 
-            // Tính tổng tiền dư (Remaining Value)
+            // Tính tiền dư
             double residualValue = oldDaysRemaining * oldPricePerDay;
 
             // Tính đơn giá ngày của gói mới
             long newDurationDays = getDurationInDays(newPlan.getDuration());
             double newPricePerDay = newPlan.getPrice() / newDurationDays;
 
-            // Tính số ngày được cộng thêm (Extra Days)
+            // Tính số ngày được cộng thêm
             double extraDays = residualValue / newPricePerDay;
 
             // Cộng thêm số ngày này vào hạn chuẩn (đổi ra milliseconds để chính xác cả số lẻ như 1.33 ngày)
@@ -167,11 +167,9 @@ public class CustomerMembershipServiceImpl implements CustomerMembershipService 
             finalEndDate = new Date(standardEndDate.getTime() + extraTimeInMillis);
         }
 
-        // 3. Cập nhật gói cũ
         oldMem.setStatus("Upgraded");
         customerMembershipRepository.save(oldMem);
 
-        // 4. Tạo gói mới
         CustomerMembership newMem = new CustomerMembership();
         newMem.setMember(oldMem.getMember());
         newMem.setMembershipPlan(newPlan);
