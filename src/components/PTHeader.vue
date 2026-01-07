@@ -177,15 +177,49 @@ const handleLogout = () => {
             to="/pt/schedule"
             class="uppercase tracking-wider text-white hover:text-emerald-400"
             @click="isMenuOpen = false"
-            >Lịch trình</RouterLink
-          >
+            >Lịch trình</RouterLink>
+
+          <!-- Workout Dropdown for mobile -->
+          <div class="relative">
+            <button
+              class="flex items-center gap-2 uppercase tracking-wider text-white hover:text-orange-300 transition-colors duration-300 rounded-md w-full"
+              @click="isWorkoutOpen = !isWorkoutOpen"
+              type="button"
+            >
+              <Dumbbell class="h-4 w-4" />
+              <span>Bài tập</span>
+              <ChevronDown class="w-4 h-4" />
+            </button>
+            <transition name="fade">
+              <div
+                v-if="isWorkoutOpen"
+                class="mt-2 bg-white rounded-md shadow-lg border border-gray-200 z-50 flex flex-col"
+              >
+                <RouterLink
+                  to="/pt/workout/exercises"
+                  class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100 transition"
+                  @click="isMenuOpen = false; isWorkoutOpen = false"
+                >
+                  <Dumbbell class="w-4 h-4" />
+                  Bài tập
+                </RouterLink>
+                <RouterLink
+                  to="/pt/workout/routines"
+                  class="flex items-center gap-2 px-4 py-2 text-gray-800 hover:bg-gray-100 transition"
+                  @click="isMenuOpen = false; isWorkoutOpen = false"
+                >
+                  <Users class="w-4 h-4" />
+                  Cộng đồng
+                </RouterLink>
+              </div>
+            </transition>
+          </div>
 
           <RouterLink
             to="/pt/sessions"
             class="uppercase tracking-wider text-white hover:text-emerald-400"
             @click="isMenuOpen = false"
-            >Buổi tập</RouterLink
-          >
+            >Buổi tập</RouterLink>
         </nav>
       </div>
     </transition>

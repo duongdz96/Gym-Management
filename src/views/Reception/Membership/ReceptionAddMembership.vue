@@ -311,12 +311,12 @@ const submitNewCustomer = async () => {
 // Submit existing customer (renew or upgrade)
 const submitExistingCustomer = async () => {
   if (!existingCustomerState.value.selectedMember || !existingCustomerState.value.currentMembership) {
-    alert("Vui lòng chọn khách hàng");
+    toast.error("Vui lòng chọn khách hàng");
     return;
   }
 
   if (!existingCustomerState.value.selectedPlanId) {
-    alert("Vui lòng chọn gói thành viên");
+    toast.error("Vui lòng chọn gói thành viên");
     return;
   }
 
@@ -328,18 +328,18 @@ const submitExistingCustomer = async () => {
       await api.post(`/membership/${currentMembershipId}/renew`, null, {
         params: { newPlanId },
       });
-      alert("Gia hạn thành công!");
+      toast.success("Gia hạn thành công!");
     } else if (actionType.value === "upgrade") {
       await api.post(`/membership/${currentMembershipId}/upgrade`, null, {
         params: { newPlanId },
       });
-      alert("Nâng cấp thành công!");
+      toast.success("Nâng cấp thành công!");
     }
 
     router.push({ name: "reception.memberships" });
   } catch (error) {
     console.error("Error processing membership:", error);
-    alert("Có lỗi xảy ra. Vui lòng thử lại.");
+    toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
   }
 };
 
@@ -354,7 +354,7 @@ const loadData = async () => {
     members.value = memberRes.data;
   } catch (error) {
     console.error("Error loading data:", error);
-    alert("Không thể tải dữ liệu. Vui lòng thử lại.");
+    toast.error("Không thể tải dữ liệu. Vui lòng thử lại.");
   }
 };
 
