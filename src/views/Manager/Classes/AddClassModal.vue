@@ -643,6 +643,17 @@ const getPatternTypeText = (type) => {
   return map[type] || type;
 };
 
+// Helper function to format datetime in local timezone
+const formatLocalDateTime = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+};
+
 const updatePreview = async () => {
   const sessions = [];
   const start = new Date(newClass.value.startDate);
@@ -659,8 +670,8 @@ const updatePreview = async () => {
         endTime.setHours(endHour, endMin, 0, 0);
         
         sessions.push({
-          startTime: startTime.toISOString(),
-          endTime: endTime.toISOString()
+          startTime: formatLocalDateTime(startTime),
+          endTime: formatLocalDateTime(endTime)
         });
       });
     }
@@ -677,8 +688,8 @@ const updatePreview = async () => {
         endTime.setHours(endHour, endMin, 0, 0);
         
         sessions.push({
-          startTime: startTime.toISOString(),
-          endTime: endTime.toISOString()
+          startTime: formatLocalDateTime(startTime),
+          endTime: formatLocalDateTime(endTime)
         });
       }
       currentDate.setDate(currentDate.getDate() + 1);
@@ -781,8 +792,8 @@ const createClass = async () => {
         const endDateTime = new Date(date);
         endDateTime.setHours(endHour, endMin, 0, 0);
 
-        const startTimeISO = startDateTime.toISOString().slice(0, 19);
-        const endTimeISO = endDateTime.toISOString().slice(0, 19);
+        const startTimeISO = formatLocalDateTime(startDateTime);
+        const endTimeISO = formatLocalDateTime(endDateTime);
 
         const singleSchedulePayload = {
           fitnessClass: { id: fitnessClassId },
