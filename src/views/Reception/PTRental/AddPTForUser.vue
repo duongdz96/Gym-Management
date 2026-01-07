@@ -12,6 +12,20 @@ type Member = {
   membership?: string;
 };
 
+// Định nghĩa Membership
+type Membership = {
+  id: number;
+  startDate: string;
+  endDate: string;
+  status: string;
+  member: Member;
+  membershipPlan: {
+    id: number;
+    name: string;
+    duration: string;
+  };
+};
+
 // Định nghĩa PT
 type PT = {
   id: number;
@@ -43,6 +57,7 @@ const members = ref<Member[]>([]);
 const pts = ref<PT[]>([]);
 const ptPackages = ref<PTPackage[]>([]);
 const packageIssued = ref<PackageIssued[]>([]);
+const memberships = ref<Membership[]>([]);
 const selectedMember = ref<Member | null>(null);
 const searchMember = ref("");
 const toast = useToast();
@@ -72,6 +87,10 @@ onMounted(async () => {
     // Load existing package issued
     const issuedRes = await api.get("/packageissued");
     packageIssued.value = issuedRes.data;
+
+    // Load memberships
+    const membershipRes = await api.get("/membership");
+    memberships.value = membershipRes.data;
   } catch (err) {
     console.error("Error fetching data:", err);
   }
@@ -87,6 +106,17 @@ const filteredMembers = computed(() => {
 
 const activePTPackages = computed(() => {
   return ptPackages.value.filter(pkg => pkg.status === "Active");
+});
+
+// Check if selected member's membership is valid
+const selectedMemberMembership = computed(() => {
+  if (!selectedMember.value) return null;
+  return memberships.value.find(m => m.member.id === selectedMember.value!.id);
+});
+
+const isMembershipExpired = computed(() => {
+  if (!selectedMemberMembership.value) return true; // No membership = expired
+  return selectedMemberMembership.value.status === "Expired";
 });
 
 // Check if member already has a PT package assigned
@@ -116,6 +146,12 @@ const submitPTAssignment = async () => {
 
   if (!remainingSessions.value || remainingSessions.value <= 0) {
     toast.warning("Vui lòng chọn gói PT trước!");
+    return;
+  }
+
+  // Check if membership is expired
+  if (isMembershipExpired.value) {
+    toast.error("Không thể đăng ký gói PT! Gói membership đã hết hạn. Vui lòng gia hạn membership trước.");
     return;
   }
 
@@ -203,13 +239,39 @@ const submitPTAssignment = async () => {
 
         <div class="flex-1 p-6">
           <div v-if="selectedMember" class="space-y-6">
-            <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+            <div :class="[
+              'p-4 rounded-lg border',
+              isMembershipExpired ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'
+            ]">
               <h3 class="text-lg font-semibold text-gray-900">Member đã chọn</h3>
               <p class="text-gray-700">{{ selectedMember.fullName }}</p>
               <p class="text-gray-600">{{ selectedMember.email }}</p>
-              <p v-if="selectedMember.membership" class="text-xs text-emerald-600 font-medium mt-1">
+              <p v-if="selectedMember.membership" class="text-xs font-medium mt-1" :class="isMembershipExpired ? 'text-red-600' : 'text-emerald-600'">
                 Gói: {{ selectedMember.membership }}
               </p>
+              <div v-if="selectedMemberMembership" class="mt-2 pt-2 border-t" :class="isMembershipExpired ? 'border-red-200' : 'border-emerald-200'">
+                <p class="text-xs text-gray-600">Gói membership: {{ selectedMemberMembership.membershipPlan.name }}</p>
+                <p class="text-xs text-gray-600">Hạn sử dụng: {{ new Date(selectedMemberMembership.endDate).toLocaleDateString('vi-VN') }}</p>
+                <p class="text-xs font-semibold mt-1" :class="isMembershipExpired ? 'text-red-600' : 'text-emerald-600'">
+                  Trạng thái: {{ isMembershipExpired ? 'Đã hết hạn' : 'Còn hạn' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Warning message if membership is expired -->
+            <div v-if="isMembershipExpired" class="bg-red-50 p-4 rounded-lg border-2 border-red-300">
+              <div class="flex items-start gap-3">
+                <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <div>
+                  <h4 class="text-sm font-bold text-red-800 mb-1">Gói membership đã hết hạn!</h4>
+                  <p class="text-xs text-red-700">
+                    Member này không thể đăng ký gói PT vì gói membership đã hết hạn. 
+                    Vui lòng gia hạn membership trước khi đăng ký gói PT.
+                  </p>
+                </div>
+              </div>
             </div>
 
             <!-- Danh sách gói PT đã đăng ký -->
@@ -298,9 +360,15 @@ const submitPTAssignment = async () => {
               <!-- Submit Button -->
               <button
                 type="submit"
-                class="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                :disabled="isMembershipExpired"
+                :class="[
+                  'w-full px-4 py-3 rounded-lg font-semibold transition-all',
+                  isMembershipExpired
+                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:shadow-lg'
+                ]"
               >
-                Đăng ký Gói PT
+                {{ isMembershipExpired ? 'Không thể đăng ký (Membership hết hạn)' : 'Đăng ký Gói PT' }}
               </button>
             </form>
           </div>

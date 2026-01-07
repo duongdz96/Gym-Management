@@ -35,13 +35,22 @@ const schedule = ref([]);
 // Helpers
 function toDateStr(iso) {
   const d = new Date(iso);
-  return (
-    d.getFullYear() +
-    "-" +
-    String(d.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(d.getDate()).padStart(2, "0")
-  );
+  // Get local date in Vietnam timezone (UTC+7)
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+// Helper to convert Date to ISO string WITHOUT timezone conversion
+function toLocalISOString(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 }
 
 function getStatusText(status) {
@@ -55,12 +64,12 @@ function getStatusText(status) {
 }
 
 function formatTimeRange(startIso, endIso) {
-  // Convert UTC to local time
+  // Convert UTC to Vietnam local time (UTC+7)
   const s = new Date(startIso);
   const e = new Date(endIso);
   const pad = (n) => String(n).padStart(2, "0");
   
-  // Get local hours and minutes
+  // Get local hours and minutes (JavaScript automatically converts to system timezone)
   const startHours = s.getHours();
   const startMinutes = s.getMinutes();
   const endHours = e.getHours();
@@ -101,16 +110,17 @@ async function fetchSchedule(query = "") {
 
     // Map backend appointment shape to the calendar event shape expected by this component
     schedule.value = ptAppointments.map((appt) => {
-      const start = appt.startTime;
-      const end = appt.endTime;
-      const dateStr = toDateStr(start);
+      // Ensure we're working with Date objects from ISO strings
+      const startDateTime = new Date(appt.startTime);
+      const endDateTime = new Date(appt.endTime);
+      const dateStr = toDateStr(appt.startTime);
 
       const event = {
         id: appt.id,
         // calendar uses a date string YYYY-MM-DD to group events per day
         date: dateStr,
-        // user-facing time range
-        time: formatTimeRange(start, end),
+        // user-facing time range - pass Date objects to formatTimeRange
+        time: formatTimeRange(startDateTime.toISOString(), endDateTime.toISOString()),
         // show member name (fallback to package/member or pt if missing)
         name:
           appt.ptPackageIssued?.member?.fullName ||
@@ -127,7 +137,7 @@ async function fetchSchedule(query = "") {
         raw: appt,
       };
       
-      console.log('Mapped event:', event.id, 'Date:', dateStr, 'Name:', event.name);
+      console.log('Mapped event:', event.id, 'Date:', dateStr, 'Time:', event.time, 'Start ISO:', appt.startTime);
       return event;
     });
     
@@ -586,20 +596,21 @@ async function registerNewClass() {
   }
 
   try {
-    // Format datetime to ISO string
+    // Format datetime WITHOUT timezone conversion - keep local time as-is
+    // User chọn 5:37 AM → Gửi lên server đúng 5:37 AM (không trừ 7 giờ)
     const startDateTime = new Date(registerDate.value);
     startDateTime.setHours(startHours, startMinutes, 0, 0);
     
     const endDateTime = new Date(registerDate.value);
     endDateTime.setHours(endHours, endMinutes, 0, 0);
     
-    // Prepare payload with nested objects (PT is also the staff creating the appointment)
+    // Dùng toLocalISOString thay vì toISOString() để GIỮ NGUYÊN giờ local
     const payload = {
       ptPackageIssued: { id: selectedPackage.value.id },
       pt: { id: authStore.user.id },
       staff: { id: authStore.user.id },
-      startTime: startDateTime.toISOString(),
-      endTime: endDateTime.toISOString(),
+      startTime: toLocalISOString(startDateTime),
+      endTime: toLocalISOString(endDateTime),
       status: "Scheduled"
     };
     
@@ -688,27 +699,28 @@ onMounted(async () => {
     <!-- Calendar -->
     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
       <!-- Header -->
-      <div class="p-4 sm:p-6 bg-white border-b border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 class="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-          <svg class="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="p-3 sm:p-6 bg-white border-b border-gray-100 flex justify-between items-center">
+        <h2 class="text-base sm:text-xl font-bold text-gray-800 flex items-center gap-1 sm:gap-2">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
           </svg>
-          Lịch Dạy - Tháng {{ currentMonth + 1 }}/{{ currentYear }}
+          <span class="hidden sm:inline">Lịch Dạy - Tháng {{ currentMonth + 1 }}/{{ currentYear }}</span>
+          <span class="sm:hidden">T{{ currentMonth + 1 }}/{{ currentYear }}</span>
         </h2>
-        <div class="flex gap-2 justify-center sm:justify-end">
+        <div class="flex gap-1 sm:gap-2">
           <button
             @click="previousMonth"
-            class="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+            class="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
           >
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
           </button>
           <button
             @click="nextMonth"
-            class="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+            class="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
           >
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
           </button>
@@ -716,51 +728,52 @@ onMounted(async () => {
       </div>
 
       <!-- Calendar Grid -->
-      <div class="p-4 overflow-x-auto">
+      <div class="p-2 sm:p-4">
         <!-- Days Header -->
-        <div class="grid grid-cols-7 mb-2 min-w-[700px]">
+        <div class="grid grid-cols-7 mb-1 sm:mb-2">
           <div
             v-for="day in ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']"
             :key="day"
-            class="text-center font-semibold text-gray-500 py-2 text-sm uppercase tracking-wider"
+            class="text-center font-semibold text-gray-500 py-1 sm:py-2 text-xs sm:text-sm uppercase tracking-wider"
           >
             {{ day }}
           </div>
         </div>
 
         <!-- Days Grid -->
-        <div class="grid grid-cols-7 gap-2 min-w-[700px]">
+        <div class="grid grid-cols-7 gap-1 sm:gap-2">
           <div
             v-for="dayData in calendarDays"
             :key="dayData.date.toISOString()"
-            class="min-h-[100px] border rounded-xl p-2 transition-all relative group"
+            class="min-h-[60px] sm:min-h-[100px] border rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all relative group"
             :class="[
-              !dayData.isCurrentMonth ? 'bg-gray-50/50 border-transparent' : dayData.date.setHours(0,0,0,0) < new Date().setHours(0,0,0,0) ? 'bg-gray-100/70 border-gray-200 opacity-60 cursor-not-allowed' : 'bg-white border-gray-100 hover:border-emerald-300 hover:shadow-md cursor-pointer',
-              dayData.isToday ? 'ring-2 ring-emerald-500 ring-offset-1' : '',
+              !dayData.isCurrentMonth ? 'bg-gray-50/50 border-transparent' : dayData.date.setHours(0,0,0,0) < new Date().setHours(0,0,0,0) ? 'bg-gray-100/70 border-gray-200 opacity-60 cursor-not-allowed' : 'bg-white border-gray-100 hover:border-green-300 hover:shadow-md cursor-pointer',
+              dayData.isToday ? 'ring-1 sm:ring-2 ring-green-500 ring-offset-1' : '',
               dayData.events.length > 0 ? '' : ''
             ]"
             @click="selectDate(dayData)"
           >
             <template v-if="dayData.isCurrentMonth">
               <span
-                class="text-sm font-medium block mb-1"
-                :class="dayData.isToday ? 'text-emerald-600 font-bold' : 'text-gray-700'"
+                class="text-xs sm:text-sm font-medium block mb-0.5 sm:mb-1"
+                :class="dayData.isToday ? 'text-green-600 font-bold' : 'text-gray-700'"
               >
                 {{ dayData.day }}
               </span>
 
               <!-- Events -->
-              <div class="space-y-1">
+              <div class="space-y-0.5 sm:space-y-1">
                 <div
                   v-for="event in dayData.events.slice(0, 3)"
                   :key="event.id"
-                  class="text-xs truncate px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100"
+                  class="text-[10px] sm:text-xs truncate px-1 sm:px-1.5 py-0.5 rounded bg-green-50 text-green-700 border border-green-100"
                   :title="`${event.time} - ${event.name}`"
                 >
-                  {{ event.time }} {{ event.name }}
+                  <span class="hidden sm:inline">{{ event.time }} {{ event.name }}</span>
+                  <span class="sm:hidden">{{ event.time }}</span>
                 </div>
-                <div v-if="dayData.events.length > 3" class="text-xs text-gray-500">
-                  +{{ dayData.events.length - 3 }} more
+                <div v-if="dayData.events.length > 3" class="text-[10px] sm:text-xs text-gray-500 px-1 sm:px-1.5">
+                  +{{ dayData.events.length - 3 }}
                 </div>
                 <!-- Empty day indicator - only show for current or future dates -->
                 <div v-if="dayData.events.length === 0 && new Date(dayData.date).setHours(0,0,0,0) >= new Date().setHours(0,0,0,0)" class="text-xs text-center text-gray-400 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
