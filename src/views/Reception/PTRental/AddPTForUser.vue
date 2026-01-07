@@ -52,6 +52,9 @@ const selectedPT = ref<PT | null>(null);
 const selectedPackage = ref<PTPackage | null>(null);
 const remainingSessions = ref<number | null>(null);
 
+// Member's existing packages
+const memberExistingPackages = ref<PackageIssued[]>([]);
+
 onMounted(async () => {
   try {
     // Load members
@@ -87,26 +90,21 @@ const activePTPackages = computed(() => {
 });
 
 // Check if member already has a PT package assigned
-const getMemberPackage = (memberId: number) => {
-  return packageIssued.value.find(pkg => pkg.member.id === memberId);
+const getMemberPackages = (memberId: number) => {
+  return packageIssued.value.filter(pkg => pkg.member.id === memberId);
 };
 
 // Functions
 const selectMember = (member: Member) => {
   selectedMember.value = member;
   
-  // Check if member already has a package and pre-fill the form
-  const existingPackage = getMemberPackage(member.id);
-  if (existingPackage) {
-    selectedPT.value = existingPackage.pt;
-    selectedPackage.value = existingPackage.ptPackage;
-    remainingSessions.value = existingPackage.remainingSessions;
-  } else {
-    // Reset form
-    selectedPT.value = null;
-    selectedPackage.value = null;
-    remainingSessions.value = null;
-  }
+  // Load all packages for this member
+  memberExistingPackages.value = getMemberPackages(member.id);
+  
+  // Reset form để đăng ký gói mới
+  selectedPT.value = null;
+  selectedPackage.value = null;
+  remainingSessions.value = null;
 };
 
 const submitPTAssignment = async () => {
@@ -122,8 +120,6 @@ const submitPTAssignment = async () => {
   }
 
   try {
-    const existingPackage = getMemberPackage(selectedMember.value.id);
-    
     // Payload gửi đi
     const payload = {
       member: { id: selectedMember.value.id },
@@ -132,26 +128,21 @@ const submitPTAssignment = async () => {
       remainingSessions: remainingSessions.value
     };
 
-    if (existingPackage) {
-      // 2. Update (PUT)
-      await api.put(`/packageissued/${existingPackage.id}`, payload);
-      toast.success("Cập nhật gói PT thành công!");
-    } else {
-      // 3. Create (POST)
-      await api.post("/packageissued", payload);
-      toast.success("Đăng ký gói PT thành công!");
-    }
+    // Luôn tạo mới (cho phép member có nhiều gói PT)
+    await api.post("/packageissued", payload);
+    toast.success("Đăng ký gói PT thành công!");
     
-    // 4. Reload data
+    // Reload data
     const issuedRes = await api.get("/packageissued");
     packageIssued.value = issuedRes.data;
     
-    // 5. Reset form (Giữ lại list nhưng clear selection)
-    selectedMember.value = null;
+    // Reload member's packages
+    memberExistingPackages.value = getMemberPackages(selectedMember.value.id);
+    
+    // Reset form
     selectedPT.value = null;
     selectedPackage.value = null;
     remainingSessions.value = null;
-    searchMember.value = ""; // Reset thanh tìm kiếm nếu muốn
 
   } catch (err) {
     console.error("Error assigning PT:", err);
@@ -221,7 +212,44 @@ const submitPTAssignment = async () => {
               </p>
             </div>
 
-            <form @submit.prevent="submitPTAssignment" class="space-y-4">
+            <!-- Danh sách gói PT đã đăng ký -->
+            <div v-if="memberExistingPackages.length > 0" class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <h3 class="text-base font-semibold text-gray-900 mb-3">Gói PT đã đăng ký</h3>
+              <div class="space-y-2">
+                <div 
+                  v-for="pkg in memberExistingPackages" 
+                  :key="pkg.id"
+                  class="bg-white p-3 rounded-lg border border-gray-200"
+                >
+                  <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                      <p class="font-medium text-gray-900">{{ pkg.ptPackage.name }}</p>
+                      <p class="text-sm text-gray-600">PT: {{ pkg.pt.fullName }}</p>
+                      <p class="text-sm text-gray-600">Còn lại: {{ pkg.remainingSessions }}/{{ pkg.ptPackage.sessions }} buổi</p>
+                    </div>
+                    <span 
+                      :class="[
+                        'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                        pkg.ptPackage.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      ]"
+                    >
+                      {{ pkg.ptPackage.status === 'Active' ? 'Đang hoạt động' : 'Không hoạt động' }}
+                    </span>
+                  </div>
+                  <div class="mt-2 bg-gray-200 rounded-full h-2">
+                    <div
+                      class="bg-emerald-600 h-2 rounded-full transition-all"
+                      :style="{ width: `${((pkg.ptPackage.sessions - pkg.remainingSessions) / pkg.ptPackage.sessions) * 100}%` }"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form đăng ký gói mới -->
+            <form @submit.prevent="submitPTAssignment" class="space-y-4 bg-white p-4 rounded-lg border-2 border-emerald-200">
+              <h3 class="text-base font-semibold text-gray-900">Đăng ký gói PT mới</h3>
+              
               <!-- Assigned PT -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Chọn PT</label>
@@ -272,7 +300,7 @@ const submitPTAssignment = async () => {
                 type="submit"
                 class="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
               >
-                {{ getMemberPackage(selectedMember.id) ? 'Cập nhật Gói PT' : 'Đăng ký Gói PT' }}
+                Đăng ký Gói PT
               </button>
             </form>
           </div>
