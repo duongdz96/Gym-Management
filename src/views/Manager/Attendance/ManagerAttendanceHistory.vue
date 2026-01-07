@@ -30,16 +30,22 @@ const fetchAttendanceData = async () => {
       const checkInDate = new Date(item.checkInTime)
       const checkOutDate = item.checkOutTime ? new Date(item.checkOutTime) : null
       
-      // Extract time strings
+      // Extract time strings (local time)
       const checkIn = checkInDate.toTimeString().split(' ')[0].substring(0, 5) // HH:MM format
       const checkOut = checkOutDate ? checkOutDate.toTimeString().split(' ')[0].substring(0, 5) : null
+      
+      // Extract date in local timezone (avoid timezone conversion issues)
+      const year = checkInDate.getFullYear()
+      const month = String(checkInDate.getMonth() + 1).padStart(2, '0')
+      const day = String(checkInDate.getDate()).padStart(2, '0')
+      const dateStr = `${year}-${month}-${day}`
       
       // Determine status - Thành công if has both check-in and check-out, Chưa check out otherwise
       const status: 'Thành công' | 'Chưa check out' = checkOutDate ? 'Thành công' : 'Chưa check out'
       
       return {
         id: item.id,
-        date: checkInDate.toISOString().split('T')[0],
+        date: dateStr,
         checkIn,
         checkOut,
         status
