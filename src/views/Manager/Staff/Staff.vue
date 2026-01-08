@@ -2,7 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import api from '@/services/api'
-import { useToast } from 'vue-toastification'import Swal from 'sweetalert2';
+import { useToast } from 'vue-toastification'
+import Swal from 'sweetalert2';
 
 type User = {
   id: number
