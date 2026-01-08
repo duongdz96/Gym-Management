@@ -256,8 +256,8 @@ export const unifiedApi = {
 
         // Get schedules to determine maxStudents and schedule info
         let maxStudents = 20;
-        let startTime = '07:00';
-        let endTime = '08:30';
+        let startTime = 'Tuỳ chỉnh';
+        let endTime = 'Tuỳ chỉnh';
         let daysOfWeek = [];
         let startDate = '';
         let endDate = '';

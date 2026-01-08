@@ -313,6 +313,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
+import Swal from 'sweetalert2';
 import unifiedApi from '@/services/unifiedClassApi.js';
 import { formatDateTime } from '@/views/Test/dateUtils.js';
 import { 
@@ -516,7 +517,18 @@ const classHasApprovedTeacher = (classId) => {
 };
 
 const autoReject = async (app) => {
-  if (confirm('Từ chối giáo viên này vì lớp đã có giáo viên được duyệt?')) {
+  const result = await Swal.fire({
+    title: 'Xác nhận từ chối?',
+    text: 'Từ chối giáo viên này vì lớp đã có giáo viên được duyệt?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#EF4444',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Từ chối',
+    cancelButtonText: 'Hủy'
+  });
+  
+  if (result.isConfirmed) {
     try {
       await unifiedApi.rejectTeacher(app.id, 'manager', 'Đã chọn giáo viên khác');
       toast.success('Đã từ chối đơn đăng ký');
@@ -533,7 +545,18 @@ const approve = async (app) => {
     return;
   }
   
-  if (confirm('Bạn có chắc muốn duyệt giáo viên này?')) {
+  const result = await Swal.fire({
+    title: 'Xác nhận duyệt?',
+    text: 'Bạn có chắc muốn duyệt giáo viên này?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10B981',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Duyệt',
+    cancelButtonText: 'Hủy'
+  });
+  
+  if (result.isConfirmed) {
     try {
       await unifiedApi.approveTeacher(app.id, 'manager');
       toast.success('Đã duyệt giáo viên thành công!');

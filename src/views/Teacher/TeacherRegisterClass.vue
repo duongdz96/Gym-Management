@@ -277,6 +277,7 @@ import {
   X
 } from 'lucide-vue-next';
 import { useToast } from 'vue-toastification';
+import Swal from 'sweetalert2';
 
 const authStore = useAuthStore();
 const toast = useToast();
@@ -434,7 +435,18 @@ const applyToTeach = async (cls) => {
     return;
   }
   
-  if (confirm(`Bạn có chắc muốn đăng ký dạy lớp "${cls.name}"?`)) {
+  const result = await Swal.fire({
+    title: 'Xác nhận đăng ký?',
+    text: `Bạn có chắc muốn đăng ký dạy lớp "${cls.name}"?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10B981',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Đăng ký',
+    cancelButtonText: 'Hủy'
+  });
+  
+  if (result.isConfirmed) {
     try {
       await unifiedApi.applyToTeach(cls.id, currentTeacherId.value);
       toast.success('Đăng ký thành công! Vui lòng chờ quản lý duyệt.');

@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import api from '@/services/api'
 import { useToast } from 'vue-toastification'
-
+import Swal from 'sweetalert2';
 
 type User = {
   id: number
@@ -48,7 +48,18 @@ const formatDate = (dateString: string) => {
 }
 
 const deleteStaff = async (user: User) => {
-  if (!confirm(`Bạn có chắc chắn muốn xóa nhân viên "${user.fullName}"?`)) {
+  const result = await Swal.fire({
+    title: 'Xác nhận xóa?',
+    text: `Bạn có chắc chắn muốn xóa nhân viên "${user.fullName}"?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#EF4444',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Xóa',
+    cancelButtonText: 'Hủy'
+  });
+  
+  if (!result.isConfirmed) {
     return
   }
 
