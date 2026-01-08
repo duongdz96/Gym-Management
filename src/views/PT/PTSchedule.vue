@@ -461,6 +461,24 @@ function getEventsForDate(date) {
   return schedule.value.filter((item) => item.date === dateStr);
 }
 
+// Helper function to check if two time ranges overlap
+function checkTimeConflict(start1, end1, start2, end2) {
+  // Convert time strings to minutes for easier comparison
+  const timeToMinutes = (timeStr) => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+  
+  const start1Min = timeToMinutes(start1);
+  const end1Min = timeToMinutes(end1);
+  const start2Min = timeToMinutes(start2);
+  const end2Min = timeToMinutes(end2);
+  
+  // Two time ranges overlap if:
+  // (start1 < end2) AND (end1 > start2)
+  return (start1Min < end2Min) && (end1Min > start2Min);
+}
+
 function previousMonth() {
   currentDate.value = new Date(currentYear.value, currentMonth.value - 1, 1);
 }
@@ -592,6 +610,29 @@ async function registerNewClass() {
   
   if (endHours < startHours || (endHours === startHours && endMinutes <= startMinutes)) {
     toast.error("Giờ kết thúc phải sau giờ bắt đầu!");
+    return;
+  }
+
+  // Check for time conflicts with existing appointments on the same date
+  const existingEventsOnDate = getEventsForDate(registerDate.value);
+  const hasConflict = existingEventsOnDate.some(event => {
+    // Skip cancelled appointments
+    if (event.status === 'Cancelled') return false;
+    
+    // Extract time range from event
+    const [eventStart, eventEnd] = event.time.split(' - ');
+    
+    // Check if time ranges overlap
+    return checkTimeConflict(
+      selectedStartTime.value,
+      selectedEndTime.value,
+      eventStart,
+      eventEnd
+    );
+  });
+  
+  if (hasConflict) {
+    toast.error("Thời gian này đã có buổi tập khác! Vui lòng chọn thời gian khác.");
     return;
   }
 
