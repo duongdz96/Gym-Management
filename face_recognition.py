@@ -359,13 +359,11 @@ def show_success_notification(frame, person_name, action_type, is_employee):
 
     # Success message
     if is_employee:
-        message = f"Employee {action_type.upper()}"
+        action_text = "VAO" if action_type == 'in' else "RA"
+        message = f"NHAN VIEN {action_text}"
     else:
         # Member check-in
-        if action_type == "check-in-updated":
-            message = "CHECK-IN UPDATED"
-        else:
-            message = "CHECK-IN SUCCESS"
+        message = "CHECK-IN THANH CONG"
 
     cv2.putText(notification_frame, message, (box_x + 90, box_y + 180),
                cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 3)
@@ -395,9 +393,9 @@ def create_info_panel(frame, info_dict):
     header_height = 80
     cv2.rectangle(canvas, (width + 10, 10), (width + panel_width - 10, header_height),
                   (100, 50, 0), -1)  # Blue gradient
-    cv2.putText(canvas, "FACE RECOGNITION", (width + 40, 45),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-    cv2.putText(canvas, f"Model: {config.FACE_MODEL}", (width + 60, 70),
+    cv2.putText(canvas, "NHAN DIEN KHUON MAT", (width + 30, 45),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 2)
+    cv2.putText(canvas, f"Mo hinh: {config.FACE_MODEL}", (width + 50, 70),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 255, 255), 1)
 
     # Person info
@@ -423,16 +421,17 @@ def create_info_panel(frame, info_dict):
         line_height = 35
 
         lines = [
-            f"ID: {info_dict.get('id', 'N/A')}",
-            f"Name: {info_dict.get('name', 'Unknown')}",
-            f"Status: {info_dict.get('status', 'N/A')}",
+            f"Ma: {info_dict.get('id', 'N/A')}",
+            f"Ten: {info_dict.get('name', 'Khong xac dinh')}",
+            f"Trang thai: {info_dict.get('status', 'N/A')}",
         ]
 
         if info_dict.get('is_employee'):
-            lines.append(f"Action: Check-{info_dict.get('check_type', 'in')}")
+            action_text = "Vao" if info_dict.get('check_type') == 'in' else "Ra"
+            lines.append(f"Hanh dong: {action_text}")
 
         if info_dict.get('confirmed'):
-            lines.append("[CONFIRMED]")
+            lines.append("[XAC NHAN]")
 
         # Text color based on status
         text_color = (100, 255, 100) if info_dict.get('status') == 'active' else (255, 255, 255)
@@ -448,7 +447,7 @@ def create_info_panel(frame, info_dict):
         cv2.rectangle(canvas, (width + 20, y_offset),
                      (width + panel_width - 20, y_offset + 100),
                      (0, 0, 255), 2)
-        cv2.putText(canvas, "UNKNOWN", (width + 100, y_offset + 45),
+        cv2.putText(canvas, "KHONG XAC DINH", (width + 70, y_offset + 45),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
         cv2.putText(canvas, info_dict.get('time', ''), (width + 60, y_offset + 80),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
@@ -457,13 +456,13 @@ def create_info_panel(frame, info_dict):
     y_stats = height - 120
     cv2.putText(canvas, f"FPS: {info_dict.get('fps', 0):.1f}",
                (width + 30, y_stats), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 100), 2)
-    cv2.putText(canvas, f"Latency: {info_dict.get('latency', 0):.0f}ms",
+    cv2.putText(canvas, f"Do tre: {info_dict.get('latency', 0):.0f}ms",
                (width + 30, y_stats + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 100), 2)
-    cv2.putText(canvas, f"Threshold: {config.RECOGNITION_THRESHOLD}",
+    cv2.putText(canvas, f"Nguong: {config.RECOGNITION_THRESHOLD}",
                (width + 30, y_stats + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 255, 255), 1)
 
     # Instructions
-    cv2.putText(canvas, "Press 'q' to quit",
+    cv2.putText(canvas, "Nhan 'q' de thoat",
                (width + 30, height - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 150, 150), 1)
 
     return canvas
@@ -714,7 +713,7 @@ def main():
                                         notification_start = time.time()
                                     
                                         while (time.time() - notification_start) < notification_duration:
-                                            cv2.imshow("Face Recognition - DeepFace + ArcFace", display_success)
+                                            cv2.imshow("Nhan dien khuon mat - DeepFace + ArcFace", display_success)
                                             if cv2.waitKey(30) == ord('q'):
                                                 recognizer.is_processing_checkin = False
                                                 break
@@ -725,7 +724,7 @@ def main():
                             # Unknown person - chỉ hiển thị Unknown
                             cv2.rectangle(frame, (x, y), (x+w, y+h), config.COLOR_UNKNOWN, 3)
                             cv2.rectangle(frame, (x, y-40), (x+w, y), config.COLOR_UNKNOWN, -1)
-                            frame = put_text_vietnamese(frame, "Unknown", (x+5, y-35), font_size=20, color=(255, 255, 255))
+                            frame = put_text_vietnamese(frame, "Khong xac dinh", (x+5, y-35), font_size=20, color=(255, 255, 255))
 
                             # Show unknown info (with cooldown)
                             ts = time.time()
@@ -758,7 +757,7 @@ def main():
         # Create display frame
         display_frame = create_info_panel(frame, info_dict)
 
-        cv2.imshow("Face Recognition - DeepFace + ArcFace", display_frame)
+        cv2.imshow("Nhan dien khuon mat - DeepFace + ArcFace", display_frame)
 
         if cv2.waitKey(1) == ord('q'):
             break

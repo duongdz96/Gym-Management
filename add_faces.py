@@ -31,25 +31,25 @@ def is_good_quality_face(image):
         # 1. Blur detection
         blur_score = cv2.Laplacian(gray, cv2.CV_64F).var()
         if blur_score < config.BLUR_THRESHOLD:
-            return False, f"Too blurry ({blur_score:.0f})"
+            return False, f"Qua mo ({blur_score:.0f})"
 
         # 2. Brightness check
         brightness = np.mean(gray)
         if brightness < config.MIN_BRIGHTNESS:
-            return False, f"Too dark ({brightness:.0f})"
+            return False, f"Qua toi ({brightness:.0f})"
         if brightness > config.MAX_BRIGHTNESS:
-            return False, f"Too bright ({brightness:.0f})"
+            return False, f"Qua sang ({brightness:.0f})"
 
         # 3. Face size check
         if image.shape[0] < config.MIN_FACE_SIZE or image.shape[1] < config.MIN_FACE_SIZE:
-            return False, f"Face too small"
+            return False, f"Khuon mat qua nho"
 
         # 4. Contrast check
         contrast = gray.std()
         if contrast < config.MIN_CONTRAST:
-            return False, f"Low contrast ({contrast:.0f})"
+            return False, f"Do tuong phan thap ({contrast:.0f})"
 
-        return True, "Good quality"
+        return True, "Chat luong tot"
 
     except Exception as e:
         return False, f"Error: {str(e)}"
@@ -109,18 +109,18 @@ def collect_face_embeddings(person_id, person_name, person_type='member'):
         embeddings array hoặc None
     """
     print("\n" + "=" * 60)
-    print(f"COLLECTING FACES FOR: {person_name} (ID: {person_id})")
+    print(f"THU THAP KHUON MAT CHO: {person_name} (Ma: {person_id})")
     print("=" * 60)
-    print(f"Model: {config.FACE_MODEL}")
-    print(f"Detector: {config.FACE_DETECTOR}")
-    print(f"Target: {config.NUM_SAMPLES} high-quality samples")
-    print("\nTIPS FOR BEST RESULTS:")
-    print("  ✓ Look straight at camera")
-    print("  ✓ Good lighting (not too dark/bright)")
-    print("  ✓ Keep face still when capturing")
-    print("  ✓ Remove glasses if possible (or collect both with/without)")
-    print("  ✓ Neutral expression")
-    print("\nPress 'q' to quit")
+    print(f"Mo hinh: {config.FACE_MODEL}")
+    print(f"Bo phat hien: {config.FACE_DETECTOR}")
+    print(f"Muc tieu: {config.NUM_SAMPLES} mau chat luong cao")
+    print("\nGOI Y DE CO KET QUA TOT NHAT:")
+    print("  \u2713 Nhin thang vao camera")
+    print("  \u2713 Anh sang tot (khong qua toi/sang)")
+    print("  \u2713 Giu khuon mat yen khi chup")
+    print("  \u2713 Bo kinh neu co the (hoac thu thap ca 2)")
+    print("  \u2713 Bieu cam tu nhien")
+    print("\nNhan 'q' de thoat")
     print("=" * 60)
 
     # Open camera
@@ -170,7 +170,7 @@ def collect_face_embeddings(person_id, person_name, person_type='member'):
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         # Instructions
-        cv2.putText(display_frame, "Position your face in the center", (50, 100),
+        cv2.putText(display_frame, "Dat khuon mat vao giua", (50, 100),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
         # ACCURACY FOCUS: Always use high-quality detector (RetinaFace)
@@ -195,24 +195,24 @@ def collect_face_embeddings(person_id, person_name, person_type='member'):
                 if (current_time - last_capture_time) > capture_cooldown:
                     # Ready to capture - green
                     cv2.rectangle(display_frame, (x, y), (x+w, y+h), (0, 255, 0), 3)
-                    cv2.putText(display_frame, "READY - Hold still", (x, y - 10),
+                    cv2.putText(display_frame, "SAN SANG - Giu yen", (x, y - 10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                 else:
                     # Cooldown period - orange
                     cv2.rectangle(display_frame, (x, y), (x+w, y+h), (0, 165, 255), 2)
                     cooldown_left = capture_cooldown - (current_time - last_capture_time)
-                    cv2.putText(display_frame, f"Wait {cooldown_left:.1f}s", (x, y - 10),
+                    cv2.putText(display_frame, f"Doi {cooldown_left:.1f}s", (x, y - 10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 165, 255), 2)
 
                 last_face_bbox = (x, y, w, h)
 
                 # Check for multiple faces
                 if len(face_objs) > 1:
-                    cv2.putText(display_frame, "Multiple faces detected! Show only yours", (50, 150),
+                    cv2.putText(display_frame, "Phat hien nhieu khuon mat! Chi hien 1 nguoi", (50, 150),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
             else:
                 # No face detected
-                cv2.putText(display_frame, "No face detected - Position your face", (50, 150),
+                cv2.putText(display_frame, "Khong phat hien khuon mat - Dat khuon mat vao", (50, 150),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
                 last_face_bbox = None
 
@@ -291,7 +291,7 @@ def collect_face_embeddings(person_id, person_name, person_type='member'):
                     if "Face could not be detected" not in error_msg:
                         print(f"Capture error: {e}")
 
-        cv2.imshow("Collecting Faces", display_frame)
+        cv2.imshow("Thu thap khuon mat", display_frame)
 
         key = cv2.waitKey(1)
         if key == ord('q'):
