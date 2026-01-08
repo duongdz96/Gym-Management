@@ -280,7 +280,6 @@ const editingSession = ref(null);
 
 // Computed
 const filteredClasses = computed(() => {
-  // With pagination, filtering by search is now done client-side on current page
   let result = classes.value;
   
   if (searchQuery.value) {
