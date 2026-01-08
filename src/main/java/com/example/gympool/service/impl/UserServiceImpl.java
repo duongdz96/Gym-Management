@@ -19,6 +19,7 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
     private TeacherRepository teacherRepository;
     // ==================== LẤY DỮ LIỆU ====================
 
@@ -74,7 +75,6 @@ public class UserServiceImpl implements UserService {
             teacher.setPosition(request.getPosition());
             teacher.setSpecialize(request.getSpecialize());
 
-            // Lưu và TRẢ VỀ đối tượng Staff đã cập nhật
             return teacherRepository.save(teacher);
         }
 
