@@ -491,12 +491,7 @@ loadData();
           </div>
         </div>
 
-        <!-- Info note -->
-        <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-md">
-          <p class="text-sm text-blue-800 dark:text-blue-300">
-            Mật khẩu mặc định cho khách hàng mới: <strong>123456</strong>
-          </p>
-        </div>
+    
 
         <!-- Submit Button -->
         <div class="mt-6 flex gap-3">
