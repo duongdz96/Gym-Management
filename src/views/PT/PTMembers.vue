@@ -268,9 +268,12 @@ const fetchUpcomingSessions = async (memberId) => {
     const data = Array.isArray(res.data) ? res.data : [];
     // Filter appointments for the member
     const memberAppts = data.filter(appt => appt.ptPackageIssued?.member?.id === memberId);
-    // Filter future appointments
+    // Filter future appointments that are still scheduled (not started, completed, or cancelled)
     const now = new Date();
-    const futureAppts = memberAppts.filter(appt => new Date(appt.startTime) > now);
+    const futureAppts = memberAppts.filter(appt => 
+      new Date(appt.startTime) > now && 
+      appt.status === 'Scheduled'
+    );
     // Sort by startTime
     futureAppts.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
     // Take first 3
