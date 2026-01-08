@@ -138,6 +138,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Clock, Activity, Dumbbell, Ticket, Heart, ShoppingBag } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/useAuthStore'
+import api from '@/services/api'
+
+const authStore = useAuthStore()
 
 // State
 const loading = ref(true)
@@ -154,27 +158,145 @@ const allActivities = ref([])
 const fetchActivities = async () => {
   loading.value = true
   
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500))
-  
-  // Mock data - more comprehensive history
-  allActivities.value = [
-    { type: 'checkin', action: 'Đã check-in vào phòng gym', description: 'Khu vực tập luyện chính', time: '2 giờ trước', date: new Date(Date.now() - 2 * 60 * 60 * 1000), icon: Activity },
-    { type: 'class', action: 'Tham gia lớp Yoga buổi sáng', description: 'Giáo viên: Nguyễn Thị Mai', time: '1 ngày trước', date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), icon: Dumbbell },
-    { type: 'coupon', action: 'Nhận mã giảm giá mới', description: 'Giảm 20% cho gói Premium', time: '2 ngày trước', date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), icon: Ticket },
-    { type: 'workout', action: 'Hoàn thành buổi tập cardio', description: '45 phút - Đốt cháy 320 calo', time: '3 ngày trước', date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), icon: Heart },
-    { type: 'purchase', action: 'Mua gói hội viên Gold', description: 'Gói 6 tháng', time: '5 ngày trước', date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), amount: 2500000, icon: ShoppingBag },
-    { type: 'checkin', action: 'Đã check-in vào phòng gym', description: 'Khu vực cardio', time: '6 ngày trước', date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), icon: Activity },
-    { type: 'class', action: 'Tham gia lớp Boxing', description: 'Giáo viên: Trần Văn Nam', time: '7 ngày trước', date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), icon: Dumbbell },
-    { type: 'workout', action: 'Hoàn thành buổi tập tạ', description: '60 phút - Tập nhóm cơ ngực', time: '8 ngày trước', date: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), icon: Heart },
-    { type: 'checkin', action: 'Đã check-in vào phòng gym', description: 'Khu vực tập tạ', time: '9 ngày trước', date: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000), icon: Activity },
-    { type: 'class', action: 'Tham gia lớp Zumba', description: 'Giáo viên: Lê Thị Hoa', time: '10 ngày trước', date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), icon: Dumbbell },
-    { type: 'purchase', action: 'Mua protein whey', description: '2kg - Vị sô-cô-la', time: '12 ngày trước', date: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000), amount: 850000, icon: ShoppingBag },
-    { type: 'checkin', action: 'Đã check-in vào phòng gym', description: 'Khu vực tập luyện chính', time: '14 ngày trước', date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), icon: Activity },
-    { type: 'workout', action: 'Hoàn thành buổi tập HIIT', description: '30 phút - Đốt cháy 280 calo', time: '15 ngày trước', date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), icon: Heart },
-  ]
-  
-  loading.value = false
+  try {
+    const memberId = authStore.user?.id
+    if (!memberId) {
+      console.error('No member ID found')
+      loading.value = false
+      return
+    }
+    
+    const activities = []
+    
+    // Fetch check-in history
+    try {
+      const accessLogRes = await api.get(`/accesslog/${memberId}`)
+      const accessLogs = accessLogRes.data || []
+      
+      accessLogs.forEach(log => {
+        const accessTime = new Date(log.accessTime)
+        activities.push({
+          type: 'checkin',
+          action: 'Đã check-in vào phòng gym',
+          description: 'Check-in thành công',
+          time: formatTimeAgo(accessTime),
+          date: accessTime,
+          icon: Activity
+        })
+      })
+    } catch (error) {
+      console.error('Error fetching access logs:', error)
+    }
+    
+    // Fetch class registrations
+    try {
+      const registrationsRes = await api.get(`/member-registrations/member/${memberId}`)
+      const registrations = registrationsRes.data || []
+      
+      registrations.forEach(reg => {
+        const classTime = new Date(reg.classSchedule?.startTime)
+        const className = reg.classSchedule?.class?.name || 'Lớp tập'
+        const teacherName = reg.classSchedule?.teacher?.fullName || 'Chưa có giáo viên'
+        
+        activities.push({
+          type: 'class',
+          action: `Tham gia lớp ${className}`,
+          description: `Giáo viên: ${teacherName}`,
+          time: formatTimeAgo(classTime),
+          date: classTime,
+          icon: Dumbbell
+        })
+      })
+    } catch (error) {
+      console.error('Error fetching class registrations:', error)
+    }
+    
+    // Fetch PT appointments (completed ones)
+    try {
+      const appointmentsRes = await api.get('/appointment')
+      const allAppointments = appointmentsRes.data || []
+      const myAppointments = allAppointments.filter(appt => 
+        appt.ptPackageIssued?.member?.id === memberId && 
+        appt.status === 'Completed'
+      )
+      
+      myAppointments.forEach(appt => {
+        const apptTime = new Date(appt.startTime)
+        const ptName = appt.ptPackageIssued?.pt?.fullName || 'PT'
+        const duration = appt.duration || 60
+        
+        activities.push({
+          type: 'workout',
+          action: 'Hoàn thành buổi tập PT',
+          description: `PT: ${ptName} - ${duration} phút`,
+          time: formatTimeAgo(apptTime),
+          date: apptTime,
+          icon: Heart
+        })
+      })
+    } catch (error) {
+      console.error('Error fetching appointments:', error)
+    }
+    
+    // Fetch membership purchases
+    try {
+      const membershipRes = await api.get('/membership')
+      const allMemberships = membershipRes.data || []
+      const myMemberships = allMemberships.filter(m => m.member?.id === memberId)
+      
+      myMemberships.forEach(membership => {
+        const startTime = new Date(membership.startDate)
+        const planName = membership.membershipPlan?.name || 'Gói thành viên'
+        const price = membership.membershipPlan?.price || 0
+        
+        activities.push({
+          type: 'purchase',
+          action: `Mua gói ${planName}`,
+          description: `Thời hạn: ${membership.duration} tháng`,
+          time: formatTimeAgo(startTime),
+          date: startTime,
+          amount: price,
+          icon: ShoppingBag
+        })
+      })
+    } catch (error) {
+      console.error('Error fetching memberships:', error)
+    }
+    
+    // Fetch PT package purchases
+    try {
+      const packagesRes = await api.get('/packageissued')
+      const allPackages = packagesRes.data || []
+      const myPackages = allPackages.filter(pkg => pkg.member?.id === memberId)
+      
+      myPackages.forEach(pkg => {
+        const purchaseDate = new Date(pkg.issueDate || Date.now())
+        const packageName = pkg.ptPackage?.name || 'Gói PT'
+        const price = pkg.ptPackage?.price || 0
+        
+        activities.push({
+          type: 'purchase',
+          action: `Mua ${packageName}`,
+          description: `${pkg.ptPackage?.sessions || 0} buổi tập`,
+          time: formatTimeAgo(purchaseDate),
+          date: purchaseDate,
+          amount: price,
+          icon: ShoppingBag
+        })
+      })
+    } catch (error) {
+      console.error('Error fetching PT packages:', error)
+    }
+    
+    // Sort activities by date (newest first)
+    activities.sort((a, b) => b.date - a.date)
+    allActivities.value = activities
+    
+  } catch (error) {
+    console.error('Error fetching activities:', error)
+  } finally {
+    loading.value = false
+  }
 }
 
 // Computed
@@ -224,6 +346,23 @@ const totalPages = computed(() => {
   
   return Math.ceil(result.length / itemsPerPage)
 })
+
+// Helper Functions
+const formatTimeAgo = (date) => {
+  const now = new Date()
+  const diffMs = now - date
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+  
+  if (diffMins < 1) return 'Vừa xong'
+  if (diffMins < 60) return `${diffMins} phút trước`
+  if (diffHours < 24) return `${diffHours} giờ trước`
+  if (diffDays === 1) return 'Hôm qua'
+  if (diffDays < 7) return `${diffDays} ngày trước`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} tuần trước`
+  return `${Math.floor(diffDays / 30)} tháng trước`
+}
 
 // Methods
 const getActivityColor = (type) => {

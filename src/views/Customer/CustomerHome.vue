@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import { Camera, X, TrendingUp, Calendar, Award, Ticket, Activity, Clock, Dumbbell, Heart } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useToast } from 'vue-toastification'
+import api from '@/services/api'
 
 const authStore = useAuthStore()
 const toast = useToast()
@@ -91,16 +92,102 @@ const fetchPersonalStats = async () => {
       personalStats.value.availableCoupons = 0
     }
 
-    // Mock check-ins for now (TODO: implement real API)
-    personalStats.value.totalCheckIns = 18
+    // Fetch check-ins from access log
+    try {
+      const accessLogRes = await api.get(`/accesslog/${memberId}`)
+      const accessLogs = accessLogRes.data || []
+      
+      // Count check-ins this month
+      const now = new Date()
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      const thisMonthCheckIns = accessLogs.filter(log => {
+        const logDate = new Date(log.accessTime)
+        return logDate >= firstDayOfMonth
+      })
+      personalStats.value.totalCheckIns = thisMonthCheckIns.length
+    } catch (error) {
+      console.error('Error fetching access logs:', error)
+      personalStats.value.totalCheckIns = 0
+    }
     
-    // Mock recent activities (TODO: implement real activity log API)
-    recentActivities.value = [
-      { type: 'checkin', action: 'Đã check-in vào phòng gym', time: '2 giờ trước', icon: Activity },
-      { type: 'class', action: 'Tham gia lớp Yoga buổi sáng', time: '1 ngày trước', icon: Dumbbell },
-      { type: 'coupon', action: 'Nhận mã giảm giá mới', time: '2 ngày trước', icon: Ticket },
-      { type: 'workout', action: 'Hoàn thành buổi tập cardio', time: '3 ngày trước', icon: Heart }
-    ]
+    // Build recent activities from multiple sources
+    const activities = []
+    const now = new Date()
+    
+    // Add recent check-ins (only past ones)
+    try {
+      const accessLogRes = await api.get(`/accesslog/${memberId}`)
+      const accessLogs = (accessLogRes.data || [])
+        .filter(log => new Date(log.accessTime) <= now)
+        .sort((a, b) => new Date(b.accessTime) - new Date(a.accessTime))
+        .slice(0, 2)
+      
+      accessLogs.forEach(log => {
+        const accessTime = new Date(log.accessTime)
+        activities.push({
+          type: 'checkin',
+          action: 'Đã check-in vào phòng gym',
+          time: formatTimeAgo(accessTime),
+          date: accessTime,
+          icon: Activity
+        })
+      })
+    } catch (error) {
+      console.error('Error fetching access logs:', error)
+    }
+    
+    // Add recent class registrations (only past ones)
+    try {
+      const registrationsRes = await api.get(`/member-registrations/member/${memberId}`)
+      const registrations = (registrationsRes.data || [])
+        .filter(reg => new Date(reg.classSchedule?.startTime) <= now)
+        .sort((a, b) => new Date(b.classSchedule?.startTime) - new Date(a.classSchedule?.startTime))
+        .slice(0, 2)
+      
+      registrations.forEach(reg => {
+        const classTime = new Date(reg.classSchedule?.startTime)
+        activities.push({
+          type: 'class',
+          action: `Tham gia lớp ${reg.classSchedule?.class?.name || 'Tập luyện'}`,
+          time: formatTimeAgo(classTime),
+          date: classTime,
+          icon: Dumbbell
+        })
+      })
+    } catch (error) {
+      console.error('Error fetching class registrations:', error)
+    }
+    
+    // Add recent PT appointments (only completed ones)
+    try {
+      const appointmentsRes = await api.get('/appointment')
+      const allAppointments = appointmentsRes.data || []
+      const myAppointments = allAppointments
+        .filter(appt => 
+          appt.ptPackageIssued?.member?.id === memberId && 
+          appt.status === 'Completed' &&
+          new Date(appt.startTime) <= now
+        )
+        .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+        .slice(0, 1)
+      
+      myAppointments.forEach(appt => {
+        const apptTime = new Date(appt.startTime)
+        activities.push({
+          type: 'workout',
+          action: 'Hoàn thành buổi tập PT',
+          time: formatTimeAgo(apptTime),
+          date: apptTime,
+          icon: Heart
+        })
+      })
+    } catch (error) {
+      console.error('Error fetching appointments:', error)
+    }
+    
+    // Sort by date (most recent first) and take top 4
+    activities.sort((a, b) => b.date - a.date)
+    recentActivities.value = activities.slice(0, 4)
   } catch (error) {
     console.error('Error fetching personal stats:', error)
   } finally {
@@ -165,6 +252,32 @@ const submitFeedback = async () => {
   } catch (error) {
     toast.error('Không thể gửi đánh giá. Vui lòng thử lại!')
   }
+}
+
+// ===================== HELPERS =====================
+const formatTimeAgo = (date) => {
+  const now = new Date()
+  const diffMs = now - date
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+  
+  // Handle future dates
+  if (diffMs < 0) {
+    const absDiffMins = Math.abs(diffMins)
+    const absDiffHours = Math.abs(diffHours)
+    const absDiffDays = Math.abs(diffDays)
+    
+    if (absDiffMins < 60) return `Sau ${absDiffMins} phút`
+    if (absDiffHours < 24) return `Sau ${absDiffHours} giờ`
+    return `Sau ${absDiffDays} ngày`
+  }
+  
+  // Handle past dates
+  if (diffMins < 1) return 'Vừa xong'
+  if (diffMins < 60) return `${diffMins} phút trước`
+  if (diffHours < 24) return `${diffHours} giờ trước`
+  return `${diffDays} ngày trước`
 }
 
 // ===================== COMPUTED =====================
