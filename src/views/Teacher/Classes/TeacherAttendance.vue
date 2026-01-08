@@ -678,6 +678,9 @@ const autoAbsent = async () => {
     await api.post(`/class-attendance/students/auto-absent/${sessionId}`);
     await api.put(`/classschedule/${sessionId}/close`);
 
+    // Cập nhật status local ngay lập tức
+    selectedSession.value.status = 'CLOSED';
+
     // 3. Thay toast bằng Modal thành công
     await Swal.fire({
       icon: 'success',
