@@ -90,9 +90,15 @@ onMounted(async () => {
       
       checkinHistory.value = accessLogs.map((log: any) => {
         const accessTime = new Date(log.accessTime)
+        const year = accessTime.getFullYear()
+        const month = (accessTime.getMonth() + 1).toString().padStart(2, '0')
+        const day = accessTime.getDate().toString().padStart(2, '0')
+        const hours = accessTime.getHours().toString().padStart(2, '0')
+        const minutes = accessTime.getMinutes().toString().padStart(2, '0')
+        const seconds = accessTime.getSeconds().toString().padStart(2, '0')
         return {
-          date: accessTime.toISOString().split('T')[0],
-          time: accessTime.toTimeString().split(' ')[0],
+          date: `${year}-${month}-${day}`,
+          time: `${hours}:${minutes}:${seconds}`,
           status: 'Thành công'
         }
       }).sort((a: any, b: any) => new Date(b.date + ' ' + b.time).getTime() - new Date(a.date + ' ' + a.time).getTime())
@@ -146,7 +152,11 @@ const filteredCheckinHistory = computed(() => {
 const formatDate = (dateString: string) => {
   if (!dateString) return 'N/A'
   try {
-    return new Date(dateString).toLocaleDateString('vi-VN')
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   } catch { return dateString }
 }
 
