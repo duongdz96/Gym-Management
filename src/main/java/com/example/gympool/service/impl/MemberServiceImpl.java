@@ -3,20 +3,31 @@ package com.example.gympool.service.impl;
 import com.example.gympool.entity.Member;
 import com.example.gympool.entity.Status;
 import com.example.gympool.repository.MemberRepository;
+import com.example.gympool.service.EmailService;
 import com.example.gympool.service.MemberService;
 import org.springframework.stereotype.Service;
+import java.security.SecureRandom;
 
 import java.util.List;
 
 @Service
 public class MemberServiceImpl implements MemberService {
 
+    private static final String CHARACTERS =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+                    "abcdefghijklmnopqrstuvwxyz" +
+                    "0123456789";
+
+    private static final int PASSWORD_LENGTH = 10;
+
     private final MemberRepository memberRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
-    public MemberServiceImpl(MemberRepository memberRepository, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+    public MemberServiceImpl(MemberRepository memberRepository, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder, EmailService emailService) {
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     @Override
@@ -30,19 +41,43 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("Member not found with id: " + id));
     }
 
+    public static String generateRandomPassword() {
+        SecureRandom random = new SecureRandom();
+        StringBuilder password = new StringBuilder(PASSWORD_LENGTH);
+
+        for (int i = 0; i < PASSWORD_LENGTH; i++) {
+            int index = random.nextInt(CHARACTERS.length());
+            password.append(CHARACTERS.charAt(index));
+        }
+
+        return password.toString();
+    }
+
+    public void sendPassword(String toEmail, String rawPassword) {
+        String subject = "Thông tin tài khoản";
+
+        String body = ""
+                + "Xin chào,\n\n"
+                + "Tài khoản của bạn đã được tạo / đặt lại thành công.\n\n"
+                + "Thông tin đăng nhập:\n"
+                + "- Email: " + toEmail + "\n"
+                + "- Mật khẩu: " + rawPassword + "\n\n"
+                + "Vui lòng đăng nhập và đổi mật khẩu ngay sau lần đăng nhập đầu tiên "
+                + "để đảm bảo an toàn cho tài khoản.\n\n"
+                + "Trân trọng.";
+
+        emailService.sendEmail(toEmail, subject, body);
+    }
+
+
     @Override
     public Member createMember(Member member) {
-        if (member.getPassword() == null || member.getPassword().isEmpty()) {
-            // TODO: Generate random password and send via email
-            // String randomPassword = generateRandomPassword();
-            // emailService.sendPassword(member.getEmail(), randomPassword);
-            // member.setPassword(passwordEncoder.encode(randomPassword));
-            
-            // Temporary default password
-            member.setPassword(passwordEncoder.encode("123456"));
-        } else {
-            member.setPassword(passwordEncoder.encode(member.getPassword()));
-        }
+        String randomPassword = generateRandomPassword();
+        System.out.println("chuan bi gui mail" + member.getEmail() + " " + randomPassword);
+        sendPassword(member.getEmail(), randomPassword);
+
+        System.out.println("Da gui mail");
+        member.setPassword(passwordEncoder.encode(randomPassword));
         return memberRepository.save(member);
     }
 
