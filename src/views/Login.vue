@@ -133,9 +133,15 @@ const loginUser = async () => {
         break;
     }
   } catch (err) {
-    const msg =
-      "Sai thông tin đăng nhập hoặc lỗi máy chủ!";
-    toast.error(msg);
+    const backendMessage = err.response?.data?.message || "";
+
+    if (backendMessage.includes("membership has expired")) {
+      toast.error("Gói hội viên của bạn đã hết hạn!");
+    } else if (backendMessage.includes("Invalid password") || backendMessage.includes("not found")) {
+      toast.error("Sai email hoặc mật khẩu!");
+    } else {
+      toast.error("Lỗi hệ thống, vui lòng thử lại sau!");
+    }
   }
 };
 </script>

@@ -118,11 +118,25 @@
       <!-- Session Info Card -->
       <div class="bg-white rounded-xl sm:rounded-2xl shadow-md p-3 sm:p-6">
         <div class="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0 mb-4">
-          <div>
-            <h2 class="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-              <CalendarIcon class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-              {{ formatDate(selectedSession.date) }}
-            </h2>
+          <div class="flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+                <CalendarIcon class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                {{ formatDate(selectedSession.date) }}
+              </h2>
+              <span v-if="selectedSession.status === 'OPEN'"
+                class="px-2 sm:px-3 py-1 bg-blue-100 text-blue-700 text-xs sm:text-sm font-bold rounded-full">
+                Chưa bắt đầu
+              </span>
+              <span v-else-if="selectedSession.status === 'RUNNING'"
+                class="px-2 sm:px-3 py-1 bg-green-100 text-green-700 text-xs sm:text-sm font-bold rounded-full animate-pulse">
+                Đang diễn ra
+              </span>
+              <span v-else-if="selectedSession.status === 'CLOSED'"
+                class="px-2 sm:px-3 py-1 bg-gray-100 text-gray-700 text-xs sm:text-sm font-bold rounded-full">
+                Đã kết thúc
+              </span>
+            </div>
             <p class="text-gray-600 mt-1 text-sm sm:text-base">
               {{ formatScheduleTime(selectedSession.startTime) }} - {{ formatScheduleTime(selectedSession.endTime) }}
             </p>
@@ -155,11 +169,21 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4">
           <h3 class="text-base sm:text-lg font-bold text-gray-800">Danh sách học viên</h3>
 
-          <button @click="autoAbsent" :disabled="finalizing"
-            class="w-full sm:w-auto px-3 sm:px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base">
-            <AlertTriangle class="w-3 h-3 sm:w-4 sm:h-4" />
-            Chốt sổ
-          </button>
+          <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+            <!-- Nút Bắt đầu buổi học - chỉ hiển thị khi status là OPEN -->
+            <button v-if="selectedSession.status === 'OPEN'" @click="startSession" :disabled="finalizing"
+              class="w-full sm:w-auto px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base">
+              <Clock class="w-3 h-3 sm:w-4 sm:h-4" />
+              Bắt đầu buổi học
+            </button>
+
+            <!-- Nút Chốt sổ - chỉ hiển thị khi status là RUNNING -->
+            <button v-if="selectedSession.status === 'RUNNING'" @click="autoAbsent" :disabled="finalizing"
+              class="w-full sm:w-auto px-3 sm:px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base">
+              <AlertTriangle class="w-3 h-3 sm:w-4 sm:h-4" />
+              Chốt sổ
+            </button>
+          </div>
         </div>
 
         <!-- Search Student -->
@@ -201,14 +225,14 @@
 
               <!-- Attendance Toggle -->
               <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-                <button @click="markPresent(student)"
-                  class="px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all" :class="getStudentAttendance(student.id)?.status === 'PRESENT'
+                <button @click="markPresent(student)" :disabled="selectedSession.status !== 'RUNNING'"
+                  class="px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed" :class="getStudentAttendance(student.id)?.status === 'PRESENT'
                     ? 'bg-green-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-green-100'">
                   <Check class="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
-                <button @click="markAbsent(student)"
-                  class="px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all" :class="getStudentAttendance(student.id)?.status === 'ABSENT'
+                <button @click="markAbsent(student)" :disabled="selectedSession.status !== 'RUNNING'"
+                  class="px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed" :class="getStudentAttendance(student.id)?.status === 'ABSENT'
                     ? 'bg-red-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-red-100'">
                   <X class="w-4 h-4 sm:w-5 sm:h-5" />
@@ -219,8 +243,9 @@
             <!-- Notes -->
             <div v-if="getStudentAttendance(student.id)" class="mt-2 sm:mt-3">
               <textarea v-model="getStudentAttendance(student.id).notes" @blur="updateNotes(student)"
+                :disabled="selectedSession.status !== 'RUNNING'"
                 placeholder="Ghi chú..."
-                class="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none transition-all"
+                class="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg text-xs sm:text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed"
                 rows="2"></textarea>
             </div>
           </div>
@@ -574,6 +599,53 @@ const updateNotes = async (student) => {
     });
   } catch (error) {
     console.error('Error updating notes:', error);
+  }
+};
+
+const startSession = async () => {
+  const result = await Swal.fire({
+    title: 'Bắt đầu buổi học?',
+    text: "Bạn có chắc muốn bắt đầu buổi học này?",
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Bắt đầu!',
+    cancelButtonText: 'Hủy',
+    reverseButtons: true
+  });
+
+  if (!result.isConfirmed) return;
+
+  finalizing.value = true;
+
+  Swal.fire({
+    title: 'Đang xử lý...',
+    allowOutsideClick: false,
+    didOpen: () => { Swal.showLoading(); }
+  });
+
+  try {
+    const sessionId = selectedSession.value.id;
+    await api.put(`/classschedule/${sessionId}/running`);
+
+    // Cập nhật status local
+    selectedSession.value.status = 'RUNNING';
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'Thành công!',
+      text: 'Đã bắt đầu buổi học. Bạn có thể điểm danh cho học viên.',
+      timer: 2000,
+      showConfirmButton: false
+    });
+
+    await loadSessionData();
+
+  } catch (error) {
+    Swal.fire('Lỗi!', 'Có lỗi xảy ra khi bắt đầu buổi học.', 'error');
+  } finally {
+    finalizing.value = false;
   }
 };
 

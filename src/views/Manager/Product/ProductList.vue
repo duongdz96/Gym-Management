@@ -415,18 +415,14 @@ const handleDelete = async () => {
   if (!productToDelete.value) return;
 
   try {
-    // Nếu là Membership, chỉ update status (soft delete)
-    if (productToDelete.value.type === 'Membership') {
-      await inventoryStore.updateProduct({
-        ...productToDelete.value,
-        status: true // Set inactive (soft delete)
-      });
-      toast.success("Đã vô hiệu hóa sản phẩm Membership!");
-    } else {
-      // Các loại khác xóa bình thường
-      await inventoryStore.deleteProduct(productToDelete.value.id);
-      toast.success("Xóa sản phẩm thành công!");
-    }
+    await inventoryStore.deleteProduct(productToDelete.value.id);
+    
+    toast.success(
+      productToDelete.value.type === 'Membership' 
+        ? "Đã vô hiệu hóa gói Membership!" 
+        : "Xóa sản phẩm thành công!"
+    );
+
     closeDeleteModal();
     inventoryStore.fetchProducts();
   } catch (error) {
