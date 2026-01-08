@@ -16,6 +16,8 @@ import java.util.Optional;
 public interface CustomerMembershipRepository extends JpaRepository<CustomerMembership, Long> {
     @Query("SELECT cm FROM CustomerMembership cm WHERE cm.member.fullName LIKE %:name%")
     Optional<CustomerMembership> findByMemberName(String name);
+
+    Optional<CustomerMembership> findByMemberEmail(String email);
     
     List<CustomerMembership> findByMembershipPlan_MembershipTier_Name(String tiername);
 

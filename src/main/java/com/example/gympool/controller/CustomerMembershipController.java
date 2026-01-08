@@ -27,6 +27,10 @@ public class CustomerMembershipController {
     public CustomerMembership findCustomerMembershipByName(@RequestParam("name") String name) {
         return customerMembershipService.getMembershipByCustomerName(name);
     }
+    @GetMapping("/email/{email}")
+    public ResponseEntity<CustomerMembership> findByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(customerMembershipService.getMembershipByEmail(email));
+    }
     @PostMapping()
     public void RegisterMembership(@RequestBody com.example.gympool.dto.CustomerMembershipRequest request) {
         customerMembershipService.RegisterMembership(request);

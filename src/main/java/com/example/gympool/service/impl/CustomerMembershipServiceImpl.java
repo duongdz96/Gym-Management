@@ -44,6 +44,11 @@ public class CustomerMembershipServiceImpl implements CustomerMembershipService 
                 .orElseThrow(() -> new IllegalArgumentException("Member not found with name: " + customerName));
     }
     @Override
+    public CustomerMembership getMembershipByEmail(String email) {
+        return customerMembershipRepository.findByMemberEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found with email: " + email));
+    }
+    @Override
     @Transactional
     public CustomerMembership RegisterMembership(com.example.gympool.dto.CustomerMembershipRequest request){
         CustomerMembership customerMembership = new CustomerMembership();

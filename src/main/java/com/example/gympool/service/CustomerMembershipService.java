@@ -10,6 +10,7 @@ public interface CustomerMembershipService {
     List<CustomerMembership> getAllCustomerMembership();
     CustomerMembership getMembershipById(Long id);
     CustomerMembership getMembershipByCustomerName(String customerName);
+    CustomerMembership getMembershipByEmail(String email);
     CustomerMembership RegisterMembership(com.example.gympool.dto.CustomerMembershipRequest request);
     CustomerMembership updateMembership(Long id, CustomerMembership customerMembership);
 

@@ -62,4 +62,9 @@ public class ClassScheduleController {
     public ResponseEntity<ClassSchedule> closeSchedule(@PathVariable Long id) {
         return ResponseEntity.ok(classScheduleService.closeSchedule(id));
     }
+
+    @PutMapping("/{id}/running")
+    public ResponseEntity<ClassSchedule> runningSchedule(@PathVariable Long id) {
+        return ResponseEntity.ok(classScheduleService.runningSchedule(id));
+    }
 }

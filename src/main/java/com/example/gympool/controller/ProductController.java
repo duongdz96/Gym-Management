@@ -59,7 +59,6 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        // We use soft delete logic here
         productService.softDeleteProduct(id);
         return ResponseEntity.ok().build();
     }

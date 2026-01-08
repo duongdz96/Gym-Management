@@ -75,14 +75,21 @@ public class MembershipPlanServiceImpl implements MembershipPlanService {
         return updatedPlan;
     }
 
+    @Transactional
     @Override
     public MembershipPlan deleteMembershipPlan(Long id) {
         MembershipPlan membershipPlan = MembershipPlanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy MembershipPlan với ID: " + id));
 
-        MembershipPlanRepository.deleteById(id);
+        membershipPlan.setStatus("Inactive");
+        MembershipPlan savedPlan = MembershipPlanRepository.save(membershipPlan);
 
-        return membershipPlan;
+        productRepository.findByName(savedPlan.getName()).ifPresent(product -> {
+            product.setStatus(true);
+            productRepository.save(product);
+        });
+
+        return savedPlan;
     }
 
     @Override

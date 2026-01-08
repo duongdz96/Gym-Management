@@ -25,7 +25,7 @@ public class ClassSchedule {
     private Integer capacity;
 
     @Column(length = 20)
-    private String status;   //"OPEN", "CLOSED", "CANCELLED"
+    private String status;   //"OPEN", "RUNNING", "CLOSED", "CANCELLED"
 
     @ManyToOne
     @JoinColumn(name = "fitness_class_id", nullable = true)

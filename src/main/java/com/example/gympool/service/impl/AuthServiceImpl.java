@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -27,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenService refreshTokenService;
     private final ManagerRepository managerRepository;
     private final PTRepository ptRepository;
+    private final CustomerMembershipRepository customerMembershipRepository;
 
     @Override
     public void changePassword(String email, ChangePasswordRequest request) {
@@ -57,6 +60,21 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid password");
         }
 
+        if ("MEMBER".equalsIgnoreCase(user.getRole())) {
+            CustomerMembership membership = customerMembershipRepository.findByMemberEmail(user.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Membership record not found"));
+
+            Date now = new Date();
+
+            if ("Active".equals(membership.getStatus()) && membership.getEndDate().before(now)) {
+                membership.setStatus("Expired");
+                customerMembershipRepository.save(membership);
+            }
+
+            if ("Expired".equals(membership.getStatus())) {
+                throw new RuntimeException("Your membership has expired. Please renew to login.");
+            }
+        }
         String accessToken = jwtTokenProvider.generateToken(user.getEmail(), user.getRole(), user.getId());
 
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());

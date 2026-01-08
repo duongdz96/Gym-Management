@@ -7,12 +7,22 @@ import java.util.Optional;
 
 public interface ClassScheduleService {
     List<ClassSchedule> getAll();
+
     Optional<ClassSchedule> getById(Long id);
+
     ClassSchedule create(ClassSchedule classSchedule);
+
     ClassSchedule update(Long id, ClassSchedule classSchedule);
+
     void delete(Long id);
+
     List<ClassSchedule> getByFitnessClassId(Long id);
+
     List<ClassSchedule> generateSchedulesFromPattern(ClassSchedule classSchedule);
+
     ClassSchedule closeSchedule(Long scheduleId);
+
     void scanAndCloseExpiredSchedules();
+
+    ClassSchedule runningSchedule(Long scheduleId);
 }

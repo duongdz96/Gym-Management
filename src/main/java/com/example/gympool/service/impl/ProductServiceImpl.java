@@ -68,6 +68,7 @@ public class ProductServiceImpl implements ProductService {
                     .orElseThrow(() -> new RuntimeException("Membership Plan không tồn tại với tên này!"));
             plan.setName(product.getName());
             plan.setPrice(product.getPrice());
+            plan.setStatus(product.isStatus() ? "Inactive" : "Active");
             membershipPlanRepository.save(plan);
         }
 
@@ -77,6 +78,22 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void softDeleteProduct(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if ("Membership".equalsIgnoreCase(product.getType())) {
+            // Log ra để kiểm tra tên có khớp không nếu vẫn không update
+            System.out.println("Đang tìm Plan với tên: " + product.getName());
+
+            membershipPlanRepository.findByName(product.getName()).ifPresentOrElse(plan -> {
+                plan.setStatus("Inactive");
+                membershipPlanRepository.save(plan);
+                System.out.println("Đã cập nhật Plan sang Inactive");
+            }, () -> {
+                System.err.println("Không tìm thấy MembershipPlan tương ứng với tên sản phẩm!");
+            });
+        }
+
         productRepository.softDeleteById(id);
     }
 

@@ -159,11 +159,11 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
 
         FitnessClass fitnessClass = schedule.getFitnessClass();
         if (fitnessClass != null) {
-            long openSchedulesCount = classScheduleRepository.countByFitnessClassIdAndStatus(
-                    fitnessClass.getId(), "OPEN"
+            long activeSchedulesCount = classScheduleRepository.countByFitnessClassIdAndStatusNot(
+                    fitnessClass.getId(), "CLOSED"
             );
 
-            if (openSchedulesCount == 0) {
+            if (activeSchedulesCount == 0) {
                 fitnessClass.setStatus("completed");
                 fitnessClassRepository.save(fitnessClass);
             }
@@ -174,18 +174,35 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
 
     @Transactional
     @Override
+    public ClassSchedule runningSchedule(Long scheduleId) {
+        ClassSchedule schedule = classScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy buổi học"));
+
+        if (!"OPEN".equals(schedule.getStatus())) {
+            throw new RuntimeException("Chỉ có thể bắt đầu buổi học đang ở trạng thái OPEN");
+        }
+        schedule.setStatus("RUNNING");
+        return classScheduleRepository.save(schedule);
+    }
+
+    @Transactional
+    @Override
     public void scanAndCloseExpiredSchedules() {
         LocalDateTime now = LocalDateTime.now();
+
+        List<String> statuses = Arrays.asList("OPEN", "RUNNING");
         List<ClassSchedule> expiredSchedules = classScheduleRepository
-                .findByEndTimeBeforeAndStatus(now, "OPEN");
+                .findByEndTimeBeforeAndStatusIn(now, statuses);
+
         if (expiredSchedules.isEmpty()) {
             return;
         }
+
         for (ClassSchedule schedule : expiredSchedules) {
             try {
                 this.closeSchedule(schedule.getId());
             } catch (Exception e) {
-                System.err.println("Lỗi khi đóng lịch ID: " + schedule.getId() + " - " + e.getMessage());
+                System.err.println("Lỗi khi tự động đóng lịch ID: " + schedule.getId() + " - " + e.getMessage());
             }
         }
     }
