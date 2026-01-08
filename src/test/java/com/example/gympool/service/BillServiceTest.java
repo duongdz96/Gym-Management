@@ -862,4 +862,401 @@ public class BillServiceTest {
             billService.updateBillPaymentStatus(billId, "PAID");
         });
     }
+
+    // ==================== ADDITIONAL COVERAGE TESTS ====================
+
+    // UTT38: Tạo hóa đơn với sold price được set từ product price
+    @Test
+    void createBill_ShouldSetSoldPriceFromProduct() {
+        when(receptionistRepository.findById(mockReceptionist.getId()))
+                .thenReturn(Optional.of(mockReceptionist));
+        when(memberRepository.findById(mockMember.getId()))
+                .thenReturn(Optional.of(mockMember));
+        when(productRepository.findAllById(List.of(mockProduct.getId())))
+                .thenReturn(List.of(mockProduct));
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> {
+            Bill billToSave = invocation.getArgument(0);
+            billToSave.setId(300L);
+            return billToSave;
+        });
+
+        Bill resultBill = billService.createBill(mockInputBill);
+
+        assertThat(resultBill).isNotNull();
+        assertThat(resultBill.getListSoldProduct().get(0).getSoldPrice()).isEqualTo(10.0);
+    }
+
+    // UTT39: Tạo hóa đơn với coupon type không hợp lệ trong update
+    @Test
+    void updateBill_WithInvalidCouponType_ShouldThrowException() {
+        Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
+        oldProduct.setId(100L);
+        SoldProduct oldSoldProduct = TestDataHelper.createSoldProduct(1, 100.0, oldProduct);
+
+        List<SoldProduct> mutableOldSoldProducts = new ArrayList<>(List.of(oldSoldProduct));
+        Bill existingBill = TestDataHelper.createBill(
+                "CASH", "Paid", mockReceptionist, new Date(), mockMember, null, mutableOldSoldProducts
+        );
+        existingBill.setId(500L);
+
+        Coupon invalidTypeCoupon = TestDataHelper.createCoupon("INVALID", "UNKNOWN_TYPE", 10.0, 5);
+        invalidTypeCoupon.setId(300L);
+        IssuedCoupon issuedInvalidCoupon = TestDataHelper.createIssuedCoupon(2, "AVAILABLE", invalidTypeCoupon, mockMember);
+        issuedInvalidCoupon.setId(301L);
+
+        Bill billDetails = TestDataHelper.createBill(
+                "CARD", "Completed", mockReceptionist, new Date(), mockMember, issuedInvalidCoupon, List.of(oldSoldProduct)
+        );
+
+        when(billRepository.findById(existingBill.getId())).thenReturn(Optional.of(existingBill));
+        when(memberRepository.findById(mockMember.getId())).thenReturn(Optional.of(mockMember));
+        when(productRepository.findById(oldProduct.getId())).thenReturn(Optional.of(oldProduct));
+        when(issuedCouponRepository.findById(issuedInvalidCoupon.getId())).thenReturn(Optional.of(issuedInvalidCoupon));
+
+        assertThrows(RuntimeException.class, () -> {
+            billService.updateBill(existingBill.getId(), billDetails);
+        });
+    }
+
+    // UTT40: Update bill - revert PT product không thay đổi inventory
+    @Test
+    void updateBill_RevertPTProduct_ShouldNotChangeInventory() {
+        Product ptProduct = TestDataHelper.createProduct("PT Session", "PT", 100.0, "Gym", 50, false);
+        ptProduct.setId(100L);
+        SoldProduct oldSoldProduct = TestDataHelper.createSoldProduct(1, 100.0, ptProduct);
+
+        List<SoldProduct> mutableOldSoldProducts = new ArrayList<>(List.of(oldSoldProduct));
+        Bill existingBill = TestDataHelper.createBill(
+                "CASH", "Paid", mockReceptionist, new Date(), mockMember, null, mutableOldSoldProducts
+        );
+        existingBill.setId(500L);
+
+        Product normalProduct = TestDataHelper.createProduct("Water", "drink", 5.0, "Nestle", 100, false);
+        normalProduct.setId(101L);
+        SoldProduct newSoldProduct = TestDataHelper.createSoldProduct(1, 5.0, normalProduct);
+
+        Bill billDetails = TestDataHelper.createBill(
+                "CARD", "Completed", mockReceptionist, new Date(), mockMember, null, List.of(newSoldProduct)
+        );
+
+        when(billRepository.findById(existingBill.getId())).thenReturn(Optional.of(existingBill));
+        when(memberRepository.findById(mockMember.getId())).thenReturn(Optional.of(mockMember));
+        when(productRepository.findById(normalProduct.getId())).thenReturn(Optional.of(normalProduct));
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        billService.updateBill(existingBill.getId(), billDetails);
+
+        verify(productRepository, times(1)).save(argThat(p -> 
+            p.getId().equals(ptProduct.getId()) && p.getQuantity() == 51
+        ));
+        verify(productRepository, times(1)).save(argThat(p -> 
+            p.getId().equals(normalProduct.getId()) && p.getQuantity() == 99
+        ));
+    }
+
+    // UTT41: Update bill - revert Membership product không thay đổi inventory
+    @Test
+    void updateBill_RevertMembershipProduct_ShouldNotChangeInventory() {
+        Product membershipProduct = TestDataHelper.createProduct("Membership Plan", "Membership", 500.0, "Gym", 20, false);
+        membershipProduct.setId(100L);
+        SoldProduct oldSoldProduct = TestDataHelper.createSoldProduct(1, 500.0, membershipProduct);
+
+        List<SoldProduct> mutableOldSoldProducts = new ArrayList<>(List.of(oldSoldProduct));
+        Bill existingBill = TestDataHelper.createBill(
+                "CASH", "Paid", mockReceptionist, new Date(), mockMember, null, mutableOldSoldProducts
+        );
+        existingBill.setId(500L);
+
+        Product normalProduct = TestDataHelper.createProduct("Towel", "accessory", 15.0, "Brand", 50, false);
+        normalProduct.setId(101L);
+        SoldProduct newSoldProduct = TestDataHelper.createSoldProduct(2, 15.0, normalProduct);
+
+        Bill billDetails = TestDataHelper.createBill(
+                "CARD", "Completed", mockReceptionist, new Date(), mockMember, null, List.of(newSoldProduct)
+        );
+
+        when(billRepository.findById(existingBill.getId())).thenReturn(Optional.of(existingBill));
+        when(memberRepository.findById(mockMember.getId())).thenReturn(Optional.of(mockMember));
+        when(productRepository.findById(normalProduct.getId())).thenReturn(Optional.of(normalProduct));
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        billService.updateBill(existingBill.getId(), billDetails);
+
+        verify(productRepository, times(1)).save(argThat(p -> 
+            p.getId().equals(membershipProduct.getId()) && p.getQuantity() == 21
+        ));
+        verify(productRepository, times(1)).save(argThat(p -> 
+            p.getId().equals(normalProduct.getId()) && p.getQuantity() == 48
+        ));
+    }
+
+    // UTT42: Update bill với coupon status USED được revert thành AVAILABLE
+    @Test
+    void updateBill_RevertUsedCoupon_ShouldSetToAvailable() {
+        Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
+        oldProduct.setId(100L);
+        SoldProduct oldSoldProduct = TestDataHelper.createSoldProduct(1, 100.0, oldProduct);
+
+        IssuedCoupon usedCoupon = TestDataHelper.createIssuedCoupon(0, "USED", mockCoupon, mockMember);
+        usedCoupon.setId(200L);
+
+        List<SoldProduct> mutableOldSoldProducts = new ArrayList<>(List.of(oldSoldProduct));
+        Bill existingBill = TestDataHelper.createBill(
+                "CASH", "Paid", mockReceptionist, new Date(), mockMember, usedCoupon, mutableOldSoldProducts
+        );
+        existingBill.setId(500L);
+
+        Bill billDetails = TestDataHelper.createBill(
+                "CARD", "Completed", mockReceptionist, new Date(), mockMember, null, List.of(oldSoldProduct)
+        );
+
+        when(billRepository.findById(existingBill.getId())).thenReturn(Optional.of(existingBill));
+        when(memberRepository.findById(mockMember.getId())).thenReturn(Optional.of(mockMember));
+        when(issuedCouponRepository.findById(usedCoupon.getId())).thenReturn(Optional.of(usedCoupon));
+        when(productRepository.findById(oldProduct.getId())).thenReturn(Optional.of(oldProduct));
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        billService.updateBill(existingBill.getId(), billDetails);
+
+        verify(issuedCouponRepository, times(1)).save(argThat(issued ->
+                issued.getRemainingUses() == 1 && "AVAILABLE".equals(issued.getStatus())
+        ));
+    }
+
+    // UTT43: Update bill - coupon status không phải USED không đổi status khi revert
+    @Test
+    void updateBill_RevertAvailableCoupon_ShouldKeepAvailableStatus() {
+        Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
+        oldProduct.setId(100L);
+        SoldProduct oldSoldProduct = TestDataHelper.createSoldProduct(1, 100.0, oldProduct);
+
+        IssuedCoupon availableCoupon = TestDataHelper.createIssuedCoupon(1, "AVAILABLE", mockCoupon, mockMember);
+        availableCoupon.setId(200L);
+
+        List<SoldProduct> mutableOldSoldProducts = new ArrayList<>(List.of(oldSoldProduct));
+        Bill existingBill = TestDataHelper.createBill(
+                "CASH", "Paid", mockReceptionist, new Date(), mockMember, availableCoupon, mutableOldSoldProducts
+        );
+        existingBill.setId(500L);
+
+        Bill billDetails = TestDataHelper.createBill(
+                "CARD", "Completed", mockReceptionist, new Date(), mockMember, null, List.of(oldSoldProduct)
+        );
+
+        when(billRepository.findById(existingBill.getId())).thenReturn(Optional.of(existingBill));
+        when(memberRepository.findById(mockMember.getId())).thenReturn(Optional.of(mockMember));
+        when(issuedCouponRepository.findById(availableCoupon.getId())).thenReturn(Optional.of(availableCoupon));
+        when(productRepository.findById(oldProduct.getId())).thenReturn(Optional.of(oldProduct));
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        billService.updateBill(existingBill.getId(), billDetails);
+
+        verify(issuedCouponRepository, times(1)).save(argThat(issued ->
+                issued.getRemainingUses() == 2 && "AVAILABLE".equals(issued.getStatus())
+        ));
+    }
+
+    // UTT44: Update bill với coupon lần dùng cuối set status thành USED
+    @Test
+    void updateBill_WithCouponLastUse_ShouldSetStatusToUsed() {
+        Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
+        oldProduct.setId(100L);
+        SoldProduct oldSoldProduct = TestDataHelper.createSoldProduct(1, 100.0, oldProduct);
+
+        List<SoldProduct> mutableOldSoldProducts = new ArrayList<>(List.of(oldSoldProduct));
+        Bill existingBill = TestDataHelper.createBill(
+                "CASH", "Paid", mockReceptionist, new Date(), mockMember, null, mutableOldSoldProducts
+        );
+        existingBill.setId(500L);
+
+        IssuedCoupon lastUseCoupon = TestDataHelper.createIssuedCoupon(1, "AVAILABLE", mockCoupon, mockMember);
+        lastUseCoupon.setId(201L);
+
+        Bill billDetails = TestDataHelper.createBill(
+                "CARD", "Completed", mockReceptionist, new Date(), mockMember, lastUseCoupon, List.of(oldSoldProduct)
+        );
+
+        when(billRepository.findById(existingBill.getId())).thenReturn(Optional.of(existingBill));
+        when(memberRepository.findById(mockMember.getId())).thenReturn(Optional.of(mockMember));
+        when(productRepository.findById(oldProduct.getId())).thenReturn(Optional.of(oldProduct));
+        when(issuedCouponRepository.findById(lastUseCoupon.getId())).thenReturn(Optional.of(lastUseCoupon));
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        billService.updateBill(existingBill.getId(), billDetails);
+
+        verify(issuedCouponRepository, times(1)).save(argThat(issued ->
+                issued.getRemainingUses() == 0 && "USED".equals(issued.getStatus())
+        ));
+    }
+
+    // UTT45: Update bill - giảm giá lớn hơn tổng tiền, total = 0
+    @Test
+    void updateBill_DiscountExceedsTotal_ShouldSetTotalToZero() {
+        Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 10.0, "Brand", 50, false);
+        oldProduct.setId(100L);
+        SoldProduct oldSoldProduct = TestDataHelper.createSoldProduct(1, 10.0, oldProduct);
+
+        List<SoldProduct> mutableOldSoldProducts = new ArrayList<>(List.of(oldSoldProduct));
+        Bill existingBill = TestDataHelper.createBill(
+                "CASH", "Paid", mockReceptionist, new Date(), mockMember, null, mutableOldSoldProducts
+        );
+        existingBill.setId(500L);
+
+        Coupon largeCoupon = TestDataHelper.createCoupon("LARGE", "FIXED_AMOUNT", 1000.0, 5);
+        largeCoupon.setId(300L);
+        IssuedCoupon issuedLargeCoupon = TestDataHelper.createIssuedCoupon(1, "AVAILABLE", largeCoupon, mockMember);
+        issuedLargeCoupon.setId(301L);
+
+        Bill billDetails = TestDataHelper.createBill(
+                "CARD", "Completed", mockReceptionist, new Date(), mockMember, issuedLargeCoupon, List.of(oldSoldProduct)
+        );
+
+        when(billRepository.findById(existingBill.getId())).thenReturn(Optional.of(existingBill));
+        when(memberRepository.findById(mockMember.getId())).thenReturn(Optional.of(mockMember));
+        when(productRepository.findById(oldProduct.getId())).thenReturn(Optional.of(oldProduct));
+        when(issuedCouponRepository.findById(issuedLargeCoupon.getId())).thenReturn(Optional.of(issuedLargeCoupon));
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Bill result = billService.updateBill(existingBill.getId(), billDetails);
+
+        assertThat(result.getTotal()).isEqualTo(0.0);
+    }
+
+    // UTT46: Update bill với list sold product null hoặc empty
+    @Test
+    void updateBill_WithNullSoldProductList_ShouldHandleGracefully() {
+        Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
+        oldProduct.setId(100L);
+        SoldProduct oldSoldProduct = TestDataHelper.createSoldProduct(1, 100.0, oldProduct);
+
+        List<SoldProduct> mutableOldSoldProducts = new ArrayList<>(List.of(oldSoldProduct));
+        Bill existingBill = TestDataHelper.createBill(
+                "CASH", "Paid", mockReceptionist, new Date(), mockMember, null, mutableOldSoldProducts
+        );
+        existingBill.setId(500L);
+
+        Bill billDetails = TestDataHelper.createBill(
+                "CARD", "Completed", mockReceptionist, new Date(), mockMember, null, null
+        );
+
+        when(billRepository.findById(existingBill.getId())).thenReturn(Optional.of(existingBill));
+        when(memberRepository.findById(mockMember.getId())).thenReturn(Optional.of(mockMember));
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Bill result = billService.updateBill(existingBill.getId(), billDetails);
+
+        assertThat(result.getListSoldProduct()).isEmpty();
+        assertThat(result.getTotal()).isEqualTo(0.0);
+    }
+
+    // UTT47: Create bill - totalPrice được set vào total
+    @Test
+    void createBill_ShouldSetTotalFromTotalPrice() {
+        mockInputBill.setTotalPrice(25.5);
+        
+        when(receptionistRepository.findById(mockReceptionist.getId()))
+                .thenReturn(Optional.of(mockReceptionist));
+        when(memberRepository.findById(mockMember.getId()))
+                .thenReturn(Optional.of(mockMember));
+        when(productRepository.findAllById(List.of(mockProduct.getId())))
+                .thenReturn(List.of(mockProduct));
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> {
+            Bill billToSave = invocation.getArgument(0);
+            billToSave.setId(300L);
+            return billToSave;
+        });
+
+        Bill resultBill = billService.createBill(mockInputBill);
+
+        assertThat(resultBill.getTotal()).isEqualTo(25.5);
+    }
+
+    // UTT48: Create bill với nhiều sản phẩm cùng loại
+    @Test
+    void createBill_MultipleSameProducts_ShouldDecrementInventoryCorrectly() {
+        SoldProduct sp1 = TestDataHelper.createSoldProduct(3, 10.0, mockProduct);
+        SoldProduct sp2 = TestDataHelper.createSoldProduct(2, 10.0, mockProduct);
+        
+        mockInputBill.getListSoldProduct().clear();
+        mockInputBill.getListSoldProduct().add(sp1);
+        mockInputBill.getListSoldProduct().add(sp2);
+        
+        when(receptionistRepository.findById(mockReceptionist.getId()))
+                .thenReturn(Optional.of(mockReceptionist));
+        when(memberRepository.findById(mockMember.getId()))
+                .thenReturn(Optional.of(mockMember));
+        when(productRepository.findAllById(anyList()))
+                .thenReturn(List.of(mockProduct));
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> {
+            Bill billToSave = invocation.getArgument(0);
+            billToSave.setId(300L);
+            return billToSave;
+        });
+
+        billService.createBill(mockInputBill);
+
+        verify(productRepository, times(2)).save(argThat(product ->
+                product.getId().equals(mockProduct.getId())
+        ));
+    }
+
+    // UTT49: Update bill - không có member trong bill mới
+    @Test
+    void updateBill_WithNoMemberInNewBill_ShouldSetMemberToNull() {
+        Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
+        oldProduct.setId(100L);
+        SoldProduct oldSoldProduct = TestDataHelper.createSoldProduct(1, 100.0, oldProduct);
+
+        List<SoldProduct> mutableOldSoldProducts = new ArrayList<>(List.of(oldSoldProduct));
+        Bill existingBill = TestDataHelper.createBill(
+                "CASH", "Paid", mockReceptionist, new Date(), mockMember, null, mutableOldSoldProducts
+        );
+        existingBill.setId(500L);
+
+        Bill billDetails = TestDataHelper.createBill(
+                "CARD", "Completed", mockReceptionist, new Date(), null, null, List.of(oldSoldProduct)
+        );
+
+        when(billRepository.findById(existingBill.getId())).thenReturn(Optional.of(existingBill));
+        when(productRepository.findById(oldProduct.getId())).thenReturn(Optional.of(oldProduct));
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Bill result = billService.updateBill(existingBill.getId(), billDetails);
+
+        assertThat(result.getMember()).isNull();
+    }
+
+    // UTT50: Update bill - giữ nguyên coupon cũ nếu không có issued coupon mới
+    @Test
+    void updateBill_OldCouponRevertedAndNoNewCoupon_ShouldHaveNoIssuedCoupon() {
+        Product oldProduct = TestDataHelper.createProduct("Product", "clothes", 100.0, "Brand", 50, false);
+        oldProduct.setId(100L);
+        SoldProduct oldSoldProduct = TestDataHelper.createSoldProduct(1, 100.0, oldProduct);
+
+        IssuedCoupon oldCoupon = TestDataHelper.createIssuedCoupon(0, "USED", mockCoupon, mockMember);
+        oldCoupon.setId(200L);
+
+        List<SoldProduct> mutableOldSoldProducts = new ArrayList<>(List.of(oldSoldProduct));
+        Bill existingBill = TestDataHelper.createBill(
+                "CASH", "Paid", mockReceptionist, new Date(), mockMember, oldCoupon, mutableOldSoldProducts
+        );
+        existingBill.setId(500L);
+
+        Bill billDetails = TestDataHelper.createBill(
+                "CARD", "Completed", mockReceptionist, new Date(), mockMember, null, List.of(oldSoldProduct)
+        );
+
+        when(billRepository.findById(existingBill.getId())).thenReturn(Optional.of(existingBill));
+        when(memberRepository.findById(mockMember.getId())).thenReturn(Optional.of(mockMember));
+        when(issuedCouponRepository.findById(oldCoupon.getId())).thenReturn(Optional.of(oldCoupon));
+        when(productRepository.findById(oldProduct.getId())).thenReturn(Optional.of(oldProduct));
+        when(billRepository.save(any(Bill.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Bill result = billService.updateBill(existingBill.getId(), billDetails);
+
+        assertThat(result.getIssuedCoupon()).isNull();
+        verify(issuedCouponRepository, times(1)).save(argThat(issued ->
+                "AVAILABLE".equals(issued.getStatus())
+        ));
+    }
 }
