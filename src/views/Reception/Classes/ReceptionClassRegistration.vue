@@ -422,6 +422,7 @@ import {
   Clock
 } from 'lucide-vue-next';
 import { useToast } from 'vue-toastification';
+import Swal from 'sweetalert2';
 
 const USE_REAL_API = true;
 
@@ -638,7 +639,18 @@ const registerMember = async () => {
     return;
   }
 
-  if (confirm(`Xác nhận đăng ký ${selectedScheduleIds.value.length} buổi học cho ${selectedMember.value.name}?`)) {
+  const result = await Swal.fire({
+    title: 'Xác nhận đăng ký?',
+    text: `Xác nhận đăng ký ${selectedScheduleIds.value.length} buổi học cho ${selectedMember.value.name}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10B981',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Đăng ký',
+    cancelButtonText: 'Hủy'
+  });
+  
+  if (result.isConfirmed) {
     registering.value = true;
     try {
       await unifiedApi.registerBulkSchedules(selectedMember.value.id, selectedScheduleIds.value);

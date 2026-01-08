@@ -222,6 +222,7 @@ import { useToast } from 'vue-toastification';
 import unifiedApi from '@/services/unifiedClassApi.js';
 import { formatDate } from '@/views/Test/dateUtils.js';
 import api from '@/services/api';
+import Swal from 'sweetalert2';
 import { 
   Dumbbell, 
   Plus, 
@@ -528,7 +529,19 @@ const deleteClass = async (classId) => {
     return;
   }
   
-  if (confirm('Bạn có chắc muốn vô hiệu hóa lớp học này?\n\nLưu ý: Đây là soft delete, lớp học sẽ chuyển sang trạng thái INACTIVE.')) {
+  const result = await Swal.fire({
+    title: 'Xác nhận vô hiệu hóa?',
+    text: 'Bạn có chắc muốn vô hiệu hóa lớp học này?',
+    html: '<p>Lưu ý: Đây là soft delete, lớp học sẽ chuyển sang trạng thái INACTIVE.</p>',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#EF4444',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Vô hiệu hóa',
+    cancelButtonText: 'Hủy'
+  });
+  
+  if (result.isConfirmed) {
     try {
       await api.delete(`/fitness_class/${classId}`);
       

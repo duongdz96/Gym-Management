@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { Package, Plus, Edit, Trash2, X, CheckCircle, XCircle } from 'lucide-vue-next';
 import api from '@/services/api';
 import { useToast } from 'vue-toastification';
+import Swal from 'sweetalert2';
 
 const toast = useToast();
 
@@ -99,7 +100,18 @@ const submitForm = async () => {
 };
 
 const deletePackage = async (pkg) => {
-  if (!confirm(`Bạn có chắc muốn xóa gói "${pkg.name}"?`)) {
+  const result = await Swal.fire({
+    title: 'Xác nhận xóa?',
+    text: `Bạn có chắc muốn xóa gói "${pkg.name}"?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#EF4444',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Xóa',
+    cancelButtonText: 'Hủy'
+  });
+  
+  if (!result.isConfirmed) {
     return;
   }
 

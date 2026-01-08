@@ -195,6 +195,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
+import Swal from 'sweetalert2';
 // TODO: Replace mockApi with real API calls
 // import mockApi from './mockData.js';
 import { formatDate } from '@/views/Test/dateUtils.js';
@@ -264,7 +265,18 @@ const loadLeaveRequests = async () => {
 };
 
 const approveLeave = async (request) => {
-  if (confirm(`Duyệt đơn xin nghỉ của ${request.teacherName}?`)) {
+  const result = await Swal.fire({
+    title: 'Xác nhận duyệt?',
+    text: `Duyệt đơn xin nghỉ của ${request.teacherName}?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#10B981',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Duyệt',
+    cancelButtonText: 'Hủy'
+  });
+  
+  if (result.isConfirmed) {
     try {
       // TODO: await mockApi.approveTeacherLeave(request.sessionId, managerId.value, true);
       toast.success('Đã duyệt đơn xin nghỉ! Bạn có thể hủy buổi học hoặc thêm ghi chú.');
@@ -276,7 +288,18 @@ const approveLeave = async (request) => {
 };
 
 const rejectLeave = async (request) => {
-  if (confirm(`Từ chối đơn xin nghỉ của ${request.teacherName}?`)) {
+  const result = await Swal.fire({
+    title: 'Xác nhận từ chối?',
+    text: `Từ chối đơn xin nghỉ của ${request.teacherName}?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#EF4444',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Từ chối',
+    cancelButtonText: 'Hủy'
+  });
+  
+  if (result.isConfirmed) {
     try {
       // TODO: await mockApi.approveTeacherLeave(request.sessionId, managerId.value, false);
       toast.success('Đã từ chối đơn xin nghỉ!');

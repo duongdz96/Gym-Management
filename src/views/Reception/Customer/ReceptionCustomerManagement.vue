@@ -2,8 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import api from '@/services/api'
-import { useToast } from 'vue-toastification'
-
+import { useToast } from 'vue-toastification'import Swal from 'sweetalert2';
 type Membership = {
   id: number
   startDate: string
@@ -84,7 +83,18 @@ const getMembershipColor = (membership: string) => {
 
 // --- Actions ---
 const deleteMember = async (membership: Membership) => {
-  if (!confirm(`Bạn có chắc chắn muốn xóa học viên "${membership.member.fullName}"?`)) {
+  const result = await Swal.fire({
+    title: 'Xác nhận xóa?',
+    text: `Bạn có chắc chắn muốn xóa học viên "${membership.member.fullName}"?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#EF4444',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Xóa',
+    cancelButtonText: 'Hủy'
+  });
+  
+  if (!result.isConfirmed) {
     return
   }
 

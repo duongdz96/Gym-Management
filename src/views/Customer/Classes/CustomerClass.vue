@@ -911,7 +911,18 @@ const cancelRegistration = async (cls) => {
     return;
   }
   
-  if (confirm(`Bạn có chắc muốn hủy đăng ký lớp "${cls.name}"?`)) {
+  const result = await Swal.fire({
+    title: 'Xác nhận hủy?',
+    text: `Bạn có chắc muốn hủy đăng ký lớp "${cls.name}"?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#EF4444',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Hủy đăng ký',
+    cancelButtonText: 'Không'
+  });
+  
+  if (result.isConfirmed) {
     try {
       await unifiedApi.cancelRegistration(cls.id, currentStudentId.value);
       toast.success('Đã hủy đăng ký!');
