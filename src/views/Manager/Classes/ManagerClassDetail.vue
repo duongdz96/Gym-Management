@@ -1,12 +1,10 @@
 <template>
-  <div 
-    v-if="show && fitnessClass" 
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-    @click.self="$emit('close')"
-  >
+  <div v-if="show && fitnessClass" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    @click.self="$emit('close')">
     <div class="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fadeIn">
       <!-- Modal Header -->
-      <div class="sticky top-0 p-6 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white flex justify-between items-start rounded-t-2xl z-50">
+      <div
+        class="sticky top-0 p-6 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white flex justify-between items-start rounded-t-2xl z-50">
         <div class="max-w-[500px]">
           <h2 class="text-2xl font-bold mb-1 truncate">{{ fitnessClass.name }}</h2>
           <div class="flex items-center gap-2 text-emerald-100 text-sm">
@@ -14,14 +12,12 @@
             {{ getStatusText(fitnessClass.status) }}
           </div>
         </div>
-        <button 
-          @click="$emit('close')" 
-          class="w-10 h-10 bg-white/20 rounded-full hover:bg-white/30 transition-all flex items-center justify-center"
-        >
+        <button @click="$emit('close')"
+          class="w-10 h-10 bg-white/20 rounded-full hover:bg-white/30 transition-all flex items-center justify-center">
           <X class="w-6 h-6" />
         </button>
       </div>
-      
+
       <!-- Modal Body -->
       <div class="p-8 space-y-8">
         <!-- Description -->
@@ -92,7 +88,8 @@
               <span class="text-gray-600">Chi tiết:</span>
               <span class="font-semibold text-gray-800">{{ getScheduleText(fitnessClass) }}</span>
             </div>
-            <div v-if="fitnessClass.patternType !== 'no_repeat'" class="flex justify-between border-b border-gray-200 pb-2">
+            <div v-if="fitnessClass.patternType !== 'no_repeat'"
+              class="flex justify-between border-b border-gray-200 pb-2">
               <span class="text-gray-600">Thời gian áp dụng:</span>
               <span class="font-semibold text-gray-800">
                 {{ formatDate(fitnessClass.startDate) }} - {{ formatDate(fitnessClass.endDate) }}
@@ -112,19 +109,18 @@
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
             Đang tải...
           </div>
-          
+
           <div v-else-if="sessions.length > 0" class="space-y-2 max-h-96 overflow-y-auto">
-            <div
-              v-for="(session, idx) in sessions"
-              :key="session.id"
-              class="flex items-center gap-4 p-3 rounded-xl border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all"
-            >
-              <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm shrink-0">
+            <div v-for="(session, idx) in sessions" :key="session.id"
+              class="flex items-center gap-4 p-3 rounded-xl border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all">
+              <div
+                class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm shrink-0">
                 {{ idx + 1 }}
               </div>
               <div class="flex-1">
                 <div class="font-bold text-gray-800">{{ formatDate(session.date) }}</div>
-                <div class="text-sm text-gray-500">{{ formatScheduleTime(session.startTime) }} - {{ formatScheduleTime(session.endTime) }}</div>
+                <div class="text-sm text-gray-500">{{ formatScheduleTime(session.startTime) }} - {{
+                  formatScheduleTime(session.endTime) }}</div>
                 <div class="text-sm font-semibold mt-1 flex items-center gap-1 text-gray-600">
                   <Users class="w-4 h-4" />
                   Sĩ số: {{ getSessionEnrollment(session.id) }}/{{ session.capacity || 0 }}
@@ -135,23 +131,26 @@
               </div>
               <div class="flex items-center gap-2">
                 <div class="text-xs font-semibold px-2 py-1 rounded" :class="{
+                  'bg-blue-100 text-blue-700': session.status === 'RUNNING',  // Thêm màu xanh dương cho Running
                   'bg-green-100 text-green-700': session.status === 'OPEN',
                   'bg-gray-100 text-gray-500': session.status === 'CLOSED',
                   'bg-red-100 text-red-700': session.status === 'CANCELLED'
                 }">
-                  {{ session.status === 'OPEN' ? 'Mở' : session.status === 'CANCELLED' ? 'Đã hủy' : 'Đóng' }}
+                  {{
+                    session.status === 'RUNNING' ? 'Đang diễn ra' :
+                      session.status === 'OPEN' ? 'Mở' :
+                        session.status === 'CANCELLED' ? 'Đã hủy' : 'Đóng'
+                  }}
                 </div>
-                <button 
-                  @click="$emit('edit-session', session)" 
+                <button @click="$emit('edit-session', session)"
                   class="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200 transition-all"
-                  title="Sửa buổi học"
-                >
+                  title="Sửa buổi học">
                   <Edit class="w-4 h-4" />
                 </button>
               </div>
             </div>
           </div>
-          
+
           <div v-else class="text-center py-8 bg-gray-50 rounded-xl border border-gray-100 border-dashed">
             <p class="text-gray-500 italic">Chưa có buổi học nào được tạo</p>
           </div>
@@ -163,7 +162,7 @@
             <Users class="w-5 h-5 text-emerald-600" />
             Danh sách học viên đã đăng ký ít nhất 1 buổi: ({{ students.length }})
           </h3>
-          
+
           <div v-if="students.length > 0" class="overflow-x-auto">
             <table class="w-full text-sm text-left">
               <thead class="text-xs text-gray-700 uppercase bg-gray-100">
@@ -179,14 +178,11 @@
                   <td class="px-4 py-3 font-medium text-gray-900">{{ student.name }}</td>
                   <td class="px-4 py-3 text-gray-600">{{ student.email }}</td>
                   <td class="px-4 py-3">
-                    <span 
-                      class="px-2 py-1 rounded-full text-xs font-bold"
-                      :class="{
-                        'bg-yellow-100 text-yellow-700': student.membershipTier === 'VIP',
-                        'bg-emerald-100 text-emerald-700': student.membershipTier === 'PREMIUM',
-                        'bg-gray-100 text-gray-700': student.membershipTier === 'BASIC'
-                      }"
-                    >
+                    <span class="px-2 py-1 rounded-full text-xs font-bold" :class="{
+                      'bg-yellow-100 text-yellow-700': student.membershipTier === 'VIP',
+                      'bg-emerald-100 text-emerald-700': student.membershipTier === 'PREMIUM',
+                      'bg-gray-100 text-gray-700': student.membershipTier === 'BASIC'
+                    }">
                       {{ student.membershipTier }}
                     </span>
                   </td>
@@ -205,15 +201,15 @@
 </template>
 
 <script setup>
-import { 
-  X, 
-  Info, 
-  FileText, 
-  BarChart3, 
-  Calendar, 
-  MapPin, 
-  GraduationCap, 
-  Users, 
+import {
+  X,
+  Info,
+  FileText,
+  BarChart3,
+  Calendar,
+  MapPin,
+  GraduationCap,
+  Users,
   Edit,
   Clock,
   CheckCircle,
@@ -343,6 +339,7 @@ const getSessionEnrollment = (sessionId) => {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
