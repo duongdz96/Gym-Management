@@ -47,6 +47,26 @@ const formatTime = (timeString) => {
   return timeString
 }
 
+const getStatusText = (status) => {
+  const statusMap = {
+    Scheduled: 'Đã đặt lịch',
+    'In Progress': 'Đang tập',
+    Completed: 'Hoàn thành',
+    Cancelled: 'Đã hủy'
+  }
+  return statusMap[status] || status
+}
+
+const getStatusClass = (status) => {
+  const statusClasses = {
+    Scheduled: 'bg-green-100 text-green-700',
+    'In Progress': 'bg-blue-100 text-blue-700',
+    Completed: 'bg-purple-100 text-purple-700',
+    Cancelled: 'bg-red-100 text-red-700'
+  }
+  return statusClasses[status] || 'bg-gray-100 text-gray-700'
+}
+
 // ===================== MOCK DATA =====================
 const fetchPTData = async () => {
   isLoading.value = true
@@ -66,7 +86,7 @@ const fetchPTData = async () => {
     // Get appointments for this PT
     const appointmentsRes = await api.get('/appointment');
     const appointments = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : [];
-    const ptAppointments = appointments.filter(appt => appt.pt && appt.pt.id === authStore.user.id);
+    const ptAppointments = appointments.filter(appt => appt.ptPackageIssued?.pt?.id === authStore.user.id);
 
     // Calculate sessions this week
     const now = new Date();
@@ -105,7 +125,7 @@ const fetchPTData = async () => {
   try {
     const appointmentsRes = await api.get('/appointment');
     const appointments = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : [];
-    const ptAppointments = appointments.filter(appt => appt.pt && appt.pt.id === authStore.user.id);
+    const ptAppointments = appointments.filter(appt => appt.ptPackageIssued?.pt?.id === authStore.user.id);
 
     // Filter for today's appointments
     const today = new Date();
@@ -118,13 +138,26 @@ const fetchPTData = async () => {
       return apptDate >= today && apptDate < tomorrow;
     });
 
-    todaySessions.value = todayAppointments.map(appt => ({
-      id: appt.id,
-      studentName: appt.ptPackageIssued?.member?.fullName || 'Unknown',
-      type: appt.ptPackageIssued?.ptPackage?.name || 'Tập cá nhân',
-      time: new Date(appt.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-      status: appt.status === 'confirmed' ? 'Đã xác nhận' : appt.status === 'pending' ? 'Chờ xác nhận' : 'Đã xác nhận'
-    }));
+    todaySessions.value = todayAppointments.map(appt => {
+      const startTime = new Date(appt.startTime);
+      const endTime = new Date(appt.endTime);
+      const pad = (n) => String(n).padStart(2, "0");
+      const timeRange = `${pad(startTime.getHours())}:${pad(startTime.getMinutes())} - ${pad(endTime.getHours())}:${pad(endTime.getMinutes())}`;
+      
+      return {
+        id: appt.id,
+        studentName: appt.ptPackageIssued?.member?.fullName || 'Unknown',
+        type: appt.ptPackageIssued?.ptPackage?.name || 'Tập cá nhân',
+        time: timeRange,
+        status: appt.status,
+        rawStatus: appt.status
+      };
+    }).sort((a, b) => {
+      // Sort by time
+      const timeA = a.time.split(' - ')[0];
+      const timeB = b.time.split(' - ')[0];
+      return timeA.localeCompare(timeB);
+    });
 
   } catch (error) {
     console.error('Error fetching today sessions:', error);
@@ -227,7 +260,7 @@ const fetchPTData = async () => {
     const now = new Date();
     const ptUpcomingAppointments = appointments
       .filter(appt => 
-        appt.pt?.id === authStore.user.id && 
+        appt.ptPackageIssued?.pt?.id === authStore.user.id && 
         appt.status === 'Scheduled' &&
         new Date(appt.startTime) > now
       )
@@ -342,14 +375,6 @@ onMounted(() => {
             <p class="text-gray-600 text-sm font-medium">Buổi tập tuần này</p>
             <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.sessionsThisWeek }}</p>
           </div>
-
-          <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-6 border border-emerald-100">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center mb-4">
-              <TrendingUp class="w-6 h-6 text-white" />
-            </div>
-            <p class="text-gray-600 text-sm font-medium">Tỷ lệ hoàn thành</p>
-            <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.completionRate }}%</p>
-          </div>
         </div>
 
         <!-- Main Content Area -->
@@ -386,19 +411,40 @@ onMounted(() => {
               </div>
               <div v-else class="space-y-3">
                 <div v-for="session in todaySessions" :key="session.id"
-                     class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-emerald-50 to-emerald-50 rounded-lg sm:rounded-xl border border-emerald-100 gap-2 sm:gap-0">
+                     :class="[
+                       'flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 rounded-lg sm:rounded-xl border gap-2 sm:gap-0 transition-all',
+                       session.rawStatus === 'Cancelled' 
+                         ? 'bg-red-50 border-red-200' 
+                         : 'bg-gradient-to-r from-emerald-50 to-emerald-50 border-emerald-100'
+                     ]">
                   <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-500 flex items-center justify-center">
+                    <div :class="[
+                      'w-10 h-10 rounded-full flex items-center justify-center',
+                      session.rawStatus === 'Cancelled'
+                        ? 'bg-red-500'
+                        : 'bg-gradient-to-br from-emerald-500 to-emerald-500'
+                    ]">
                       <Dumbbell class="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p class="font-semibold text-gray-900">{{ session.studentName }}</p>
-                      <p class="text-sm text-gray-600">{{ session.type }}</p>
+                      <p :class="[
+                        'font-semibold',
+                        session.rawStatus === 'Cancelled' ? 'text-gray-600 line-through' : 'text-gray-900'
+                      ]">{{ session.studentName }}</p>
+                      <p :class="[
+                        'text-sm',
+                        session.rawStatus === 'Cancelled' ? 'text-gray-500' : 'text-gray-600'
+                      ]">{{ session.type }}</p>
                     </div>
                   </div>
                   <div class="text-right">
-                    <p class="font-semibold text-emerald-600">{{ session.time }}</p>
-                    <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">{{ session.status }}</span>
+                    <p :class="[
+                      'font-semibold',
+                      session.rawStatus === 'Cancelled' ? 'text-red-600' : 'text-emerald-600'
+                    ]">{{ session.time }}</p>
+                    <span :class="['text-xs px-2 py-1 rounded-full', getStatusClass(session.rawStatus)]">
+                      {{ getStatusText(session.rawStatus) }}
+                    </span>
                   </div>
                 </div>
               </div>

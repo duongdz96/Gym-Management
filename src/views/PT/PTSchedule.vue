@@ -707,7 +707,12 @@ onMounted(async () => {
             v-for="event in todayEvents"
             :key="event.id"
             @click="selectTodayEvent(event)"
-            class="flex-shrink-0 w-64 p-3 bg-emerald-50 rounded-lg border border-emerald-200 cursor-pointer hover:bg-emerald-100 transition-colors"
+            :class="[
+              'flex-shrink-0 w-64 p-3 rounded-lg border cursor-pointer transition-colors',
+              event.status === 'Cancelled' 
+                ? 'bg-red-50 border-red-200 hover:bg-red-100' 
+                : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100'
+            ]"
           >
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center">
@@ -730,7 +735,18 @@ onMounted(async () => {
             <div class="text-xs text-gray-600">
               <p>Thời gian: {{ event.time }}</p>
               <p>Số học viên: {{ event.members }}</p>
-              <p>Trạng thái: {{ getStatusText(event.status) }}</p>
+              <p class="flex items-center gap-1">Trạng thái: 
+                <span :class="[
+                  'px-2 py-0.5 rounded-full text-xs font-medium',
+                  event.status === 'Scheduled' ? 'bg-green-100 text-green-700' :
+                  event.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
+                  event.status === 'Completed' ? 'bg-purple-100 text-purple-700' :
+                  event.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                  'bg-gray-100 text-gray-700'
+                ]">
+                  {{ getStatusText(event.status) }}
+                </span>
+              </p>
             </div>
           </div>
         </div>
@@ -807,7 +823,12 @@ onMounted(async () => {
                 <div
                   v-for="event in dayData.events.slice(0, 3)"
                   :key="event.id"
-                  class="text-[10px] sm:text-xs truncate px-1 sm:px-1.5 py-0.5 rounded bg-green-50 text-green-700 border border-green-100"
+                  :class="[
+                    'text-[10px] sm:text-xs truncate px-1 sm:px-1.5 py-0.5 rounded border',
+                    event.status === 'Cancelled'
+                      ? 'bg-red-50 text-red-700 border-red-100'
+                      : 'bg-green-50 text-green-700 border-green-100'
+                  ]"
                   :title="`${event.time} - ${event.name}`"
                 >
                   <span class="hidden sm:inline">{{ event.time }} {{ event.name }}</span>
@@ -884,10 +905,22 @@ onMounted(async () => {
               <div
                 v-for="event in selectedDateEvents"
                 :key="event.id"
-                class="flex gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-blue-200 transition-colors bg-white group"
+                :class="[
+                  'flex gap-4 p-4 rounded-xl border-2 transition-colors group',
+                  event.status === 'Cancelled'
+                    ? 'border-red-200 bg-red-50 hover:border-red-300'
+                    : 'border-gray-100 bg-white hover:border-blue-200'
+                ]"
               >
                 <!-- Time Column -->
-                <div class="flex flex-col items-center justify-center w-20 rounded-lg font-bold shrink-0 bg-blue-50 text-blue-700">
+                <div 
+                  :class="[
+                    'flex flex-col items-center justify-center w-20 rounded-lg font-bold shrink-0',
+                    event.status === 'Cancelled'
+                      ? 'bg-red-50 text-red-700'
+                      : 'bg-blue-50 text-blue-700'
+                  ]"
+                >
                   <span class="text-lg">{{ event.time.split(' - ')[0] }}</span>
                   <span class="text-xs font-normal text-blue-500">đến</span>
                   <span class="text-sm">{{ event.time.split(' - ')[1] }}</span>
@@ -897,7 +930,12 @@ onMounted(async () => {
                 <div class="flex-1">
                   <h4 
                     @click="viewMemberDetails(event)"
-                    class="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors cursor-pointer hover:underline"
+                    :class="[
+                      'font-bold text-lg transition-colors cursor-pointer hover:underline',
+                      event.status === 'Cancelled'
+                        ? 'text-red-600 line-through group-hover:text-red-700'
+                        : 'text-gray-800 group-hover:text-blue-600'
+                    ]"
                   >
                     {{ event.name }}
                   </h4>
@@ -1216,7 +1254,7 @@ onMounted(async () => {
                 @click="startClass(selectedTodayEvent.id); closeTodayModal()"
                 class="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
               >
-                Bắt đầu lớp
+                Bắt đầu buổi tập
               </button>
               <button
                 v-if="selectedTodayEvent.status === 'In Progress'"

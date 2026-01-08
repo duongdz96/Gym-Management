@@ -77,7 +77,7 @@ async function fetchSessions() {
 }
 
 const filteredSessions = computed(() => {
-  return sessions.value.filter(session => {
+  const filtered = sessions.value.filter(session => {
     // Filter by selected month
     const sessionMonth = session.date.slice(0, 7)
     if (sessionMonth !== selectedMonth.value) return false
@@ -86,6 +86,25 @@ const filteredSessions = computed(() => {
     if (selectedStatus.value !== 'all' && session.status !== selectedStatus.value) return false
     
     return true
+  })
+  
+  // Sort sessions: future dates first, then past dates, sorted by time
+  const now = new Date()
+  now.setHours(0, 0, 0, 0) // Set to start of today
+  
+  return filtered.sort((a, b) => {
+    const dateA = new Date(a.startTime)
+    const dateB = new Date(b.startTime)
+    
+    const isAFuture = dateA >= now
+    const isBFuture = dateB >= now
+    
+    // If one is future and one is past, future comes first
+    if (isAFuture && !isBFuture) return -1
+    if (!isAFuture && isBFuture) return 1
+    
+    // Both are in same category (both future or both past), sort by time
+    return dateA - dateB
   })
 })
 
@@ -135,9 +154,9 @@ const getStatusText = (status) => {
 
 const getStatusColor = (status) => {
   switch (status) {
-    case 'Completed': return 'text-green-600 bg-green-50'
-    case 'In Progress': return 'text-emerald-600 bg-emerald-50'
-    case 'Scheduled': return 'text-orange-600 bg-orange-50'
+    case 'Completed': return 'text-purple-600 bg-purple-50'
+    case 'In Progress': return 'text-blue-600 bg-blue-50'
+    case 'Scheduled': return 'text-green-600 bg-green-50'
     case 'Cancelled': return 'text-red-600 bg-red-50'
     default: return 'text-gray-600 bg-gray-50'
   }
@@ -245,11 +264,11 @@ onMounted(async () => {
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-600">Đã hoàn thành</p>
-            <p class="text-2xl font-bold text-green-600">{{ completedSessions.length }}</p>
+            <p class="text-2xl font-bold text-purple-600">{{ completedSessions.length }}</p>
             <p class="text-xs text-gray-500 mt-1">{{ getMonthYearText }}</p>
           </div>
-          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-            <span class="text-green-600 text-lg">✅</span>
+          <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+            <span class="text-purple-600 text-lg">✅</span>
           </div>
         </div>
       </div>
@@ -258,11 +277,11 @@ onMounted(async () => {
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-600">Sắp tới</p>
-            <p class="text-2xl font-bold text-orange-600">{{ scheduledSessions.length }}</p>
+            <p class="text-2xl font-bold text-green-600">{{ scheduledSessions.length }}</p>
             <p class="text-xs text-gray-500 mt-1">{{ getMonthYearText }}</p>
           </div>
-          <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-            <span class="text-orange-600 text-lg">⏰</span>
+          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+            <span class="text-green-600 text-lg">⏰</span>
           </div>
         </div>
       </div>
