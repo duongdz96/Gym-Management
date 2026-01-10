@@ -95,11 +95,11 @@ def put_text_vietnamese(img, text, position, font_size=20, color=(255, 255, 255)
 
 def draw_processing_overlay(frame, message):
     """
-    Vẽ overlay "Đang check-in, vui lòng đợi..." lên frame
+    Draw overlay "Processing check-in, please wait..." on frame
     
     Args:
         frame: OpenCV frame
-        message: Thông báo hiển thị
+        message: Message to display
     
     Returns:
         frame với overlay
@@ -327,8 +327,8 @@ class FaceRecognizer:
 
 def show_success_notification(frame, person_name, action_type, is_employee):
     """
-    Hiển thị thông báo thành công to và rõ ràng
-    Duration: 2-3 giây
+    Display success notification large and clear
+    Duration: 2-3 seconds
     """
     height, width = frame.shape[:2]
     notification_frame = frame.copy()
@@ -359,11 +359,11 @@ def show_success_notification(frame, person_name, action_type, is_employee):
 
     # Success message
     if is_employee:
-        action_text = "VAO" if action_type == 'in' else "RA"
-        message = f"NHAN VIEN {action_text}"
+        action_text = "IN" if action_type == 'in' else "OUT"
+        message = f"EMPLOYEE {action_text}"
     else:
         # Member check-in
-        message = "CHECK-IN THANH CONG"
+        message = "CHECK-IN SUCCESS"
 
     cv2.putText(notification_frame, message, (box_x + 90, box_y + 180),
                cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 3)
@@ -393,9 +393,9 @@ def create_info_panel(frame, info_dict):
     header_height = 80
     cv2.rectangle(canvas, (width + 10, 10), (width + panel_width - 10, header_height),
                   (100, 50, 0), -1)  # Blue gradient
-    cv2.putText(canvas, "NHAN DIEN KHUON MAT", (width + 30, 45),
+    cv2.putText(canvas, "FACE RECOGNITION", (width + 30, 45),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 2)
-    cv2.putText(canvas, f"Mo hinh: {config.FACE_MODEL}", (width + 50, 70),
+    cv2.putText(canvas, f"Model: {config.FACE_MODEL}", (width + 50, 70),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 255, 255), 1)
 
     # Person info
@@ -421,17 +421,17 @@ def create_info_panel(frame, info_dict):
         line_height = 35
 
         lines = [
-            f"Ma: {info_dict.get('id', 'N/A')}",
-            f"Ten: {info_dict.get('name', 'Khong xac dinh')}",
-            f"Trang thai: {info_dict.get('status', 'N/A')}",
+            f"ID: {info_dict.get('id', 'N/A')}",
+            f"Name: {info_dict.get('name', 'Unknown')}",
+            f"Status: {info_dict.get('status', 'N/A')}",
         ]
 
         if info_dict.get('is_employee'):
-            action_text = "Vao" if info_dict.get('check_type') == 'in' else "Ra"
-            lines.append(f"Hanh dong: {action_text}")
+            action_text = "In" if info_dict.get('check_type') == 'in' else "Out"
+            lines.append(f"Action: {action_text}")
 
         if info_dict.get('confirmed'):
-            lines.append("[XAC NHAN]")
+            lines.append("[CONFIRMED]")
 
         # Text color based on status
         text_color = (100, 255, 100) if info_dict.get('status') == 'active' else (255, 255, 255)
@@ -447,22 +447,22 @@ def create_info_panel(frame, info_dict):
         cv2.rectangle(canvas, (width + 20, y_offset),
                      (width + panel_width - 20, y_offset + 100),
                      (0, 0, 255), 2)
-        cv2.putText(canvas, "KHONG XAC DINH", (width + 70, y_offset + 45),
+        cv2.putText(canvas, "UNKNOWN", (width + 100, y_offset + 45),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
         cv2.putText(canvas, info_dict.get('time', ''), (width + 60, y_offset + 80),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
 
-    # FPS and stats với màu cyan nổi bật
+    # FPS and stats with cyan color
     y_stats = height - 120
     cv2.putText(canvas, f"FPS: {info_dict.get('fps', 0):.1f}",
                (width + 30, y_stats), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 100), 2)
-    cv2.putText(canvas, f"Do tre: {info_dict.get('latency', 0):.0f}ms",
+    cv2.putText(canvas, f"Latency: {info_dict.get('latency', 0):.0f}ms",
                (width + 30, y_stats + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 100), 2)
-    cv2.putText(canvas, f"Nguong: {config.RECOGNITION_THRESHOLD}",
+    cv2.putText(canvas, f"Threshold: {config.RECOGNITION_THRESHOLD}",
                (width + 30, y_stats + 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 255, 255), 1)
 
     # Instructions
-    cv2.putText(canvas, "Nhan 'q' de thoat",
+    cv2.putText(canvas, "Press 'q' to quit",
                (width + 30, height - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 150, 150), 1)
 
     return canvas
@@ -693,7 +693,7 @@ def main():
                                     # Set flag và message
                                     if action_logged:
                                         recognizer.is_processing_checkin = True
-                                        recognizer.processing_message = "Đang check-in, vui lòng đợi"
+                                        recognizer.processing_message = "Processing check-in, please wait"
                                         recognizer.processing_start_time = time.time()
                                     
                                         # Callback để clear flag sau khi speak xong

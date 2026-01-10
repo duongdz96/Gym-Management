@@ -101,7 +101,7 @@ MEMBER_COOLDOWN = 0  # Không dùng nữa
 
 # Employee: Thời gian tối thiểu từ check-in đến checkout (seconds)
 # Tránh checkout ngay sau khi check-in
-EMPLOYEE_CHECKOUT_MIN_DURATION = 60  # 1 phút
+EMPLOYEE_CHECKOUT_MIN_DURATION = 20  # 20 seconds
 
 # Unknown face display cooldown (seconds)
 # Tránh spam "Unknown" message
