@@ -401,7 +401,7 @@ const isSelectedDatePast = computed(() => {
   return selectedDateOnly < today;
 });
 
-// Watch for time changes to validate
+// Watch for time changes to validate and auto-calculate end time
 watch([selectedStartTime, registerDate], () => {
   startTimeError.value = '';
   
@@ -434,6 +434,15 @@ watch([selectedStartTime, registerDate], () => {
         selected: startDateTime.toLocaleTimeString()
       });
     }
+  }
+  
+  // Auto-calculate end time: start time + 1.5 hours (90 minutes)
+  if (selectedStartTime.value) {
+    const [startHours, startMinutes] = selectedStartTime.value.split(':').map(Number);
+    const totalMinutes = startHours * 60 + startMinutes + 90; // Add 90 minutes (1.5 hours)
+    const endHours = Math.floor(totalMinutes / 60) % 24; // Handle day overflow
+    const endMinutes = totalMinutes % 60;
+    selectedEndTime.value = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
   }
 }, { immediate: true });
 
@@ -761,7 +770,7 @@ onMounted(async () => {
           <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
           </svg>
-          <span class="hidden sm:inline">Lịch Dạy - Tháng {{ currentMonth + 1 }}/{{ currentYear }}</span>
+          <span class="hidden sm:inline">Lịch Tập - Tháng {{ currentMonth + 1 }}/{{ currentYear }}</span>
           <span class="sm:hidden">T{{ currentMonth + 1 }}/{{ currentYear }}</span>
         </h2>
         <div class="flex gap-1 sm:gap-2">
@@ -1141,7 +1150,7 @@ onMounted(async () => {
                 :disabled="isButtonDisabled"
                 class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Đăng ký lớp
+                Đăng ký buổi tập
               </button>
             </div>
           </div>
